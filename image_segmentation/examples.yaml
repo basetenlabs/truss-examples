@@ -1,0 +1,4 @@
+- input:
+    inputs:
+    - image_url: https://github.com/pytorch/hub/raw/master/images/dog.jpg
+  name: cat

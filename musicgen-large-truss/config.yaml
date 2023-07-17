@@ -1,0 +1,33 @@
+base_image: null
+bundled_packages_dir: packages
+data_dir: data
+description: MusicGen is a simple and controllable model for music generation developed by Facebook AI Research.
+environment_variables: {}
+external_package_dirs: []
+input_type: Any
+live_reload: false
+model_class_filename: model.py
+model_class_name: Model
+model_framework: custom
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/musicgen-cover.png
+  tags:
+  - text-to-music
+  example_model_input: { "prompts": ["happy rock", "energetic EDM", "sad jazz"], "duration": 8 }
+model_module_dir: model
+model_name: MusicGen large
+model_type: custom
+python_version: py39
+requirements:
+- torch>=2
+- audiocraft
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: A10G
+secrets: {}
+spec_version: '2.0'
+system_packages:
+- ffmpeg

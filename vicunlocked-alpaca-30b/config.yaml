@@ -1,0 +1,20 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: null
+python_version: py39
+requirements:
+- torch
+- peft
+- sentencepiece
+- accelerate
+- bitsandbytes
+- einops
+- git+https://github.com/huggingface/transformers.git
+resources:
+  cpu: "3"
+  memory: 50Gi
+  use_gpu: true
+  accelerator: "A100:1"
+secrets: {}
+system_packages: []
