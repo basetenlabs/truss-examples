@@ -1,16 +1,16 @@
 [![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/llama)
 
-# LLaMA-7B Truss
+# Llama-2 70B Chat Truss
 
-This is a [Truss](https://truss.baseten.co/) for an int8 version of LLaMA-7B. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA-7B.
+This is a [Truss](https://truss.baseten.co/) for Llama-2 70B Chat. Llama-2 is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Llama-2 70B Chat.
 
 ## Truss
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-## Deploying LLaMA-7B
+## Deploying Llama-2 70B Chat
 
-To deploy the LLaMA-7B Truss, you'll need to follow these steps:
+To deploy the Llama-2 70B Chat Truss, you'll need to follow these steps:
 
 1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
 
@@ -19,29 +19,31 @@ To deploy the LLaMA-7B Truss, you'll need to follow these steps:
 pip install --upgrade baseten truss
 ```
 
-3. __Load the LLaMA-7B Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
+3. __Set HF API key__: To download the model, you'll need to pass your HF API key and be approved to download weights. Visit this [link](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) to begin the approval process. Once approved, update the `config.yaml` with your Huggingface API key (look for the key, `hf_api_key` in the config.yaml.)
+
+4. __Load the Llama-2 70B Chat Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
 ```
 import truss
 
-llama_7b_truss = truss.load("path/to/llama_7b_truss")
+llama_2_70b_truss = truss.load("path/to/llama_2_70b_truss")
 ```
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
+5. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
 ```
 import baseten
 
 baseten.login("PASTE_API_KEY_HERE")
 ```
 
-5. __Deploy the LLaMA-7B Truss__: Deploy the Llama-7B Truss to Baseten with the following command:
+6. __Deploy the Llama-2 70B Chat Truss__: Deploy the Llama-2 70B Chat Truss to Baseten with the following command:
 ```
-baseten.deploy(llama_7b_truss)
+baseten.deploy(llama_2_70b_truss)
 ```
 
-Once your Truss is deployed, you can start using the LLaMA-7B model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+Once your Truss is deployed, you can start using the Llama-2 70B Chat model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
-## LLaMA-7B API documentation
-This section provides an overview of the LLaMA-7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
+## Llama-2 70B Chat API documentation
+This section provides an overview of the Llama-2 70B Chat API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
 
 ### API route: `predict`
 The predict route is the primary method for generating text completions based on a given instruction. It takes several parameters:
