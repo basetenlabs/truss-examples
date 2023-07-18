@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "truss-examples"
+version = "0.1.0"
+description = ""
+authors = ["Truss Maintainers <team@trussml.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+truss = { git = "https://github.com/basetenlabs/truss.git" }
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+ipython = "^8.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

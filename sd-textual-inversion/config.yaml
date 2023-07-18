@@ -1,0 +1,20 @@
+model_metadata:
+  pretty_name: Stable Diffusion - Textual Inversion
+  tags:
+  - image-generation
+model_name: SD_Textual_Inversion
+python_version: py311
+requirements:
+- diffusers==0.16.1
+- transformers
+- ftfy
+- accelerate
+- torch
+- pillow
+resources:
+  accelerator: T4
+  cpu: 500m
+  memory: 512Mi
+  use_gpu: true
+secrets: {}
+system_packages: []
