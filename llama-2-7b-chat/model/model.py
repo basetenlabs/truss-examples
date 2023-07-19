@@ -23,12 +23,13 @@ class Model:
     def load(self):
         self._model = LlamaForCausalLM.from_pretrained(
             "meta-llama/Llama-2-7b-chat-hf", 
-            use_auth_token=self._secrets["hf_api_key"], 
+            use_auth_token=self._secrets["hf_access_token"], 
+            torch_dtype=torch.float16,
             device_map="auto"
         )
         self._tokenizer = LlamaTokenizer.from_pretrained(
             "meta-llama/Llama-2-7b-chat-hf", 
-            use_auth_token=self._secrets["hf_api_key"]
+            use_auth_token=self._secrets["hf_access_token"]
         )
 
     def preprocess(self, request: Dict) -> Dict:

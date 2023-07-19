@@ -30,8 +30,8 @@ resources:
   cpu: "3"
   memory: 14Gi
   use_gpu: true
-  accelerator: A100:1
+  accelerator: A10G
 secrets:
-  hf_token: null
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 spec_version: '2.0'
 system_packages: []
