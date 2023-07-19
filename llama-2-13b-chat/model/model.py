@@ -1,7 +1,8 @@
 from typing import Dict, List
 
 import torch
-from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig, TextIteratorStreamer
+from threading import Thread
 
 DEFAULT_SYSTEM_PROMPT = """\
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
@@ -44,43 +45,59 @@ class Model:
         """
         return request
 
-    def forward(self, prompt, temperature=0.1, top_p=0.75, top_k=40, num_beams=1, **kwargs):
-        prompt_wrapped = f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
-        
-        inputs = self._tokenizer(
-            prompt_wrapped, return_tensors="pt", truncation=True, padding=False, max_length=1056
-        )
-        input_ids = inputs["input_ids"].to("cuda")
+    def forward(self, prompt, stream, temperature=0.1, top_p=0.75, top_k=40, num_beams=1, max_length=512, **kwargs):
         generation_config = GenerationConfig(
             temperature=temperature,
             top_p=top_p,
             top_k=top_k,
             num_beams=num_beams,
             repetition_penalty=1.2,
+            max_length=max_length,
             **kwargs,
         )
-        with torch.no_grad():
-            generation_output = self._model.generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=True,
-                max_length=512,
-                early_stopping=True,
-            )
+        prompt_wrapped = f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
+        inputs = self._tokenizer(
+            prompt_wrapped, return_tensors="pt", truncation=True, padding=False, max_length=1056
+        )
+        input_ids = inputs["input_ids"].to("cuda")
+        
+        if not stream:
+            with torch.no_grad():
+                generation_output = self._model.generate(
+                    input_ids=input_ids,
+                    generation_config=generation_config,
+                    return_dict_in_generate=True,
+                    output_scores=True,
+                    max_length=max_length,
+                    early_stopping=True,
+                )
 
-        decoded_output = []
-        for beam in generation_output.sequences:
-            decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True).replace(prompt_wrapped, ""))
+            decoded_output = []
+            for beam in generation_output.sequences:
+                decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True).replace(prompt_wrapped, ""))
 
-        return decoded_output
+            return decoded_output
 
+        streamer = TextIteratorStreamer(self._tokenizer)
+        
+        generation_kwargs = {
+           "input_ids": input_ids,
+           "generation_config": generation_config,
+           "return_dict_in_generate": True,
+           "output_scores": True,
+           "streamer": streamer
+        }
+        thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
+        thread.start()
+        
+        def inner():
+            for text in streamer:
+                yield text
+            thread.join()
+
+        return inner()
 
     def predict(self, request: Dict) -> Dict[str, List]:
         prompt = request.pop("prompt")
-        try:
-            completions = self.forward(prompt, **request)
-        except Exception as exc:
-            return {"status": "error", "data": None, "message": str(exc)}
-
-        return {"status": "success", "data": completions, "message": None}
+        stream = request.pop("stream", False)
+        return self.forward(prompt, stream, **request)
