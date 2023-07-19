@@ -91,7 +91,11 @@ class Model:
         thread.start()
         
         def inner():
+            first = True
             for text in streamer:
+                if first:
+                    first = False
+                    continue
                 yield text
             thread.join()
 
