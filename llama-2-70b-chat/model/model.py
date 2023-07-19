@@ -24,11 +24,13 @@ class Model:
         self._model = LlamaForCausalLM.from_pretrained(
             "meta-llama/Llama-2-70b-chat-hf", 
             use_auth_token=self._secrets["hf_api_key"], 
-            device_map="auto"
+            device_map="auto",
+            torch_dtype=torch.float16,
         )
         self._tokenizer = LlamaTokenizer.from_pretrained(
             "meta-llama/Llama-2-70b-chat-hf", 
-            use_auth_token=self._secrets["hf_api_key"]
+            use_auth_token=self._secrets["hf_api_key"],
+            torch_dtype=torch.float16,
         )
 
     def preprocess(self, request: Dict) -> Dict:
@@ -45,7 +47,7 @@ class Model:
         """
         return request
 
-    def forward(self, prompt, stream, temperature=0.1, top_p=0.75, top_k=40, num_beams=1, max_length=512, **kwargs):
+    def forward(self, prompt, stream, temperature=0.1, top_p=0.75, top_k=40, num_beams=1, max_length=512, system_prompt=DEFAULT_SYSTEM_PROMPT, **kwargs):
         generation_config = GenerationConfig(
             temperature=temperature,
             top_p=top_p,
@@ -55,7 +57,7 @@ class Model:
             max_length=max_length,
             **kwargs,
         )
-        prompt_wrapped = f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
+        prompt_wrapped = f"{B_INST} {B_SYS} {system_prompt} {E_SYS} {prompt} {E_INST}"
         inputs = self._tokenizer(
             prompt_wrapped, return_tensors="pt", truncation=True, padding=False, max_length=1056
         )
