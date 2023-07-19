@@ -31,6 +31,7 @@ resources:
   memory: 14Gi
   use_gpu: true
   accelerator: A100:4
-secrets: {}
+secrets:
+  hf_token: null
 spec_version: '2.0'
 system_packages: []
