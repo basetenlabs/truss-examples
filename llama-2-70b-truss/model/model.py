@@ -1,5 +1,6 @@
 import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer, TextIteratorStreamer, GenerationConfig
+from threading import Thread
 from typing import Dict
 
 CHECKPOINT = "meta-llama/Llama-2-70b-hf"
@@ -43,15 +44,46 @@ class Model:
         self.model = LlamaForCausalLM.from_pretrained(
             CHECKPOINT,
             use_auth_token=self.hf_token,
+            torch_dtype=torch.float16,
             device_map="auto")
 
         self.tokenizer = LlamaTokenizer.from_pretrained(
             CHECKPOINT,
             device_map="auto",
+            torch_dtype=torch.float16,
             use_auth_token=self.hf_token)
 
+    def stream_model(self, request: Dict):
+        streamer = TextIteratorStreamer(self.tokenizer)
 
-    def predict(self, request: Dict) -> Dict:
+        with torch.no_grad():
+            generation_args = request.pop("generate_args")
+            generation_config = GenerationConfig(**generation_args,)
+            prompt = request.pop("prompt")
+            inputs = self.tokenizer(prompt, return_tensors="pt", max_length=DEFAULT_MAX_LENGTH, truncation=True, padding=True)
+            input_ids = inputs["input_ids"].to("cuda")
+            generation_kwargs = {
+                "input_ids": input_ids,
+                "generation_config": generation_config,
+                "return_dict_in_generate": True,
+                "output_scores": True,
+                "max_new_tokens": generation_args["max_new_tokens"],
+                "streamer": streamer
+            }
+            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+            thread.start()
+            def inner():
+                for text in streamer:
+                    yield text
+                thread.join()
+        return inner()
+
+    def predict(self, request: Dict):
+        stream = request.pop("stream", False)
+
+        if stream:
+            return self.stream_model(request)
+
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
