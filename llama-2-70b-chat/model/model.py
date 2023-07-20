@@ -23,13 +23,13 @@ class Model:
     def load(self):
         self._model = LlamaForCausalLM.from_pretrained(
             "meta-llama/Llama-2-70b-chat-hf", 
-            use_auth_token=self._secrets["hf_api_key"], 
+            use_auth_token=self._secrets["hf_access_token"], 
             device_map="auto",
             torch_dtype=torch.float16,
         )
         self._tokenizer = LlamaTokenizer.from_pretrained(
             "meta-llama/Llama-2-70b-chat-hf", 
-            use_auth_token=self._secrets["hf_api_key"],
+            use_auth_token=self._secrets["hf_access_token"],
             torch_dtype=torch.float16,
         )
 
