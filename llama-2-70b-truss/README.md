@@ -51,7 +51,7 @@ Once your Truss is deployed, you can start using the Llama 2 70B model through t
 
 ### Hardware notes
 
-This seventy billion parameter model requires four A100 GPUs.
+This seventy billion parameter model requires two A100 GPUs.
 
 ## Llama 2 70B API documentation
 
