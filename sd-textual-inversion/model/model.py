@@ -4,10 +4,9 @@ import os
 import torch
 from io import BytesIO
 from diffusers import StableDiffusionPipeline
-
-SD_BASE_MODEL_CHECKPOINT = "CompVis/stable-diffusion-v1-4"
-REPO_ID_EMBEDS = "sd-concepts-library/cat-toy"
 from PIL import Image
+
+SD_BASE_MODEL_CHECKPOINT = "SG161222/Realistic_Vision_V4.0_noVAE"
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -22,8 +21,7 @@ class Model:
             torch_dtype=torch.float16
         ).to("cuda")
         
-        self.pipe.load_textual_inversion(REPO_ID_EMBEDS)
-        self.pipe.load_textual_inversion(str(self._data_dir / "charturnerv2.pt"), token="charturnerv2")
+        self.pipe.load_textual_inversion("./data/LulaCipher.bin", token="LulaCipher")
         
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
