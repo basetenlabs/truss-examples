@@ -1,0 +1,18 @@
+environment_variables:
+  - env_1: no
+external_package_dirs: []
+model_metadata: {}
+model_name: Pygamilion6B
+python_version: py39
+requirements:
+- transformers
+- accelerate
+- xformers
+- new_req
+resources:
+  accelerator: A100
+  cpu: 3500m
+  memory: 14Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
