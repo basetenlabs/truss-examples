@@ -75,9 +75,8 @@ curl -X POST "https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predic
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt" : "man on moon",
-           "scheduler": True,
-           "negative_prompt" : "disfigured hands"
+           "prompt": "A tree in a field under the night sky",
+           "use_refiner": True
          }'
 ```
 
