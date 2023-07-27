@@ -62,8 +62,8 @@ class Model:
         )
         input_ids = inputs["input_ids"].to("cuda")
         
-        if not stream:
-            with torch.no_grad():
+        with torch.no_grad():
+            if not stream:
                 generation_output = self._model.generate(
                     input_ids=input_ids,
                     generation_config=generation_config,
@@ -73,32 +73,32 @@ class Model:
                     early_stopping=True,
                 )
 
-            decoded_output = []
-            for beam in generation_output.sequences:
-                decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True).replace(prompt_wrapped, ""))
+                decoded_output = []
+                for beam in generation_output.sequences:
+                    decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True).replace(prompt_wrapped, ""))
 
-            return decoded_output
+                return decoded_output
 
-        streamer = TextIteratorStreamer(self._tokenizer)
-        
-        generation_kwargs = {
-           "input_ids": input_ids,
-           "generation_config": generation_config,
-           "return_dict_in_generate": True,
-           "output_scores": True,
-           "streamer": streamer
-        }
-        thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
-        thread.start()
-        
-        def inner():
-            first = True
-            for text in streamer:
-                if first:
-                    first = False
-                    continue
-                yield text
-            thread.join()
+            streamer = TextIteratorStreamer(self._tokenizer)
+            
+            generation_kwargs = {
+                "input_ids": input_ids,
+                "generation_config": generation_config,
+                "return_dict_in_generate": True,
+                "output_scores": True,
+                "streamer": streamer
+            }
+            thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
+            thread.start()
+            
+            def inner():
+                first = True
+                for text in streamer:
+                    if first:
+                        first = False
+                        continue
+                    yield text
+                thread.join()
 
         return inner()
 
