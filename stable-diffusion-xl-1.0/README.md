@@ -19,13 +19,19 @@ Paste your API key when prompted.
 
 ## Deployment
 
-In an iPython notebook, run the following script to deploy SDXL to your Baseten account:
+First, clone this repository:
+
+```
+git clone https://github.com/basetenlabs/truss-examples/
+```
+
+Then, in an iPython notebook, run the following script to deploy SDXL to your Baseten account:
 
 ```python
 import baseten
 import truss
 
-sdxl = truss.load("truss-examples/sdxl-1.0/")
+sdxl = truss.load("truss-examples/stable-diffusion-xl-1.0")
 baseten.deploy(
   sdxl,
   model_name="Stable Diffusion XL 1.0"
@@ -36,7 +42,7 @@ Once your Truss is deployed, you can start using SDXL through the Baseten platfo
 
 ### Hardware notes
 
-Model inference runs on an A100 with 80GB of VRAM.
+Model inference runs well on an A10 with 24 GB of VRAM, with invocation time averaging ~16 seconds. If speed is essential, running inference on an A100 cuts invocation time to ~8 seconds.
 
 ## Example usage
 

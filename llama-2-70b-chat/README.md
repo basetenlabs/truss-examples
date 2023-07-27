@@ -33,7 +33,13 @@ Once you have LLaMA access:
 
 ## Deployment
 
-In an iPython notebook, run the following script to deploy Llama-2-chat 70B to your Baseten account:
+First, clone this repository:
+
+```
+git clone https://github.com/basetenlabs/truss-examples/
+```
+
+Then, in an iPython notebook, run the following script to deploy Llama-2-chat 70B to your Baseten account:
 
 ```python
 import baseten
