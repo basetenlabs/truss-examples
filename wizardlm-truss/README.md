@@ -32,6 +32,8 @@ Deploying the Truss is easy; simply load it and push from a Python script:
 import baseten
 import truss
 
+# baseten.login("MY_API_KEY") 
+
 wizardlm_truss = truss.load('.')
 baseten.deploy(wizardlm_truss)
 ```
