@@ -45,8 +45,6 @@ class Model:
         use_refiner = model_input.pop("use_refiner", False)
         batch_size = model_input.pop("batch_size", 4)
 
-
-
         images = self.pipe(prompt=[prompt] * batch_size, num_inference_steps=25).images # note: you can decrease num steps if using refiner
 
         negative_prompt = "ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off"
