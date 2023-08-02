@@ -45,9 +45,15 @@ class Model:
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
         use_refiner = model_input.pop("use_refiner", False)
-        image = self.pipe(prompt=prompt, output_type="latent" if use_refiner else "pil").images[0]
+
+        images = self.pipe(prompt=[prompt] * 4, num_inference_steps=25).images # note: you can decrease num steps if using refiner
+
+        negative_prompt = "ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, bad anatomy, watermark, signature, cut off"
+
         if use_refiner:
-            image = self.refiner(prompt=prompt, image=image[None, :]).images[0]
-        b64_results = self.convert_to_b64(image)
+            images = self.refiner(prompt=[prompt] * 4, negative_prompt=[negative_prompt] * 4, image=images).images # this is a list
+                
+        
+        b64_results = [self.convert_to_b64(image) for image in images]
 
         return {"status": "success", "data": b64_results, "message": None}
