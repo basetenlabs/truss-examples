@@ -21,7 +21,7 @@ model_type: custom
 python_version: py39
 requirements:
 - torch>=2
-- audiocraft
+- git+https://github.com/facebookresearch/audiocraft.git
 - torchaudio
 resources:
   cpu: "3"
