@@ -16,7 +16,7 @@ model_metadata:
   - text-to-music
   example_model_input: { "prompts": ['dog barking', 'sirene of an emergency vehicle', 'footsteps in a corridor'], "duration": 8 }
 model_module_dir: model
-model_name: AudioGen large
+model_name: AudioGen medium
 model_type: custom
 python_version: py39
 requirements:
