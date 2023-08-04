@@ -1,0 +1,42 @@
+environment_variables: {}
+external_data:
+- backend: http_public
+  local_data_path: models/inswapper.onnx
+  url: https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx
+external_package_dirs: []
+model_metadata: {}
+model_name: roop
+python_version: py311
+requirements:
+- pillow>=9.5.0
+- protobuf>=4.23.2
+- addict
+- future
+- lmdb
+- numpy
+- opencv-python
+- Pillow
+- pyyaml
+- requests
+- scikit-image
+- scipy
+- tb-nightly
+- torch>=1.7.1
+- torchvision
+- tqdm
+- yapf
+- lpips
+- insightface>=0.7.3
+- onnxruntime
+- diffusers
+- transformers
+- accelerate
+# - codeformer-pip
+resources:
+  accelerator: A10G
+  cpu: 500m
+  memory: 20Gi
+  use_gpu: true
+secrets: {}
+system_packages: 
+- ffmpeg
