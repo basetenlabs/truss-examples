@@ -1,0 +1,18 @@
+build:
+  arguments:
+    model_id: meta-llama/Llama-2-7b-chat-hf
+  model_server: TGI
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: breh
+python_version: py311
+requirements: []
+resources:
+  accelerator: T4:4
+  cpu: '4'
+  memory: 16Gi
+  use_gpu: true
+secrets:
+- wow
+system_packages: []

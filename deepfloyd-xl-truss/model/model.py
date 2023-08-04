@@ -24,7 +24,7 @@ class Model:
         self._config = config
         self._secrets = secrets
         self.model_id = "DeepFloyd/IF-I-XL-v1.0"
-        self.hf_token = self._secrets["hf_api_key"]
+        self.hf_access_token = self._secrets["hf_access_token"]
         self.generator = None
         self.text_encoder = None
         self.first_stage = None
@@ -33,7 +33,7 @@ class Model:
         self.upscaler = None
     
     def login(self):
-        huggingface_hub.login(self.hf_token)
+        huggingface_hub.login(self.hf_access_token)
 
     def flush(self):
         """

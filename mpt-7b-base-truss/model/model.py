@@ -7,10 +7,10 @@ class Model:
     def __init__(self, **kwargs) -> None:
 
         # Model name (uncomment/ comment for the different MPT flavors)
-        self.model_name = 'mosaicml/mpt-7b'
+        #self.model_name = 'mosaicml/mpt-7b'
         #self.model_name = 'mosaicml/mpt-7b-instruct'
         #self.model_name = 'mosaicml/mpt-7b-storywriter'
-        #self.model_name = 'mosaicml/mpt-7b-chat'
+        self.model_name = 'mosaicml/mpt-7b-chat'
 
         # Device
         self.device='cuda:0'

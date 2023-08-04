@@ -26,7 +26,7 @@ resources:
   cpu: "3"
   memory: 50Gi
   use_gpu: true
-  accelerator: T4
+  accelerator: A10G
 secrets: {}
 spec_version: '2.0'
 system_packages: []

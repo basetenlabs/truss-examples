@@ -15,7 +15,7 @@ class Model:
 
     def load(self):
         # Load model here and assign to self._model.
-        base_model = "TheBloke/wizardLM-7B-HF"
+        base_model = "ehartford/WizardLM-13B-Uncensored"
         tokenizer = LlamaTokenizer.from_pretrained(base_model)
         model = LlamaForCausalLM.from_pretrained(
             base_model,

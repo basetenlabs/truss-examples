@@ -14,7 +14,7 @@ class Model:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = None
         self.pipeline = None
-        self.hf_token = kwargs["secrets"]["hf_token"]
+        self.hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -43,7 +43,7 @@ class Model:
     def load(self):        
         self.model = LlamaForCausalLM.from_pretrained(
             CHECKPOINT,
-            use_auth_token=self.hf_token,
+            use_auth_token=self.hf_access_token,
             torch_dtype=torch.float16,
             device_map="auto")
 
@@ -51,7 +51,7 @@ class Model:
             CHECKPOINT,
             device_map="auto",
             torch_dtype=torch.float16,
-            use_auth_token=self.hf_token)
+            use_auth_token=self.hf_access_token)
 
     def stream_model(self, request: Dict):
         streamer = TextIteratorStreamer(self.tokenizer)

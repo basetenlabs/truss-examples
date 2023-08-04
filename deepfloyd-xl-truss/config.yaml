@@ -32,6 +32,6 @@ resources:
   use_gpu: true
   accelerator: A10G
 secrets:
-  hf_api_key: "ENTER HF API KEY HERE"
+  hf_access_token: "ENTER HF API KEY HERE"
 system_packages: []
 spec_version: 2.0

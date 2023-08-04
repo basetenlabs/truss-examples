@@ -12,7 +12,7 @@ class Model:
         self._data_dir = data_dir
         self._config = config
         self._secrets = secrets
-        self._hf_api_key = secrets["hf_api_key"]
+        self.hf_access_token = secrets["hf_access_token"]
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self._tokenizer = None
         self._model = None
@@ -21,11 +21,11 @@ class Model:
         patch()
         self._tokenizer = AutoTokenizer.from_pretrained(
             CHECKPOINT,
-            use_auth_token=self._hf_api_key
+            use_auth_token=self.hf_access_token
         )
         self._model = AutoModelForCausalLM.from_pretrained(
             CHECKPOINT,
-            use_auth_token=self._hf_api_key,
+            use_auth_token=self.hf_access_token,
             device_map="auto",
             offload_folder="offload"
         )

@@ -23,6 +23,6 @@ resources:
   use_gpu: true
   accelerator: "A100:1"
 secrets:
-  hf_api_key: null
+  hf_access_token: null
 system_packages: []
 spec_version: 2.0
