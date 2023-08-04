@@ -5,14 +5,14 @@ build:
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: breh
+model_name: Llama 7B Chat TGI
 python_version: py311
 requirements: []
 resources:
-  accelerator: T4:4
+  accelerator: A100
   cpu: '4'
   memory: 16Gi
   use_gpu: true
 secrets:
-- wow
+  hf_access_token: null
 system_packages: []
