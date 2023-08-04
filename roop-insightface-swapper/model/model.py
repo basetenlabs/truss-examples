@@ -30,8 +30,6 @@ class Model:
     def load(self):
         self.pipe = StableDiffusionPipeline.from_pretrained(
             SD_BASE_MODEL_CHECKPOINT,
-            width=768,
-            height=768,
             torch_dtype=torch.float16
         ).to("cuda")
         
@@ -42,6 +40,9 @@ class Model:
         negative_prompt = model_input.get("negative_prompt", "")
         source_img = model_input.get("source_img")
 
+        height = model_input.get("height", 512)
+        width = model_input.get("width", 512)
+
         print(source_img)
 
         # Convert base64 image to PIL image
@@ -49,7 +50,9 @@ class Model:
 
         base_image = self.pipe(
             prompt,
-            negative_prompt = negative_prompt
+            negative_prompt = negative_prompt,
+            height = height,
+            width = width,
         ).images[0]
         
         result_image = swapper.process([source_img], base_image, "-1", "-1", self.swapper)
