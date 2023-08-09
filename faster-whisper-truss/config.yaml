@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Faster Whisper
+python_version: py39
+requirements:
+- faster-whisper
+resources:
+  accelerator: A10G
+  cpu: 500m
+  memory: 512Mi
+  use_gpu: true
+secrets: {}
+system_packages: []
