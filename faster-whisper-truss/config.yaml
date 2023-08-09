@@ -3,6 +3,8 @@ external_package_dirs: []
 model_metadata: {}
 model_name: Faster Whisper
 python_version: py39
+hf_cache:
+- repo_id: guillaumekln/faster-whisper-large-v2
 requirements:
 - faster-whisper
 resources:
