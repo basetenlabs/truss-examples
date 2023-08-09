@@ -11,6 +11,7 @@ model_metadata:
   pretty_name: Whisper
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png
+  example_model_input: {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
   tags:
   - speech-recognition
 model_module_dir: model
