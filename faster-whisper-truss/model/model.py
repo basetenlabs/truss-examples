@@ -39,7 +39,10 @@ class Model:
                         "end": seg.end
                     }
                 )
+        
         return {
-            "info": info,
-            "result_segments": result_segments,
+            "language": info.language,
+            "language_probability": info.language_probability,
+            "duration": info.duration,
+            "segments": result_segments,
         }
