@@ -1,89 +1,64 @@
-# Stable Diffusion XL Truss
+# Stable Diffusion XL Truss with Stream
 
-Stable Diffusion XL 1.0 is the largest, most capable open-source image generation model of its kind. This README covers deploying and invoking this model.
+Refer to the [README for SDXL](../stable-diffusion-xl-1.0/README.md) for full model deatils
 
-This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
+This truss adds streaming functionality for latent outputs.
 
-## Setup
-
-[Sign up](https://app.baseten.co/signup) or [sign in](https://app.baseten.co/login/) to your Baseten account and create an [API key](https://app.baseten.co/settings/account/api_keys).
-
-Then run:
-
+## Deploying
 ```
-pip install --upgrade baseten
-baseten login
+truss push --publish
 ```
 
-Paste your API key when prompted.
+# Example client code
 
-## Deployment
-
-First, clone this repository:
+You can use the following code from a Jupyter notebook to stream the images
 
 ```
-git clone https://github.com/basetenlabs/truss-examples/
-```
-
-Then, in an iPython notebook, run the following script to deploy SDXL to your Baseten account:
-
-```python
-import baseten
-import truss
-
-sdxl = truss.load("truss-examples/stable-diffusion-xl-1.0")
-baseten.deploy(
-  sdxl,
-  model_name="Stable Diffusion XL 1.0"
-)
-```
-
-Once your Truss is deployed, you can start using SDXL through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
-
-### Hardware notes
-
-Model inference runs well on an A10 with 24 GB of VRAM, with invocation time averaging ~16 seconds. If speed is essential, running inference on an A100 cuts invocation time to ~8 seconds.
-
-## Example usage
-
-You can use the `baseten` model package to invoke your model from Python
-
-```python
-import baseten
-
-# You can retrieve your deployed model version ID from the UI
-model = baseten.deployed_model_version_id('MODEL_VERSION_ID')
-
-request = {
-    "prompt": "A tree in a field under the night sky",
-    "use_refiner": True
-}
-
-response = model.predict(request)
-```
-
-The output will be a dictionary with a key `data` mapping to a base64 encoded image. You can save the image with the following snippet:
-
-```python
+%matplotlib inline
+import matplotlib.pyplot as plt
+from IPython import display
 import base64
+from io import BytesIO
 
-img=base64.b64decode(response["data"])
+from PIL import Image
+import numpy as np
+import requests
 
-img_file = open('image.jpeg', 'wb')
-img_file.write(img)
-img_file.close()
+MODEL_VERSION_ID = "TAKEN FROM BASETEN"
+
+
+response = requests.request(
+    "post",
+    f"https://app.baseten.co/model_versions/{MODEL_VERSION_ID}/predict",
+    headers=headers,
+    stream=True,
+    json={"prompt": "Child running on the moon"}
+)
+
+consume = None
+if response.headers.get("transfer-encoding") == "chunked":
+    def decode_content():
+        for chunk in response.iter_content(chunk_size=8192, decode_unicode=True):
+            yield chunk.decode(response.encoding or "utf-8")
+
+    consume = decode_content()
+
+curr_img_data = ""
+for base64_data in consume:
+    curr_img_data += base64_data
+    if "\n" in curr_img_data:
+        curr_img_data, left_over = curr_img_data.split("\n")
+        print(len(curr_img_data))
+        decoded_info = base64.b64decode(curr_img_data)
+        pil_img = Image.open(BytesIO(decoded_info))
+        plt.imshow(np.asarray(pil_img))
+        plt.show()
+        curr_img_data = left_over
+
+if curr_img_data:
+    decoded_info = base64.b64decode(curr_img_data)
+    pil_img = Image.open(BytesIO(decoded_info))
+    plt.imshow(np.asarray(pil_img))
+    plt.show()
+
 ```
-
-You can also invoke your model via a REST API:
-
-```
-curl -X POST "https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{
-           "prompt": "A tree in a field under the night sky",
-           "use_refiner": True
-         }'
-```
-
-Again, the model will return a dictionary containing the base64-encoded image, which will need to be decoded and saved.

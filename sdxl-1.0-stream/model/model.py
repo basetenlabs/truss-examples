@@ -73,12 +73,11 @@ class Model:
         )
         thread.start()
         def inner_cosumer():
-            import time
             while True:
-                time.sleep(.1)
                 next_item = q.get(True, timeout=300) # Blocks until an input is available
                 if next_item is job_done:
                     break
+                logging.warn(len(next_item))
                 yield next_item
             
         return inner_cosumer()
