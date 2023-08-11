@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 from threading import Thread
 from queue import Queue
-
+import logging
 
 
 class Model:
@@ -47,36 +47,36 @@ class Model:
         use_refiner = model_input.pop("use_refiner", False)
         vae = self.pipe.vae
         
-        
         q = Queue() # `latents_callback`` produces, the `inner_cosumer`` consumes
         job_done = object() # signals the processing is done
     
         def latents_callback(i, t, latents):
-            latents = 1 / 0.18215 * latents
-            image = vae.decode(latents).sample[0]
-            image = (image / 2 + 0.5).clamp(0, 1)
-            numpy_image = image.cpu().permute(1, 2, 0).numpy()
-            PIL_image = Image.fromarray(np.uint8(numpy_image)).convert('RGB')
-            b64_img = self.convert_to_b64(PIL_image)
-            q.put(b64_img)
+            outputRs = latents.permute(0, 2, 3, 1)
+            k = outputRs.cpu().detach().numpy()
+            size = latents.shape[0]
+            res = k[0]
+            image = Image.fromarray(np.uint8(res)).convert('RGB')
+            b64_img = self.convert_to_b64(image)
+            q.put(b64_img + "\n")
         
         def generation_task():
-            image = self.pipe(prompt=prompt, output_type="latent" if use_refiner else "pil", callback=latents_callback, callback_steps=5).images[0]
+            image = self.pipe(prompt=prompt, output_type="latent" if use_refiner else "pil", callback=latents_callback, callback_steps=15).images[0]
             
             if use_refiner:
                 image = self.refiner(prompt=prompt, image=image[None, :]).images[0]
-            q.put(self.convert_to_b64(image))
+            final_image = self.convert_to_b64(image)
+            q.put(final_image + "\n")
             q.put(job_done)
-        
-        
         
         thread = Thread(
             target=generation_task,
         )
         thread.start()
         def inner_cosumer():
+            import time
             while True:
-                next_item = q.get(True, 300) # Blocks until an input is available
+                time.sleep(.1)
+                next_item = q.get(True, timeout=300) # Blocks until an input is available
                 if next_item is job_done:
                     break
                 yield next_item
