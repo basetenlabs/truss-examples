@@ -24,14 +24,10 @@ from PIL import Image
 import numpy as np
 import requests
 
-MODEL_VERSION_ID = "TAKEN FROM BASETEN"
-
-
 response = requests.request(
     "post",
-    f"https://app.baseten.co/model_versions/{MODEL_VERSION_ID}/predict",
-    headers=headers,
-    stream=True,
+    "https://app.baseten.co/model_versions/MODEL_VERSION_ID/predict",
+    headers=headers, stream=True,
     json={"prompt": "Child running on the moon"}
 )
 
@@ -48,7 +44,6 @@ for base64_data in consume:
     curr_img_data += base64_data
     if "\n" in curr_img_data:
         curr_img_data, left_over = curr_img_data.split("\n")
-        print(len(curr_img_data))
         decoded_info = base64.b64decode(curr_img_data)
         pil_img = Image.open(BytesIO(decoded_info))
         plt.imshow(np.asarray(pil_img))

@@ -72,13 +72,16 @@ class Model:
             target=generation_task,
         )
         thread.start()
-        def inner_cosumer():
+        def inner_consumer():
+            import time
             while True:
+                time.sleep(0.005)
                 next_item = q.get(True, timeout=300) # Blocks until an input is available
                 if next_item is job_done:
                     break
                 logging.warn(len(next_item))
                 yield next_item
+            thread.join()
             
-        return inner_cosumer()
+        return inner_consumer()
     
