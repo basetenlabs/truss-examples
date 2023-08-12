@@ -13,10 +13,11 @@ model_framework: custom
 model_type: custom
 python_version: py39
 requirements:
-- transformers
-- accelerate
+- transformers==4.31.0
+- xformers==0.0.20
 - safetensors
-- diffusers
+- accelerate
+- diffusers==0.19.3
 - invisible-watermark>=0.2.0
 resources:
   accelerator: A10G
