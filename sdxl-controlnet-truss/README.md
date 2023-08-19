@@ -45,21 +45,47 @@ The model takes a JSON payload with two fields:
 
 It returns a JSON object with the `result` field containing the generated image.
 
-Example request:
+Here is an example usage section similar to what you provided:
 
-```json
-{
+## Example Usage
+
+You can invoke the SDXL + ControlNet model from Python using the `baseten` SDK:
+
+```python
+import baseten
+
+model = baseten.deployed_model_version("MODEL_VERSION_ID") # you can get this from the Baseten web UI
+
+image = open("cat_edges.png", "rb").read()
+image_b64 = base64.b64encode(image).decode("utf-8")
+
+request = {
   "prompt": "A painting of a cat",
-  "image": "data:image/png;base64,iVBORw0KGgo...rest of base64..."
+  "image": "data:image/png;base64," + image_b64
 }
+
+response = model.predict(request)
 ```
 
-Example response:
+The response will contain a base64 encoded image that you can save:
 
-```json
-{
-  "result": "data:image/png;base64,..." // generated image
-}
+```python
+import base64
+
+img = base64.b64decode(response["data"])
+
+with open("generated.png", "wb") as f:
+  f.write(img)
 ```
 
-Try it out with your own images or logos!
+You can also invoke the model via REST API:
+
+```bash
+curl -X POST "https://app.baseten.co/model_versions/VERSION_ID/predict" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Api-Key {API_KEY}" \
+     -d '{"prompt": "A painting of a cat",
+           "image": "data:image/png;base64,..."}'
+```
+
+The API will return a JSON response containing the generated image encoded in base64.
