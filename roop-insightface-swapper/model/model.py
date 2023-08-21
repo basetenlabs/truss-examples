@@ -26,6 +26,7 @@ class Model:
         self._data_dir = kwargs["data_dir"]
         self.pipe = None
         self.swapper = None
+        self.codeformer = None
 
     def load(self):
         self.pipe = StableDiffusionPipeline.from_pretrained(
@@ -34,6 +35,7 @@ class Model:
         ).to("cuda")
         
         self.swapper = swapper.getFaceSwapModel(f"{str(self._data_dir)}/models/inswapper.onnx")
+        # self.codeformer = CodeFormer().cuda()
 
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.get("prompt")
