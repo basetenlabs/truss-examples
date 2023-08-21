@@ -2,8 +2,6 @@
 
 This Truss uses Stable Diffusion XL and ControlNet to generate images guided by input image edges. The inputs are a prompt and an image. A Canny filter is applied to the image to generate a outline, which is then passed to SDXL with the prompt.
 
-The model is optimized for generating creative, high-fidelity images matching the input.
-
 ![baseten_controlnet](baseten-logo.gif)
 
 ## Deploying the Truss
@@ -22,7 +20,7 @@ pip install baseten
 
 ```python
 import truss
-truss = truss.load(".")
+truss = truss.load("/path/to/sdxl_controlnet_truss")
 ```
 
 4. Log in to Baseten and deploy:
@@ -45,8 +43,6 @@ The model takes a JSON payload with two fields:
 
 It returns a JSON object with the `result` field containing the generated image.
 
-Here is an example usage section similar to what you provided:
-
 ## Example Usage
 
 You can invoke the SDXL + ControlNet model from Python using the `baseten` SDK:
@@ -56,7 +52,7 @@ import baseten
 
 model = baseten.deployed_model_version("MODEL_VERSION_ID") # you can get this from the Baseten web UI
 
-image = open("cat_edges.png", "rb").read()
+image = open("cat.png", "rb").read()
 image_b64 = base64.b64encode(image).decode("utf-8")
 
 request = {
