@@ -1,62 +1,49 @@
-from io import BytesIO
-from typing import Dict, List
-
-import clip
-import numpy as np
 import requests
-import torch
+from typing import Dict
 from PIL import Image
+from transformers import CLIPProcessor, CLIPModel
 
-
-DEFAULT_CLIP_MODEL = "ViT-B/32"
+CHECKPOINT = "openai/clip-vit-base-patch32"
 
 
 class Model:
+    """
+    This is simple example of using CLIP to classify images.
+    It outputs the probability of the image being a cat or a dog.
+    """
     def __init__(self, **kwargs) -> None:
-        self._data_dir = kwargs["data_dir"]
-        self._config = kwargs["config"]
+        self._processor = None
         self._model = None
-        self._device = None
-        self._model_preprocesser = None
 
     def load(self):
-        self._device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self._model, self._model_preprocesser = clip.load(DEFAULT_CLIP_MODEL, device=self._device)
+        """
+        Loads the CLIP model and processor checkpoints.
+        """
+        self._model = CLIPModel.from_pretrained(CHECKPOINT)
+        self._processor = CLIPProcessor.from_pretrained(CHECKPOINT)
 
     def preprocess(self, request: Dict) -> Dict:
-        self._map_image_url_to_array(request)
-        return request
-
-    def postprocess(self, request: Dict) -> Dict:
-        return request
-
-    def predict(self, request: Dict) -> Dict[str, List]:
-        try:
-            return {
-                "status": "success", "data": self._predict_single(request), "message": None
-            }
-        except Exception as exc:
-            return {"status": "error", "data": None, "message": str(exc)}
-
-    def _predict_single(self, request: Dict):
-        image = (
-            self._model_preprocesser(
-                Image.fromarray(np.array(request["image"], ndmin=3, dtype=np.dtype("uint8")))
-            )
-            .unsqueeze(0)
-            .to(self._device)
+        """"
+        This method downloads the image from the url and preprocesses it.
+        The preprocess method is used for any logic that involves IO, in this
+        case downloading the image. It is called before the predict method
+        in a separate thread and is not subject to the same concurrency
+        limits as the predict method, so can be called many times in parallel.
+        """
+        image = Image.open(requests.get(request.pop("url"), stream=True).raw)
+        request["inputs"] = self._processor(
+            text=["a photo of a cat", "a photo of a dog"],
+            images=image,
+            return_tensors="pt",
+            padding=True
         )
-        text = clip.tokenize(request["labels"]).to(self._device)
-        with torch.no_grad():
-            self._model.encode_image(image)
-            self._model.encode_text(text)
-            logits_per_image, logits_per_text = self._model(image, text)
-            [probs] = logits_per_image.softmax(dim=-1).cpu().numpy()
-            return {"predictions": [dict(zip(request["labels"], probs))]}
+        return request
 
-    def _map_image_url_to_array(self, request: Dict) -> Dict:
-        if "image" not in request and "image_url" in request:
-            image_url = request["image_url"]
-            response = requests.get(image_url)
-            image = Image.open(BytesIO(response.content))
-            request["image"] = np.asarray(image)
+    def predict(self, request: Dict) -> Dict:
+        """
+        This performs the actual classification. The predict method is subject to
+        the predict concurrency constraints.
+        """
+        outputs = self._model(**request["inputs"])
+        logits_per_image = outputs.logits_per_image
+        return logits_per_image.softmax(dim=1).tolist()
