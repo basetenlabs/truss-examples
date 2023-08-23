@@ -1,29 +1,34 @@
-from typing import Any
-
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, AutoencoderKL, DPMSolverMultistepScheduler
 import torch
 import base64
-from io import BytesIO
 from PIL import Image
+from io import BytesIO
+from typing import Any
 
-
-
+torch.backends.cuda.matmul.allow_tf32 = True
 
 class Model:
-    def __init__(self, **kwargs) -> None:
-        self._data_dir = kwargs["data_dir"]
-        self._config = kwargs["config"]
-        self._secrets = kwargs["secrets"]
-        self.pipe = None
+    def __init__(self, **kwargs):
+        self._model = None
 
     def load(self):
-        # Load model here and assign to self._model.
-        
-        self.pipe = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, variant="fp16", use_safetensors=True
+        vae = AutoencoderKL.from_pretrained(
+            "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
         )
-        self.pipe.to("cuda")
-    
+        self.pipe = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            vae=vae,
+            torch_dtype=torch.float16,
+            variant="fp16",
+            use_safetensors=True,
+        )         
+
+        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
+        
+        self.pipe.unet.to(memory_format=torch.channels_last)
+        self.pipe.to('cuda')
+        self.pipe.enable_xformers_memory_efficient_attention()
+
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=self.pipe.text_encoder_2,
@@ -33,8 +38,7 @@ class Model:
             variant="fp16",
         )
         self.refiner.to("cuda")
-
-
+        self.refiner.enable_xformers_memory_efficient_attention()
 
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
@@ -44,20 +48,24 @@ class Model:
     
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
-        use_refiner = model_input.pop("use_refiner", False)
+        use_refiner = model_input.pop("use_refiner", True)
         num_inference_steps = model_input.pop("num_inference_steps", 30)
         denoising_frac = model_input.pop("denoising_frac", 0.8)
+        end_cfg_frac = model_input.pop("end_cfg_frac", 0.4)
+        guidance_scale = model_input.pop("guidance_scale", 5.0)
 
-        image = self.pipe(prompt=prompt, 
+        image = self.pipe(prompt=prompt,
+                          end_cfg = end_cfg_frac,
                           num_inference_steps=num_inference_steps,
                           denoising_end=denoising_frac, 
+                          guidance_scale=guidance_scale,
                           output_type="latent" if use_refiner else "pil").images[0]
         if use_refiner:
-            image = self.refiner(prompt=prompt, 
+            image = self.refiner(prompt=prompt,
+                                 end_cfg = end_cfg_frac, 
                                  num_inference_steps=num_inference_steps, 
                                  denoising_start=denoising_frac,
                                  image=image[None, :]).images[0]
         b64_results = self.convert_to_b64(image)
 
         return {"status": "success", "data": b64_results, "message": None}
-
