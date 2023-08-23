@@ -45,9 +45,19 @@ class Model:
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
         use_refiner = model_input.pop("use_refiner", False)
-        image = self.pipe(prompt=prompt, output_type="latent" if use_refiner else "pil").images[0]
+        num_inference_steps = model_input.pop("num_inference_steps", 30)
+        denoising_frac = model_input.pop("denoising_frac", 0.8)
+
+        image = self.pipe(prompt=prompt, 
+                          num_inference_steps=num_inference_steps,
+                          denoising_end=denoising_frac, 
+                          output_type="latent" if use_refiner else "pil").images[0]
         if use_refiner:
-            image = self.refiner(prompt=prompt, image=image[None, :]).images[0]
+            image = self.refiner(prompt=prompt, 
+                                 num_inference_steps=num_inference_steps, 
+                                 denoising_start=denoising_frac,
+                                 image=image[None, :]).images[0]
         b64_results = self.convert_to_b64(image)
 
         return {"status": "success", "data": b64_results, "message": None}
+
