@@ -12,12 +12,13 @@ model_name: Stable Diffusion XL
 model_framework: custom
 model_type: custom
 python_version: py39
-requirements:
+requirements: 
 - transformers
 - accelerate
 - safetensors
-- diffusers
+- git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
 - invisible-watermark>=0.2.0
+- xformers
 resources:
   accelerator: A10G
   cpu: 3500m
