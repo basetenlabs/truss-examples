@@ -23,8 +23,6 @@ class Model:
             use_safetensors=True,
         )         
 
-        # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
-        
         self.pipe.unet.to(memory_format=torch.channels_last)
         self.pipe.to('cuda')
         self.pipe.enable_xformers_memory_efficient_attention()
