@@ -31,6 +31,8 @@ class Model:
 
         self.pipe.unet.to(memory_format=torch.channels_last)
         self.pipe.to('cuda')
+
+        # if you are using a LoRA, comment out anything related to xformers
         self.pipe.enable_xformers_memory_efficient_attention()
 
         self.refiner = DiffusionPipeline.from_pretrained(
