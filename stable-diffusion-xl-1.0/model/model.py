@@ -65,6 +65,7 @@ class Model:
                           guidance_scale=guidance_scale,
                           output_type="latent" if use_refiner else "pil").images[0]
         if use_refiner:
+            self.refiner.scheduler = self.pipe.scheduler
             image = self.refiner(prompt=prompt,
                                  end_cfg = end_cfg_frac, 
                                  num_inference_steps=num_inference_steps, 
