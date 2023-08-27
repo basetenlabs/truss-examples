@@ -19,6 +19,23 @@ requirements:
 - git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
 - invisible-watermark>=0.2.0
 - xformers
+# Caching the model will take about 10 minutes initially but you will get ~9s cold starts
+# If you don't want to cache the model, comment out the hf_cache key and its subchildren.
+hf_cache:
+  - repo_id: madebyollin/sdxl-vae-fp16-fix
+    allow_patterns:
+      - config.json
+      - diffusion_pytorch_model.safetensors
+  - repo_id: stabilityai/stable-diffusion-xl-base-1.0
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - sd_xl_base_1.0.safetensors
+  - repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - sd_xl_refiner_1.0.safetensors
 resources:
   accelerator: A10G
   cpu: 3500m
