@@ -20,18 +20,17 @@ model_name: LLaMA 2 70B Chat
 model_type: custom
 python_version: py38
 requirements:
-- torch
-- peft
-- sentencepiece
-- accelerate
-- bitsandbytes
-- einops
-- git+https://github.com/huggingface/transformers.git
-- faker
-- math0
-- safetensors
-- scipy
-- protobuf==3.20.*
+- accelerate==0.22.0
+- bitsandbytes==0.41.1
+- einops==0.6.1
+- faker==19.3.1
+- peft==0.5.0
+- protobuf==3.20.3
+- safetensors==0.3.3
+- scipy==1.10.1
+- sentencepiece==0.1.99
+- torch==2.0.1
+- transformers==4.32.1
 resources:
   cpu: "3"
   memory: 14Gi
