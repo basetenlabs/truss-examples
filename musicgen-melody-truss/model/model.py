@@ -7,13 +7,12 @@ import soundfile as sf
 from audiocraft.data.audio import audio_write
 from audiocraft.models import MusicGen
 
-MODEL_SIZE = "large"
 TARGET_SAMPLE_RATE = 32000
 TARGET_AUDIO_CHANNELS = 1
 
 class Model:
     def load(self):
-        self.model = MusicGen.get_pretrained(MODEL_SIZE, device="cuda")
+        self.model = MusicGen.get_pretrained("melody", device="cuda")
 
     def _decode_base64_to_wav(self, base64_string):
         """Decode a base64 string to a waveform."""
