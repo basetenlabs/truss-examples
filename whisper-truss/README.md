@@ -13,39 +13,41 @@ Whisper's leap in transcription quality unlocks tons of compelling use cases, in
 
 ## Deploying Whisper
 
-To deploy the Whisper Truss, you'll need to follow these steps:
+Before deployment:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
+With `whisper-truss` as your working directory, you can deploy the model with:
+
 ```
-pip install --upgrade baseten truss
-```
-
-3. __Load the Whisper Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
-
-whisper_truss = truss.load("path/to/whisper_truss")
+truss push
 ```
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+## Invoking Whisper
+
+Once the model is deployed, you can invoke it with:
+
+```sh
+truss predict -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}'
 ```
-import baseten
 
-baseten.login("PASTE_API_KEY_HERE")
+You can also invoke your Whisper deployment via its REST API endpoint:
+
+```bash
+curl -X POST "https://app.baseten.co/models/{MODEL_ID}/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
+     -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}'
 ```
 
-5. __Deploy the Whisper Truss__: Deploy the Whisper Truss to Baseten with the following command:
-```
-baseten.deploy(whisper_truss)
-```
+### Whisper API documentation
 
-Once your Truss is deployed, you can start using the Whisper model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
-
-## Whisper API documentation
-
-### Input
+#### Input
 
 This deployment of Whisper takes input as a JSON dictionary with the key `url` corresponding to a string of a URL pointing at an MP3 file. For example:
 
@@ -55,7 +57,7 @@ This deployment of Whisper takes input as a JSON dictionary with the key `url` c
 }
 ```
 
-### Output
+#### Output
 
 The model returns a fairly lengthy dictionary. For most uses, you'll be interested in the key `language` which specifies the detected language of the audio and `text` which contains the full transcription.
 
@@ -76,15 +78,4 @@ The model returns a fairly lengthy dictionary. For most uses, you'll be interest
     ],
     "text": " Four score and seven years ago, our fathers brought forth upon this continent..."
 }
-```
-
-## Example usage
-
-You can invoke your Whisper deployment via its REST API endpoint:
-
-```bash
-curl -X POST "https://app.baseten.co/models/{MODEL_ID}/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}'
 ```
