@@ -8,6 +8,30 @@ Utilizing this model for inference can be challenging given the hardware require
 
 ## Deploying Falcon-7B
 
+First, clone this repository:
+
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd falcon-7b-truss
+```
+
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `falcon-7b-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+### Hardware notes
+
 We found this model runs reasonably fast on A10Gs; you can configure the hardware you'd like in the config.yaml.
 
 ```yaml
@@ -18,22 +42,6 @@ resources:
   use_gpu: true
   accelerator: A10G
 ...
-```
-
-Before deployment:
-
-1. Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-2. Install Truss and the Baseten Python client: `pip install --upgrade baseten truss`
-3. Authenticate your development environment with `baseten login`
-
-Deploying the Truss is easy; simply load it and push from a Python script:
-
-```python
-import baseten
-import truss
-
-falcon_truss = truss.load('.')
-baseten.deploy(falcon_truss)
 ```
 
 ## Invoking Falcon-7B
@@ -51,10 +59,8 @@ Note that we recommend setting `do_sample` to `True` for best results, and
 increasing the `max_new_tokens` parameter to 200-300.
 
 
-```python
-import baseten
-model = baseten.deployed_model_id('YOUR MODEL ID')
-model.predict({"prompt": "Write a movie plot about falcons planning to over the world", "do_sample": True, "max_new_tokens": 300})
+```sh
+truss predict -d '{"prompt": "Write a movie plot about falcons planning to over the world", "do_sample": True, "max_new_tokens": 300}'
 ```
 
 You can also invoke your model via a REST API

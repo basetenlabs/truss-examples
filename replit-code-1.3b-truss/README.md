@@ -6,6 +6,30 @@ Replit Code 1.3B is an LLM released by Replit, optimized and trained for generat
 
 ## Deploying Replit Code 1.3B
 
+First, clone this repository:
+
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd replit-code-1.3b-truss
+```
+
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `replit-code-1.3b-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+### Hardware notes
+
 We found this model runs reasonably fast on A10Gs; you can configure the hardware you'd like in the config.yaml.
 
 ```yaml
@@ -49,10 +73,8 @@ Note that we recommend setting `do_sample` to `True` for best results, and
 increasing the `max_new_tokens` parameter to 200-300.
 
 
-```python
-import baseten
-model = baseten.deployed_model_id('YOUR MODEL ID')
-model.predict({"prompt": "def fib(n):", "do_sample": True, "max_new_tokens": 300})
+```sh
+truss predict -d '{"prompt": "def fib(n):", "do_sample": True, "max_new_tokens": 300}'
 ```
 
 You can also invoke your model via a REST API

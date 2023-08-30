@@ -68,19 +68,27 @@ For the full APIs, see [InferenceInput](https://github.com/hmartiro/riffusion-in
 
 ## Deploy Riffusion to Baseten
 
-Invoking Riffusion requires a GPU, and deploying a model to Baseten with a GPU provisioned requires a paid workspace. If your workspace has GPU usage enabled, you can deploy Riffusion as follows:
+First, clone this repository:
 
-```python
-import baseten
-
-th = truss.from_directory("./riffusion/")
-baseten.login("YOUR-API-KEY")
-
-baseten.deploy(th, model_name="Riffusion")
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd riffusion-truss
 ```
 
+Before deployment:
 
-If your workspace isn't able to run Riffusion but you want to deploy the model, please [contact us](mailto:support@baseten.co) to get started upgrading.
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `riffusion-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Citation
 

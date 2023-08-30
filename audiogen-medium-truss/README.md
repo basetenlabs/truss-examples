@@ -4,9 +4,31 @@ This repository packages [AudioGen](https://github.com/facebookresearch/audiocra
 
 AudioGen is a simple and controllable model for audio generation developed by Facebook AI Research.
 
-Utilizing this model for inference can be challenging given the hardware requirements. With Baseten and Truss, inference is dead simple.
-
 ## Deploying AudioGen
+
+First, clone this repository:
+
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd audiogen-medium-truss
+```
+
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `audiogen-medium-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+### Hardware notes
 
 We found this model runs reasonably fast on A10Gs; you can configure the hardware you'd like in the config.yaml.
 
@@ -19,33 +41,21 @@ resources:
   accelerator: A10G
 ```
 
-Before deployment:
-
-1. Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-2. Install Truss and the Baseten Python client: `pip install --upgrade baseten truss`
-3. Authenticate your development environment with `baseten login`
-
-Deploying the Truss is easy; simply load it and push from a Python script:
-
-```python
-import baseten
-import truss
-
-audiogen_truss = truss.load('.')
-baseten.deploy(audiogen_truss)
-```
-
 ## Invoking AudioGen
 
 AudioGen takes a list of prompts and a duration in seconds. It will generate one clip per prompt and return each clip as a base64 encoded WAV file.
 
+```sh
+truss predict -d '{"prompts": ['dog barking', 'sirene of an emergency vehicle', 'footsteps in a corridor'], "duration": 8}'
+```
+
 ```python
-import baseten
 
-model = baseten.deployed_model_id("YOUR MODEL ID")
-model_output = model.predict({"prompts": ['dog barking', 'sirene of an emergency vehicle', 'footsteps in a corridor'], "duration": 8})
-
+import json
 import base64
+import os, sys
+
+model_output = json.loads(sys.stdin.read())
 
 for idx, clip in enumerate(model_output["data"]):
   with open(f"clip_{idx}.wav", "wb") as f:

@@ -8,34 +8,27 @@ Truss is an open-source model serving framework developed by Baseten. It allows 
 
 ## Deploying MPT-7B
 
-To deploy the MPT-7B Base Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd mpt-7b-base-truss
 ```
 
-3. __Load the MPT-7B Base Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
-mpt_truss = truss.load("path/to/mpt_truss")
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `mpt-7b-base-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
 ```
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+Paste your Baseten API key if prompted.
 
-baseten.login("PASTE_API_KEY_HERE")
-```
-
-5. __Deploy the MPT-7B Base Truss__: Deploy MPT-7B Base to Baseten with the following command:
-```
-baseten.deploy(mpt_truss)
-```
-
-Once your Truss is deployed, you can start using MPT-7B Base through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## MPT-7B API documentation
 This section provides an overview of the MPT-7B Base API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate text completions based on the provided parameters.
@@ -50,19 +43,11 @@ The predict route is the primary method for generating images based on a given s
 - __top_p__: (optional) Controls how the model picks from the top tokens based on the sum of their probabilities. 
 
 ## Example usage
+
 You can use the `baseten` model package to invoke your model from Python
-```
-import baseten
-# You can retrieve your deployed model ID from the UI
-model = baseten.deployed_model_version_id('YOUR_MODEL_ID')
 
-request = {
-    "prompt" : "Today I inspected the engine mounting equipment. I found a problem in one of the brackets so"
-    "temperature": 0.75,
-    "max_tokens": 200
-}
-
-response = model.predict(request)
+```sh
+truss predict -d '{"prompt" : "Today I inspected the engine mounting equipment. I found a problem in one of the brackets so"}'
 ```
 
 You can also invoke your model via a REST API

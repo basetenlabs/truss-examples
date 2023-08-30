@@ -6,24 +6,27 @@ This multimodal model takes an image of an invoice (PNG or JPEG) and extracts in
 
 ## Deploying LayoutLM Document QA
 
-To deploy, make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
+First, clone this repository:
 
-**Setup:**
-
-```
-pip install --upgrade baseten
-baseten login
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd layoutlm-document-qa-truss
 ```
 
-**Deployment:**
+Before deployment:
 
-```
-import baseten
-import truss
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-truss_handle = truss.load('layoutlm-document-qa-truss')
-baseten.deploy(truss_handle, model_name="LayoutLM Document QA")
+With `layoutlm-document-qa-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
 ```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Invoking LayoutLM Document QA
 
@@ -34,10 +37,8 @@ LayoutLM takes a dictionary with:
 
 Example invocation:
 
-```python
-import baseten
-model = baseten.deployed_model_id('YOUR MODEL ID')
-model.predict({'url': 'https://templates.invoicehome.com/invoice-template-us-neat-750px.png', 'prompt': 'What is the invoice number?'})
+```sh
+truss predict -d '{"url": "https://templates.invoicehome.com/invoice-template-us-neat-750px.png", "prompt": "What is the invoice number?"}'
 ```
 
 Expected response:
@@ -58,7 +59,7 @@ curl -X POST "https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
          }'
 ```
 
-## Hardware
+## Hardware notes
 
 We found this model runs reasonably fast with 4 vCPUs and 16 GiB of RAM, no GPU needed. Invocation times are usually <10 seconds for the first prompt on an image (to account for image download times) then <3 seconds thereafter.
 

@@ -22,35 +22,27 @@ Before deploying this model, you'll need to:
 
 ## Deploying DeepFloyd XL
 
-To deploy the DeepFloyd XL Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd deepfloyd-xl-truss
 ```
 
-3. __Load the DeepFloyd XL Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
+Before deployment:
 
-deepfloyd_truss = truss.load("path/to/deepfloyd_truss")
-```
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+With `deepfloyd-xl-truss` as your working directory, you can deploy the model with:
 
-baseten.login("PASTE_API_KEY_HERE")
+```sh
+truss push --trusted
 ```
 
-5. __Deploy the DeepFloyd XL Truss__: Deploy the DeepFloyd XL Truss to Baseten with the following command:
-```
-baseten.deploy(deepfloyd_truss)
-```
+Paste your Baseten API key if prompted.
 
-Once your Truss is deployed, you can start using the DeepFloyd XL model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## DeepFloyd API documentation
 
@@ -76,7 +68,13 @@ The result will be a dictionary containing:
 
 ## Example usage
 
+```sh
+truss predict -d '{"prompt": "man on moon"}'
 ```
+
+You can also invoke it via cURL:
+
+```sh
 curl -X POST https://app.baseten.co/models/EqwKvqa/predict \
   -H 'Authorization: Api-Key {YOUR_API_KEY}' \
   -d '{"prompt": "man on moon"}'

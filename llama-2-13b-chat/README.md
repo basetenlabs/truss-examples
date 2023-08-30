@@ -6,27 +6,14 @@ This is a [Truss](https://truss.baseten.co/) for Llama-2-chat 13B. Llama 2 is a 
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-## Setup
+### Get Llama 2 access
 
-[Sign up](https://app.baseten.co/signup) or [sign in](https://app.baseten.co/login/) to your Baseten account and create an [API key](https://app.baseten.co/settings/account/api_keys).
-
-Then run:
-
-```
-pip install --upgrade baseten
-baseten login
-```
-
-Paste your API key when prompted.
-
-### Get LLaMA-2 access
-
-LLaMA-2 currently requires approval to access. To request access:
+Llama 2 currently requires approval to access. To request access:
 
 1. Go to [https://ai.meta.com/resources/models-and-libraries/llama-downloads/](https://ai.meta.com/resources/models-and-libraries/llama-downloads/) and request access using the email associated with your HuggingFace account.
 2. Go to [https://huggingface.co/meta-llama/Llama-2-13B](https://huggingface.co/meta-llama/Llama-2-13B) and request access.
 
-Once you have LLaMA access:
+Once you have Llama 2 access:
 
 1. Create a [HuggingFace access token](https://huggingface.co/settings/tokens)
 2. Set it as a [secret in your Baseten account](https://app.baseten.co/settings/secrets) with the name `hf_access_token`
@@ -35,23 +22,25 @@ Once you have LLaMA access:
 
 First, clone this repository:
 
-```
+```sh
 git clone https://github.com/basetenlabs/truss-examples/
+cd llama-2-13b-chat
 ```
 
-Then, in an iPython notebook, run the following script to deploy Llama-2-chat 13B to your Baseten account:
+Before deployment:
 
-```python
-import baseten
-import truss
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-llama = truss.load("truss-examples/llama-2-13b-chat/")
-baseten.deploy(
-  llama,
-  model_name="Llama-2-chat 13B",
-  is_trusted=True
-)
+With `llama-2-13b-chat` as your working directory, you can deploy the model with:
+
+```sh
+truss push --trusted
 ```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 Once your Truss is deployed, you can start using the Llama-2-chat 13B model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
@@ -77,22 +66,8 @@ The API also supports passing any parameter supported by HuggingFace's `Transfor
 
 ## Example usage
 
-You can use the `baseten` model package to invoke your model from Python
-
-```python
-import baseten
-# You can retrieve your deployed model version ID from the Baseten UI
-model = baseten.deployed_model_version_id('YOUR_MODEL_ID')
-
-request = {
-    "prompt": "What's the meaning of life?",
-    "temperature": 0.1,
-    "top_p": 0.75,
-    "top_k": 40,
-    "num_beams": 4,
-}
-
-response = model.predict(request)
+```sh
+truss predict -d '{"prompt": "What is the meaning of life?"}'
 ```
 
 You can also invoke your model via a REST API:
