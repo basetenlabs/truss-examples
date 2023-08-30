@@ -24,7 +24,7 @@ class Model:
         )         
 
         # DPM++ 2M Karras (for < 30 steps, when speed matters)
-        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
+        # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
         
         # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter)
         # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
