@@ -4,45 +4,76 @@
 
 This is a [Truss](https://truss.baseten.co/) for Stable Diffusion v2.1 using the `StableDiffusionPipeline` from the `diffusers` library. This README will walk you through how to deploy this Truss on Baseten to get your own instance of the Stable Diffusion.
 
-## Truss
+## Deploy Stable Diffusion
 
-Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
+First, clone this repository:
 
-## Deploying Stable Diffusion
-
-To deploy the Stable Diffusion Truss, you'll need to follow these steps:
-
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
 ```
-pip install --upgrade baseten truss
+git clone https://github.com/basetenlabs/truss-examples/
+cd stable-diffusion-truss
 ```
 
-3. __Load the Stable Diffusion Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `stable-diffusion-truss` as your working directory, you can deploy the model with:
+
 ```
-import truss
-stable_diffusion_truss = truss.load("path/to/stable_diffusion_truss")
+truss push
 ```
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+Paste your Baseten API key if prompted.
 
-baseten.login("PASTE_API_KEY_HERE")
-```
-
-5. __Deploy the Stable Diffusion Truss__: Deploy Stable Diffusion to Baseten with the following command:
-```
-baseten.deploy(stable_diffusion_truss)
-```
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 Once your Truss is deployed, you can start using Stable Diffusion through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
-## Stable Diffusion API documentation
+## Invoking Stable Diffusion
+
+Stable Diffusion returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
+
+```sh
+truss predict -d '{"prompt": "A tree in a field under the night sky"}' | python show.py
+```
+
+The output will be a dictionary with a key `data` mapping to a base64 encoded image. It's processed with this script:
+
+```python
+import json
+import base64
+import os, sys
+
+resp = sys.stdin.read()
+image = json.loads(resp)["data"]
+img=base64.b64decode(image)
+
+file_name = f'{image[-10:].replace("/", "")}.jpeg'
+img_file = open(file_name, 'wb')
+img_file.write(img)
+img_file.close()
+os.system(f'open {file_name}')
+```
+
+You can also invoke your model via a REST API:
+
+```
+curl -X POST "https://app.baseten.co/models/MODEL_ID/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
+     -d '{
+           "prompt": "A tree in a field under the night sky"
+         }'
+```
+
+Again, the model will return a dictionary containing the base64-encoded image, which will need to be decoded and saved.
+
+
+### Stable Diffusion API documentation
 This section provides an overview of the Stable Diffusion API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate images based on the provided parameters.
 
-### API route: `predict`
+#### API route: `predict`
 The predict route is the primary method for generating images based on a given set of parameters. It takes several parameters:
 
 - __prompt__: The input text you'd like to generate an image for
@@ -51,48 +82,3 @@ The predict route is the primary method for generating images based on a given s
 - __negative_prompt__: (optional) A string representing the negative prompt, or prompts that indicate what you don't want to generate.
 
 The API also supports passing any parameter supported by Diffuser's `StableDiffusionPipeline`.
-
-## Example usage
-
-You can use the `baseten` model package to invoke your model from Python
-
-```python
-import baseten
-
-# You can retrieve your deployed model version ID from the UI
-model = baseten.deployed_model_version_id('MODEL_VERSION_ID')
-
-request = {
-    "prompt": "man on moon",
-    "scheduler": "ddim",
-    "negative_prompt": "disfigured hands"
-}
-
-response = model.predict(request)
-```
-
-The output will be a dictionary with a key `data` mapping to a list with a base64 encoding of the image. You can save the image with the following snippet:
-
-```python
-import base64
-
-img=base64.b64decode(response["data"][0])
-
-img_file = open('image.jpeg', 'wb')
-img_file.write(img)
-img_file.close()
-```
-
-You can also invoke your model via a REST API
-```
-curl -X POST "https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{
-           "prompt" : "man on moon",
-           "scheduler": "ddim",
-           "negative_prompt" : "disfigured hands"
-         }'
-```
-
-Again, the model will return a dictionary containing the base64-encoded image, which will need to be decoded and saved.
