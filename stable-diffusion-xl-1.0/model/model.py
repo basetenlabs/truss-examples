@@ -1,4 +1,4 @@
-from diffusers import DiffusionPipeline, AutoencoderKL, DPMSolverMultistepScheduler, ControlNetModel
+from diffusers import DiffusionPipeline, AutoencoderKL, DPMSolverMultistepScheduler
 import torch
 import base64
 from PIL import Image
