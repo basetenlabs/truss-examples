@@ -6,42 +6,33 @@ This is an implementation of the Salesforce [CodeGen](https://github.com/salesfo
 
 ## Deploying CodeGen multi 2B
 
-To deploy the CodeGen multi 2B Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd codegen-multi-2b-truss
 ```
 
-3. __Load the CodeGen multi 2B Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
+Before deployment:
 
-codegen_multi_truss = truss.load("path/to/codegen_multi_truss")
-```
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+With `codegen-multi-2b-truss` as your working directory, you can deploy the model with:
 
-baseten.login("PASTE_API_KEY_HERE")
+```sh
+truss push
 ```
 
-5. __Deploy the CodeGen multi 2B Truss__: Deploy the CodeGen multi 2B Truss to Baseten with the following command:
-```
-baseten.deploy(codegen_multi_truss)
-```
+Paste your Baseten API key if prompted.
 
-Once your Truss is deployed, you can start using the CodeGen multi 2B model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## CodeGen multi 2B API documentation
 
 ### Input
 
-The input should be a list of dictionaries must have a key `context` which represents the prompt for generation to the
-model. It supports the following keys:
+The input should be a dictionary. It supports the following keys:
 
 * `prompt` - the natural language or code prompt desired to generate.
 * `max_length` - optional, the maximum length for generation, maxes out at 128 tokens
@@ -51,9 +42,9 @@ model. It supports the following keys:
 For example:
 
 ```json
-[{
+{
     "prompt": "def fibonacci(n):"
-}]
+}
 ```
 
 ### Output
@@ -76,7 +67,11 @@ For example:
 
 ## Example usage
 
-You can invoke this model on Baseten with the following cURL command (just fill in the model version ID and API Key):
+```sh
+truss predict -d '{"prompt": "code for fibonacci"}'
+```
+
+You can also invoke this model on Baseten with the following cURL command (just fill in the model version ID and API Key):
 
 ```bash
 $ curl -X POST https://app.baseten.co/model_versions/{MODEL_VERSION_ID}/predict

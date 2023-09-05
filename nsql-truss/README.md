@@ -12,35 +12,27 @@ Truss is an open-source model serving framework developed by Baseten. It allows 
 
 ## Deploying NSQL
 
-To deploy the NSQL Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd nsql-truss
 ```
 
-3. __Load the NSQL Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
+Before deployment:
 
-nsql_truss = truss.load("path/to/nsql_truss")
-```
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+With `nsql-truss` as your working directory, you can deploy the model with:
 
-baseten.login("PASTE_API_KEY_HERE")
+```sh
+truss push
 ```
 
-5. __Deploy the NSQL Truss__: Deploy the NSQL Truss to Baseten with the following command:
-```
-baseten.deploy(nsql_truss)
-```
+Paste your Baseten API key if prompted.
 
-Once your Truss is deployed, you can start using the NSQL model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## NSQL API documentation
 This section provides an overview of the NSQL API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.

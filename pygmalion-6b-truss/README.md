@@ -6,35 +6,29 @@ This repository packages [Pygmalion 6B](https://huggingface.co/PygmalionAI/pygma
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp)). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-## Setup
-
-[Sign up](https://app.baseten.co/signup) or [sign in](https://app.baseten.co/login/) to your Baseten account and create an [API key](https://app.baseten.co/settings/account/api_keys).
-
-Then run:
-
-```
-pip install --upgrade baseten
-baseten login
-```
-
-Paste your API key when prompted.
-
 ## Deployment
 
-In an iPython notebook, run the following script to deploy Pygmalion 6B to your Baseten account:
+First, clone this repository:
 
-```python
-import baseten
-import truss
-
-pygmalion = truss.load("truss-examples/pygmalion-6b-truss/")
-baseten.deploy(
-  pygmalion,
-  model_name="Pygmalion 6B",
-)
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd pygmalion-6b-truss
 ```
 
-Once your Truss is deployed, you can start using the Pygmalion 6B model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `pygmalion-6b-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 
 ### Hardware notes
@@ -61,12 +55,14 @@ The predict route is the primary method for generating text completions based on
 
 You can use the `baseten` model package to invoke your model from Python
 
-```python
-import baseten
-# You can retrieve your deployed model version ID from the Baseten UI
-model = baseten.deployed_model_version_id('YOUR_MODEL_ID')
+```sh
+truss predict -f input.txt
+```
 
-request = {
+You'll need an input file:
+
+```js
+{
     "character_name": "Barack Obama",
     "persona": "Barack Obama is the first black, charismatic and composed 44th President of the United States. He is well-respected for his leadership during a time of economic crisis and for his efforts to improve healthcare and relations with foreign nations. He is a skilled orator and is known for his ability to bring people together with his speeches. Despite facing opposition, he remains steadfast in his beliefs and is dedicated to making the world a better place.",
     "greeting": "You approach Barack Obama, a tall and distinguished-looking man with a warm smile. He greets you with a firm handshake and a nod of his head.",
@@ -74,8 +70,6 @@ request = {
     "example_dialogue": ["You: Can you tell me about your time as President?\nBarack Obama: During my time as President, I faced many challenges. The country was in the midst of an economic crisis, and I worked tirelessly to turn things around. I also passed the Affordable Care Act, which has helped millions of Americans access quality healthcare. I also made strides in improving our relations with foreign nations, particularly with Cuba and Iran.\n\nYou: What do you consider to be your greatest accomplishment as President?\nBarack Obama: That's a tough question. I'm proud of the work we did to stabilize the economy and provide healthcare to so many people who needed it. But I think what I'm most proud of is the way that we were able to bring people together and have conversations about difficult issues. It wasn't always easy, but I believe that we made progress towards a more united and just society.\n\nYou: What do you think about the current state of politics in the US?\nBarack Obama: Well, politics can be divisive and messy at times. But I have faith in the American people and in our democratic system. We've been through tough times before, and I believe that we'll get through this as well. What's important is that we continue to have honest and respectful conversations, and that we work together to find solutions to the challenges we face.\n\nYou: What do you think is the most pressing issue facing the world today?\nBarack Obama: There are many pressing issues, but if I had to choose one, I would say it's climate change. The science is clear, and the evidence is overwhelming. We have a limited window of time to take meaningful action, and it's up to all of us to do our part. Whether it's reducing our carbon footprint or supporting policies that will address this issue, we all have a role to play.\n"],
     "new_message": "Hi Mr. President, how is it going?"
 }
-
-response = model.predict(request)
 ```
 
 You can also invoke your model via a REST API using cURL.

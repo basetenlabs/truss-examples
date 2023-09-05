@@ -4,80 +4,66 @@ Stable Diffusion XL 1.0 is the largest, most capable open-source image generatio
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
-## Setup
-
-[Sign up](https://app.baseten.co/signup) or [sign in](https://app.baseten.co/login/) to your Baseten account and create an [API key](https://app.baseten.co/settings/account/api_keys).
-
-Then run:
-
-```
-pip install --upgrade baseten
-baseten login
-```
-
-Paste your API key when prompted.
-
-## Deployment
+## Deploy Stable Diffusion XL
 
 First, clone this repository:
 
 ```
 git clone https://github.com/basetenlabs/truss-examples/
+cd stable-diffusion-xl-1.0
 ```
 
-Then, in an iPython notebook, run the following script to deploy SDXL to your Baseten account:
+Before deployment:
 
-```python
-import baseten
-import truss
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-sdxl = truss.load("truss-examples/stable-diffusion-xl-1.0")
-baseten.deploy(
-  sdxl,
-  model_name="Stable Diffusion XL 1.0"
-)
+With `stable-diffusion-xl-1.0` as your working directory, you can deploy the model with:
+
 ```
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 Once your Truss is deployed, you can start using SDXL through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
 ### Hardware notes
 
-Model inference runs well on an A10 with 24 GB of VRAM, with invocation time averaging ~16 seconds. If speed is essential, running inference on an A100 cuts invocation time to ~8 seconds.
+Model inference runs well on an A10 with 24 GB of VRAM, with invocation time averaging ~8 seconds. If speed is essential, running inference on an A100 cuts invocation time to ~4 seconds.
 
-## Example usage
+## Invoking Stable Diffusion XL
 
-You can use the `baseten` model package to invoke your model from Python
+Stable Diffusion XL returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
 
-```python
-import baseten
-
-# You can retrieve your deployed model version ID from the UI
-model = baseten.deployed_model_version_id('MODEL_VERSION_ID')
-
-request = {
-    "prompt": "A tree in a field under the night sky",
-    "use_refiner": True
-}
-
-response = model.predict(request)
+```sh
+truss predict -d '{"prompt": "A tree in a field under the night sky"}' | python show.py
 ```
 
-The output will be a dictionary with a key `data` mapping to a base64 encoded image. You can save the image with the following snippet:
+The output will be a dictionary with a key `data` mapping to a base64 encoded image. It's processed with this script:
 
 ```python
+import json
 import base64
+import os, sys
 
-img=base64.b64decode(response["data"])
+resp = sys.stdin.read()
+image = json.loads(resp)["data"]
+img=base64.b64decode(image)
 
-img_file = open('image.jpeg', 'wb')
+file_name = f'{image[-10:].replace("/", "")}.jpeg'
+img_file = open(file_name, 'wb')
 img_file.write(img)
 img_file.close()
+os.system(f'open {file_name}')
 ```
 
 You can also invoke your model via a REST API:
 
 ```
-curl -X POST "https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
+curl -X POST "https://app.baseten.co/models/MODEL_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{

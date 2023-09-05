@@ -24,6 +24,12 @@ class Model:
             use_safetensors=True,
         )         
 
+        # DPM++ 2M Karras (for < 30 steps, when speed matters)
+        #self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
+        
+        # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter)
+        # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
+
         self.pipe.unet.to(memory_format=torch.channels_last)
         # self.pipe.unet = torch.compile(self.pipe.unet, mode="max-autotune", fullgraph=True)
         self.pipe.to('cuda')

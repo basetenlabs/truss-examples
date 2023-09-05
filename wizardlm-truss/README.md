@@ -1,14 +1,29 @@
 # WizardLM Truss
 
-This repository packages [WizardLM](https://github.com/nlpxucan/WizardLM) as a [Truss](https://truss.baseten.co).
+This repository packages [WizardLM](https://github.com/nlpxucan/WizardLM) as a [Truss](https://trussml.com).
 
 WizardLM is a instruction-following LLM tuned using the Evol-Instruct method. Evol-Instruct is a novel method using LLMs instead of humans to automatically mass-produce open-domain instructions of various difficulty levels and skills range, to improve the performance of LLMs.
 
-Utilizing this model for inference can be challenging given the hardware requirements. With Baseten and Truss, inference is dead simple.
-
 ## Deploying WizardLM
 
-We found this model runs reasonably fast on A10Gs; you can configure the hardware you'd like in the `config.yaml`.
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `wizardlm-truss` as your working directory, you can deploy the model with:
+
+```
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+### Hardware notes
+
+We found this model runs reasonably fast on A10Gs; hardware is configured as follows in `config.yaml`:
 
 ```yaml
 ...
@@ -20,25 +35,25 @@ resources:
 ...
 ```
 
-Before deployment:
+## Invoking WizardLM
 
-1. Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-2. Install Truss and the Baseten Python client: `pip install --upgrade baseten truss`
-3. Authenticate your development environment with `baseten login`
+Once the model is deployed, you can invoke it with:
 
-Deploying the Truss is easy; simply load it and push from a Python script:
-
-```python
-import baseten
-import truss
-
-# baseten.login("MY_API_KEY") 
-
-wizardlm_truss = truss.load('.')
-baseten.deploy(wizardlm_truss)
+```sh
+truss predict -d '{"prompt": "What is the difference between a wizard and a sorcerer?"}'
 ```
 
-## Invoking WizardLM
+You can also invoke your model via a REST API
+
+```
+curl -X POST "https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
+     -d '{
+           "prompt": "What is the difference between a wizard and a sorcerer?",
+           "temperature": 0.3
+         }'
+```
 
 The usual GPT-style parameters will pass right through to the inference point:
 
@@ -47,22 +62,3 @@ The usual GPT-style parameters will pass right through to the inference point:
 * top_p (_default_: 0.9)
 * top_k (_default_: 0)
 * num_beams (_default_: 4)
-
-
-```python
-import baseten
-model = baseten.deployed_model_id('YOUR MODEL ID')
-model.predict({"prompt": "What is the difference between a wizard and a sorcerer?"})
-```
-
-You can also invoke your model via a REST API
-
-```
-curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{
-           "prompt": "What is the difference between a wizard and a sorcerer?",
-           "temperature": 0.3
-         }'
-```

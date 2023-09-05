@@ -6,33 +6,27 @@ This Truss uses Stable Diffusion XL and ControlNet to generate images guided by 
 
 ## Deploying the Truss
 
-To deploy this Truss:
+First, clone this repository:
 
-1. Sign up for a Baseten account if you don't already have one.
-
-2. Install the Baseten Python client:
-
-```
-pip install baseten
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd sdxl-controlnet-truss
 ```
 
-3. Load the Truss into memory:
+Before deployment:
 
-```python
-import truss
-truss = truss.load("/path/to/sdxl_controlnet_truss")
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `sdxl-controlnet-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
 ```
 
-4. Log in to Baseten and deploy:
+Paste your Baseten API key if prompted.
 
-```python
-import baseten
-
-baseten.login("YOUR_API_KEY")
-baseten.deploy(truss)
-```
-
-Once deployed, you can access the model via the Baseten UI or API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Using the model
 
@@ -45,7 +39,7 @@ It returns a JSON object with the `result` field containing the generated image.
 
 ## Example Usage
 
-You can invoke the SDXL + ControlNet model from Python using the `baseten` SDK:
+You can also invoke the SDXL + ControlNet model from Python using the `baseten` SDK:
 
 ```python
 import baseten

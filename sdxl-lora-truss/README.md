@@ -10,39 +10,27 @@ This Truss also includes support for Low Rank Adaptation (LoRA). LoRA allows you
 
 ## Deploying the Truss
 
-To deploy this Truss, follow these steps:
+First, clone this repository:
 
-1. Sign up for a Baseten account and get your API key from the dashboard.
-
-2. Install Truss and the Baseten Python client:
-
-```
-pip install baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd sdxl-lora-truss
 ```
 
-3. Load the Truss into an IPython shell:
+Before deployment:
 
-```python
-import truss
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-truss = truss.load("path/to/truss")
+With `sdxl-lora-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
 ```
 
-4. Log in to Baseten with your API key:
+Paste your Baseten API key if prompted.
 
-```python
-import baseten
-
-baseten.login("YOUR_API_KEY")
-```
-
-5. Deploy the Truss:
-
-```python
-baseten.deploy(truss)
-```
-
-Once deployed, you can access Stable Diffusion XL via the Baseten UI and API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## API Documentation
 

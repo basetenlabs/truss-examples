@@ -10,35 +10,27 @@ Truss is an open-source model serving framework developed by Baseten. It allows 
 
 ## Deploying LLaMA-7B
 
-To deploy the LLaMA-7B Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd llama-7b-truss
 ```
 
-3. __Load the LLaMA-7B Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
+Before deployment:
 
-llama_7b_truss = truss.load("path/to/llama_7b_truss")
-```
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+With `llama-7b-truss` as your working directory, you can deploy the model with:
 
-baseten.login("PASTE_API_KEY_HERE")
+```sh
+truss push
 ```
 
-5. __Deploy the LLaMA-7B Truss__: Deploy the Llama-7B Truss to Baseten with the following command:
-```
-baseten.deploy(llama_7b_truss)
-```
+Paste your Baseten API key if prompted.
 
-Once your Truss is deployed, you can start using the LLaMA-7B model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## LLaMA-7B API documentation
 This section provides an overview of the LLaMA-7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
@@ -56,25 +48,13 @@ The API also supports passing any parameter supported by Huggingface's `Transfor
 
 ## Example usage
 
-You can use the `baseten` model package to invoke your model from Python
-```
-import baseten
-# You can retrieve your deployed model ID from the UI
-model = baseten.deployed_model_version_id('YOUR_MODEL_ID')
-
-request = {
-    "prompt": "What's the meaning of life?",
-    "temperature": 0.1,
-    "top_p": 0.75,
-    "top_k": 40,
-    "num_beams": 4,
-}
-
-response = model.predict(request)
+```sh
+truss predict -d '{"prompt": "What is the meaning of life?"}'
 ```
 
 You can also invoke your model via a REST API
-```
+
+```sh
 curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \

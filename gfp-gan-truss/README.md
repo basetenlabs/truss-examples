@@ -11,35 +11,27 @@ It leverages rich and diverse priors encapsulated in a pretrained face GAN (e.g.
 
 ## Deploying GFP-GAN
 
-To deploy the GFP-GAN Truss, you'll need to follow these steps:
+First, clone this repository:
 
-1. __Prerequisites__: Make sure you have a Baseten account and API key. You can sign up for a Baseten account [here](https://app.baseten.co/signup).
-
-2. __Install Truss and the Baseten Python client__: If you haven't already, install the Baseten Python client and Truss in your development environment using:
-```
-pip install --upgrade baseten truss
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd gfp-gan-truss
 ```
 
-3. __Load the GFP-GAN Truss__: Assuming you've cloned this repo, spin up an IPython shell and load the Truss into memory:
-```
-import truss
+Before deployment:
 
-gfp_gan_truss = truss.load("path/to/gfp_gan_truss")
-```
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-4. __Log in to Baseten__: Log in to your Baseten account using your API key (key found [here](https://app.baseten.co/settings/account/api_keys)):
-```
-import baseten
+With `gfp-gan-truss` as your working directory, you can deploy the model with:
 
-baseten.login("PASTE_API_KEY_HERE")
+```sh
+truss push
 ```
 
-5. __Deploy the GFP-GAN Truss__: Deploy the GFP-GAN Truss to Baseten with the following command:
-```
-baseten.deploy(gfp_gan_truss)
-```
+Paste your Baseten API key if prompted.
 
-Once your Truss is deployed, you can start using the GFP-GAN model through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## GFP-GAN API documentation
 
@@ -58,7 +50,11 @@ The model returns a dictionary containing the base64-encoded restored image:
 
 ## Example usage
 
-You can invoke this model on Baseten with the following cURL command (just fill in the model version ID and API Key):
+```sh
+truss predict -d '{"image": "{BASE_64_INPUT}"}'
+```
+
+You can also invoke this model on Baseten with the following cURL command (just fill in the model version ID and API Key):
 
 ```
 $ curl -X POST https://app.baseten.co/models/{MODEL_VERSION_ID}/predict \
