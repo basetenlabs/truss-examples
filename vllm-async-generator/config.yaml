@@ -1,22 +1,10 @@
 base_image:
   image: docker.io/basetentuhin/vllm-8-12:latest
   python_executable_path: /usr/bin/python
-bundled_packages_dir: packages
-data_dir: data
 description: null
 environment_variables: {}
-examples_filename: examples.yaml
-external_package_dirs: []
-input_type: Any
 live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
-model_metadata: {}
-model_module_dir: model
 model_name: Graph/Mythologic
-model_type: custom
-python_version: py39
 requirements:
 - ray
 resources:
