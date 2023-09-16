@@ -47,21 +47,25 @@ resources:
 MusicGen takes a list of prompts and a duration in seconds. You may also, optionally, provide a base64 encoded WAV file as the melody to condition on. It will generate one clip per prompt and return each clip as a base64 encoded WAV file.
 
 ```sh
-truss predict -d '{"prompts": ["happy rock" "energetic EDM", "sad jazz"], "melody" : "b64_encoded_melody", "duration": 8}'
+truss predict -d '{"prompts": ["happy rock" "energetic EDM", "sad jazz"], "melody": "b64_encoded_melody", "duration": 8}'
 ```
 
-You'll want to pipe your results into a script such as:
+Here's an example of how to pass in a WAV file:
 
 ```python
-import json
+import baseten
 import base64
-import os, sys
 
-model_output = json.loads(sys.stdin.read())
+with open("mymelody.wav", "rb") as f: # mono wav file, 48khz sample rate
+    encoded_data = base64.b64encode(f.read())
+    encoded_str = encoded_data.decode("utf-8")
+
+model = baseten.deployed_model_id("YOUR MODEL ID")
+model_output = model.predict({"prompts": ["happy rock" "energetic EDM", "sad jazz"], "melody": encoded_str, "duration": 8})
 
 for idx, clip in enumerate(model_output["data"]):
-  with open(f"clip_{idx}.wav", "wb") as f:
-    f.write(base64.b64decode(clip))
+    with open(f"clip_{idx}.wav", "wb") as f:
+        f.write(base64.b64decode(clip))
 ```
 
 You can also invoke your model via a REST API
