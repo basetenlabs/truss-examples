@@ -57,6 +57,7 @@ This section provides an overview of the Llama-2-chat 13B API, its parameters, a
 The predict route is the primary method for generating text completions based on a given prompt. It takes several parameters:
 
 - __prompt__: The input text that you want the model to generate a response for.
+- __max_new_tokens__ (optional, default=512): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
 - __temperature__ (optional, default=0.1): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
 - __top_p__ (optional, default=0.75): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
 - __top_k__ (optional, default=40): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
@@ -67,7 +68,7 @@ The API also supports passing any parameter supported by HuggingFace's `Transfor
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "What is the meaning of life?"}'
+truss predict -d '{"prompt": "What is the meaning of life?", "max_new_tokens": 4096}'
 ```
 
 You can also invoke your model via a REST API:
@@ -78,9 +79,6 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
            "prompt": "What's the meaning of life?",
-           "temperature": 0.1,
-           "top_p": 0.75,
-           "top_k": 40,
-           "num_beams": 4
+           "max_new_tokens": 4096
          }'
 ```
