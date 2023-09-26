@@ -1,0 +1,22 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Stable Diffusion XL + ControlNet Canny
+python_version: py39
+requirements:
+  - accelerate
+  - transformers
+  - safetensors
+  - opencv-python
+  - diffusers
+resources:
+  accelerator: A10G
+  cpu: 3500m
+  memory: 20Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+system_packages:
+- ffmpeg
+- libsm6
+- libxext6 
