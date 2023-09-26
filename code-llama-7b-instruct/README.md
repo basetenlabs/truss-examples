@@ -15,7 +15,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd code-llama-7b-chat
+cd code-llama-7b-instruct
 ```
 
 Before deployment:
@@ -23,7 +23,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `code-llama-7b-chat` as your working directory, you can deploy the model with:
+With `code-llama-7b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push
