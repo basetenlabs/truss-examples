@@ -4,11 +4,11 @@ model_metadata: {}
 model_name: Stable Diffusion XL + ControlNet Canny
 python_version: py39
 requirements:
-  - accelerate
-  - transformers
-  - safetensors
-  - opencv-python
-  - diffusers
+  - accelerate==0.23.0
+  - transformers==4.33.2
+  - safetensors==0.3.3
+  - opencv-python==4.8.0.76
+  - diffusers==0.21.2
 resources:
   accelerator: A100
   cpu: 3500m
