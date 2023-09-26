@@ -19,10 +19,10 @@ class Model:
 
     def preprocess(self, request: dict):
         generate_args = {
-            "max_new_tokens": 128,
-            "temperature": 0.5,
-            "top_p": 0.95,
-            "top_k": 50,
+            "max_new_tokens": request.get("max_tokens", 128),
+            "temperature": request.get("temperature", 0.5),
+            "top_p": request.get("top_p", 0.95),
+            "top_k": request.get("top_k", 50),
             "repetition_penalty": 1.0,
             "no_repeat_ngram_size": 0,
             "use_cache": True,
@@ -30,14 +30,6 @@ class Model:
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
-        if "max_tokens" in request.keys():
-            generate_args["max_new_tokens"] = request["max_tokens"]
-        if "temperature" in request.keys():
-            generate_args["temperature"] = request["temperature"]
-        if "top_p" in request.keys():
-            generate_args["top_p"] = request["top_p"]
-        if "top_k" in request.keys():
-            generate_args["top_k"] = request["top_k"]
         request["generate_args"] = generate_args
         return request
 
@@ -53,17 +45,15 @@ class Model:
 
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
-            try:
-                prompt = request.pop("prompt")
-                # Code-llama needs the prompt to be formatted in this manner
-                formatted_prompt = f"<s><<SYS>>\n{DEFAULT_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt}"
-                input_ids = self.tokenizer(
-                    formatted_prompt, return_tensors='pt').input_ids.cuda()
-                output = self.model.generate(
-                    inputs=input_ids,
-                    **request["generate_args"]
-                )
+            prompt = request.pop("prompt")
+            # Code-llama needs the prompt to be formatted in this manner
+            formatted_prompt = f"<s><<SYS>>\n{DEFAULT_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt}"
+            input_ids = self.tokenizer(
+                formatted_prompt, return_tensors='pt').input_ids.cuda()
+            output = self.model.generate(
+                inputs=input_ids,
+                **request["generate_args"]
+            )
 
-                return self.tokenizer.decode(output[0])
-            except Exception as exc:
-                return {"status": "error", "data": None, "message": str(exc)}
+            return self.tokenizer.decode(output[0])
+            
