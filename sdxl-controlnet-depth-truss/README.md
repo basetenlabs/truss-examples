@@ -1,4 +1,4 @@
-# Stable Diffusion XL + ControlNet Canny Truss
+# Stable Diffusion XL + ControlNet Depth Truss
 
 This Truss uses Stable Diffusion XL and ControlNet with the Depth preprocessor to generate images guided by the depth map of an input image. The inputs are a prompt and an image.
 
