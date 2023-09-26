@@ -44,7 +44,7 @@ You can also invoke the SDXL + ControlNet model from Python using the `baseten` 
 ```python
 import baseten
 
-model = baseten.deployed_model_version("MODEL_VERSION_ID") # you can get this from the Baseten web UI
+model = baseten.deployed_model_version_id("MODEL_VERSION_ID") # you can get this from the Baseten web UI
 
 image = open("cat.png", "rb").read()
 image_b64 = base64.b64encode(image).decode("utf-8")
@@ -62,7 +62,7 @@ The response will contain a base64 encoded image that you can save:
 ```python
 import base64
 
-img = base64.b64decode(response["data"])
+img = base64.b64decode(response["result"])
 
 with open("generated.png", "wb") as f:
   f.write(img)
