@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: mistral-7b
+python_version: py311
+requirements:
+- transformers
+- sentencepiece
+- accelerate
+resources:
+  accelerator: A10G
+  use_gpu: true
+secrets: {}
+system_packages: []
