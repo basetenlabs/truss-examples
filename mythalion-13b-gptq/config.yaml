@@ -11,7 +11,7 @@ model_name: mythalion-13B
 python_version: py39
 requirements: []
 resources:
-  accelerator: A100
+  accelerator: A10G
   use_gpu: true
 secrets: {}
 system_packages: []
