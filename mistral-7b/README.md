@@ -1,6 +1,6 @@
 # Mistral 7B Truss
 
-This is a [Truss](https://truss.baseten.co/) for Mistral 7B. Mistral 7B 7B parameter language model released by Mistral that outperforms other models in the 7B model class. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B.
+This is a [Truss](https://truss.baseten.co/) for Mistral 7B. Mistral 7B parameter language model released by [Mistral](https://mistral.ai/) that outperforms other models in the 7B model class. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B.
 
 ## Truss
 
