@@ -66,6 +66,7 @@ class Model:
         # example schema: 
         # {"repo_id": "nerijs/pixel-art-xl", "weights": "pixel-art-xl.safetensors"}
 
+        # Note: if LoRA is None, the default behavior is to use the last loaded weights (or no weights if none were loaded)
         if lora is not None:
             self.pipe.load_lora_weights(
                 lora.get("repo_id", None),
