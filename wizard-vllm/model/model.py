@@ -20,7 +20,6 @@ class Model:
         generator = self.llm_engine.generate(prompt, sampling_params, idx)
         prev = ""
         async for output in generator:
-            yield output
             curr = output.outputs[0].text
             delta = curr[len(prev):]
             prev = curr
