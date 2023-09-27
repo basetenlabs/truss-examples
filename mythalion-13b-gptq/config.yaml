@@ -5,8 +5,9 @@ build:
     quantize: gptq
   model_server: TGI
 environment_variables: {}
+model_metadata:
+  example_model_input: {"inputs": "Whats the meaning of life"}
 external_package_dirs: []
-model_metadata: {}
 model_name: mythalion-13B
 python_version: py39
 requirements: []
