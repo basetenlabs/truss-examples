@@ -8,7 +8,9 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/mistral-7b.jpg
   tags:
   - text-generation
-model_name: mistral-7b-instruct-model
+model_name: Mistral 7B Instruct
+model_framework: custom
+model_type: custom
 python_version: py311
 requirements:
 - sentencepiece
