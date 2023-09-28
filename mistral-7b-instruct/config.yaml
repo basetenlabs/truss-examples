@@ -1,0 +1,20 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: 
+  example_model_input: {"prompt": "What is the meaning of life?"}
+  pretty_name: Mistral 7B Instruct
+  avatar_url: https://cdn.baseten.co/production/static/mistral.png
+  cover_image_url: https://cdn.baseten.co/production/static/mistral-7b.jpg
+  tags:
+  - text-generation
+model_name: mistral-7b-instruct
+python_version: py311
+requirements:
+- sentencepiece
+- accelerate
+- transformers
+resources:
+  accelerator: A10G
+  use_gpu: true
+secrets: {}
+system_packages: []
