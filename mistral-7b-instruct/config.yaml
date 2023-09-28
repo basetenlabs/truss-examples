@@ -1,5 +1,6 @@
 environment_variables: {}
 external_package_dirs: []
+description: Generate text with an instruction-tuned version of Mistral 7B.
 model_metadata: 
   example_model_input: {"prompt": "What is the meaning of life?"}
   pretty_name: Mistral 7B Instruct
