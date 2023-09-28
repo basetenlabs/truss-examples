@@ -2,8 +2,6 @@ import torch
 from transformers import AutoTokenizer, LlamaForCausalLM, TextIteratorStreamer, GenerationConfig
 from threading import Thread
 
-DEFAULT_MAX_LENGTH = 4096
-
 class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
@@ -24,7 +22,7 @@ class Model:
 
     def preprocess(self, request: dict):
         generate_args = {
-            "max_new_tokens": 128,
+            "max_new_tokens": 512,
             "temperature": 1.0,
             "top_p": 0.95,
             "top_k": 50,
@@ -43,6 +41,14 @@ class Model:
             generate_args["top_p"] = request["top_p"]
         if "top_k" in request.keys():
             generate_args["top_k"] = request["top_k"]
+        if "repetition_penalty" in request.keys():
+            generate_args["repetition_penalty"] = request["repetition_penalty"]
+        if "no_repeat_ngram_size" in request.keys():
+            generate_args["no_repeat_ngram_size"] = request["no_repeat_ngram_size"]
+        if "use_cache" in request.keys():
+            generate_args["use_cache"] = request["use_cache"]
+        if "do_sample" in request.keys():
+            generate_args["do_sample"] = request["do_sample"]
         request["generate_args"] = generate_args
         return request
 

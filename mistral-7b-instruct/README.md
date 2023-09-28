@@ -44,20 +44,19 @@ The `predict` route is the primary method for generating text completions based 
 
 - __prompt__: The input text that you want the model to generate a response for.
 - __stream__ (optional, default=False): A boolean determining whether the model should stream a response back. When `True`, the API returns generated text as it becomes available.
-- __generate_args__ (optional): A dictionary containing additional parameters for text generation. The following keys are supported:
-    - __max_tokens__ (optional, default=128): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
-    - __temperature__ (optional, default=1.0): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
-    - __top_p__ (optional, default=0.95): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
-    - __top_k__ (optional, default=50): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
-    - __repetition_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
-    - __no_repeat_ngram_size__ (optional, default=0): The size of the n-gram that should not appear more than once in the output text.
-    - __use_cache__ (optional, default=True): A boolean determining whether the model should use the cache to avoid recomputing already computed hidden states during text generation.
+- __max_tokens__ (optional, default=512): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
+- __temperature__ (optional, default=1.0): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
+- __top_p__ (optional, default=0.95): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
+- __top_k__ (optional, default=50): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
+- __repetition_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
+- __no_repeat_ngram_size__ (optional, default=0): The size of the n-gram that should not appear more than once in the output text.
+- __use_cache__ (optional, default=True): A boolean determining whether the model should use the cache to avoid recomputing already computed hidden states during text generation.
+- __do_sample__ (optional, default=True): Controls the sampling strategy during the decoding process. Setting to False results in the generation process sampling the highest probability next token (greedy decoding). Otherwise, we sample non-greedily via Top-K or Top-P sampling. 
 
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "What is the meaning of life?", 
-"generate_args" : {"max_tokens" : "4096"}}'
+truss predict -d '{"prompt": "What is the Mistral wind?"}'
 ```
 
 You can also invoke your model via a REST API:
@@ -67,9 +66,8 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt": "What's the meaning of life?",
-           "generate_args" : {
-              "max_tokens" : 4096,
-           }
+           "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
+           "stream": true,
+           "max_tokens": 4096
          }'
 ```
