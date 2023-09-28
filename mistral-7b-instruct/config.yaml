@@ -1,11 +1,10 @@
 environment_variables: {}
 external_package_dirs: []
 description: Generate text with an instruction-tuned version of Mistral 7B.
-model_metadata: 
-  example_model_input: {"prompt": "What is the meaning of life?"}
-  pretty_name: Mistral 7B Instruct
-  avatar_url: https://cdn.baseten.co/production/static/mistral.png
-  cover_image_url: https://cdn.baseten.co/production/static/mistral-7b.jpg
+model_metadata:
+  example_model_input: {"prompt": "What is the Mistral wind?", "stream": true}
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   tags:
   - text-generation
 model_name: Mistral 7B Instruct

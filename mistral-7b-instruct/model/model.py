@@ -2,8 +2,6 @@ import torch
 from transformers import AutoTokenizer, LlamaForCausalLM, TextIteratorStreamer, GenerationConfig
 from threading import Thread
 
-DEFAULT_MAX_LENGTH = 4096
-
 class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
@@ -24,7 +22,7 @@ class Model:
 
     def preprocess(self, request: dict):
         generate_args = {
-            "max_new_tokens": 128,
+            "max_new_tokens": 512,
             "temperature": 1.0,
             "top_p": 0.95,
             "top_k": 50,
