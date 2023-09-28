@@ -69,5 +69,5 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
            "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
            "stream": true,
            "max_tokens": 4096
-         }'
+         }' --no-buffer
 ```
