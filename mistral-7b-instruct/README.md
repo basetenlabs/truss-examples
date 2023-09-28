@@ -51,6 +51,7 @@ The `predict` route is the primary method for generating text completions based 
 - __repetition_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
 - __no_repeat_ngram_size__ (optional, default=0): The size of the n-gram that should not appear more than once in the output text.
 - __use_cache__ (optional, default=True): A boolean determining whether the model should use the cache to avoid recomputing already computed hidden states during text generation.
+- __do_sample__ (optional, default=True): Controls the sampling strategy during the decoding process. Setting to False results in the generation process sampling the highest probability next token (greedy decoding). Otherwise, we sample non-greedily via Top-K or Top-P sampling. 
 
 ## Example usage
 
