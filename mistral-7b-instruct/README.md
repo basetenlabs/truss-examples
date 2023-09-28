@@ -54,7 +54,8 @@ The API also supports passing any parameter supported by HuggingFace's `Transfor
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "What is the meaning of life?", "max_new_tokens": 4096}'
+truss predict -d '{"prompt": "What is the meaning of life?", 
+"generate_args" : {"max_tokens" : "4096"}}'
 ```
 
 You can also invoke your model via a REST API:
@@ -65,6 +66,8 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
            "prompt": "What's the meaning of life?",
-           "max_new_tokens": 4096
+           "generate_args" : {
+              "max_tokens" : 4096,
+           }
          }'
 ```
