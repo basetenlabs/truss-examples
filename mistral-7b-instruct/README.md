@@ -12,7 +12,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd mistral-7b
+cd mistral-7b-instruct
 ```
 
 Before deployment:
@@ -20,7 +20,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `mistral-7b` as your working directory, you can deploy the model with:
+With `mistral-7b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
@@ -40,16 +40,18 @@ This section provides an overview of the Mistral 7B Instruct API, its parameters
 
 ### API route: `predict`
 
-The predict route is the primary method for generating text completions based on a given prompt. It takes several parameters:
+The `predict` route is the primary method for generating text completions based on a given prompt. It takes several parameters:
 
 - __prompt__: The input text that you want the model to generate a response for.
-- __stream__: (optional, default=False) A boolean if the model should stream a response back.
-- __max_new_tokens__ (optional, default=512): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
-- __temperature__ (optional, default=0.1): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
-- __top_p__ (optional, default=0.75): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
-- __top_k__ (optional, default=40): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
-
-The API also supports passing any parameter supported by HuggingFace's `Transformers.generate`.
+- __stream__ (optional, default=False): A boolean determining whether the model should stream a response back. When `True`, the API returns generated text as it becomes available.
+- __generate_args__ (optional): A dictionary containing additional parameters for text generation. The following keys are supported:
+    - __max_tokens__ (optional, default=128): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
+    - __temperature__ (optional, default=1.0): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
+    - __top_p__ (optional, default=0.95): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
+    - __top_k__ (optional, default=50): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
+    - __repetition_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
+    - __no_repeat_ngram_size__ (optional, default=0): The size of the n-gram that should not appear more than once in the output text.
+    - __use_cache__ (optional, default=True): A boolean determining whether the model should use the cache to avoid recomputing already computed hidden states during text generation.
 
 ## Example usage
 
