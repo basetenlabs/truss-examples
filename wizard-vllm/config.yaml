@@ -1,5 +1,11 @@
-description: null
+description: An instruction-following LLM Using Evol-Instruct.
 environment_variables: {}
+model_metadata:
+  example_model_input: {"prompt": "What is the difference between a wizard and a sorcerer?"}
+  avatar_url: https://cdn.baseten.co/production/static/explore/wizard.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/wizardlm.png
+  tags:
+  - text-generation
 live_reload: false
 model_name: wizard_vllm
 python_version: py311
@@ -13,7 +19,6 @@ resources:
   cpu: "4"
   accelerator: A10G
   memory: 14Gi
-secrets:
-  hf_token: null
+secrets: {}
 spec_version: '2.0'
 system_packages: []

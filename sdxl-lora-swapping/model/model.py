@@ -29,11 +29,6 @@ class Model:
             use_safetensors=True,
         )
 
-        self.pipe.load_lora_weights(
-            "stabilityai/stable-diffusion-xl-base-1.0",
-            weight_name="sd_xl_offset_example-lora_1.0.safetensors",
-        )
-         
         self.pipe.to('cuda')
         
         self.refiner = DiffusionPipeline.from_pretrained(
@@ -45,6 +40,7 @@ class Model:
             variant="fp16",
         )
         self.refiner.to("cuda")
+        self.prev_lora = None
 
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
@@ -68,12 +64,17 @@ class Model:
 
         # Note: if LoRA is None, the default behavior is to use the last loaded weights (or no weights if none were loaded)
         if lora is not None:
-            self.pipe.load_lora_weights(
-                lora.get("repo_id", None),
-                weight_name=lora.get("weights", None),
-            )
             use_refiner = False
-            print("Loaded LoRA weights!")
+            if lora != self.prev_lora:
+                self.prev_lora = lora
+                self.pipe.unload_lora_weights()
+                self.pipe.load_lora_weights(
+                    lora.get("repo_id", None),
+                    weight_name=lora.get("weights", None),
+                )
+                print("Loaded LoRA weights!")
+            else:
+                print("Using previously loaded LoRA weights.")
         
         with torch.inference_mode():
             image = self.pipe(
