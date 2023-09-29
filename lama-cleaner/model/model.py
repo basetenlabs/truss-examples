@@ -70,20 +70,26 @@ def get_image_ext(img_bytes):
     return w
 
 image_quality: int = 95
-model: ModelManager = None
+
+DEFAULT_MODEL = "lama"
+DEFAULT_DEVICE = "cuda"
 
 class Model:
     def __init__(self, **kwargs):
+        self.model = None
         pass
 
     def load(self):
         # Load model here and assign to self._model.
+        self.model = ModelManager(DEFAULT_MODEL, DEFAULT_DEVICE)
         pass
 
     def predict(self, model_input):
         form = defaultdict(lambda: None, model_input.get("config", {}))
         images = model_input.get("images", {})
+        model_name = model_input.get("model_name")
 
+        self.model.switch(model_name)
 
         # RGB
         origin_image_bytes = base64.b64decode(images["image"])
@@ -161,7 +167,7 @@ class Model:
 
         start = time.time()
         try:
-            res_np_img = model(image, mask, config)
+            res_np_img = self.model(image, mask, config)
         except RuntimeError as e:
             if "CUDA out of memory. " in str(e):
                 # NOTE: the string may change?
