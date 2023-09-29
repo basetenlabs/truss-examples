@@ -76,20 +76,20 @@ DEFAULT_DEVICE = "cuda"
 
 class Model:
     def __init__(self, **kwargs):
-        self.model = None
-        pass
+        self.model_manager = None
 
     def load(self):
         # Load model here and assign to self._model.
-        self.model = ModelManager(DEFAULT_MODEL, DEFAULT_DEVICE)
-        pass
+        self.model_manager = ModelManager(DEFAULT_MODEL, DEFAULT_DEVICE)
+        print("Model loaded")
 
     def predict(self, model_input):
         form = defaultdict(lambda: None, model_input.get("config", {}))
         images = model_input.get("images", {})
         model_name = model_input.get("model_name")
 
-        self.model.switch(model_name)
+        if model_name is not None:
+            self.model_manager.switch(model_name)
 
         # RGB
         origin_image_bytes = base64.b64decode(images["image"])
@@ -167,7 +167,7 @@ class Model:
 
         start = time.time()
         try:
-            res_np_img = self.model(image, mask, config)
+            res_np_img = self.model_manager(image, mask, config)
         except RuntimeError as e:
             if "CUDA out of memory. " in str(e):
                 # NOTE: the string may change?
@@ -200,13 +200,6 @@ class Model:
             )
         )
 
-        response = make_response(
-            send_file(
-                # io.BytesIO(numpy_to_bytes(res_np_img, ext)),
-                bytes_io,
-                mimetype=f"image/{ext}",
-            )
-        )
-        response.headers["X-Seed"] = str(config.sd_seed)
+        base64_data = base64.b64encode(bytes_io.getvalue()).decode()
 
-        return response
+        return {"result": base64_data}
