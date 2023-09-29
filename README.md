@@ -2,7 +2,7 @@
 
 Truss is the simplest way to serve AI/ML models in production. 
 
-To get you started with Truss, this repository has dozens of example models, each ready to deploy as-is or adapt to your needs. Check out models like [Falcon-40B](falcon-40b-truss), [Starcoder](starcoder-truss), and [Stable Diffusion](stable-diffusion-truss) for inspiration.
+To get you started with [Truss](https://trussml.com/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs. Check out models like [Falcon-40B](falcon-40b-truss), [Starcoder](starcoder-truss), and [Stable Diffusion](stable-diffusion-truss) for inspiration.
 
 ## Installation
 
