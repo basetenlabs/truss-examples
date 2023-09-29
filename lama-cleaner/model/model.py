@@ -20,6 +20,7 @@ import logging
 import multiprocessing
 import random
 import time
+from collections import defaultdict
 from pathlib import Path
 
 import cv2
@@ -80,7 +81,7 @@ class Model:
         pass
 
     def predict(self, model_input):
-        form = model_input.get("config", {})
+        form = defaultdict(lambda: None, model_input.get("config", {}))
         images = model_input.get("images", {})
 
 
