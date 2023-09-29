@@ -86,10 +86,9 @@ class Model:
     def predict(self, model_input):
         form = defaultdict(lambda: None, model_input.get("config", {}))
         images = model_input.get("images", {})
-        model_name = model_input.get("model_name")
+        model_name = model_input.get("model_name", DEFAULT_MODEL)
 
-        if model_name is not None:
-            self.model_manager.switch(model_name)
+        self.model_manager.switch(model_name)
 
         # RGB
         origin_image_bytes = base64.b64decode(images["image"])
