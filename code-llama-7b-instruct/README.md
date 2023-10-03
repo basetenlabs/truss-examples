@@ -55,12 +55,12 @@ The predict route is the primary method for generating text completions based on
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "I have a CSV file with the following columns: Python, C++, Bash, Typescript, Java. Create a visualization using seaborn that shows the correlation between Python, C++, Bash, Typescript, and Java.", "max_tokens": 300, "temperature": 0.5}'
+truss predict -d '{"prompt": "I have a CSV file with the following columns: Python, C++, Bash, Typescript, Java. Create a visualization using seaborn that shows the correlation between Python, C++, Bash, Typescript, and Java.", "max_tokens": 300}'
 ```
 
 You can also invoke your model via a REST API:
 
-```
+```sh
 curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
@@ -73,6 +73,7 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
 ### Example output
 
 You can use the seaborn library to create a visualization that shows the correlation between the columns in your CSV file. Here is an example of how you can do this:
+
 ```
 import seaborn as sns
 import matplotlib.pyplot as plt
