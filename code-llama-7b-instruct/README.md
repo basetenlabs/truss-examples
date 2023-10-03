@@ -2,9 +2,9 @@
 
 This is a [Truss](https://truss.baseten.co/) for Code Llama 7B Instruct. Code Llama is an LLM based on Llama 2 that is designed to generate code. It comes in three sizes (7b, 13b, 34b) of three variants:
 
-- ([Base](https://huggingface.co/codellama/CodeLlama-7b-hf): general purpose code completion.
-- [Python](https://huggingface.co/codellama/CodeLlama-7b-Python-hf): Python-specific code completion.
-- [Instruct](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)): chat-tuned LLM for coding topics. This Truss packages the 7 billion parameter Instruct model.
+- ([Base](https://huggingface.co/codellama/CodeLlama-7b-hf)): general purpose code completion.
+- ([Python](https://huggingface.co/codellama/CodeLlama-7b-Python-hf)): Python-specific code completion.
+- ([Instruct](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)): chat-tuned LLM for coding topics. This Truss packages the 7 billion parameter Instruct model.
 
 ## Truss
 
