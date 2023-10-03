@@ -1,13 +1,14 @@
-# Code-Llama 7B Instruct
+# Code Llama 7B Instruct
 
-This is a [Truss](https://truss.baseten.co/) for Code-Llama 7B Instruct. Code Llama is a fine-tuned version of Llama 2 that is designed to generate code. There are three sizes (7b, 13b, 34b) as well as three flavours ([base model](https://huggingface.co/codellama/CodeLlama-7b-hf), [Python fine-tuned](https://huggingface.co/codellama/CodeLlama-7b-Python-hf), and [instruction tuned](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)).
+This is a [Truss](https://truss.baseten.co/) for Code Llama 7B Instruct. Code Llama is an LLM based on Llama 2 that is designed to generate code. It comes in three sizes (7b, 13b, 34b) of three variants:
 
-The base Code Llama model is designed for code completion. The python variant is specifically designed to generate python code more accurately. The instruct variant can be used in a chat like manner to generate code based on user instructions. For this truss, the instruct variant is used.
+- ([Base](https://huggingface.co/codellama/CodeLlama-7b-hf): general purpose code completion.
+- [Python](https://huggingface.co/codellama/CodeLlama-7b-Python-hf): Python-specific code completion.
+- [Instruct](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)): chat-tuned LLM for coding topics. This Truss packages the 7 billion parameter Instruct model.
 
 ## Truss
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp)). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
-
 
 ## Deploying Code Llama
 
