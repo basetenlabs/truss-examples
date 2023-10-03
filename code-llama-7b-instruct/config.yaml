@@ -1,5 +1,6 @@
 environment_variables: {}
 external_package_dirs: []
+description: A chat model with knowledge of coding tasks.
 model_metadata:
   example_model_input: {"prompt": "How do I kill a Docker container?"}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
