@@ -2,6 +2,7 @@ import torch
 import base64
 import qrcode
 from PIL import Image
+from PIL.Image import LANCZOS
 from io import BytesIO
 from typing import Dict
 
@@ -17,10 +18,22 @@ from diffusers import (
     EulerAncestralDiscreteScheduler
 )
 
+BASE64_PREAMBLE = "data:image/png;base64,"
 
 class Model:
     def __init__(self, **kwargs):
         self.model = None
+
+    def resize_image(self, pil_image, width=768, height=768):
+        input_image = pil_image.convert("RGB")
+        w, h = input_image.size
+        k = float(min(width, height)) / min(h, w)
+        h *= k
+        w *= k
+        h = int(round(h / 64.0)) * 64
+        w = int(round(w / 64.0)) * 64
+        img = input_image.resize((w, h), resample=LANCZOS)
+        return img
 
     def create_code(self, content: str):
         qr = qrcode.QRCode(
@@ -50,6 +63,9 @@ class Model:
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_str
 
+    def b64_to_pil(self, b64_str):
+        return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+
     def load(self):
         controlnet = ControlNetModel.from_pretrained(
             "monster-labs/control_v1p_sd15_qrcode_monster", torch_dtype=torch.float16
@@ -64,8 +80,13 @@ class Model:
         self.model.enable_xformers_memory_efficient_attention()
 
     def predict(self, request: Dict) -> Dict:
-        qr_code_content = request.get("qr_code_content")
-        prompt = request.get("prompt")
+        qr_code_content = request.get("qr_code_content", None)
+        prompt = request.get("prompt", None)
+        mask = request.get("mask", None)
+
+        if not prompt:
+            raise Exception("prompt is required for this model")
+
         negative_prompt = request.get("negative_prompt", "")
         guidance_scale = request.get("guidance_scale", 7.5)
         controlnet_conditioning_scale = request.get("condition_scale", 1.2)
@@ -85,13 +106,20 @@ class Model:
 
         self.model.scheduler = SAMPLER_MAP[sampler](self.model.scheduler.config)
         generator = torch.manual_seed(seed) if seed != -1 else torch.Generator()
-        qrcode_image = self.create_code(qr_code_content)
+        if qr_code_content:
+            image = self.create_code(qr_code_content)
+        elif mask:
+            pil_image = self.b64_to_pil(mask)
+            image = self.resize_image(pil_image)
+        else:
+            raise Exception("qr_code_content or mask is required")
+
         out = self.model(
             prompt=prompt,
             negative_prompt=negative_prompt,
-            image=qrcode_image,
-            width=qrcode_image.width,
-            height=qrcode_image.height,
+            image=image,
+            width=image.width,
+            height=image.height,
             guidance_scale=float(guidance_scale),
             controlnet_conditioning_scale=float(controlnet_conditioning_scale),
             generator=generator,
