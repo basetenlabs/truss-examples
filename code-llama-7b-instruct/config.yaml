@@ -7,6 +7,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/code-llama.png
   tags:
   - text-generation
+model_framework: custom
 model_name: Code Llama 7B Instruct
 python_version: py38
 requirements:
