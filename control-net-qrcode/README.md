@@ -37,6 +37,7 @@ This two models combined only take up about 5 GB of VRAM so a T4 is enough for t
 The predict route is the primary method for generating images based on a given prompt. It takes several parameters:
 
 - __prompt__ (required): The input text required for image generation.
+- __qr_code_content__ (required): The URL the QR code points to
 - __negative_prompt__ (optional, default=""): Use this to refine the image generation by discarding unwanted items.
 - __guidance_scale__ (optional, default=7.5): Used to control image generation.
 - __condition_scale__ (optional, default=1.2): The lower the condition_scale, the more creative the results. A higher condition_scale will result in less creative and more scannable QR Codes. 
@@ -45,7 +46,7 @@ The predict route is the primary method for generating images based on a given p
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting"}'
+truss predict -d '{"prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting", "qr_code_content": "https://www.baseten.co"}'
 ```
 
 You can also invoke your model via a REST API:
@@ -55,6 +56,6 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting"
+           "prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting", "qr_code_content": "https://www.baseten.co"
          }'
 ```
