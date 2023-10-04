@@ -1,0 +1,18 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: whisperx-truss
+python_version: py310
+requirements:
+  - torch==2.0
+  - torchaudio==2.0.0
+  - ipython
+  - git+https://github.com/m-bain/whisperX.git@e94b9043085c32c365b2b60f23e73b2d03c2241c
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: T4
+secrets: {}
+system_packages:
+  - ffmpeg
