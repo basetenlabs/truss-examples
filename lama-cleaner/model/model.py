@@ -12,56 +12,27 @@ The main methods to implement here are:
 See https://truss.baseten.co/quickstart for more.
 """
 
-import os
-import hashlib
 import imghdr
 import io
-import logging
-import multiprocessing
 import random
 import time
+import base64
 from collections import defaultdict
-from pathlib import Path
-
 import cv2
 import numpy as np
 import torch
 from PIL import Image
 from loguru import logger
 
-from lama_cleaner.const import SD15_MODELS
-from lama_cleaner.file_manager import FileManager
 from lama_cleaner.model.utils import torch_gc
 from lama_cleaner.model_manager import ModelManager
-from lama_cleaner.plugins import (
-    InteractiveSeg,
-    RemoveBG,
-    RealESRGANUpscaler,
-    MakeGIF,
-    GFPGANPlugin,
-    RestoreFormerPlugin,
-    AnimeSeg,
-)
 from lama_cleaner.schema import Config
-
 from lama_cleaner.helper import (
     load_img,
-    numpy_to_bytes,
     resize_max_size,
     pil_to_bytes,
 )
 
-import base64
-
-from flask import (
-    Flask,
-    request,
-    send_file,
-    cli,
-    make_response,
-    send_from_directory,
-    jsonify,
-)
 
 def get_image_ext(img_bytes):
     w = imghdr.what("", img_bytes)
