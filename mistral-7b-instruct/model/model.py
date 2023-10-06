@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoTokenizer, LlamaForCausalLM, TextIteratorStreamer, GenerationConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer, GenerationConfig
 from threading import Thread
 
 class Model:
@@ -8,12 +8,12 @@ class Model:
         self.model = None
     
     def load(self):        
-        self.model = LlamaForCausalLM.from_pretrained(
+        self.model = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1",
             torch_dtype=torch.float16,
             device_map="auto")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(
+        self.tokenizer = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1",
             device_map="auto",
             torch_dtype=torch.float16,
