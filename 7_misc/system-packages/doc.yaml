@@ -1,0 +1,5 @@
+title: "Model with system packages"
+description: "Deploy a model with both Python and system dependencies"
+files:
+  - model/model.py
+  - config.yaml

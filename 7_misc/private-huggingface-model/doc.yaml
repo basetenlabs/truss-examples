@@ -1,0 +1,5 @@
+title: "Private Hugging Face Model"
+description: "Load a model that requires authentication with Hugging Face"
+files:
+  - model/model.py
+  - config.yaml
