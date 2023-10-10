@@ -4,7 +4,7 @@ base_image:
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: exllama-streaming-nous-hermes
+model_name: exllama-streaming
 python_version: py311
 requirements:
 - exllamav2
