@@ -2,12 +2,20 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
 model_name: whisperx-truss
+base_image:
+  image: runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel
+  python_executable_path: /usr/bin/python
 python_version: py310
 requirements:
-  - torch==2.0
-  - torchaudio==2.0.0
-  - ipython
-  - git+https://github.com/m-bain/whisperX.git@e94b9043085c32c365b2b60f23e73b2d03c2241c
+  - git+https://github.com/m-bain/whisperx.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
+  - torch --index-url https://download.pytorch.org/whl/cu118
+  - torchaudio --index-url https://download.pytorch.org/whl/cu118
+  - transformers==4.34.0
+  - ffmpeg-python==0.2.0
+  - faster-whisper==0.9.0
+  - pandas==1.5.3
+  - nltk==3.8.1
+  - setuptools==67.7.2
 resources:
   cpu: "3"
   memory: 14Gi
@@ -15,4 +23,7 @@ resources:
   accelerator: T4
 secrets: {}
 system_packages:
-  - ffmpeg
+  - "ffmpeg"
+external_data:
+  - url: https://whisperx.s3.eu-west-2.amazonaws.com/model_weights/segmentation/0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea/pytorch_model.bin
+    local_data_path: models/pytorch_model.bin

@@ -1,9 +1,6 @@
 import whisperx
-import gc
 import requests
 import os
-import torch
-import shutil
 from typing import Dict
 
 
@@ -13,10 +10,13 @@ class Model:
     compute_type = "float16"
 
     def __init__(self, **kwargs):
+        self._data_dir = kwargs["data_dir"]
         self.model = None
 
     def load(self):
-        self.model = whisperx.load_model("large-v2", self.device, compute_type=self.compute_type)
+        # Need to manually download vad model
+        vad_model_path = os.path.join(self._data_dir, "models", "pytorch_model.bin")
+        self.model = whisperx.load_model("medium", self.device, language="en", compute_type=self.compute_type, vad_options={"model_fp": vad_model_path})
 
     def predict(self, request: Dict) -> Dict:
         file = request.get("audio_file", None)
