@@ -1,6 +1,6 @@
 # ExLlama V2 Streaming Truss
 
-This is a [Truss](https://truss.baseten.co/) for models supported by ExLlama V2, including Mistral, Llama 2, and more. The Truss supports `.safetensors`, `GPTQ`, and `EXL2` file formats, whcih means you should be able to run many of the models you love, as long as they have a Llama-style architecture.
+This is a [Truss](https://truss.baseten.co/) for models supported by [ExLlama V2](https://github.com/turboderp/exllamav2/), including Mistral, Llama 2, and more. The Truss supports `.safetensors`, `GPTQ`, and `EXL2` file formats, whcih means you should be able to run many of the models you love, as long as they have a Llama-style architecture.
 
 In particular, this Truss showcases streaming paired with ExLlama V2.
 
