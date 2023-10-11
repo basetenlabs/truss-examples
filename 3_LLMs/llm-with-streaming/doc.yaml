@@ -1,0 +1,5 @@
+title: "LLM with Streaming"
+description: "Building an LLM with streaming output"
+files:
+  - model/model.py
+  - config.yaml
