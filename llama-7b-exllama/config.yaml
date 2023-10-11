@@ -7,7 +7,7 @@ model_metadata: {}
 model_name: exllama
 python_version: py311
 requirements:
-- exllamav2
+- exllamav2==0.0.5
 resources:
   accelerator: A100
   cpu: '1'

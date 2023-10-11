@@ -1,20 +1,4 @@
-"""
-The `Model` class is an interface between the ML model that you're packaging and the model
-server that you're running it on.
-
-The main methods to implement here are:
-* `load`: runs exactly once when the model server is spun up or patched and loads the
-   model onto the model server. Include any logic for initializing your model, such
-   as downloading model weights and loading the model into memory.
-* `predict`: runs every time the model server is called. Include any logic for model
-  inference and return the model output.
-
-See https://truss.baseten.co/quickstart for more.
-"""
-
-
 import sys, os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from exllamav2 import(
     ExLlamaV2,
@@ -38,9 +22,6 @@ from threading import Thread, Condition
 
 class Model:
     def __init__(self, **kwargs):
-        # Uncomment the following to get access
-        # to various parts of the Truss config.
-
         self.generator = None
         self.tokenizer = None
         self.cache = None
@@ -79,7 +60,6 @@ class Model:
             queue.append(chunk)
             with condition_var:
                 condition_var.notify()
-            # sys.stdout.flush()
             if eos or generated_tokens == self.max_new_tokens: break
         queue.append(None)
         with condition_var:
@@ -94,11 +74,18 @@ class Model:
 
         input_ids = self.tokenizer.encode(prompt)
 
+        # sampling settings
+        temperature = model_input.get("temperature", 0.85)
+        top_k = model_input.get("top_k", 50)
+        top_p = model_input.get("top_p", 0.8)
+        token_repetition_penalty = model_input.get("token_repetition_penalty", 1.15)
+
         settings = ExLlamaV2Sampler.Settings()
-        settings.temperature = 0.85
-        settings.top_k = 50
-        settings.top_p = 0.8
-        settings.token_repetition_penalty = 1.15
+        settings.temperature = temperature
+        settings.top_k = top_k
+        settings.top_p = top_p
+        settings.token_repetition_penalty = token_repetition_penalty
+        
         if not use_stop_token:
             settings.disallow_tokens(self.tokenizer, [self.tokenizer.eos_token_id])
 
