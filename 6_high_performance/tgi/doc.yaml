@@ -1,4 +1,4 @@
-title: "High Performance LLMs with TGI"
+title: "High Performance LLM with TGI"
 description: "Deploy a language model with TGI"
 files:
   - config.yaml

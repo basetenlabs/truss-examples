@@ -1,0 +1,5 @@
+title: "Text-to-image"
+description: "Building a text-to-image model with SDXL"
+files:
+  - model/model.py
+  - config.yaml

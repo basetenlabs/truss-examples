@@ -1,0 +1,33 @@
+# # Setting up the config.yaml
+#
+# Running Mistral 7B requires a few libraries, such as
+# `torch`, `transformers` and a couple others. 
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"prompt": "What is the meaning of life?"}
+model_name: Mistral 7B
+python_version: py311
+requirements:
+- transformers==4.34.0
+- sentencepiece==0.1.99
+- accelerate==0.23.0
+- torch==2.0.1
+# ## Configure resources for Mistral
+#
+# Note that we need an A10G to run this model.
+resources:
+  accelerator: A10G
+  use_gpu: true
+secrets: {}
+system_packages: []
+# # Deploy the model
+# 
+# Deploy the model like you would other Trusses, with:
+# ```bash
+# $ truss push
+# ```
+# You can then invoke the model with:
+# ```bash
+# $ truss predict -d '{"inputs": "What is a large language model?"}'
+# ```

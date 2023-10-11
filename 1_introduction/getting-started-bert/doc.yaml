@@ -1,4 +1,4 @@
-title: "Getting Started: Text Classification"
+title: "Getting Started"
 description: "Building your first Truss"
 files:
   - model/model.py
