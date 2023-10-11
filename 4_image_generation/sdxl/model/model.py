@@ -56,7 +56,7 @@ class Model:
         self.refiner.to("cuda")
         self.refiner.enable_xformers_memory_efficient_attention()
 
-    # Utility function for converting PIL image to base64
+    # This is a utility function for converting PIL image to base64.
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
@@ -70,7 +70,7 @@ class Model:
     # as the `scheduler`, are somewhat complicated
     #   * Running the Diffusion Pipeline
     #   * If `use_refiner` is set to `True`, we run the refiner model on the output
-    #   # Convert the resulting image to base64 and return it
+    #   * Convert the resulting image to base64 and return it
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
         negative_prompt = model_input.pop("negative_prompt", None)
@@ -89,10 +89,8 @@ class Model:
         if scheduler == "DPM++ 2M":
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
         elif scheduler == "DPM++ 2M Karras":
-            # DPM++ 2M Karras (for < 30 steps, when speed matters) 
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
         elif scheduler == "DPM++ 2M SDE Karras":
-            # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter) 
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
 
         generator = None
@@ -124,7 +122,7 @@ class Model:
                                  guidance_scale=guidance_scale,
                                  image=image[None, :]).images[0]
             
-        # Convert the results to base64, and return them
+        # Convert the results to base64, and return them.
         b64_results = self.convert_to_b64(image)
         end_time = time.time() - start_time
 

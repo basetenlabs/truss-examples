@@ -25,7 +25,6 @@ class Model:
         self.model = None
 
     def load(self):
-        # Load model here and assign to self._model.
         self.model = AutoModelForCausalLM.from_pretrained(
             CHECKPOINT,
             torch_dtype=torch.float16,
