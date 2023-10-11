@@ -8,8 +8,8 @@ base_image:
 python_version: py310
 requirements:
   - git+https://github.com/m-bain/whisperx.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
-  - torch --index-url https://download.pytorch.org/whl/cu118
-  - torchaudio --index-url https://download.pytorch.org/whl/cu118
+  - torch==2.0.1 --index-url https://download.pytorch.org/whl/cu118
+  - torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
   - transformers==4.34.0
   - ffmpeg-python==0.2.0
   - faster-whisper==0.9.0
