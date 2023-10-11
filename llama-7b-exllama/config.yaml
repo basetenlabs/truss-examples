@@ -1,0 +1,17 @@
+base_image:
+  image: runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel
+  python_executable_path: /usr/bin/python
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: exllama
+python_version: py311
+requirements:
+- exllamav2==0.0.5
+resources:
+  accelerator: A100
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
