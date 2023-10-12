@@ -21,7 +21,8 @@ resources:
   memory: 14Gi
   use_gpu: true
   accelerator: T4
-secrets: {}
+secrets:
+  hf_access_token: "YOUR-HUGGING-FACE-TOKEN"
 system_packages:
   - "ffmpeg"
 external_data:

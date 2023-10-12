@@ -2,6 +2,16 @@
 
 [WhisperX](https://github.com/m-bain/whisperX) is a model built on top of Whisper that provides fast speech recognition with word-level timestamps. 
 
+## Getting Access To The Model
+The base WhisperX model does not need any special requirements, but if you want to enable speaker diarization there are a couple of models that you will need to get permission from.
+1. Go to the [speaker-diarization model](https://huggingface.co/pyannote/speaker-diarization-3.0) and fill out the required info to gain access to the model.
+
+2. Go to the [segmentation model](https://huggingface.co/pyannote/segmentation-3.0) and go through the same process.
+
+Once you have access to both of those models, make sure you have your hugging face access token on hand as you will need it to run this truss. 
+
+1. Create a [HuggingFace access token](https://huggingface.co/settings/tokens)
+2. Set it as a [secret in your Baseten account](https://app.baseten.co/settings/secrets) with the name `hf_access_token`
 
 ## Deploying WhisperX
 
@@ -66,7 +76,8 @@ The model returns a dictionary which contains the start and end timestamps along
         {
             "end": 10.742, 
             "start": 0.765, 
-            "text": "Four score and seven years ago, our fathers brought forth upon this continent, a new nation conceived in liberty and dedicated to the proposition that all men are created equal."
+            "text": "Four score and seven years ago, our fathers brought forth upon this continent, a new nation conceived in liberty and dedicated to the proposition that all men are created equal.",
+            "speaker": "SPEAKER_00"
         }
     ]
 }
