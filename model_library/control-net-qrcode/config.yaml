@@ -1,6 +1,7 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_metadata:
+  example_model_input: {"prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting", "qr_code_content": "https://www.baseten.co"}
 model_name: control-net-qrcode
 python_version: py310
 requirements:

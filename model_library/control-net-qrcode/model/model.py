@@ -26,12 +26,12 @@ class Model:
 
     def resize_image(self, pil_image, width=768, height=768):
         input_image = pil_image.convert("RGB")
-        w, h = input_image.size
-        k = float(min(width, height)) / min(h, w)
-        h *= k
-        w *= k
-        h = int(round(h / 64.0)) * 64
-        w = int(round(w / 64.0)) * 64
+        image_width, image_height = input_image.size
+        k = float(min(width, height)) / min(image_height, image_width)
+        image_height *= k
+        image_width *= k
+        h = int(round(image_height / 64.0)) * 64
+        w = int(round(image_width / 64.0)) * 64
         img = input_image.resize((w, h), resample=LANCZOS)
         return img
 
@@ -47,13 +47,13 @@ class Model:
         img = qr.make_image(fill_color="black", back_color="white")
 
         offset_min = 8 * 16
-        w, h = img.size
-        w = (w + 255 + offset_min) // 256 * 256
-        h = (h + 255 + offset_min) // 256 * 256
-        bg = Image.new('L', (w, h), 128)
+        image_width, image_height = img.size
+        image_width = (image_width + 255 + offset_min) // 256 * 256
+        image_height = (image_height + 255 + offset_min) // 256 * 256
+        bg = Image.new('L', (image_width, image_height), 128)
 
-        coords = ((w - img.size[0]) // 2 // 16 * 16,
-                  (h - img.size[1]) // 2 // 16 * 16)
+        coords = ((image_width - img.size[0]) // 2 // 16 * 16,
+                  (image_height - img.size[1]) // 2 // 16 * 16)
         bg.paste(img, coords)
         return bg
 
