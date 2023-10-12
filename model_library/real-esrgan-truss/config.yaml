@@ -1,6 +1,7 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_metadata:
+  example_model_input: {"image": "BASE64-STRING-HERE"}
 model_name: real-esrgan
 python_version: py310
 requirements:
