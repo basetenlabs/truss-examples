@@ -23,7 +23,7 @@ requirements:
 # field allows you to specify files to ignore. If this is specified, then
 # this repo won't have to be pulled during runtime.
 #
-# Check out the [guide]()
+# Check out the [guide](https://truss.baseten.co/guides/model-cache) for more info.
 hf_cache:
 - repo_id: "NousResearch/Llama-2-7b-chat-hf"
   ignore_patterns:
