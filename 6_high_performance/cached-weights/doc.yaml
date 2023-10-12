@@ -1,0 +1,5 @@
+title: "Fast Cold Starts with Cached Weights"
+description: "Deploy a language model, with the model weights cached at build time"
+files:
+  - model/model.py
+  - config.yaml

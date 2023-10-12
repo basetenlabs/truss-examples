@@ -2,7 +2,7 @@
 # at build time. Loading model weights for any model can often be the most time-consuming
 # part of starting a model. Caching the weights at build time means that the weights
 # will be baked into the Truss image, and will be available _immediately_ when your model
-# replica starts. This means that cold starts will be _significantly faster_ with this approach.
+# replica starts. This means that **cold starts** will be _significantly faster_ with this approach.
 #
 # # Implementing the `Model` class
 #
