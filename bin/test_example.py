@@ -45,8 +45,9 @@ def attempt_inference(truss_handle, model_version_id, api_key):
         json=example_model_input,
         timeout=30
     )
+
+    print(response.content)
     if response.status_code != 200:
-        print(response.content)
         raise Exception(f"Request failed with status code {response.status_code}")
 
 
@@ -59,10 +60,7 @@ def deploy_truss(truss_handle: TrussHandle) -> str:
         publish=True,
         trusted=True
     )
-    # Note -- there is an issue right now where the returned model_id is actually the model_version_id
-    model_version_id = service.model_id
-    
-    return model_version_id
+    return service.model_version_id
 
 
 def main(api_key: str, target_directory: str):
