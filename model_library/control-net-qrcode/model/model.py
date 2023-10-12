@@ -30,9 +30,9 @@ class Model:
         k = float(min(width, height)) / min(image_height, image_width)
         image_height *= k
         image_width *= k
-        h = int(round(image_height / 64.0)) * 64
-        w = int(round(image_width / 64.0)) * 64
-        img = input_image.resize((w, h), resample=LANCZOS)
+        image_height = int(round(image_height / 64.0)) * 64
+        image_width = int(round(image_width / 64.0)) * 64
+        img = input_image.resize((image_width, image_height), resample=LANCZOS)
         return img
 
     def create_code(self, content: str):
