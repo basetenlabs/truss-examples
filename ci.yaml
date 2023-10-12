@@ -1,9 +1,10 @@
 tests:
   - 1_introduction/getting-started-bert
-  - 6_high_performance/tgi
   - 2_image_classification/clip
   - 3_LLMs/llm-with-streaming
   - 3_LLMs/llm
   - 4_image_generation/sdxl
   - 5_audio/speech-to-text
+  - 6_high_performance/cached-weights
+  - 6_high_performance/tgi
   - 7_misc/system-packages
