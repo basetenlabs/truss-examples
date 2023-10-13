@@ -1,6 +1,6 @@
 # Contributing
 
-Please open a PR to add a new model.
+Please open a PR to add a new model. Please add new models to the `model_library` folder.
 
 ## Style guide
 
@@ -27,6 +27,9 @@ Always include:
 * `description`
 * `model_metadata`
   * `example_model_input`
+
+Optionally include:
+* `model_metadata`
   * `avatar_url` (Avatars/Logos should be 128x128 PNG)
   * `cover_image_url` (Cover images should be 452x423 PNG)
   * `tags`
@@ -71,3 +74,26 @@ Always configure a model library model with the least expensive hardware require
 
 * Models that support streaming should take a `stream` kwarg that defaults to false
 * Models that take any kind of text input should call it `prompt`
+
+# Testing
+
+If you would like the model to be added the CI job that tests examples very day, add a reference
+to the [ci.yaml](ci.yaml) file.
+
+# Automatic Documentation
+
+Some of the examples in this repo are used to generate automatic documentation on https://truss.baseten.co/.
+
+To add your model to this automatic documentation, add your example to one of the **top-level** categories
+in the repo, and add a `doc.yaml` file that follows the following form:
+
+```yaml
+title: "Text-to-image"
+description: "Building a text-to-image model with SDXL"
+files:
+  - model/model.py
+  - config.yaml
+```
+
+See the [Introduction doc.yaml file](1_introduction/getting-started-bert/doc.yaml) for an example.
+

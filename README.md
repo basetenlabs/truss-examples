@@ -2,7 +2,15 @@
 
 Truss is the simplest way to serve AI/ML models in production. 
 
-To get you started with [Truss](https://trussml.com/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs. Check out models like [Falcon-40B](falcon-40b-truss), [Starcoder](starcoder-truss), and [Stable Diffusion](stable-diffusion-truss) for inspiration.
+To get you started with [Truss](https://truss.baseten.co/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs.
+
+# Using this repository
+
+The top-level directories (such as `2_image_classification`) contain high-level categories, and contain
+well-commented examples of models in that category.  Each of these is tested with a CI job once a day.
+
+There are also lots of other model examples in the `model_library`, what likely has something similar
+to what you're looking for! 
 
 ## Installation
 
@@ -15,31 +23,27 @@ git clone https://github.com/basetenlabs/truss-examples
 Install Truss with:
 
 ```
-pip install --upgrade truss baseten
+pip install --upgrade truss
 ```
 
 ## Deployment
 
-Log in with a [Baseten API key](https://app.baseten.co/settings/account/api_keys):
-
-```
-baseten login
-```
 
 Pick a model to deploy by passing a path to that model. 
 
-```python
-import truss
-import baseten
-
-# Use these variables to pick and name a model
-model_path = "wizardlm-truss"
-model_name = "WizardLM"
-
-model = truss.load(model_path)
-baseten.deploy(model, model_name=model_name)
+```bash
+$ # From the truss-examples directory
+$ truss push 2_image_classification/clip
 ```
+
+This will prompt you for an API Key -- fetch one from the
+[Baseten API keys page](https://app.baseten.co/settings/account/api_keys).
 
 ## Invocation
 
 Invocation depends on the model's input and output specifications. See individual model READMEs for invocation details.
+
+# Contibuting
+
+We welcome contributions of new models and improvements to existing models. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
