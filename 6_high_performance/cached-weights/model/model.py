@@ -41,10 +41,10 @@ class Model:
 
     def predict(self, request: Dict) -> Dict[str, List]:
         prompt = request.pop("prompt")
-        inputs = self.tokenizer(format_prompt(prompt), return_tensors="pt")
+        input_ids = self.tokenizer(format_prompt(prompt), return_tensors="pt").input_ids.cuda()
 
         outputs = self.model.generate(
-            **inputs,
+            inputs=input_ids,
             do_sample=True,
             num_beams=1,
             max_new_tokens=100
