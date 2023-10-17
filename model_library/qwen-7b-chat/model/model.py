@@ -66,11 +66,9 @@ class Model:
             return self.stream(input_ids, generation_args)
 
         with torch.no_grad():
-            try:
-                output = self.model.generate(
-                    inputs=input_ids,
-                    **generation_args
-                )
-                return self.tokenizer.decode(output[0])
-            except Exception as exc:
-                return {"status": "error", "data": None, "message": str(exc)}
+            output = self.model.generate(
+                inputs=input_ids,
+                **generation_args
+            )
+            return self.tokenizer.decode(output[0])
+           
