@@ -1,6 +1,7 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_metadata:
+  example_model_input: {"audio_file": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
 model_name: whisperx-truss
 base_image:
   image: runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel
@@ -21,7 +22,8 @@ resources:
   memory: 14Gi
   use_gpu: true
   accelerator: T4
-secrets: {}
+secrets:
+  hf_access_token: null
 system_packages:
   - "ffmpeg"
 external_data:
