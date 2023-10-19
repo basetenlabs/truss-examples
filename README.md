@@ -4,14 +4,6 @@ Truss is the simplest way to serve AI/ML models in production.
 
 To get you started with [Truss](https://truss.baseten.co/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs.
 
-# Using this repository
-
-The top-level directories (such as `2_image_classification`) contain high-level categories, and contain
-well-commented examples of models in that category.  Each of these is tested with a CI job once a day.
-
-There are also lots of other model examples in the `model_library`, what likely has something similar
-to what you're looking for! 
-
 ## Installation
 
 Get the repository with:
