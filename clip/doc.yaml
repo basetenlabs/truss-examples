@@ -1,5 +1,0 @@
-title: "Image Classification"
-description: "Deploy a CLIP model to classify images"
-files:
-  - model/model.py
-  - config.yaml
