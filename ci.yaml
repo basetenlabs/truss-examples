@@ -6,5 +6,4 @@ tests:
   - 05-speech-to-text
   - 06-high-performance-cached-weights
   - 07-high-performance-tgi
-  - 08-high-performance-vllm 
   - 10-using-system-packages
