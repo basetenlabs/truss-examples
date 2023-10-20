@@ -23,8 +23,9 @@ runtime:
 # The remaining config options listed are standard Truss Config options.
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: OPT-125M
+model_metadata:
+  example_model_input: {"prompt": "What is the meaning of life?"}
+model_name: OPT-125M vLLM
 python_version: py39
 requirements: []
 resources:

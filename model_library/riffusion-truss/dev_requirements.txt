@@ -1,8 +1,0 @@
-black
-ipdb
-isort
-mypy
-pylint
-types-requests
-truss
-baseten

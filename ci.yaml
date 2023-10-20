@@ -1,10 +1,9 @@
 tests:
-  - 1_introduction/getting-started-bert
-  - 2_image_classification/clip
-  - 3_LLMs/llm-with-streaming
-  - 3_LLMs/llm
-  - 4_image_generation/sdxl
-  - 5_audio/speech-to-text
-  - 6_high_performance/cached-weights
-  - 6_high_performance/tgi
-  - 7_misc/system-packages
+  - 01-getting-started-bert
+  - 02-llm
+  - 03-llm-with-streaming
+  - 04-image-generation 
+  - 05-speech-to-text
+  - 06-high-performance-cached-weights
+  - 07-high-performance-tgi
+  - 10-using-system-packages
