@@ -18,5 +18,6 @@ python_version: py311
 resources:
   accelerator: A10G
   use_gpu: true
+  memory: 25Gi
 secrets: {}
 system_packages: []
