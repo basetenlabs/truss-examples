@@ -7,3 +7,4 @@ tests:
   - 06-high-performance-cached-weights
   - 07-high-performance-tgi
   - 10-using-system-packages
+  - qwen-7b-chat
