@@ -13,7 +13,7 @@ class Model:
             torch_dtype=torch.float16,
             device_map="auto")
 
-        self.tokenizer = AutoModelForCausalLM.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(
             "mistralai/Mistral-7B-Instruct-v0.1",
             device_map="auto",
             torch_dtype=torch.float16,
