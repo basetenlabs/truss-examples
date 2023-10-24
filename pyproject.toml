@@ -14,6 +14,7 @@ truss = { git = "https://github.com/basetenlabs/truss.git" }
 black = "^23.7.0"
 ipython = "^8.14.0"
 isort = "^5.12.0"
+pre-commit = "^3.5.0"
 
 [build-system]
 requires = ["poetry-core"]
