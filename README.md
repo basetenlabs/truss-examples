@@ -1,3 +1,6 @@
+
+![example workflow](https://github.com/basetenlabs/truss-examples/actions/workflows/text-examples.yml/badge.svg)
+
 # Truss Examples
 
 Truss is the simplest way to serve AI/ML models in production. 
