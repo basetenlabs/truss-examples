@@ -27,7 +27,7 @@ Pick a model to deploy by passing a path to that model.
 
 ```bash
 $ # From the truss-examples directory
-$ truss push 2_image_classification/clip
+$ truss push 02-llm
 ```
 
 This will prompt you for an API Key -- fetch one from the
