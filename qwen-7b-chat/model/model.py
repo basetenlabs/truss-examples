@@ -2,8 +2,7 @@ from threading import Thread
 from typing import Dict
 
 import torch
-from transformers import (AutoModelForCausalLM, AutoTokenizer,
-                          TextIteratorStreamer)
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 from transformers.generation import GenerationConfig
 
 
