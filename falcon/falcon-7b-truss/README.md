@@ -2,7 +2,7 @@
 
 This repository packages [Falcon-7B](https://huggingface.co/tiiuae/falcon-7b) as a [Truss](https://truss.baseten.co).
 
-Falcon 7B is an LLM released by Technology Innovation Institute (TII). 
+Falcon 7B is an LLM released by Technology Innovation Institute (TII).
 
 Utilizing this model for inference can be challenging given the hardware requirements. With Baseten and Truss, inference is dead simple.
 

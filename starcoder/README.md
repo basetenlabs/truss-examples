@@ -10,7 +10,7 @@ Before deploying this model, you'll need to:
 2. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
 3. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`. Note that you will *not* be able to successfully deploy Starcoder without doing this.
 
-## Deploying Starcoder 
+## Deploying Starcoder
 
 Before deployment:
 

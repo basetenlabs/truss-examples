@@ -3,7 +3,7 @@
 # The main section that needs to be filled out
 # to run CLIP is the `requirements` section, where we need
 # to include `transformers`, for the model pipeline, and `pillow`,
-# for image processing. 
+# for image processing.
 model_name: clip-example
 requirements:
 - transformers==4.32.0
@@ -17,7 +17,7 @@ resources:
   use_gpu: true
   accelerator: A10G
 # # Deploy the model
-# 
+#
 # Deploy the CLIP model like you would other Trusses, with:
 # ```bash
 # $ truss push

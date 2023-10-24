@@ -1,13 +1,14 @@
-from typing import Any, Dict, List
-import gc
-import torch
-from PIL import Image
 import base64
+import gc
 import os
 from io import BytesIO
-from diffusers import DiffusionPipeline
-from transformers import T5EncoderModel
+from typing import Any, Dict, List
+
 import huggingface_hub
+import torch
+from diffusers import DiffusionPipeline
+from PIL import Image
+from transformers import T5EncoderModel
 
 
 class Model:
@@ -31,7 +32,7 @@ class Model:
         self.unet = None
         self.second_stage = None
         self.upscaler = None
-    
+
     def login(self):
         huggingface_hub.login(self.hf_access_token)
 
@@ -51,7 +52,7 @@ class Model:
             subfolder="text_encoder",
             device_map="auto",
             load_in_8bit=True,
-            variant="8bit"
+            variant="8bit",
         )
         torch.compile(self.text_encoder)
 
@@ -101,13 +102,15 @@ class Model:
         self.load_upscaler()
         self.generator = torch.Generator("cuda").manual_seed(1)
 
-    def forward(self, 
-                prompt: str, 
-                negative_prompt: str, 
-                encoder_kwargs: Dict = {},
-                first_stage_kwargs: Dict = {},
-                second_stage_kwargs: Dict = {},
-                upscaler_kwargs: Dict = {}):
+    def forward(
+        self,
+        prompt: str,
+        negative_prompt: str,
+        encoder_kwargs: Dict = {},
+        first_stage_kwargs: Dict = {},
+        second_stage_kwargs: Dict = {},
+        upscaler_kwargs: Dict = {},
+    ):
         """
         Forward pass through the model pipelines.
 
@@ -122,7 +125,7 @@ class Model:
         Returns
         - image: The final output image.
         """
-        # Run prompt through deepfloyd with text encoder without unet 
+        # Run prompt through deepfloyd with text encoder without unet
         self.first_stage.to("cuda")
         self.first_stage.text_encoder = self.text_encoder
         prompt_embeds, negative_embeds = self.first_stage.encode_prompt(
@@ -140,7 +143,7 @@ class Model:
         self.first_stage.unet = self.unet
         image = self.first_stage(
             prompt_embeds=prompt_embeds,
-            negative_prompt_embeds=negative_embeds, 
+            negative_prompt_embeds=negative_embeds,
             output_type="pt",
             generator=self.generator,
             num_inference_steps=50,
@@ -155,9 +158,9 @@ class Model:
         # Run through deepfloyd 2nd stage with unet without text encoder
         self.second_stage = self.second_stage.to("cuda")
         image = self.second_stage(
-            image=image, 
-            prompt_embeds=prompt_embeds, 
-            negative_prompt_embeds=negative_embeds, 
+            image=image,
+            prompt_embeds=prompt_embeds,
+            negative_prompt_embeds=negative_embeds,
             output_type="pt",
             generator=self.generator,
             num_inference_steps=50,
@@ -171,7 +174,7 @@ class Model:
         self.upscaler.to("cuda")
         image = self.upscaler(
             prompt,
-            generator=self.generator, 
+            generator=self.generator,
             image=image,
             **upscaler_kwargs,
         ).images
@@ -180,7 +183,7 @@ class Model:
         self.flush()
 
         return image
-    
+
     def convert_to_b64(self, image: Image) -> str:
         """
         Convert the image to base64 format.
@@ -194,8 +197,8 @@ class Model:
         buffered = BytesIO()
         image[0].save(buffered, format="JPEG")
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        return img_b64 
-    
+        return img_b64
+
     def predict(self, model_input: Dict) -> Dict:
         """
         Predict the output based on the model input.
@@ -214,18 +217,18 @@ class Model:
         upscaler_kwargs = model_input.pop("upscaler_kwargs", {})
         random_seed = int.from_bytes(os.urandom(2), "big")
         seed = model_input.pop("seed", random_seed)
-        
+
         self.generator = torch.Generator("cuda").manual_seed(seed)
-        
+
         image = self.forward(
-            prompt, 
-            negative_prompt, 
+            prompt,
+            negative_prompt,
             encoder_kwargs,
             first_stage_kwargs,
             second_stage_kwargs,
             upscaler_kwargs,
         )
-        
+
         encoded_image = self.convert_to_b64(image)
-        
+
         return {"status": "success", "data": [encoded_image], "message": None}

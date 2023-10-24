@@ -1,8 +1,10 @@
+import uuid
 from typing import Any
+
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
-import uuid
+
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -10,9 +12,11 @@ class Model:
         self.llm_engine = None
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(model="mistralai/Mistral-7B-Instruct-v0.1",)
+        self.model_args = AsyncEngineArgs(
+            model="mistralai/Mistral-7B-Instruct-v0.1",
+        )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
-    
+
     def preprocess(self, request: dict):
         generate_args = {
             "n": 1,
@@ -43,15 +47,15 @@ class Model:
         return request
 
     async def predict(self, request: dict) -> Any:
-        prompt = request.pop('prompt')
+        prompt = request.pop("prompt")
         formatted_prompt = f"<s>[INST] {prompt} [/INST]"
         sampling_params = SamplingParams(**request)
         idx = str(uuid.uuid4().hex)
         generator = self.llm_engine.generate(formatted_prompt, sampling_params, idx)
-        
+
         full_text = ""
         async for output in generator:
             text = output.outputs[0].text
-            delta = text[len(full_text):]
+            delta = text[len(full_text) :]
             full_text = text
             yield delta

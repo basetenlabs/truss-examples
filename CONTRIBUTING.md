@@ -96,4 +96,3 @@ files:
 ```
 
 See the [Introduction doc.yaml file](1_introduction/getting-started-bert/doc.yaml) for an example.
-

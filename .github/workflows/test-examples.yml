@@ -14,9 +14,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: yq - portable yaml processor      
+    - name: yq - portable yaml processor
       uses: mikefarah/yq@v4.35.2
-    - name: Generate all tests that need to be run 
+    - name: Generate all tests that need to be run
       id: generate-matrix
       run: |
         TESTS=$(cat ci.yaml| yq e ".tests"  | yq eval -o=json | jq -c .)
@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies (if any)
         run: |
           python -m pip install --upgrade pip
-          pip install truss requests tenacity --upgrade 
+          pip install truss requests tenacity --upgrade
       - name: Test => (${{ matrix.test }}
         run: |
           python ./bin/test_example.py ${{secrets.BASETEN_API_KEY}} ${{matrix.test}}
@@ -65,4 +65,3 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-         

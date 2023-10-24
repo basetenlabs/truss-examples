@@ -4,6 +4,7 @@ from typing import Dict
 
 import requests
 import torch
+
 import whisper
 
 
@@ -38,4 +39,3 @@ class Model:
             "segments": segments,
             "text": result["text"],
         }
-

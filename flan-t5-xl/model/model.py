@@ -31,7 +31,9 @@ class Model:
         try:
             decoded_output = []
             prompt = request.pop("prompt")
-            input_ids = self._tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
+            input_ids = self._tokenizer(prompt, return_tensors="pt").input_ids.to(
+                "cuda"
+            )
             outputs = self._model.generate(input_ids, **request)
             for beam in outputs:
                 decoded_output.append(

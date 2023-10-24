@@ -1,12 +1,13 @@
+import base64
+import functools
+import time
+from io import BytesIO
 from typing import Any
 
-from diffusers import DiffusionPipeline, AutoencoderKL
 import torch
-import base64
-from io import BytesIO
+from diffusers import AutoencoderKL, DiffusionPipeline
 from PIL import Image
-import time
-import functools
+
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -32,10 +33,10 @@ class Model:
 
         # self.pipe.load_lora_weights(
         #     "minimaxir/sdxl-wrong-lora"
-        # ) 
-         
-        self.pipe.to('cuda')
-        
+        # )
+
+        self.pipe.to("cuda")
+
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=self.pipe.text_encoder_2,
@@ -58,7 +59,7 @@ class Model:
         use_refiner = model_input.pop("use_refiner", True)
         high_noise_frac = model_input.pop("high_noise_frac", 0.8)
         num_inference_steps = model_input.pop("num_inference_steps", 30)
-        
+
         with torch.inference_mode():
             image = self.pipe(
                 prompt=prompt,
@@ -66,7 +67,7 @@ class Model:
                 num_inference_steps=num_inference_steps,
                 denoising_end=high_noise_frac if use_refiner else 1.0,
                 output_type="latent" if use_refiner else "pil",
-                target_size=(target_size, target_size)
+                target_size=(target_size, target_size),
             ).images[0]
             if use_refiner:
                 image = self.refiner(
@@ -74,7 +75,7 @@ class Model:
                     num_inference_steps=num_inference_steps,
                     denoising_start=high_noise_frac,
                     image=image[None, :],
-                    target_size=(target_size, target_size)
+                    target_size=(target_size, target_size),
                 ).images[0]
         b64_results = self.convert_to_b64(image)
 

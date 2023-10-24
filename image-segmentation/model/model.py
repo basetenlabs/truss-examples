@@ -10,7 +10,6 @@ import torchvision.transforms as T
 from PIL import Image
 from torchvision import models
 
-
 logger = logging.getLogger(__name__)
 
 PYTORCH_IMAGE_MEAN = [0.485, 0.456, 0.406]
@@ -37,7 +36,9 @@ class Model:
 
     def predict(self, request: Dict) -> Dict[str, List]:
         return {
-            "predictions": [self._predict_single(instance) for instance in request["instances"]]
+            "predictions": [
+                self._predict_single(instance) for instance in request["instances"]
+            ]
         }
 
     def _predict_single(self, instance: Dict):
@@ -53,7 +54,9 @@ class Model:
         )
         network_input = image_transform(img).unsqueeze(0).to(self._device)
         network_output = self._model.to(self._device)(network_input)["out"]
-        class_predictions = torch.argmax(network_output.squeeze(), dim=0).detach().cpu().numpy()
+        class_predictions = (
+            torch.argmax(network_output.squeeze(), dim=0).detach().cpu().numpy()
+        )
         rgb_ndarray = decode_segmap(class_predictions)
         output_image = Image.fromarray(rgb_ndarray)
         fp = BytesIO()

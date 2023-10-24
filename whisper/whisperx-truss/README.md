@@ -1,6 +1,6 @@
 # WhisperX Truss
 
-[WhisperX](https://github.com/m-bain/whisperX) is a model built on top of Whisper that provides fast speech recognition with word-level timestamps. 
+[WhisperX](https://github.com/m-bain/whisperX) is a model built on top of Whisper that provides fast speech recognition with word-level timestamps.
 
 ## Getting Access To The Model
 The base WhisperX model does not need any special requirements, but if you want to enable speaker diarization there are a couple of models that you will need to get permission from.
@@ -8,7 +8,7 @@ The base WhisperX model does not need any special requirements, but if you want 
 
 2. Go to the [segmentation model](https://huggingface.co/pyannote/segmentation-3.0) and go through the same process.
 
-Once you have access to both of those models, make sure you have your hugging face access token on hand as you will need it to run this truss. 
+Once you have access to both of those models, make sure you have your hugging face access token on hand as you will need it to run this truss.
 
 1. Create a [HuggingFace access token](https://huggingface.co/settings/tokens)
 2. Set it as a [secret in your Baseten account](https://app.baseten.co/settings/secrets) with the name `hf_access_token`
@@ -40,11 +40,11 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 ## Hardware notes
 
 This whisperX model comes in various sizes: ["small", "medium", "large-v2"].
-The large-v2 model can be easily run on the T4 GPU. 
+The large-v2 model can be easily run on the T4 GPU.
 
 ## API route: `predict`
 
-The `predict` route is the primary method used for audio transcription. 
+The `predict` route is the primary method used for audio transcription.
 
 - __audio_file__: An MP3 audio file. This file must be accessible over the internet as files from local storage are not accessible.
 
@@ -67,15 +67,15 @@ curl -X POST "https://app.baseten.co/models/{MODEL_ID}/predict" \
 
 ## Output
 
-The model returns a dictionary which contains the start and end timestamps along with the transcript of what is said in between each timestamp. 
+The model returns a dictionary which contains the start and end timestamps along with the transcript of what is said in between each timestamp.
 
 ```json
 {
-    "model_output": 
+    "model_output":
     [
         {
-            "end": 10.742, 
-            "start": 0.765, 
+            "end": 10.742,
+            "start": 0.765,
             "text": "Four score and seven years ago, our fathers brought forth upon this continent, a new nation conceived in liberty and dedicated to the proposition that all men are created equal.",
             "speaker": "SPEAKER_00"
         }

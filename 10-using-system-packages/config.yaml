@@ -1,5 +1,5 @@
 # # Setting up the config.yaml file
-# 
+#
 # The main items that need to be configured in the config.yaml file are requirements
 # and `system_packages` sections.
 environment_variables: {}

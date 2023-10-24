@@ -1,13 +1,10 @@
 import logging
-from pathlib import Path
 import traceback
+from pathlib import Path
 from typing import Dict, List
 
 import torch
-from transformers import AutoModelForCausalLM
-from transformers import CodeGenTokenizer
-from transformers import pipeline
-
+from transformers import AutoModelForCausalLM, CodeGenTokenizer, pipeline
 
 DEFAULT_PAD = 50256
 DEFAULT_MAX_LENGTH = 128
@@ -28,8 +25,12 @@ class Model:
         # Load model here and assign to self._model.
         self._model = pipeline(
             "text-generation",
-            tokenizer=CodeGenTokenizer.from_pretrained(Path(self._data_dir) / "tokenizer"),
-            model=AutoModelForCausalLM.from_pretrained(Path(self._data_dir) / "saved_model"),
+            tokenizer=CodeGenTokenizer.from_pretrained(
+                Path(self._data_dir) / "tokenizer"
+            ),
+            model=AutoModelForCausalLM.from_pretrained(
+                Path(self._data_dir) / "saved_model"
+            ),
             device_map="auto",
         )
 
@@ -59,7 +60,9 @@ class Model:
                 temp = request.get("temperature", DEFAULT_TEMPERATURE)
                 max_length = request.get("max_length", DEFAULT_MAX_LENGTH)
                 top_p = request.get("top_p", DEFAULT_TOP_P)
-                encoded_prompt = self._model.tokenizer(prompt, return_tensors="pt").input_ids
+                encoded_prompt = self._model.tokenizer(
+                    prompt, return_tensors="pt"
+                ).input_ids
                 encoded_output = self._model.model.generate(
                     encoded_prompt,
                     max_length=max_length,

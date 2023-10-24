@@ -1,14 +1,15 @@
 import base64
-import tempfile
-import torch
 import io
-import soundfile as sf
+import tempfile
 
+import soundfile as sf
+import torch
 from audiocraft.data.audio import audio_write
 from audiocraft.models import MusicGen
 
 TARGET_SAMPLE_RATE = 32000
 TARGET_AUDIO_CHANNELS = 1
+
 
 class Model:
     def load(self):
@@ -38,7 +39,7 @@ class Model:
             prompts = request.pop("prompts")
             duration = request.pop("duration") if "duration" in request else 8
             self.model.set_generation_params(duration=duration)
-            
+
             melody_base64 = request.pop("melody", None)
 
             if melody_base64:
@@ -47,7 +48,7 @@ class Model:
                 wav = self.model.generate_with_chroma(
                     descriptions=prompts,
                     melody_wavs=[processed_melody for _ in prompts],
-                    melody_sample_rate=TARGET_SAMPLE_RATE
+                    melody_sample_rate=TARGET_SAMPLE_RATE,
                 )
             else:
                 wav = self.model.generate(prompts)

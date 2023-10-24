@@ -79,4 +79,4 @@ AudioGen comes in 1 size:
 
 - `medium`: 1.5B model
 
-which is the model in this truss. 
+which is the model in this truss.

@@ -1,10 +1,11 @@
 # In this example, we go through building your first Truss model. We'll be using the HuggingFace transformers
 # library to build a text classification model that can detect sentiment of text.
-# 
+#
 # # Step 1: Implementing the model
-# 
+#
 # Set up imports for this model. In this example, we simply use the HuggingFace transformers library.
 from transformers import pipeline
+
 
 # Every Truss model must implement a `Model` class. This class must have:
 #  * an `__init__` function
@@ -20,8 +21,8 @@ class Model:
     # involved in downloading the model and loading it into memory.
     # For this Truss example, we define a HuggingFace pipeline, and choose
     # the `text-classification` task, which uses BERT for text classification under the hood.
-    # 
-    # Note that the the load function runs when the 
+    #
+    # Note that the the load function runs when the
     def load(self):
         self._model = pipeline("text-classification")
 

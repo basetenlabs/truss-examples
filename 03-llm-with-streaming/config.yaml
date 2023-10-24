@@ -1,5 +1,5 @@
 # # Setting up the config.yaml
-# 
+#
 # Running Falcon 7B requires torch, transformers,
 # and a few other related libraries.
 model_name: "LLM with Streaming"
@@ -14,7 +14,7 @@ requirements:
 - bitsandbytes==0.41.1
 - einops==0.6.1
 - transformers==4.31.0
-# ## Configure resources for Falcon 
+# ## Configure resources for Falcon
 #
 # Note that we need an A10G to run this model.
 resources:

@@ -1,11 +1,13 @@
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-import transformers
 from typing import Dict, List
+
+import torch
+import transformers
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 CHECKPOINT = "tiiuae/falcon-40b-instruct"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_TOP_P = 0.95
+
 
 class Model:
     def __init__(self, data_dir: str, config: Dict, secrets: Dict, **kwargs) -> None:
@@ -26,15 +28,12 @@ class Model:
             device_map="auto",
         )
 
-
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
                 data = self.pipeline(
-                    prompt,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    **request
+                    prompt, eos_token_id=self.tokenizer.eos_token_id, **request
                 )[0]
                 return {"data": data}
 
