@@ -14,8 +14,12 @@ from threading import Thread
 from typing import Dict
 
 import torch
-from transformers import (AutoModelForCausalLM, AutoTokenizer,
-                          GenerationConfig, TextIteratorStreamer)
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    GenerationConfig,
+    TextIteratorStreamer,
+)
 
 # We use the instruct version of the Falcon-7B model, and have some defaults
 # for inference parameters.

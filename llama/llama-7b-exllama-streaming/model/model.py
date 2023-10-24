@@ -3,8 +3,7 @@ import sys
 import time
 from threading import Condition, Thread
 
-from exllamav2 import (ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config,
-                       ExLlamaV2Tokenizer)
+from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2Sampler, ExLlamaV2StreamingGenerator
 from huggingface_hub import snapshot_download
 

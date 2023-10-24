@@ -4,11 +4,16 @@ from typing import Dict
 
 import qrcode
 import torch
-from diffusers import (ControlNetModel, DDIMScheduler, DEISMultistepScheduler,
-                       DPMSolverMultistepScheduler,
-                       EulerAncestralDiscreteScheduler, EulerDiscreteScheduler,
-                       HeunDiscreteScheduler,
-                       StableDiffusionControlNetPipeline)
+from diffusers import (
+    ControlNetModel,
+    DDIMScheduler,
+    DEISMultistepScheduler,
+    DPMSolverMultistepScheduler,
+    EulerAncestralDiscreteScheduler,
+    EulerDiscreteScheduler,
+    HeunDiscreteScheduler,
+    StableDiffusionControlNetPipeline,
+)
 from PIL import Image
 from PIL.Image import LANCZOS
 
