@@ -1,5 +1,5 @@
 
-![example workflow](https://github.com/basetenlabs/truss-examples/actions/workflows/text-examples.yml/badge.svg)
+![example workflow](https://github.com/basetenlabs/truss-examples/actions/workflows/test-examples.yml/badge.svg)
 
 # Truss Examples
 
