@@ -39,7 +39,7 @@ class Model:
         request["generate_args"] = generate_args
         return request
 
-    def load(self):        
+    def load(self):
         self.model = LlamaForCausalLM.from_pretrained(
             CHECKPOINT,
             use_auth_token=self.hf_access_token,

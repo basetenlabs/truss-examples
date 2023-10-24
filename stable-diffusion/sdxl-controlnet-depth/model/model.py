@@ -81,19 +81,19 @@ class Model:
         self.depth_estimator = DPTForDepthEstimation.from_pretrained("Intel/dpt-hybrid-midas").to("cuda")
         self.feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-hybrid-midas")
 
-        
+
     def predict(self, model_input):
         prompt = model_input.pop("prompt")
         negative_prompt = model_input.pop("negative_prompt", "low quality, bad quality, sketches")
         image = model_input.pop("image")
         num_inference_steps = model_input.pop("num_inference_steps", 30)
         controlnet_conditioning_scale = model_input.pop("controlnet_conditioning_scale", 0.5)
-        
+
         image = b64_to_pil(image).convert("RGB")
         image = self.get_depth_map(image)
 
         images = self._model(
             prompt, num_inference_steps=num_inference_steps, negative_prompt=negative_prompt, image=image, controlnet_conditioning_scale=controlnet_conditioning_scale,
         ).images
-        
+
         return {"result" : pil_to_b64(images[0])}

@@ -6,7 +6,7 @@
 # 10 - 20 seconds to generate. However, because LLMs generate tokens in sequence, useful output can be
 # made available to users sooner. To support this, in Truss, we support streaming output. In this example,
 # we build a Truss that streams the output of the Falcon-7B model.
-# 
+#
 # # Set up the imports and key constants
 #
 # In this example, we use the HuggingFace transformers library to build a text generation model.
@@ -33,7 +33,7 @@ class Model:
 
     def load(self):
         self.tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT)
-        # 
+        #
         self.tokenizer.pad_token = self.tokenizer.eos_token_id
         self.model = AutoModelForCausalLM.from_pretrained(
             CHECKPOINT,
@@ -42,7 +42,7 @@ class Model:
             device_map="auto",
         )
 # # Define the predict function
-# 
+#
 # In the `predict` function of the Truss, we implement the actual
 # inference logic. The two main steps are:
 # * Tokenize the input

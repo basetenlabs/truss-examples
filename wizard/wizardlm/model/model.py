@@ -28,7 +28,7 @@ class Model:
         model.config.eos_token_id = 2
         model.half()
         model.eval()
-        
+
         self.model = model
         self.tokenizer = tokenizer
 
@@ -38,7 +38,7 @@ class Model:
         final_output = _output[0].split("### Response:")[1].strip()
         return final_output
 
-    
+
 def evaluate(
         model,
         tokenizer,

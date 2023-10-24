@@ -33,7 +33,7 @@ This section provides an overview of the Camel-5B API, its parameters, and how t
 The predict route is the primary method for generating text completions based on a given instruction. It takes several parameters:
 
 - __instruction__: The instruction text that you want the model to follow.
-- __input__ (optional): The input text provided by the user that is referenced in the `instruction` value.  
+- __input__ (optional): The input text provided by the user that is referenced in the `instruction` value.
 - __temperature__ (optional): Controls the randomness of the generated text. Higher values produce more diverse results, while lower values produce more deterministic results.
 - __top_p__ (optional): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
 - __top_k__ (optional: The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.

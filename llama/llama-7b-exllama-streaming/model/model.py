@@ -27,7 +27,7 @@ class Model:
         self.cache = None
 
     def load(self):
-        # Load model here and assign to self._model. 
+        # Load model here and assign to self._model.
         # GPTQ, EXL2, and safetensors models with Llama-style architecture (including Mistral) are compatible.
         model_directory =  snapshot_download(repo_id="turboderp/Llama2-7B-chat-exl2", revision="4bpw")
 
@@ -41,17 +41,17 @@ class Model:
         # allocate 18 GB to CUDA:0 and 24 GB to CUDA:1.
         # (Call `model.load()` if using a single GPU.)
         model.load()
-        
+
 
         self.tokenizer = ExLlamaV2Tokenizer(config)
 
         # Note: if you want to batch -> https://github.com/turboderp/exllamav2/issues/42
         self.cache = ExLlamaV2Cache(model)
-        
+
         self.generator = ExLlamaV2StreamingGenerator(model, self.cache, self.tokenizer)
         self.generator.warmup()
 
-    
+
     def streamer(self, queue, condition_var):
         generated_tokens = 0
         while True:
@@ -85,7 +85,7 @@ class Model:
         settings.top_k = top_k
         settings.top_p = top_p
         settings.token_repetition_penalty = token_repetition_penalty
-        
+
         if not use_stop_token:
             settings.disallow_tokens(self.tokenizer, [self.tokenizer.eos_token_id])
 
@@ -111,6 +111,6 @@ class Model:
                     if queue[0] is None:
                         break
                     yield queue.pop(0)
-            thread.join() 
+            thread.join()
 
         return inner()

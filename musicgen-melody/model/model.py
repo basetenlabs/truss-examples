@@ -38,7 +38,7 @@ class Model:
             prompts = request.pop("prompts")
             duration = request.pop("duration") if "duration" in request else 8
             self.model.set_generation_params(duration=duration)
-            
+
             melody_base64 = request.pop("melody", None)
 
             if melody_base64:

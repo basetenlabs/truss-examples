@@ -1,14 +1,14 @@
 # # Setting up the config yaml
 #
 # Running SDXL requires a handful of Python libraries, including
-# diffusers, transformers, and others. 
+# diffusers, transformers, and others.
 environment_variables: {}
 external_package_dirs: []
-model_metadata: 
+model_metadata:
   example_model_input: {"prompt": "A tree in a field under the night sky", "use_refiner": true}
 model_name: Stable Diffusion XL
 python_version: py39
-requirements: 
+requirements:
 - transformers==4.34.0
 - accelerate==0.23.0
 - safetensors==0.4.0
@@ -31,7 +31,7 @@ secrets: {}
 system_packages:
 - ffmpeg
 - libsm6
-- libxext6 
+- libxext6
 # ## Enabling Caching
 #
 # SDXL is a very large model, and downloading it could take up to 10 minutes. This means
@@ -39,7 +39,7 @@ system_packages:
 # caching feature. This moves the model download to the build stage of your model--
 # caching the model will take about 10 minutes initially but you will get ~9s cold starts
 # subsequently.
-# 
+#
 # To enable caching, add the following to the config:
 # ```yaml
 # hf_cache:
@@ -59,7 +59,7 @@ system_packages:
 #       - sd_xl_refiner_1.0.safetensors
 # ```
 # # Deploy the model
-# 
+#
 # Deploy the model like you would other Trusses, with:
 # ```bash
 # $ truss push

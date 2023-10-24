@@ -71,4 +71,3 @@ class Model:
                 **generation_args
             )
             return self.tokenizer.decode(output[0])
-           

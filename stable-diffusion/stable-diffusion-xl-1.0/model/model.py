@@ -22,11 +22,11 @@ class Model:
             torch_dtype=torch.float16,
             variant="fp16",
             use_safetensors=True,
-        )         
+        )
 
         # DPM++ 2M Karras (for < 30 steps, when speed matters)
         #self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
-        
+
         # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter)
         # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
 
@@ -55,7 +55,7 @@ class Model:
         image.save(buffered, format="JPEG")
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_b64
-    
+
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
         negative_prompt = model_input.pop("negative_prompt", None)
@@ -72,10 +72,10 @@ class Model:
         if scheduler == "DPM++ 2M":
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
         elif scheduler == "DPM++ 2M Karras":
-            # DPM++ 2M Karras (for < 30 steps, when speed matters) 
+            # DPM++ 2M Karras (for < 30 steps, when speed matters)
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
         elif scheduler == "DPM++ 2M SDE Karras":
-            # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter) 
+            # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter)
             self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
 
         generator = None
@@ -92,7 +92,7 @@ class Model:
                           generator=generator,
                           end_cfg = end_cfg_frac,
                           num_inference_steps=num_inference_steps,
-                          denoising_end=denoising_frac, 
+                          denoising_end=denoising_frac,
                           guidance_scale=guidance_scale,
                           output_type="latent" if use_refiner else "pil").images[0]
         scheduler = self.pipe.scheduler
@@ -101,12 +101,12 @@ class Model:
             image = self.refiner(prompt=prompt,
                                  negative_prompt=negative_prompt,
                                 generator=generator,
-                                 end_cfg = end_cfg_frac, 
-                                 num_inference_steps=num_inference_steps, 
+                                 end_cfg = end_cfg_frac,
+                                 num_inference_steps=num_inference_steps,
                                  denoising_start=denoising_frac,
                                  guidance_scale=guidance_scale,
                                  image=image[None, :]).images[0]
-            
+
         b64_results = self.convert_to_b64(image)
         end_time = time.time() - start_time
 

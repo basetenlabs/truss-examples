@@ -1,6 +1,6 @@
 # In this example, we create a Truss that uses [CLIP](https://openai.com/research/clip) to classify images,
 # using some pre-defined labels. The input to this Truss will be an image, the output will be a classification.
-# 
+#
 # One of the major things to note about this example is that since the inputs are images, we need to have
 # some mechanism for downloading the image. To accomplish this, we have the user pass a downloadable URL to
 # the Truss, and in the Truss code, download the image. To do this efficiently, we will make use of the
@@ -37,7 +37,7 @@ class Model:
     # In the `preprocess` method, we download the image from the url and preprocess it.
     # This method is a part of the Truss class, and is designed to be used for any logic
     # involving IO, like in this case, downloading an image.
-    # 
+    #
     # It is called before the predict method in a separate thread, and is not subject to the same
     # concurrency limits as the predict method, so can be called many times in parallel.
     # This makes it such that the predict method is not unnecessarily blocked on IO-bound

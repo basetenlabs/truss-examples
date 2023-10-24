@@ -86,4 +86,4 @@ class GPTJTransformerModel(object):
                 return {"status": "success", "data": gen_text, "message": None}
             except Exception as exc:
                 return {"status": "error", "data": None, "message": str(exc)}
-            
+

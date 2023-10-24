@@ -1,6 +1,6 @@
 # Control Net QR Code Truss
 
-This truss allows you to generate QR codes using Stable Diffusion and Control Net. By typing in a prompt using the same guidelines as stable diffusion, a new image gets created that combines the image from the prompt with the image of a qr code. For this truss [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5) is used along with [Control QR Code Monster](https://huggingface.co/monster-labs/control_v1p_sd15_qrcode_monster) as the control net. 
+This truss allows you to generate QR codes using Stable Diffusion and Control Net. By typing in a prompt using the same guidelines as stable diffusion, a new image gets created that combines the image from the prompt with the image of a qr code. For this truss [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5) is used along with [Control QR Code Monster](https://huggingface.co/monster-labs/control_v1p_sd15_qrcode_monster) as the control net.
 
 ![controlnet_qr_code](controlnet_qr_code_results.gif)
 
@@ -30,7 +30,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ### Hardware notes
 
-This two models combined only take up about 5 GB of VRAM so a T4 is enough for this truss. 
+This two models combined only take up about 5 GB of VRAM so a T4 is enough for this truss.
 
 ### API route: `predict`
 
@@ -41,7 +41,7 @@ The predict route is the primary method for generating images based on a given p
 - __mask__ (optional): If a URL is not passed into qr_code_content, a custom image can be used as a mask
 - __negative_prompt__ (optional, default=""): Use this to refine the image generation by discarding unwanted items.
 - __guidance_scale__ (optional, default=7.5): Used to control image generation.
-- __condition_scale__ (optional, default=1.2): The lower the condition_scale, the more creative the results. A higher condition_scale will result in less creative and more scannable QR Codes. 
+- __condition_scale__ (optional, default=1.2): The lower the condition_scale, the more creative the results. A higher condition_scale will result in less creative and more scannable QR Codes.
 - __sampler__(optional, default="Euler a"): This controls which sampler to use resulting in more image variations.
 
 ## Example usage

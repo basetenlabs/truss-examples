@@ -32,10 +32,10 @@ class Model:
 
         # self.pipe.load_lora_weights(
         #     "minimaxir/sdxl-wrong-lora"
-        # ) 
-         
+        # )
+
         self.pipe.to('cuda')
-        
+
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=self.pipe.text_encoder_2,
@@ -58,7 +58,7 @@ class Model:
         use_refiner = model_input.pop("use_refiner", True)
         high_noise_frac = model_input.pop("high_noise_frac", 0.8)
         num_inference_steps = model_input.pop("num_inference_steps", 30)
-        
+
         with torch.inference_mode():
             image = self.pipe(
                 prompt=prompt,

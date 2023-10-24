@@ -1,6 +1,6 @@
 # Textual Inversion with Stable Diffusion
 
-The following example demonstrates how to use Stable Diffusion with 
+The following example demonstrates how to use Stable Diffusion with
 textual inversion embeddings.
 
 This truss combines concepts from:

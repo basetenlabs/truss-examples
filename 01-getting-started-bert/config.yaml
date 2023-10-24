@@ -4,7 +4,7 @@
 # options related to the deployment. It's in this file where
 # we can define requirements, resources, and runtime options like
 # secrets and environment variables
-#  
+#
 # ### Basic Options
 #
 # In this section, we can define basic metadata about the model,
@@ -16,7 +16,7 @@ model_metadata:
 
 
 # ### Set up python requirements
-# 
+#
 # In this section, we define any pip requirements that
 # we need to run the model. To run this, we need PyTorch
 # and Tranformers.
@@ -36,8 +36,8 @@ resources:
   use_gpu: false
 
 # ### Other config options
-# 
-# Truss also has provisions for adding other runtime options 
+#
+# Truss also has provisions for adding other runtime options
 # packages. In this example, we don't need these, so we leave
 # this empty for now.
 secrets: {}

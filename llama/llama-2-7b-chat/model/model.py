@@ -22,13 +22,13 @@ class Model:
 
     def load(self):
         self._model = LlamaForCausalLM.from_pretrained(
-            "meta-llama/Llama-2-7b-chat-hf", 
-            use_auth_token=self._secrets["hf_access_token"], 
+            "meta-llama/Llama-2-7b-chat-hf",
+            use_auth_token=self._secrets["hf_access_token"],
             torch_dtype=torch.float16,
             device_map="auto"
         )
         self._tokenizer = LlamaTokenizer.from_pretrained(
-            "meta-llama/Llama-2-7b-chat-hf", 
+            "meta-llama/Llama-2-7b-chat-hf",
             use_auth_token=self._secrets["hf_access_token"]
         )
 
@@ -61,7 +61,7 @@ class Model:
             prompt_wrapped, return_tensors="pt", truncation=True, padding=False, max_length=1056
         )
         input_ids = inputs["input_ids"].to("cuda")
-        
+
         with torch.no_grad():
             if not stream:
                 generation_output = self._model.generate(
@@ -80,7 +80,7 @@ class Model:
                 return decoded_output
 
             streamer = TextIteratorStreamer(self._tokenizer)
-            
+
             generation_kwargs = {
                 "input_ids": input_ids,
                 "generation_config": generation_config,
@@ -90,7 +90,7 @@ class Model:
             }
             thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
             thread.start()
-            
+
             def inner():
                 first = True
                 for text in streamer:

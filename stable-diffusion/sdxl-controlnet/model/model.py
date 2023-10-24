@@ -38,11 +38,11 @@ class Model:
         )
         pipe.enable_model_cpu_offload()
         self._model = pipe
-        
+
     def predict(self, model_input):
         prompt = model_input.pop("prompt")
         image = model_input.pop("image")
-        
+
         image = b64_to_pil(image)
         image = np.array(image)
         image = cv2.Canny(image, 100, 200)
@@ -52,9 +52,9 @@ class Model:
 
         negative_prompt = 'low quality, bad quality, sketches'
         controlnet_conditioning_scale = 0.5  # recommended for good generalization
-        
+
         images = self._model(
             prompt, num_inference_steps=30, negative_prompt=negative_prompt, image=image, controlnet_conditioning_scale=controlnet_conditioning_scale,
         ).images
-        
+
         return {"result" : pil_to_b64(images[0])}

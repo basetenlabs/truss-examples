@@ -2,7 +2,7 @@
 
 This repository packages the `melody` model from [MusicGen](https://github.com/facebookresearch/audiocraft/) as a [Truss](https://truss.baseten.co).
 
-MusicGen is a simple and controllable suite of models for music generation developed by Facebook AI Research. The `melody` model accepts both text and audio to condition it's outputs. 
+MusicGen is a simple and controllable suite of models for music generation developed by Facebook AI Research. The `melody` model accepts both text and audio to condition it's outputs.
 
 Utilizing this model for inference can be challenging given the hardware requirements. With Baseten and Truss, inference is dead simple.
 
@@ -71,7 +71,7 @@ curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompts": ["happy rock" "energetic EDM", "sad jazz"], 
+           "prompts": ["happy rock" "energetic EDM", "sad jazz"],
            "melody" : "b64_encoded_melody",
            "duration": 8
          }'

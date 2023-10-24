@@ -49,7 +49,7 @@ class Model:
                 output_scores=True,
                 max_new_tokens=1024,
             )
-        
+
         s = generation_output.sequences[0]
         output = self._tokenizer.decode(s)
         return output.split("### Response:")[1].strip()

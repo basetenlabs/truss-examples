@@ -18,7 +18,7 @@ class Model:
             torch_dtype=torch.float16,
             device_map="auto",
         )
-        
+
         self.model = model
         self.tokenizer = tokenizer
 
@@ -34,7 +34,7 @@ class Model:
 
         _output = evaluate(self.model, self.tokenizer, char_name, char_persona, scenario, greeting, dialogue_history, new_message, example_dialogues=example_dialogues, **request)
         return _output
-    
+
 from transformers import StoppingCriteria
 
 class MyStoppingCriteria(StoppingCriteria):
@@ -58,7 +58,7 @@ class MyStoppingCriteria(StoppingCriteria):
 
     def __iter__(self):
         yield self
-        
+
 def evaluate(
         model,
         tokenizer,
@@ -117,4 +117,3 @@ You: {new_message}
 """
 
     return prompt
-   

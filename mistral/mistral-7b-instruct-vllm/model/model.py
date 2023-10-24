@@ -12,7 +12,7 @@ class Model:
     def load(self) -> None:
         self.model_args = AsyncEngineArgs(model="mistralai/Mistral-7B-Instruct-v0.1",)
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
-    
+
     def preprocess(self, request: dict):
         generate_args = {
             "n": 1,
@@ -48,7 +48,7 @@ class Model:
         sampling_params = SamplingParams(**request)
         idx = str(uuid.uuid4().hex)
         generator = self.llm_engine.generate(formatted_prompt, sampling_params, idx)
-        
+
         full_text = ""
         async for output in generator:
             text = output.outputs[0].text

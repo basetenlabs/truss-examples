@@ -20,9 +20,9 @@ class Model:
             SD_BASE_MODEL_CHECKPOINT,
             torch_dtype=torch.float16
         ).to("cuda")
-        
+
         self.pipe.load_textual_inversion("./data/LulaCipher.bin", token="LulaCipher")
-        
+
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image[0].save(buffered, format="JPEG")

@@ -1,6 +1,6 @@
 # Truss Examples
 
-Truss is the simplest way to serve AI/ML models in production. 
+Truss is the simplest way to serve AI/ML models in production.
 
 To get you started with [Truss](https://truss.baseten.co/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs.
 
@@ -21,7 +21,7 @@ pip install --upgrade truss
 ## Deployment
 
 
-Pick a model to deploy by passing a path to that model. 
+Pick a model to deploy by passing a path to that model.
 
 ```bash
 $ # From the truss-examples directory

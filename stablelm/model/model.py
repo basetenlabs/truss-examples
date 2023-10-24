@@ -48,14 +48,14 @@ class Model:
         Incorporate post-processing required by the model if desired here.
         """
         return request
-    
+
     def forward(self, instruction, max_new_tokens=64, temperature=0.5, top_p=0.9, top_k=0, num_beams=4, do_sample=True, **kwargs):
         stop = StopOnTokens()
         inputs = self._tokenizer(instruction, return_tensors="pt")
         inputs.to(self._model.device)
         tokens = self._model.generate(
             **inputs,
-            max_new_tokens=max_new_tokens,  
+            max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_k=top_k,
             top_p=top_p,

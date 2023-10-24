@@ -18,4 +18,4 @@ secrets: {}
 system_packages:
 - ffmpeg
 - libsm6
-- libxext6 
+- libxext6

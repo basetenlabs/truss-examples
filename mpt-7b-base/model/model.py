@@ -14,7 +14,7 @@ class Model:
 
         # Device
         self.device='cuda:0'
-        
+
         # Tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -60,7 +60,7 @@ class Model:
             generate_args['top_k'] = request['top_k']
         request['generate_args'] = generate_args
         return request
-    
+
     def generate(self, prompt, generate_args):
         encoded_inp = self.tokenizer(prompt, return_tensors='pt', padding=True)
         for key, value in encoded_inp.items():

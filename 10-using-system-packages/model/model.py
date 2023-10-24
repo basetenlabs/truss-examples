@@ -9,13 +9,13 @@
 # system_packages:
 #  - tesseract-ocr
 # ```
-# 
+#
 # For this example, we use the [LayoutLM Document QA](https://huggingface.co/impira/layoutlm-document-qa) model,
 # a multimodal model that answers questions about provided invoice documents. This model requires a system
 # package, tesseract-ocr, which needs to be included in the model serving environment.
 #
-# # Setting up the model.py 
-# 
+# # Setting up the model.py
+#
 # For this model, we use the HuggingFace transformers library, and the the document-question-answering task.
 from transformers import pipeline
 

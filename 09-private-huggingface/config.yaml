@@ -1,6 +1,6 @@
 # # Setting up the config.yaml
-# 
-# The main things that need to be set up in the config are 
+#
+# The main things that need to be set up in the config are
 # `requirements`, which need to include Hugging Face transformers,
 # and the secrets.
 environment_variables: {}

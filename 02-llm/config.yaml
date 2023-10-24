@@ -1,7 +1,7 @@
 # # Setting up the config.yaml
 #
 # Running Mistral 7B requires a few libraries, such as
-# `torch`, `transformers` and a couple others. 
+# `torch`, `transformers` and a couple others.
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
@@ -22,7 +22,7 @@ resources:
 secrets: {}
 system_packages: []
 # # Deploy the model
-# 
+#
 # Deploy the model like you would other Trusses, with:
 # ```bash
 # $ truss push

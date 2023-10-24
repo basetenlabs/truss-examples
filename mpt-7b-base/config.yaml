@@ -20,7 +20,7 @@ python_version: py39
 requirements:
   - transformers
   - torch
-  - einops 
+  - einops
   - sentencepiece
 resources:
   cpu: "3"

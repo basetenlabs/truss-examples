@@ -8,8 +8,8 @@ class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
         self.model = None
-    
-    def load(self):        
+
+    def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
             "mistralai/Mistral-7B-v0.1",
             torch_dtype=torch.float16,
@@ -20,7 +20,7 @@ class Model:
             device_map="auto",
             torch_dtype=torch.float16,
         )
-        
+
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -48,7 +48,7 @@ class Model:
 
     def stream(self, input_ids: list, generation_args: dict):
         streamer = TextIteratorStreamer(self.tokenizer)
-        generation_config = GenerationConfig(**generation_args)        
+        generation_config = GenerationConfig(**generation_args)
         generation_kwargs = {
             "input_ids": input_ids,
             "generation_config": generation_config,
@@ -62,7 +62,7 @@ class Model:
             # Begin generation in a separate thread
             thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
             thread.start()
-            
+
             # Yield generated text as it becomes available
             def inner():
                 for text in streamer:
@@ -71,14 +71,14 @@ class Model:
 
         return inner()
 
-    
-    
+
+
     def predict(self, request: dict):
         stream = request.pop("stream", False)
         prompt = request.pop("prompt")
         generation_args = request.pop("generate_args")
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
-        
+
         if stream:
             return self.stream(input_ids, generation_args)
 

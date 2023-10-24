@@ -17,7 +17,7 @@ class Model:
             str(self._data_dir),
             torch_dtype=torch.float16,
             device_map="auto",
-        ) 
+        )
         self._model = PeftModel.from_pretrained(
             self._model, "tloen/alpaca-lora-7b",
             torch_dtype=torch.float16
@@ -37,8 +37,8 @@ class Model:
         Incorporate post-processing required by the model if desired here.
         """
         return request
-    
-    
+
+
     def generate_prompt(self, instruction):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
@@ -47,7 +47,7 @@ class Model:
 
     ### Response:
     """
-    
+
     def forward(self, instruction, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs):
         prompt = self.generate_prompt(instruction)
         inputs = self._tokenizer(prompt, return_tensors="pt")
@@ -67,7 +67,7 @@ class Model:
                 output_scores=True,
                 max_new_tokens=1024,
             )
-        
+
         s = generation_output.sequences[0]
         output = self._tokenizer.decode(s)
         return output.split("### Response:")[1].strip()

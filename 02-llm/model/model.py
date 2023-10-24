@@ -62,7 +62,7 @@ class Model:
             prompt,
             return_tensors="pt"
         ).input_ids.cuda()
-        
+
         with torch.no_grad():
             output = self.model.generate(
                 inputs=input_ids,

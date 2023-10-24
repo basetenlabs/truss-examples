@@ -30,7 +30,7 @@ class Model:
                 best_of=5,
                 beam_size=5,
             )
-            
+
             for seg in segments:
                 result_segments.append(
                     {
@@ -39,7 +39,7 @@ class Model:
                         "end": seg.end
                     }
                 )
-        
+
         return {
             "language": info.language,
             "language_probability": info.language_probability,

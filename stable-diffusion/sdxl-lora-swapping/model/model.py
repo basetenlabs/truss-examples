@@ -30,7 +30,7 @@ class Model:
         )
 
         self.pipe.to('cuda')
-        
+
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=self.pipe.text_encoder_2,
@@ -59,7 +59,7 @@ class Model:
         lora = model_input.pop("lora", None)
         print(f"Loading LoRA weights: {lora}")
 
-        # example schema: 
+        # example schema:
         # {"repo_id": "nerijs/pixel-art-xl", "weights": "pixel-art-xl.safetensors"}
 
         # Note: if LoRA is None, the default behavior is to use the last loaded weights (or no weights if none were loaded)
@@ -75,7 +75,7 @@ class Model:
                 print("Loaded LoRA weights!")
             else:
                 print("Using previously loaded LoRA weights.")
-        
+
         with torch.inference_mode():
             image = self.pipe(
                 prompt=prompt,

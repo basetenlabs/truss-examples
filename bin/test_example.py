@@ -34,7 +34,7 @@ def attempt_inference(truss_handle, model_version_id, api_key):
         example_model_input = truss_handle.spec.config.model_metadata["example_model_input"]
     except KeyError:
         raise Exception("No example_model_input defined in Truss config")
-    
+
     url = f"{BASETEN_HOST}/model_versions/{model_version_id}/predict"
     headers = {
         "Authorization": f"Api-Key {api_key}"
