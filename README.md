@@ -1,5 +1,7 @@
 # Truss Examples
 
+[![Truss Examples CI](https://github.com/basetenlabs/truss-examples/actions/workflows/test-examples.yml/badge.svg)](https://github.com/basetenlabs/truss-examples/actions/workflows/test-examples.yml)
+
 Truss is the simplest way to serve AI/ML models in production. 
 
 To get you started with [Truss](https://truss.baseten.co/), this repository has dozens of example models, each ready to deploy as-is or adapt to your needs.
@@ -25,7 +27,7 @@ Pick a model to deploy by passing a path to that model.
 
 ```bash
 $ # From the truss-examples directory
-$ truss push 2_image_classification/clip
+$ truss push 02-llm
 ```
 
 This will prompt you for an API Key -- fetch one from the
