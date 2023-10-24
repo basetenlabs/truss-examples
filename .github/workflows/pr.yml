@@ -15,6 +15,3 @@ jobs:
       - uses: ./.github/actions/setup-python/
       - run: poetry install
       - run: poetry run pre-commit run --all-files
-        env:
-          SKIP: isort,flake8
-      - run: poetry run isort **/*.py --check-only
