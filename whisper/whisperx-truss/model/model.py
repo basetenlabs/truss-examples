@@ -19,9 +19,16 @@ class Model:
     def load(self):
         # Need to manually download vad model
         vad_model_path = os.path.join(self._data_dir, "models", "pytorch_model.bin")
-        self.model = whisperx.load_model("medium", self.device, language="en", compute_type=self.compute_type, vad_options={"model_fp": vad_model_path})
-        self.diarize_model = whisperx.DiarizationPipeline(use_auth_token=self._secrets["hf_access_token"],
-                                                          device=self.device)
+        self.model = whisperx.load_model(
+            "medium",
+            self.device,
+            language="en",
+            compute_type=self.compute_type,
+            vad_options={"model_fp": vad_model_path},
+        )
+        self.diarize_model = whisperx.DiarizationPipeline(
+            use_auth_token=self._secrets["hf_access_token"], device=self.device
+        )
 
     def predict(self, request: Dict) -> Dict:
         file = request.get("audio_file", None)
@@ -36,9 +43,17 @@ class Model:
 
             result = self.model.transcribe(audio, batch_size=self.batch_size)
 
-            model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=self.device)
-            result = whisperx.align(result["segments"], model_a, metadata, audio, self.device,
-                                    return_char_alignments=False)
+            model_a, metadata = whisperx.load_align_model(
+                language_code=result["language"], device=self.device
+            )
+            result = whisperx.align(
+                result["segments"],
+                model_a,
+                metadata,
+                audio,
+                self.device,
+                return_char_alignments=False,
+            )
 
             diarize_segments = self.diarize_model(audio)
             diarization_output = whisperx.assign_word_speakers(diarize_segments, result)
@@ -53,7 +68,7 @@ class Model:
                         "start": result_segment["start"],
                         "end": result_segment["end"],
                         "text": result_segment["text"],
-                        "speaker": result_segment["speaker"]
+                        "speaker": result_segment["speaker"],
                     }
                 )
 

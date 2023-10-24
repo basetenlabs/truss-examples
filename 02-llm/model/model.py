@@ -26,9 +26,8 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            CHECKPOINT,
-            torch_dtype=torch.float16,
-            device_map="auto")
+            CHECKPOINT, torch_dtype=torch.float16, device_map="auto"
+        )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             CHECKPOINT,
@@ -58,14 +57,8 @@ class Model:
             "pad_token_id": self.tokenizer.pad_token_id,
         }
 
-        input_ids = self.tokenizer(
-            prompt,
-            return_tensors="pt"
-        ).input_ids.cuda()
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
 
         with torch.no_grad():
-            output = self.model.generate(
-                inputs=input_ids,
-                **generate_args
-            )
+            output = self.model.generate(inputs=input_ids, **generate_args)
             return self.tokenizer.decode(output[0])

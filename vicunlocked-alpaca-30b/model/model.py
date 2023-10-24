@@ -30,7 +30,9 @@ class Model:
     ### Response:
     """
 
-    def forward(self, instruction, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs):
+    def forward(
+        self, instruction, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs
+    ):
         prompt = self.generate_prompt(instruction)
         inputs = self._tokenizer(prompt, return_tensors="pt")
         input_ids = inputs["input_ids"].to("cuda")
@@ -53,7 +55,6 @@ class Model:
         s = generation_output.sequences[0]
         output = self._tokenizer.decode(s)
         return output.split("### Response:")[1].strip()
-
 
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")

@@ -3,6 +3,7 @@ import torch
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.model = None
@@ -32,21 +33,34 @@ class Model:
         new_message = request.pop("new_message")
         example_dialogues = request.pop("example_dialogue", [])
 
-        _output = evaluate(self.model, self.tokenizer, char_name, char_persona, scenario, greeting, dialogue_history, new_message, example_dialogues=example_dialogues, **request)
+        _output = evaluate(
+            self.model,
+            self.tokenizer,
+            char_name,
+            char_persona,
+            scenario,
+            greeting,
+            dialogue_history,
+            new_message,
+            example_dialogues=example_dialogues,
+            **request,
+        )
         return _output
 
+
 from transformers import StoppingCriteria
+
 
 class MyStoppingCriteria(StoppingCriteria):
     def __init__(self, target_sequence, prompt, tokenizer):
         self.target_sequence = target_sequence
-        self.prompt=prompt
-        self.tokenizer=tokenizer
+        self.prompt = prompt
+        self.tokenizer = tokenizer
 
     def __call__(self, input_ids, scores, **kwargs):
         # Get the generated text as a string
         generated_text = self.tokenizer.decode(input_ids[0])
-        generated_text = generated_text.replace(self.prompt,'')
+        generated_text = generated_text.replace(self.prompt, "")
         # Check if the target sequence appears in the generated text
         if self.target_sequence in generated_text:
             return True  # Stop generation
@@ -59,25 +73,36 @@ class MyStoppingCriteria(StoppingCriteria):
     def __iter__(self):
         yield self
 
+
 def evaluate(
-        model,
-        tokenizer,
+    model,
+    tokenizer,
+    char_name,
+    char_persona,
+    scenario,
+    greeting,
+    dialogue_history,
+    new_message,
+    example_dialogues=[],
+    temperature=1,
+    top_p=0.9,
+    top_k=40,
+    num_beams=1,
+    max_new_tokens=2048,
+    **kwargs,
+):
+    prompts = generate_prompt(
         char_name,
         char_persona,
         scenario,
         greeting,
         dialogue_history,
         new_message,
-        example_dialogues=[],
-        temperature=1,
-        top_p=0.9,
-        top_k=40,
-        num_beams=1,
-        max_new_tokens=2048,
-        **kwargs,
-):
-    prompts = generate_prompt(char_name, char_persona, scenario, greeting, dialogue_history, new_message, example_dialogues=example_dialogues)
-    inputs = tokenizer(prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True)
+        example_dialogues=example_dialogues,
+    )
+    inputs = tokenizer(
+        prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True
+    )
     input_ids = inputs["input_ids"].to("cuda")
     generation_config = GenerationConfig(
         temperature=temperature,
@@ -101,7 +126,15 @@ def evaluate(
     return output
 
 
-def generate_prompt(char_name, char_persona, scenario, greeting, dialogue_history, new_message, example_dialogues=[]):
+def generate_prompt(
+    char_name,
+    char_persona,
+    scenario,
+    greeting,
+    dialogue_history,
+    new_message,
+    example_dialogues=[],
+):
 
     examples = ""
     for dialogue in example_dialogues:

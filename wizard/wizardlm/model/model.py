@@ -8,6 +8,7 @@ import json
 
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.model = None
@@ -40,19 +41,21 @@ class Model:
 
 
 def evaluate(
-        model,
-        tokenizer,
-        model_input,
-        input=None,
-        temperature=1,
-        top_p=0.9,
-        top_k=40,
-        num_beams=1,
-        max_new_tokens=2048,
-        **kwargs,
+    model,
+    tokenizer,
+    model_input,
+    input=None,
+    temperature=1,
+    top_p=0.9,
+    top_k=40,
+    num_beams=1,
+    max_new_tokens=2048,
+    **kwargs,
 ):
     prompts = generate_prompt(model_input, input)
-    inputs = tokenizer(prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True)
+    inputs = tokenizer(
+        prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True
+    )
     input_ids = inputs["input_ids"].to("cuda")
     generation_config = GenerationConfig(
         temperature=temperature,

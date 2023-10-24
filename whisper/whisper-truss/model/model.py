@@ -14,7 +14,9 @@ class Model:
         self._model = None
 
     def load(self):
-        self._model = whisper.load_model(Path(str(self._data_dir)) / "models" / "small.pt", self.device)
+        self._model = whisper.load_model(
+            Path(str(self._data_dir)) / "models" / "small.pt", self.device
+        )
         return
 
     def preprocess(self, request: Dict) -> Dict:

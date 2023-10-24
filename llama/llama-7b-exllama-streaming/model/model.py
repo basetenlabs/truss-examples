@@ -1,23 +1,18 @@
 import sys, os
 
-from exllamav2 import(
+from exllamav2 import (
     ExLlamaV2,
     ExLlamaV2Config,
     ExLlamaV2Cache,
     ExLlamaV2Tokenizer,
 )
 
-from exllamav2.generator import (
-    ExLlamaV2StreamingGenerator,
-    ExLlamaV2Sampler
-)
+from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
 
 import time
 from huggingface_hub import snapshot_download
 
 from threading import Thread, Condition
-
-
 
 
 class Model:
@@ -29,7 +24,9 @@ class Model:
     def load(self):
         # Load model here and assign to self._model.
         # GPTQ, EXL2, and safetensors models with Llama-style architecture (including Mistral) are compatible.
-        model_directory =  snapshot_download(repo_id="turboderp/Llama2-7B-chat-exl2", revision="4bpw")
+        model_directory = snapshot_download(
+            repo_id="turboderp/Llama2-7B-chat-exl2", revision="4bpw"
+        )
 
         config = ExLlamaV2Config()
         config.model_dir = model_directory
@@ -42,7 +39,6 @@ class Model:
         # (Call `model.load()` if using a single GPU.)
         model.load()
 
-
         self.tokenizer = ExLlamaV2Tokenizer(config)
 
         # Note: if you want to batch -> https://github.com/turboderp/exllamav2/issues/42
@@ -50,7 +46,6 @@ class Model:
 
         self.generator = ExLlamaV2StreamingGenerator(model, self.cache, self.tokenizer)
         self.generator.warmup()
-
 
     def streamer(self, queue, condition_var):
         generated_tokens = 0
@@ -60,11 +55,11 @@ class Model:
             queue.append(chunk)
             with condition_var:
                 condition_var.notify()
-            if eos or generated_tokens == self.max_new_tokens: break
+            if eos or generated_tokens == self.max_new_tokens:
+                break
         queue.append(None)
         with condition_var:
             condition_var.notify()
-
 
     def predict(self, model_input):
         prompt = model_input["prompt"]
@@ -99,7 +94,9 @@ class Model:
 
         queue = []
         cond = Condition()
-        thread = Thread(target=self.streamer, kwargs={"queue": queue, "condition_var": cond})
+        thread = Thread(
+            target=self.streamer, kwargs={"queue": queue, "condition_var": cond}
+        )
         thread.start()
 
         # Wait for the first chunk to be generated.

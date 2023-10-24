@@ -47,10 +47,13 @@ class Model:
 
         image = Image.open(requests.get(request.pop("url"), stream=True).raw)
         request["inputs"] = self._processor(
-            text=["a photo of a cat", "a photo of a dog"], # Define preset labels to use
+            text=[
+                "a photo of a cat",
+                "a photo of a dog",
+            ],  # Define preset labels to use
             images=image,
             return_tensors="pt",
-            padding=True
+            padding=True,
         )
         return request
 

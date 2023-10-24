@@ -31,7 +31,4 @@ class Model:
         )
 
     def predict(self, model_input):
-        return self._model(
-            model_input["url"],
-            model_input["prompt"]
-        )
+        return self._model(model_input["url"], model_input["prompt"])

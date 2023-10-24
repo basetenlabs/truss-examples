@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer, pipeline
 from typing import Dict
 
-CHECKPOINT = 'replit/replit-code-v1-3b'
+CHECKPOINT = "replit/replit-code-v1-3b"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_TOP_P = 0.95
 
@@ -16,7 +16,9 @@ class Model:
         self.pipeline = None
 
     def load(self):
-        self.tokenizer = AutoTokenizer.from_pretrained('replit/replit-code-v1-3b', trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            "replit/replit-code-v1-3b", trust_remote_code=True
+        )
         self.pipeline = pipeline(
             "text-generation",
             model=CHECKPOINT,
@@ -26,15 +28,12 @@ class Model:
             device_map="auto",
         )
 
-
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
                 data = self.pipeline(
-                    prompt,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    **request
+                    prompt, eos_token_id=self.tokenizer.eos_token_id, **request
                 )[0]
                 return {"data": data}
 

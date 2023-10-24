@@ -8,6 +8,7 @@ from PIL import Image
 
 SD_BASE_MODEL_CHECKPOINT = "SG161222/Realistic_Vision_V4.0_noVAE"
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self._data_dir = kwargs["data_dir"]
@@ -17,8 +18,7 @@ class Model:
 
     def load(self):
         self.pipe = StableDiffusionPipeline.from_pretrained(
-            SD_BASE_MODEL_CHECKPOINT,
-            torch_dtype=torch.float16
+            SD_BASE_MODEL_CHECKPOINT, torch_dtype=torch.float16
         ).to("cuda")
 
         self.pipe.load_textual_inversion("./data/LulaCipher.bin", token="LulaCipher")
@@ -29,12 +29,13 @@ class Model:
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_b64
 
-
     @torch.inference_mode()
     def predict(self, request: Dict) -> Dict[str, List]:
         results = []
         random_seed = int.from_bytes(os.urandom(2), "big")
-        generator = torch.Generator("cuda").manual_seed(request.get("seed", random_seed))
+        generator = torch.Generator("cuda").manual_seed(
+            request.get("seed", random_seed)
+        )
         try:
             outputs = self.pipe(
                 **request,

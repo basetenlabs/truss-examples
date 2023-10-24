@@ -3,6 +3,7 @@ import torch
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self._data_dir = kwargs["data_dir"]
@@ -12,15 +13,16 @@ class Model:
         self._tokenizer = None
 
     def load(self):
-        self._tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+        self._tokenizer = LlamaTokenizer.from_pretrained(
+            "decapoda-research/llama-7b-hf"
+        )
         self._model = LlamaForCausalLM.from_pretrained(
             str(self._data_dir),
             torch_dtype=torch.float16,
             device_map="auto",
         )
         self._model = PeftModel.from_pretrained(
-            self._model, "tloen/alpaca-lora-7b",
-            torch_dtype=torch.float16
+            self._model, "tloen/alpaca-lora-7b", torch_dtype=torch.float16
         )
         self._model.eval()
 
@@ -38,7 +40,6 @@ class Model:
         """
         return request
 
-
     def generate_prompt(self, instruction):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
@@ -48,7 +49,9 @@ class Model:
     ### Response:
     """
 
-    def forward(self, instruction, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs):
+    def forward(
+        self, instruction, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs
+    ):
         prompt = self.generate_prompt(instruction)
         inputs = self._tokenizer(prompt, return_tensors="pt")
         input_ids = inputs["input_ids"].to("cuda")
@@ -72,9 +75,7 @@ class Model:
         output = self._tokenizer.decode(s)
         return output.split("### Response:")[1].strip()
 
-
-
     def predict(self, request: Dict) -> Dict[str, List]:
         prompt = request.pop("prompt")
         completion = self.forward(prompt, **request)
-        return {"completion" : completion}
+        return {"completion": completion}

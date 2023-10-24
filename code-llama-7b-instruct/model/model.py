@@ -35,24 +35,20 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.MODEL_NAME,
-            torch_dtype=torch.float16,
-            device_map="auto"
+            self.MODEL_NAME, torch_dtype=torch.float16, device_map="auto"
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.MODEL_NAME
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)
 
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
             prompt = request.pop("prompt")
             # Code-llama needs the prompt to be formatted in this manner
-            formatted_prompt = f"<s><<SYS>>\n{DEFAULT_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt}"
-            input_ids = self.tokenizer(
-                formatted_prompt, return_tensors='pt').input_ids.cuda()
-            output = self.model.generate(
-                inputs=input_ids,
-                **request["generate_args"]
+            formatted_prompt = (
+                f"<s><<SYS>>\n{DEFAULT_SYSTEM_PROMPT}\n<</SYS>>\n\n{prompt}"
             )
+            input_ids = self.tokenizer(
+                formatted_prompt, return_tensors="pt"
+            ).input_ids.cuda()
+            output = self.model.generate(inputs=input_ids, **request["generate_args"])
 
             return self.tokenizer.decode(output[0])

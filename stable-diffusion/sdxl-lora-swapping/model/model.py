@@ -12,6 +12,7 @@ import functools
 # Good notebook to learn how to use diffusers + LoRA:
 # https://colab.research.google.com/gist/sayakpaul/109b7e792c64514fb3c057ecff4145ff/scratchpad.ipynb#scrollTo=GreOMxAcvlm8
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.pipe = None
@@ -29,7 +30,7 @@ class Model:
             use_safetensors=True,
         )
 
-        self.pipe.to('cuda')
+        self.pipe.to("cuda")
 
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -83,7 +84,7 @@ class Model:
                 num_inference_steps=num_inference_steps,
                 denoising_end=high_noise_frac if use_refiner else 1.0,
                 output_type="latent" if use_refiner else "pil",
-                target_size=(target_size, target_size)
+                target_size=(target_size, target_size),
             ).images[0]
             if use_refiner:
                 image = self.refiner(
@@ -91,7 +92,7 @@ class Model:
                     num_inference_steps=num_inference_steps,
                     denoising_start=high_noise_frac,
                     image=image[None, :],
-                    target_size=(target_size, target_size)
+                    target_size=(target_size, target_size),
                 ).images[0]
         b64_results = self.convert_to_b64(image)
 

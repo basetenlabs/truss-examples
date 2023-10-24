@@ -42,7 +42,7 @@ class Model:
         )
 
         self.pipe.unet.to(memory_format=torch.channels_last)
-        self.pipe.to('cuda')
+        self.pipe.to("cuda")
         self.pipe.enable_xformers_memory_efficient_attention()
 
         self.refiner = DiffusionPipeline.from_pretrained(
@@ -81,17 +81,27 @@ class Model:
         guidance_scale = model_input.pop("guidance_scale", 7.5)
         seed = model_input.pop("seed", None)
 
-        scheduler = model_input.pop("scheduler", None) # Default: EulerDiscreteScheduler (works pretty well)
+        scheduler = model_input.pop(
+            "scheduler", None
+        )  # Default: EulerDiscreteScheduler (works pretty well)
 
         # Set the scheduler based on the user's input.
         # See possible schedulers: https://huggingface.co/docs/diffusers/api/schedulers/overview for
         # what the tradeoffs are.
         if scheduler == "DPM++ 2M":
-            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
+            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(
+                self.pipe.scheduler.config
+            )
         elif scheduler == "DPM++ 2M Karras":
-            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, use_karras_sigmas=True)
+            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(
+                self.pipe.scheduler.config, use_karras_sigmas=True
+            )
         elif scheduler == "DPM++ 2M SDE Karras":
-            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
+            self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(
+                self.pipe.scheduler.config,
+                algorithm_type="sde-dpmsolver++",
+                use_karras_sigmas=True,
+            )
 
         generator = None
         if seed is not None:
@@ -102,25 +112,29 @@ class Model:
             denoising_frac = 1.0
 
         start_time = time.time()
-        image = self.pipe(prompt=prompt,
-                          negative_prompt=negative_prompt,
-                          generator=generator,
-                          end_cfg = end_cfg_frac,
-                          num_inference_steps=num_inference_steps,
-                          denoising_end=denoising_frac,
-                          guidance_scale=guidance_scale,
-                          output_type="latent" if use_refiner else "pil").images[0]
+        image = self.pipe(
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            generator=generator,
+            end_cfg=end_cfg_frac,
+            num_inference_steps=num_inference_steps,
+            denoising_end=denoising_frac,
+            guidance_scale=guidance_scale,
+            output_type="latent" if use_refiner else "pil",
+        ).images[0]
         scheduler = self.pipe.scheduler
         if use_refiner:
             self.refiner.scheduler = scheduler
-            image = self.refiner(prompt=prompt,
-                                 negative_prompt=negative_prompt,
-                                generator=generator,
-                                 end_cfg = end_cfg_frac,
-                                 num_inference_steps=num_inference_steps,
-                                 denoising_start=denoising_frac,
-                                 guidance_scale=guidance_scale,
-                                 image=image[None, :]).images[0]
+            image = self.refiner(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                generator=generator,
+                end_cfg=end_cfg_frac,
+                num_inference_steps=num_inference_steps,
+                denoising_start=denoising_frac,
+                guidance_scale=guidance_scale,
+                image=image[None, :],
+            ).images[0]
 
         # Convert the results to base64, and return them.
         b64_results = self.convert_to_b64(image)

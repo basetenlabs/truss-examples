@@ -7,6 +7,7 @@ CHECKPOINT = "bigcode/starcoder"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_TOP_P = 0.95
 
+
 class Model:
     def __init__(self, data_dir: str, config: Dict, secrets: Dict, **kwargs) -> None:
         self._data_dir = data_dir
@@ -20,16 +21,14 @@ class Model:
     def load(self):
         patch()
         self._tokenizer = AutoTokenizer.from_pretrained(
-            CHECKPOINT,
-            use_auth_token=self.hf_access_token
+            CHECKPOINT, use_auth_token=self.hf_access_token
         )
         self._model = AutoModelForCausalLM.from_pretrained(
             CHECKPOINT,
             use_auth_token=self.hf_access_token,
             device_map="auto",
-            offload_folder="offload"
+            offload_folder="offload",
         )
-
 
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
@@ -40,10 +39,7 @@ class Model:
                 encoded_prompt = self._tokenizer(prompt, return_tensors="pt").input_ids
 
                 encoded_output = self._model.generate(
-                    encoded_prompt,
-                    max_length=max_length,
-                    top_p=top_p,
-                    **request
+                    encoded_prompt, max_length=max_length, top_p=top_p, **request
                 )[0]
                 decoded_output = self._tokenizer.decode(
                     encoded_output, skip_special_tokens=True

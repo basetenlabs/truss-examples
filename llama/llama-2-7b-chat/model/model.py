@@ -1,7 +1,12 @@
 from typing import Dict, List
 
 import torch
-from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer, TextIteratorStreamer
+from transformers import (
+    GenerationConfig,
+    LlamaForCausalLM,
+    LlamaTokenizer,
+    TextIteratorStreamer,
+)
 from threading import Thread
 
 DEFAULT_SYSTEM_PROMPT = """\
@@ -11,6 +16,7 @@ If a question does not make any sense, or is not factually coherent, explain why
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
+
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -25,11 +31,11 @@ class Model:
             "meta-llama/Llama-2-7b-chat-hf",
             use_auth_token=self._secrets["hf_access_token"],
             torch_dtype=torch.float16,
-            device_map="auto"
+            device_map="auto",
         )
         self._tokenizer = LlamaTokenizer.from_pretrained(
             "meta-llama/Llama-2-7b-chat-hf",
-            use_auth_token=self._secrets["hf_access_token"]
+            use_auth_token=self._secrets["hf_access_token"],
         )
 
     def preprocess(self, request: Dict) -> Dict:
@@ -46,7 +52,17 @@ class Model:
         """
         return request
 
-    def forward(self, prompt, stream, temperature=0.1, top_p=0.75, top_k=40, num_beams=1, max_length=512, **kwargs):
+    def forward(
+        self,
+        prompt,
+        stream,
+        temperature=0.1,
+        top_p=0.75,
+        top_k=40,
+        num_beams=1,
+        max_length=512,
+        **kwargs,
+    ):
         generation_config = GenerationConfig(
             temperature=temperature,
             top_p=top_p,
@@ -56,9 +72,15 @@ class Model:
             max_length=max_length,
             **kwargs,
         )
-        prompt_wrapped = f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
+        prompt_wrapped = (
+            f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
+        )
         inputs = self._tokenizer(
-            prompt_wrapped, return_tensors="pt", truncation=True, padding=False, max_length=1056
+            prompt_wrapped,
+            return_tensors="pt",
+            truncation=True,
+            padding=False,
+            max_length=1056,
         )
         input_ids = inputs["input_ids"].to("cuda")
 
@@ -75,7 +97,11 @@ class Model:
 
                 decoded_output = []
                 for beam in generation_output.sequences:
-                    decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True).replace(prompt_wrapped, ""))
+                    decoded_output.append(
+                        self._tokenizer.decode(beam, skip_special_tokens=True).replace(
+                            prompt_wrapped, ""
+                        )
+                    )
 
                 return decoded_output
 
@@ -86,7 +112,7 @@ class Model:
                 "generation_config": generation_config,
                 "return_dict_in_generate": True,
                 "output_scores": True,
-                "streamer": streamer
+                "streamer": streamer,
             }
             thread = Thread(target=self._model.generate, kwargs=generation_kwargs)
             thread.start()

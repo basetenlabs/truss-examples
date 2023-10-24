@@ -11,9 +11,12 @@ class Model:
         self.tokenizer = None
 
     def load(self):
-        self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-7B-Chat", trust_remote_code=True)
-        self.model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-7B-Chat", device_map="auto",
-                                                     trust_remote_code=True).eval()
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            "Qwen/Qwen-7B-Chat", trust_remote_code=True
+        )
+        self.model = AutoModelForCausalLM.from_pretrained(
+            "Qwen/Qwen-7B-Chat", device_map="auto", trust_remote_code=True
+        ).eval()
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -40,7 +43,7 @@ class Model:
             "return_dict_in_generate": True,
             "output_scores": True,
             "max_new_tokens": generation_args["max_new_tokens"],
-            "streamer": streamer
+            "streamer": streamer,
         }
 
         with torch.no_grad():
@@ -66,8 +69,5 @@ class Model:
             return self.stream(input_ids, generation_args)
 
         with torch.no_grad():
-            output = self.model.generate(
-                inputs=input_ids,
-                **generation_args
-            )
+            output = self.model.generate(inputs=input_ids, **generation_args)
             return self.tokenizer.decode(output[0])

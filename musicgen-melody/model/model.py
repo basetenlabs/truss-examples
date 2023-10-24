@@ -10,6 +10,7 @@ from audiocraft.models import MusicGen
 TARGET_SAMPLE_RATE = 32000
 TARGET_AUDIO_CHANNELS = 1
 
+
 class Model:
     def load(self):
         self.model = MusicGen.get_pretrained("melody", device="cuda")
@@ -47,7 +48,7 @@ class Model:
                 wav = self.model.generate_with_chroma(
                     descriptions=prompts,
                     melody_wavs=[processed_melody for _ in prompts],
-                    melody_sample_rate=TARGET_SAMPLE_RATE
+                    melody_sample_rate=TARGET_SAMPLE_RATE,
                 )
             else:
                 wav = self.model.generate(prompts)

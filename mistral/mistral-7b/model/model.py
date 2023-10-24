@@ -1,8 +1,14 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer, GenerationConfig
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    TextIteratorStreamer,
+    GenerationConfig,
+)
 from threading import Thread
 
 DEFAULT_MAX_LENGTH = 4096
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -11,16 +17,14 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-v0.1",
-            torch_dtype=torch.float16,
-            device_map="auto")
+            "mistralai/Mistral-7B-v0.1", torch_dtype=torch.float16, device_map="auto"
+        )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             "mistralai/Mistral-7B-v0.1",
             device_map="auto",
             torch_dtype=torch.float16,
         )
-
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -55,7 +59,7 @@ class Model:
             "return_dict_in_generate": True,
             "output_scores": True,
             "max_new_tokens": generation_args["max_new_tokens"],
-            "streamer": streamer
+            "streamer": streamer,
         }
 
         with torch.no_grad():
@@ -71,8 +75,6 @@ class Model:
 
         return inner()
 
-
-
     def predict(self, request: dict):
         stream = request.pop("stream", False)
         prompt = request.pop("prompt")
@@ -84,10 +86,7 @@ class Model:
 
         with torch.no_grad():
             try:
-                output = self.model.generate(
-                    inputs=input_ids,
-                    **generation_args
-                )
+                output = self.model.generate(inputs=input_ids, **generation_args)
                 return self.tokenizer.decode(output[0])
             except Exception as exc:
                 return {"status": "error", "data": None, "message": str(exc)}

@@ -25,9 +25,7 @@ paste_back = True  # Paste the restored faces back to images
 # The model path
 GFPGAN_PATH = "GFPGANv1.3.pth"
 # The background upsampler
-ESRGAN_PATH = (
-    "RealESRGAN_x2plus.pth"
-)
+ESRGAN_PATH = "RealESRGAN_x2plus.pth"
 
 RESIZE_DEFAULT_MAX = 1400
 
@@ -85,8 +83,6 @@ class RestorationModel:
         except Exception as exc:
             return {"status": "error", "data": None, "message": str(exc)}
 
-
-
     def restore_image(self, input_img):
         cropped_faces, restored_faces, restored_img = self.restorer.enhance(
             input_img,
@@ -110,7 +106,9 @@ def load_img_from_b64(img_b64: str):
 
     # We need to convert from RGB to BGR because PIL interprets colors differently than OpenCV.
     image = cv2.cvtColor(image_content, cv2.COLOR_RGB2BGR)
-    scale = min(RESIZE_DEFAULT_MAX / image.shape[1], RESIZE_DEFAULT_MAX / image.shape[0])
+    scale = min(
+        RESIZE_DEFAULT_MAX / image.shape[1], RESIZE_DEFAULT_MAX / image.shape[0]
+    )
     if scale < 1:
         image = cv2.resize(image, (0, 0), fx=scale, fy=scale)
     return image

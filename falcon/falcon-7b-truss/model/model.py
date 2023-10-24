@@ -26,15 +26,12 @@ class Model:
             device_map="auto",
         )
 
-
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
                 data = self.pipeline(
-                    prompt,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    **request
+                    prompt, eos_token_id=self.tokenizer.eos_token_id, **request
                 )[0]
                 return {"data": data}
 

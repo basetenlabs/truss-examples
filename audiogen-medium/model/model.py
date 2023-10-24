@@ -6,9 +6,12 @@ from audiocraft.data.audio import audio_write
 
 MODEL_SIZE = "medium"
 
+
 class Model:
     def load(self):
-        self.model = AudioGen.get_pretrained(f"facebook/audiogen-{MODEL_SIZE}", device="cuda")
+        self.model = AudioGen.get_pretrained(
+            f"facebook/audiogen-{MODEL_SIZE}", device="cuda"
+        )
 
     def predict(self, request):
         try:

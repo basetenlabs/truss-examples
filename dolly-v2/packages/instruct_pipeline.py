@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 INSTRUCTION_KEY = "### Instruction:"
 RESPONSE_KEY = "### Response:"
 END_KEY = "### End"
-INTRO_BLURB = (
-    "Below is an instruction that describes a task. Write a response that appropriately completes the request."
-)
+INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
 
 # This is the prompt that is used for generating responses using an already trained model.  It ends with the response
 # key, where the job of the model is to provide the completion that follows it (i.e. the response itself).
@@ -47,15 +45,30 @@ def get_special_token_id(tokenizer: PreTrainedTokenizer, key: str) -> int:
     """
     token_ids = tokenizer.encode(key)
     if len(token_ids) > 1:
-        raise ValueError(f"Expected only a single token for '{key}' but found {token_ids}")
+        raise ValueError(
+            f"Expected only a single token for '{key}' but found {token_ids}"
+        )
     return token_ids[0]
 
 
 class InstructionTextGenerationPipeline(Pipeline):
     def __init__(
-        self, *args, do_sample: bool = True, max_new_tokens: int = 256, top_p: float = 0.92, top_k: int = 0, **kwargs
+        self,
+        *args,
+        do_sample: bool = True,
+        max_new_tokens: int = 256,
+        top_p: float = 0.92,
+        top_k: int = 0,
+        **kwargs,
     ):
-        super().__init__(*args, do_sample=do_sample, max_new_tokens=max_new_tokens, top_p=top_p, top_k=top_k, **kwargs)
+        super().__init__(
+            *args,
+            do_sample=do_sample,
+            max_new_tokens=max_new_tokens,
+            top_p=top_p,
+            top_k=top_k,
+            **kwargs,
+        )
 
     def _sanitize_parameters(self, return_instruction_text=False, **generate_kwargs):
         preprocess_params = {}
@@ -63,14 +76,21 @@ class InstructionTextGenerationPipeline(Pipeline):
         # newer versions of the tokenizer configure the response key as a special token.  newer versions still may
         # append a newline to yield a single token.  find whatever token is configured for the response key.
         tokenizer_response_key = next(
-            (token for token in self.tokenizer.additional_special_tokens if token.startswith(RESPONSE_KEY)), None
+            (
+                token
+                for token in self.tokenizer.additional_special_tokens
+                if token.startswith(RESPONSE_KEY)
+            ),
+            None,
         )
 
         response_key_token_id = None
         end_key_token_id = None
         if tokenizer_response_key:
             try:
-                response_key_token_id = get_special_token_id(self.tokenizer, tokenizer_response_key)
+                response_key_token_id = get_special_token_id(
+                    self.tokenizer, tokenizer_response_key
+                )
                 end_key_token_id = get_special_token_id(self.tokenizer, END_KEY)
 
                 # Ensure generation stops once it generates "### End"
@@ -107,9 +127,19 @@ class InstructionTextGenerationPipeline(Pipeline):
             **generate_kwargs,
         )[0].cpu()
         instruction_text = model_inputs.pop("instruction_text")
-        return {"generated_sequence": generated_sequence, "input_ids": input_ids, "instruction_text": instruction_text}
+        return {
+            "generated_sequence": generated_sequence,
+            "input_ids": input_ids,
+            "instruction_text": instruction_text,
+        }
 
-    def postprocess(self, model_outputs, response_key_token_id, end_key_token_id, return_instruction_text):
+    def postprocess(
+        self,
+        model_outputs,
+        response_key_token_id,
+        end_key_token_id,
+        return_instruction_text,
+    ):
         sequence = model_outputs["generated_sequence"]
         instruction_text = model_outputs["instruction_text"]
 
@@ -123,7 +153,9 @@ class InstructionTextGenerationPipeline(Pipeline):
             response_pos = None
             response_positions = np.where(sequence == response_key_token_id)[0]
             if len(response_positions) == 0:
-                logger.warn(f"Could not find response key {response_key_token_id} in: {sequence}")
+                logger.warn(
+                    f"Could not find response key {response_key_token_id} in: {sequence}"
+                )
             else:
                 response_pos = response_positions[0]
 
@@ -137,7 +169,9 @@ class InstructionTextGenerationPipeline(Pipeline):
                 if len(end_positions) > 0:
                     end_pos = end_positions[0]
 
-                decoded = self.tokenizer.decode(sequence[response_pos + 1 : end_pos]).strip()
+                decoded = self.tokenizer.decode(
+                    sequence[response_pos + 1 : end_pos]
+                ).strip()
         else:
             # Otherwise we'll decode everything and use a regex to find the response and end.
 
@@ -145,7 +179,9 @@ class InstructionTextGenerationPipeline(Pipeline):
 
             # The response appears after "### Response:".  The model has been trained to append "### End" at the
             # end.
-            m = re.search(r"#+\s*Response:\s*(.+?)#+\s*End", fully_decoded, flags=re.DOTALL)
+            m = re.search(
+                r"#+\s*Response:\s*(.+?)#+\s*End", fully_decoded, flags=re.DOTALL
+            )
 
             if m:
                 decoded = m.group(1).strip()

@@ -4,13 +4,16 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 import uuid
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.model_args = None
         self.llm_engine = None
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(model="mistralai/Mistral-7B-Instruct-v0.1",)
+        self.model_args = AsyncEngineArgs(
+            model="mistralai/Mistral-7B-Instruct-v0.1",
+        )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
     def preprocess(self, request: dict):
@@ -43,7 +46,7 @@ class Model:
         return request
 
     async def predict(self, request: dict) -> Any:
-        prompt = request.pop('prompt')
+        prompt = request.pop("prompt")
         formatted_prompt = f"<s>[INST] {prompt} [/INST]"
         sampling_params = SamplingParams(**request)
         idx = str(uuid.uuid4().hex)
@@ -52,6 +55,6 @@ class Model:
         full_text = ""
         async for output in generator:
             text = output.outputs[0].text
-            delta = text[len(full_text):]
+            delta = text[len(full_text) :]
             full_text = text
             yield delta

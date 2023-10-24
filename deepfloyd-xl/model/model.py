@@ -51,7 +51,7 @@ class Model:
             subfolder="text_encoder",
             device_map="auto",
             load_in_8bit=True,
-            variant="8bit"
+            variant="8bit",
         )
         torch.compile(self.text_encoder)
 
@@ -101,13 +101,15 @@ class Model:
         self.load_upscaler()
         self.generator = torch.Generator("cuda").manual_seed(1)
 
-    def forward(self,
-                prompt: str,
-                negative_prompt: str,
-                encoder_kwargs: Dict = {},
-                first_stage_kwargs: Dict = {},
-                second_stage_kwargs: Dict = {},
-                upscaler_kwargs: Dict = {}):
+    def forward(
+        self,
+        prompt: str,
+        negative_prompt: str,
+        encoder_kwargs: Dict = {},
+        first_stage_kwargs: Dict = {},
+        second_stage_kwargs: Dict = {},
+        upscaler_kwargs: Dict = {},
+    ):
         """
         Forward pass through the model pipelines.
 

@@ -31,20 +31,15 @@ def attempt_inference(truss_handle, model_version_id, api_key):
     """
     print("Started attempt inference")
     try:
-        example_model_input = truss_handle.spec.config.model_metadata["example_model_input"]
+        example_model_input = truss_handle.spec.config.model_metadata[
+            "example_model_input"
+        ]
     except KeyError:
         raise Exception("No example_model_input defined in Truss config")
 
     url = f"{BASETEN_HOST}/model_versions/{model_version_id}/predict"
-    headers = {
-        "Authorization": f"Api-Key {api_key}"
-    }
-    response = requests.post(
-        url,
-        headers=headers,
-        json=example_model_input,
-        timeout=30
-    )
+    headers = {"Authorization": f"Api-Key {api_key}"}
+    response = requests.post(url, headers=headers, json=example_model_input, timeout=30)
 
     print(response.content)
     if response.status_code != 200:
@@ -54,12 +49,7 @@ def attempt_inference(truss_handle, model_version_id, api_key):
 def deploy_truss(truss_handle: TrussHandle) -> str:
     remote_provider = RemoteFactory.create(remote=REMOTE_NAME)
     model_name = truss_handle.spec.config.model_name
-    service = remote_provider.push(
-        truss_handle,
-        model_name,
-        publish=True,
-        trusted=True
-    )
+    service = remote_provider.push(truss_handle, model_name, publish=True, trusted=True)
     return service.model_version_id
 
 

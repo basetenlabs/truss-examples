@@ -16,6 +16,7 @@
 # transformers library, and defining the `Model` class.
 from transformers import pipeline
 
+
 class Model:
     # An important step in loading a model that requires authentication is to
     # have access to the secrets defined for this model. We pull these out of
@@ -30,7 +31,7 @@ class Model:
         self._model = pipeline(
             "fill-mask",
             model="baseten/docs-example-gated-model",
-            use_auth_token=self._secrets["hf_access_token"]
+            use_auth_token=self._secrets["hf_access_token"],
         )
 
     def predict(self, model_input):

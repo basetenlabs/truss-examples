@@ -13,7 +13,11 @@ See https://truss.baseten.co/quickstart for more.
 """
 
 
-from diffusers import ControlNetModel, StableDiffusionXLControlNetPipeline, AutoencoderKL
+from diffusers import (
+    ControlNetModel,
+    StableDiffusionXLControlNetPipeline,
+    AutoencoderKL,
+)
 from transformers import DPTFeatureExtractor, DPTForDepthEstimation
 
 from diffusers.utils import load_image
@@ -33,6 +37,7 @@ def pil_to_b64(pil_img):
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return img_str
 
+
 def b64_to_pil(b64_str):
     return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
 
@@ -42,7 +47,9 @@ class Model:
         self._model = None
 
     def get_depth_map(self, image):
-        image = self.feature_extractor(images=image, return_tensors="pt").pixel_values.to("cuda")
+        image = self.feature_extractor(
+            images=image, return_tensors="pt"
+        ).pixel_values.to("cuda")
         with torch.no_grad(), torch.autocast("cuda"):
             depth_map = self.depth_estimator(image).predicted_depth
 
@@ -61,13 +68,14 @@ class Model:
         image = Image.fromarray((image * 255.0).clip(0, 255).astype(np.uint8))
         return image
 
-
     def load(self):
         controlnet = ControlNetModel.from_pretrained(
             "diffusers/controlnet-depth-sdxl-1.0",
             torch_dtype=torch.float16,
         )
-        vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16)
+        vae = AutoencoderKL.from_pretrained(
+            "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
+        )
         pipe = StableDiffusionXLControlNetPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0",
             controlnet=controlnet,
@@ -77,23 +85,33 @@ class Model:
         pipe.enable_model_cpu_offload()
         self._model = pipe
 
-
-        self.depth_estimator = DPTForDepthEstimation.from_pretrained("Intel/dpt-hybrid-midas").to("cuda")
-        self.feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-hybrid-midas")
-
+        self.depth_estimator = DPTForDepthEstimation.from_pretrained(
+            "Intel/dpt-hybrid-midas"
+        ).to("cuda")
+        self.feature_extractor = DPTFeatureExtractor.from_pretrained(
+            "Intel/dpt-hybrid-midas"
+        )
 
     def predict(self, model_input):
         prompt = model_input.pop("prompt")
-        negative_prompt = model_input.pop("negative_prompt", "low quality, bad quality, sketches")
+        negative_prompt = model_input.pop(
+            "negative_prompt", "low quality, bad quality, sketches"
+        )
         image = model_input.pop("image")
         num_inference_steps = model_input.pop("num_inference_steps", 30)
-        controlnet_conditioning_scale = model_input.pop("controlnet_conditioning_scale", 0.5)
+        controlnet_conditioning_scale = model_input.pop(
+            "controlnet_conditioning_scale", 0.5
+        )
 
         image = b64_to_pil(image).convert("RGB")
         image = self.get_depth_map(image)
 
         images = self._model(
-            prompt, num_inference_steps=num_inference_steps, negative_prompt=negative_prompt, image=image, controlnet_conditioning_scale=controlnet_conditioning_scale,
+            prompt,
+            num_inference_steps=num_inference_steps,
+            negative_prompt=negative_prompt,
+            image=image,
+            controlnet_conditioning_scale=controlnet_conditioning_scale,
         ).images
 
-        return {"result" : pil_to_b64(images[0])}
+        return {"result": pil_to_b64(images[0])}
