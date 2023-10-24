@@ -52,5 +52,3 @@ class Model:
         response = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
 
         return {"response": response}
-
-

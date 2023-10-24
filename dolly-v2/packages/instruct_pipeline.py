@@ -162,4 +162,3 @@ class InstructionTextGenerationPipeline(Pipeline):
             return {"instruction_text": instruction_text, "generated_text": decoded}
 
         return decoded
-

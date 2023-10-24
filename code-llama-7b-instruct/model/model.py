@@ -56,4 +56,3 @@ class Model:
             )
 
             return self.tokenizer.decode(output[0])
-

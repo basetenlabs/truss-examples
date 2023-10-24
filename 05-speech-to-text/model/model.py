@@ -38,4 +38,3 @@ class Model:
             "segments": segments,
             "text": result["text"],
         }
-

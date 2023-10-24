@@ -93,4 +93,3 @@ pil_img.save("output.jpg")
 Here is the output when using the `twitter_mask.jpeg` as the input image for the mask:
 
 ![twitter_output](twitter_output.jpg)
-

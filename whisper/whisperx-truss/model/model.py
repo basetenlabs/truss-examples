@@ -58,5 +58,3 @@ class Model:
                 )
 
             return {"model_output": results_segments_with_speakers}
-
-
