@@ -11,7 +11,8 @@ from io import BytesIO
 from typing import Any
 
 import torch
-from diffusers import AutoencoderKL, DiffusionPipeline, DPMSolverMultistepScheduler
+from diffusers import (AutoencoderKL, DiffusionPipeline,
+                       DPMSolverMultistepScheduler)
 from PIL import Image
 
 # The following line is needed to enable TF32 on NVIDIA GPUs

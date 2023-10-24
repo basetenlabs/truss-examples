@@ -19,11 +19,8 @@ from io import BytesIO
 import cv2
 import numpy as np
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    StableDiffusionXLControlNetPipeline,
-)
+from diffusers import (AutoencoderKL, ControlNetModel,
+                       StableDiffusionXLControlNetPipeline)
 from diffusers.utils import load_image
 from PIL import Image
 from transformers import DPTFeatureExtractor, DPTForDepthEstimation
