@@ -4,16 +4,10 @@ from io import BytesIO
 from typing import Dict, List
 
 import torch
-from diffusers import (
-    DDIMScheduler,
-    DPMSolverMultistepScheduler,
-    EulerDiscreteScheduler,
-    LMSDiscreteScheduler,
-    PNDMScheduler,
-    StableDiffusionPipeline,
-)
+from diffusers import (DDIMScheduler, DPMSolverMultistepScheduler,
+                       EulerDiscreteScheduler, LMSDiscreteScheduler,
+                       PNDMScheduler, StableDiffusionPipeline)
 from PIL import Image
-
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.benchmark = True

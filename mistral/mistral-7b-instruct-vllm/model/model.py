@@ -1,8 +1,9 @@
+import uuid
 from typing import Any
+
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
-import uuid
 
 
 class Model:

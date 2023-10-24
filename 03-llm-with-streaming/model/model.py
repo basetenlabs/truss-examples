@@ -10,15 +10,12 @@
 # # Set up the imports and key constants
 #
 # In this example, we use the HuggingFace transformers library to build a text generation model.
-import torch
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    GenerationConfig,
-    TextIteratorStreamer,
-)
-from typing import Dict
 from threading import Thread
+from typing import Dict
+
+import torch
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          GenerationConfig, TextIteratorStreamer)
 
 # We use the instruct version of the Falcon-7B model, and have some defaults
 # for inference parameters.

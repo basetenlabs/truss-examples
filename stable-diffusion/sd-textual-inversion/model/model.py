@@ -1,8 +1,9 @@
 import base64
-from typing import Dict, List
 import os
-import torch
 from io import BytesIO
+from typing import Dict, List
+
+import torch
 from diffusers import StableDiffusionPipeline
 from PIL import Image
 

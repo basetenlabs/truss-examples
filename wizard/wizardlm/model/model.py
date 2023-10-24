@@ -1,12 +1,11 @@
+import json
+import os
+import sys
 from typing import Any
 
-import sys
-import os
 import torch
 import transformers
-import json
-
-from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
+from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 
 
 class Model:

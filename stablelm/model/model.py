@@ -1,12 +1,9 @@
 from typing import Dict, List
-from peft import PeftModel
+
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    StoppingCriteria,
-    StoppingCriteriaList,
-)
+from peft import PeftModel
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          StoppingCriteria, StoppingCriteriaList)
 
 
 class StopOnTokens(StoppingCriteria):

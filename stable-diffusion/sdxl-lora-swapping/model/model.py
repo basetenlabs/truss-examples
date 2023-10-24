@@ -1,13 +1,12 @@
+import base64
+import functools
+import time
+from io import BytesIO
 from typing import Any
 
-from diffusers import DiffusionPipeline, AutoencoderKL
 import torch
-import base64
-from io import BytesIO
+from diffusers import AutoencoderKL, DiffusionPipeline
 from PIL import Image
-import time
-import functools
-
 
 # Good notebook to learn how to use diffusers + LoRA:
 # https://colab.research.google.com/gist/sayakpaul/109b7e792c64514fb3c057ecff4145ff/scratchpad.ipynb#scrollTo=GreOMxAcvlm8

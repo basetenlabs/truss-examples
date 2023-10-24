@@ -10,10 +10,11 @@
 #
 # For our CLIP Truss, we will be using the Hugging Face transformers library, as well as
 # `pillow` for image processing.
-import requests
 from typing import Dict
+
+import requests
 from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
+from transformers import CLIPModel, CLIPProcessor
 
 # This is the CLIP model from Hugging Face that we will use for this example.
 CHECKPOINT = "openai/clip-vit-base-patch32"

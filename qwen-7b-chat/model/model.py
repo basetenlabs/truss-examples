@@ -1,8 +1,10 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from transformers.generation import GenerationConfig
-from typing import Dict
-import torch
 from threading import Thread
+from typing import Dict
+
+import torch
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          TextIteratorStreamer)
+from transformers.generation import GenerationConfig
 
 
 class Model:

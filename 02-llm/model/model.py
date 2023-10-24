@@ -7,9 +7,7 @@
 #
 # In this example, we use the Huggingface transformers library to build a text generation model.
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # We use the 7B version of the Mistral model.
 CHECKPOINT = "mistralai/Mistral-7B-v0.1"

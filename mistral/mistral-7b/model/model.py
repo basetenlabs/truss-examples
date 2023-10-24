@@ -1,11 +1,8 @@
-import torch
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    TextIteratorStreamer,
-    GenerationConfig,
-)
 from threading import Thread
+
+import torch
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          GenerationConfig, TextIteratorStreamer)
 
 DEFAULT_MAX_LENGTH = 4096
 

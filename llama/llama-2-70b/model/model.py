@@ -1,12 +1,9 @@
-import torch
-from transformers import (
-    LlamaForCausalLM,
-    LlamaTokenizer,
-    TextIteratorStreamer,
-    GenerationConfig,
-)
 from threading import Thread
 from typing import Dict
+
+import torch
+from transformers import (GenerationConfig, LlamaForCausalLM, LlamaTokenizer,
+                          TextIteratorStreamer)
 
 CHECKPOINT = "meta-llama/Llama-2-70b-hf"
 DEFAULT_MAX_LENGTH = 128

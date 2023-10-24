@@ -1,15 +1,13 @@
-from diffusers import (
-    ControlNetModel,
-    StableDiffusionXLControlNetPipeline,
-    AutoencoderKL,
-)
-from diffusers.utils import load_image
-from PIL import Image
-import torch
-import numpy as np
-import cv2
 import base64
 from io import BytesIO
+
+import cv2
+import numpy as np
+import torch
+from diffusers import (AutoencoderKL, ControlNetModel,
+                       StableDiffusionXLControlNetPipeline)
+from diffusers.utils import load_image
+from PIL import Image
 
 BASE64_PREAMBLE = "data:image/png;base64,"
 

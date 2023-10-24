@@ -1,14 +1,10 @@
-import sys, os
-from exllamav2 import (
-    ExLlamaV2,
-    ExLlamaV2Config,
-    ExLlamaV2Cache,
-    ExLlamaV2Tokenizer,
-)
-
-from exllamav2.generator import ExLlamaV2BaseGenerator, ExLlamaV2Sampler
-
+import os
+import sys
 import time
+
+from exllamav2 import (ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config,
+                       ExLlamaV2Tokenizer)
+from exllamav2.generator import ExLlamaV2BaseGenerator, ExLlamaV2Sampler
 from huggingface_hub import snapshot_download
 
 

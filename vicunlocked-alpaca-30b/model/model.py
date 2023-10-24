@@ -1,7 +1,7 @@
-import torch
-
 from typing import Any
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 
 class Model:

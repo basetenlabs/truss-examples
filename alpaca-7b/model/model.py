@@ -1,7 +1,8 @@
 from typing import Dict, List
+
 import torch
 from peft import PeftModel
-from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
+from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 
 
 class Model:

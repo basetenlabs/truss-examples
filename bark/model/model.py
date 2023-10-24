@@ -1,10 +1,10 @@
-from typing import Any
-
-from bark import SAMPLE_RATE, generate_audio, preload_models
-
 import base64
 import io
+from typing import Any
+
 from scipy.io.wavfile import write
+
+from bark import SAMPLE_RATE, generate_audio, preload_models
 
 
 class Model:

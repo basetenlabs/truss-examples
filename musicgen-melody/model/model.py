@@ -1,9 +1,9 @@
 import base64
-import tempfile
-import torch
 import io
-import soundfile as sf
+import tempfile
 
+import soundfile as sf
+import torch
 from audiocraft.data.audio import audio_write
 from audiocraft.models import MusicGen
 

@@ -1,13 +1,10 @@
 import logging
-from pathlib import Path
 import traceback
+from pathlib import Path
 from typing import Dict, List
 
 import torch
-from transformers import AutoModelForCausalLM
-from transformers import CodeGenTokenizer
-from transformers import pipeline
-
+from transformers import AutoModelForCausalLM, CodeGenTokenizer, pipeline
 
 DEFAULT_PAD = 50256
 DEFAULT_MAX_LENGTH = 128

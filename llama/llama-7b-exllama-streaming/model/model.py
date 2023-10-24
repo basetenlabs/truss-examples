@@ -1,18 +1,12 @@
-import sys, os
-
-from exllamav2 import (
-    ExLlamaV2,
-    ExLlamaV2Config,
-    ExLlamaV2Cache,
-    ExLlamaV2Tokenizer,
-)
-
-from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
-
+import os
+import sys
 import time
-from huggingface_hub import snapshot_download
+from threading import Condition, Thread
 
-from threading import Thread, Condition
+from exllamav2 import (ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config,
+                       ExLlamaV2Tokenizer)
+from exllamav2.generator import ExLlamaV2Sampler, ExLlamaV2StreamingGenerator
+from huggingface_hub import snapshot_download
 
 
 class Model:

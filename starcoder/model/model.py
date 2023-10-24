@@ -1,6 +1,8 @@
+from typing import Dict, List
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from typing import Dict, List
+
 from .patch import patch
 
 CHECKPOINT = "bigcode/starcoder"

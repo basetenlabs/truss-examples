@@ -1,8 +1,8 @@
 import base64
 import tempfile
 
-from audiocraft.models import AudioGen
 from audiocraft.data.audio import audio_write
+from audiocraft.models import AudioGen
 
 MODEL_SIZE = "medium"
 

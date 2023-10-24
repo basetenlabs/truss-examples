@@ -4,6 +4,7 @@ from typing import Dict
 
 import requests
 import torch
+
 import whisper
 
 

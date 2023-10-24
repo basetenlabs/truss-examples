@@ -1,22 +1,16 @@
-import torch
 import base64
-import qrcode
-from PIL import Image
-from PIL.Image import LANCZOS
 from io import BytesIO
 from typing import Dict
 
-
-from diffusers import (
-    StableDiffusionControlNetPipeline,
-    ControlNetModel,
-    DDIMScheduler,
-    DPMSolverMultistepScheduler,
-    DEISMultistepScheduler,
-    HeunDiscreteScheduler,
-    EulerDiscreteScheduler,
-    EulerAncestralDiscreteScheduler,
-)
+import qrcode
+import torch
+from diffusers import (ControlNetModel, DDIMScheduler, DEISMultistepScheduler,
+                       DPMSolverMultistepScheduler,
+                       EulerAncestralDiscreteScheduler, EulerDiscreteScheduler,
+                       HeunDiscreteScheduler,
+                       StableDiffusionControlNetPipeline)
+from PIL import Image
+from PIL.Image import LANCZOS
 
 BASE64_PREAMBLE = "data:image/png;base64,"
 

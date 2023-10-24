@@ -1,6 +1,7 @@
+from typing import Dict
+
 import torch
 from transformers import AutoTokenizer, pipeline
-from typing import Dict
 
 CHECKPOINT = "tiiuae/falcon-7b-instruct"
 DEFAULT_MAX_LENGTH = 128

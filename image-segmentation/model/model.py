@@ -10,7 +10,6 @@ import torchvision.transforms as T
 from PIL import Image
 from torchvision import models
 
-
 logger = logging.getLogger(__name__)
 
 PYTORCH_IMAGE_MEAN = [0.485, 0.456, 0.406]

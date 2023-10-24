@@ -1,13 +1,9 @@
+from threading import Thread
 from typing import Dict, List
 
 import torch
-from transformers import (
-    GenerationConfig,
-    LlamaForCausalLM,
-    LlamaTokenizer,
-    TextIteratorStreamer,
-)
-from threading import Thread
+from transformers import (GenerationConfig, LlamaForCausalLM, LlamaTokenizer,
+                          TextIteratorStreamer)
 
 DEFAULT_SYSTEM_PROMPT = """\
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.

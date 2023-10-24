@@ -13,6 +13,7 @@ truss = { git = "https://github.com/basetenlabs/truss.git" }
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
 ipython = "^8.14.0"
+isort = "^5.12.0"
 
 [build-system]
 requires = ["poetry-core"]

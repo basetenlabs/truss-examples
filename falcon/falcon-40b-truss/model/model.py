@@ -1,7 +1,8 @@
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-import transformers
 from typing import Dict, List
+
+import torch
+import transformers
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
 CHECKPOINT = "tiiuae/falcon-40b-instruct"
 DEFAULT_MAX_LENGTH = 128

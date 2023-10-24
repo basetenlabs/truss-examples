@@ -1,6 +1,7 @@
+from typing import Dict
+
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
-from typing import Dict
 
 CHECKPOINT = "meta-llama/Llama-2-7b-hf"
 DEFAULT_MAX_LENGTH = 128

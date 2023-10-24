@@ -2,9 +2,10 @@
 truss predict -d '{"prompt": "A heavily constructed solarpunk bridge over a canyon at sunset"}' | python show.py
 """
 
-import json
 import base64
-import os, sys
+import json
+import os
+import sys
 
 resp = sys.stdin.read()
 image = json.loads(resp)["data"]

@@ -30,7 +30,8 @@ def get_checkpoint_shard_files(
 
     from huggingface_hub.utils import EntryNotFoundError
     from requests.exceptions import HTTPError
-    from transformers.utils.hub import HUGGINGFACE_CO_RESOLVE_ENDPOINT, cached_file
+    from transformers.utils.hub import (HUGGINGFACE_CO_RESOLVE_ENDPOINT,
+                                        cached_file)
 
     if not os.path.isfile(index_filename):
         raise ValueError(

@@ -1,11 +1,11 @@
-import requests
 import sys
 import time
-from truss.remote.remote_factory import USER_TRUSSRC_PATH, RemoteFactory
-from truss.cli.cli import _get_truss_from_directory
-from truss.truss_handle import TrussHandle
-from tenacity import retry, wait_fixed, stop_after_attempt
 
+import requests
+from tenacity import retry, stop_after_attempt, wait_fixed
+from truss.cli.cli import _get_truss_from_directory
+from truss.remote.remote_factory import USER_TRUSSRC_PATH, RemoteFactory
+from truss.truss_handle import TrussHandle
 
 REMOTE_NAME = "ci"
 BASETEN_HOST = "https://app.staging.baseten.co"

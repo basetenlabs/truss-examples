@@ -1,4 +1,5 @@
 from typing import Any
+
 import torch
 from instruct_pipeline import InstructionTextGenerationPipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer

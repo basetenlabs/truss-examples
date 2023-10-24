@@ -1,7 +1,7 @@
-from typing import Any, Dict
 from tempfile import NamedTemporaryFile
-import requests
+from typing import Any, Dict
 
+import requests
 from faster_whisper import WhisperModel
 
 

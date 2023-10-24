@@ -1,15 +1,14 @@
+import base64
 import logging
+from io import BytesIO
 from pathlib import Path
 
-import base64
-from io import BytesIO
 import cv2
 import numpy as np
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from gfpgan import GFPGANer
 from PIL import Image
 from realesrgan import RealESRGANer
-
 
 logger = logging.getLogger(__name__)
 

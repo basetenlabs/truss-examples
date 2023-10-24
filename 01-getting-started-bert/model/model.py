@@ -6,6 +6,7 @@
 # Set up imports for this model. In this example, we simply use the HuggingFace transformers library.
 from transformers import pipeline
 
+
 # Every Truss model must implement a `Model` class. This class must have:
 #  * an `__init__` function
 #  * a `load` function

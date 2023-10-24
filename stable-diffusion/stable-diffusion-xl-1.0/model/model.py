@@ -1,10 +1,12 @@
-from diffusers import DiffusionPipeline, AutoencoderKL, DPMSolverMultistepScheduler
-import torch
 import base64
-from PIL import Image
+import time
 from io import BytesIO
 from typing import Any
-import time
+
+import torch
+from diffusers import (AutoencoderKL, DiffusionPipeline,
+                       DPMSolverMultistepScheduler)
+from PIL import Image
 
 torch.backends.cuda.matmul.allow_tf32 = True
 

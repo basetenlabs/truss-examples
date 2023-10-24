@@ -1,8 +1,9 @@
-import whisperx
-import requests
 import os
 import tempfile
 from typing import Dict
+
+import requests
+import whisperx
 
 
 class Model:

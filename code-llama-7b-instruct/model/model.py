@@ -1,6 +1,7 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
 from typing import Dict
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 DEFAULT_SYSTEM_PROMPT = """\
 You are a helpful, respectful and honest coding assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
