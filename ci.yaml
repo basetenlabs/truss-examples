@@ -9,3 +9,4 @@ tests:
   - 10-using-system-packages
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
+  - stable-diffusion/dreamshaper-lcm
