@@ -16,6 +16,5 @@ class Model:
         if "max_length" not in model_input.keys():
             model_input["max_length"] = 8192
         return self._model.encode(
-            model_input["text"],
-            max_length=model_input["max_length"]
+            model_input["text"], max_length=model_input["max_length"]
         )
