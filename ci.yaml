@@ -9,3 +9,4 @@ tests:
   - 10-using-system-packages
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
+  - jina-embeddings/jina-embeddings-v2-base-en
