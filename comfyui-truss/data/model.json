@@ -1,0 +1,6 @@
+[
+    {
+      "url": "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors",
+      "path": "checkpoints/stable-diffusion-1-5.safetensors"
+    }
+]

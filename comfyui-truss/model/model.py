@@ -11,7 +11,8 @@ import urllib.request
 import urllib.parse
 from typing import Dict
 from multiprocessing import Process
-import shutil
+import requests
+import tempfile
 
 side_process = None
 original_working_directory = os.getcwd()
@@ -25,6 +26,55 @@ class Model:
         self.server_address = "127.0.0.1:8188"
         self.client_id = str(uuid.uuid4())
 
+
+        def download_model(self, model_url, destination_path):
+            print(f"Downloading model {model_url} ...")
+            try:
+                response = requests.get(model_url, stream=True)
+                response.raise_for_status()
+
+                # Open the destination file and write the content in chunks
+                with open(destination_path, 'wb') as file:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            file.write(chunk)
+
+                print(f"Downloaded file to: {destination_path}")
+            except requests.exceptions.RequestException as e:
+                print(f"Download failed: {e}")
+
+    def download_tempfile(self, file_url, filename):
+        try:
+            response = requests.get(file_url)
+            response.raise_for_status()
+            filetype = filename.split(".")[-1]
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{filetype}")
+            temp_file.write(response.content)
+            return temp_file.name, temp_file
+        except Exception as e:
+            print("Error downloading and saving image:", e)
+            return None
+
+    def fill_template(self, workflow, template_values):
+        if isinstance(workflow, dict):
+            # If it's a dictionary, recursively process its keys and values
+            for key, value in workflow.items():
+                workflow[key] = self.fill_template(value, template_values)
+            return workflow
+        elif isinstance(workflow, list):
+            # If it's a list, recursively process its elements
+            return [self.fill_template(item, template_values) for item in workflow]
+        elif isinstance(workflow, str) and workflow.startswith("{{") and workflow.endswith("}}"):
+            # If it's a placeholder, replace it with the corresponding value
+            placeholder = workflow[2:-2]
+            if placeholder in template_values:
+                return template_values[placeholder]
+            else:
+                return workflow  # Placeholder not found in values
+        else:
+            # If it's neither a dictionary, list, nor a placeholder, leave it unchanged
+            return workflow
+
     def setup_comfyui(self):
         git_repo_url = "https://github.com/comfyanonymous/ComfyUI.git"
         git_clone_command = ["git", "clone", git_repo_url]
@@ -36,17 +86,19 @@ class Model:
 
             # copy checkpoints from data directory
             os.chdir(os.path.join(original_working_directory, "ComfyUI"))
-            
-            for file in os.listdir(os.path.join(original_working_directory, self._data_dir, "checkpoints")):
-                filename = os.fsdecode(file)
-                print("found file: ", filename)
-                print("copy command cwd: ", os.getcwd())
-                for item in os.listdir(os.getcwd()):
-                    print(item)
-                current_path = os.path.join(original_working_directory, self._data_dir, "checkpoints", filename)
-                destination_path = os.path.join(os.getcwd(), "models", "checkpoints")
-                print(f"copying model from: {current_path} to {destination_path}")
-                subprocess.run(["cp", current_path, destination_path])
+
+            model_json = os.path.join(original_working_directory, self._data_dir, "model.json")
+            with open(model_json, "r") as file:
+                data = json.load(file)
+
+            print(f"model json file: {data}")
+
+            if data and len(data) > 0:
+                for model in data:
+                    self.download_model(
+                        model_url=model.get("url"),
+                        destination_path=os.path.join(os.getcwd(), "models", model.get("path"))
+                    )
 
             # run the comfy-ui server
             subprocess.run([sys.executable, "main.py"], check=True)
@@ -115,18 +167,29 @@ class Model:
             self.ws = websocket.WebSocket()
             self.ws.connect("ws://{}/ws?clientId={}".format(self.server_address, self.client_id))
 
-        positive_prompt = request.pop("positive_prompt")
-        negative_prompt = request.pop("negative_prompt")
         json_workflow = request.pop("json_workflow")
-        json_workflow["6"]["inputs"]["text"] = positive_prompt
-        json_workflow["7"]["inputs"]["text"] = negative_prompt
-        json_workflow["3"]["inputs"]["seed"] = random.randint(1, 10000)
+        template_values = request.pop("values")
+
+        tempfiles = []
+        for key, value in template_values.items():
+            if value.startswith("https://") or value.startswith("http://"):
+                if value[-1] == "/":
+                    value = value[:-1]
+                filename = value.split("/")[-1]
+                file_destination_path, file_object = self.download_tempfile(file_url=value, filename=filename)
+                tempfiles.append(file_object)
+                template_values[key] = file_destination_path
+
+        json_workflow = self.fill_template(json_workflow, template_values)
 
         try:
             images = self.get_images(self.ws, json_workflow)
         except Exception as e:
             print("SOMETHING BROKE!")
             print(e)
+
+        for file in tempfiles:
+            file.close()
 
         result = []
         for node_id in images:

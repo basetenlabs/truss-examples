@@ -24,7 +24,3 @@ resources:
   accelerator: T4
 secrets: {}
 system_packages: []
-external_data:
-  - url: https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
-    local_data_path: checkpoints/v1-5-pruned-emaonly.safetensors
-
