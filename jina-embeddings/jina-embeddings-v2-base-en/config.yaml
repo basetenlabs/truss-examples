@@ -6,6 +6,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/jina-embeddings.png
   tags:
   - text-embeddings
+model_framework: custom
 model_name: Jina Embeddings V2 Base EN
 python_version: py39
 requirements:
