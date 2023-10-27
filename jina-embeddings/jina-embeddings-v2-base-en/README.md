@@ -32,7 +32,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 The model takes a dictionary with:
 
-* `text`: A list of string. Each string will be encoded into a text embedding and returned.
+* `text`: A list of strings. Each string will be encoded into a text embedding and returned.
 * `max_length` (optional): The number of tokens per string to encode. Default is 8,192, which is also the maximum number of tokens the model can process per string.
 
 Example invocation:
@@ -68,7 +68,7 @@ truss predict -f sample.json > output.json
 
 For creating a few embeddings from relatively short chunks of text, a CPU-only instance with 4 cores and 16 GiB of RAM is more than sufficient.
 
-On that instance type, creating an embedding for each of Shakespeare's 154 sonnets (just under 100KB of text) takes about a minute and a half. If you need to quickly create an embedding for a large corpus of text, you may want to upgrade to a larger instance type or add a small GPU like an NVIDIA T4.
+On that instance type, creating an embedding for each of Shakespeare's 154 sonnets (just under 100KB of text) takes 40-45 seconds. If you need to quickly create an embedding for a large corpus of text, you may want to upgrade to a larger instance type or add a small GPU like an NVIDIA T4.
 
 Default config:
 

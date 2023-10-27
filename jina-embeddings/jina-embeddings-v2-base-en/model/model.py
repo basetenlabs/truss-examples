@@ -8,7 +8,7 @@ class Model:
     def load(self):
         self._model = AutoModel.from_pretrained(
             "jinaai/jina-embeddings-v2-base-en",
-            revision="084b9f6bca3174b98ca82d59dfc0950214aa36df",
+            revision="0f472a4cde0e6e50067b8259a3a74d1110f4f8d8",
             trust_remote_code=True,
         )  # Version is pinned to prevent malicious code execution
 
