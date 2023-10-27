@@ -1,3 +1,4 @@
+description: "A text embedding model with an 8k-token context window"
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
