@@ -2,6 +2,7 @@ import numpy as np
 import subprocess
 import shutil
 import time
+from pathlib import Path
 from functools import partial
 import tritonclient.grpc as grpcclient
 import tritonclient.http as httpclient
@@ -30,6 +31,7 @@ class Model:
 
     def load(self):
         # Move everything inside data_dir to ./inflight_batcher_llm/tensorrt_llm/1
+        Path("/app/model/packages/inflight_batcher_llm/tensorrt_llm/1").mkdir(parents=True, exist_ok=True)
         shutil.move(self._data_dir, "/app/model/packages/inflight_batcher_llm/tensorrt_llm/1")
         
         # Kick off Triton Inference Server
@@ -45,7 +47,7 @@ class Model:
         while self._triton_http_client.is_model_ready(model_name="ensemble") == False:
             time.sleep(1)
             continue
-    
+
     def prepare_tensor(self, name, input):
         t = grpcclient.InferInput(name, input.shape,
                                 np_to_triton_dtype(input.dtype))
