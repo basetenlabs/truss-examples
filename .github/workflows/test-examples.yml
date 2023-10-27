@@ -35,7 +35,7 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.11.4'
       - name: Install dependencies (if any)
         run: |
           python -m pip install --upgrade pip
