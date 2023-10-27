@@ -29,6 +29,34 @@ class Model:
         self._triton_grpc_client = None
         self._request_id_counter = 0
 
+    def move_all_files(self, src: Path, dest: Path):
+            for item in src.iterdir():
+                dest_item = dest / item.name
+
+                if item.is_dir():
+                    dest_item.mkdir(parents=True, exist_ok=True)
+                    self.move_all_files(item, dest_item)
+                else:
+                    item.rename(dest_item)
+
+    def load(self):
+        # Ensure the destination directory exists
+        dest_dir = Path("/app/model/packages/inflight_batcher_llm/tensorrt_llm/1")
+        dest_dir.mkdir(parents=True, exist_ok=True)
+
+        # Move all files and directories from data_dir to dest_dir
+        self.move_all_files(self._data_dir, dest_dir)
+
+        # Kick off Triton Inference Server
+        subprocess.run(
+            [
+                "tritonserver",
+                "--model-repository", "/app/model/packages/inflight_batcher_llm",
+                "--grpc-port", "8001",
+                "--http-port", "8003"
+            ]
+        )
+
     def load(self):
         # Move everything inside data_dir to ./inflight_batcher_llm/tensorrt_llm/1
         Path("/app/model/packages/inflight_batcher_llm/tensorrt_llm/1").mkdir(parents=True, exist_ok=True)
