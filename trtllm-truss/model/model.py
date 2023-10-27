@@ -57,16 +57,6 @@ class Model:
             ]
         )
 
-    def load(self):
-        # Move everything inside data_dir to ./inflight_batcher_llm/tensorrt_llm/1
-        Path("/app/model/packages/inflight_batcher_llm/tensorrt_llm/1").mkdir(parents=True, exist_ok=True)
-        shutil.move(self._data_dir, "/app/model/packages/inflight_batcher_llm/tensorrt_llm/1")
-        
-        # Kick off Triton Inference Server
-        subprocess.run(
-            "tritonserver --model-repository /app/model/packages/inflight_batcher_llm --grpc-port 8001 --http-port 8003",
-        )
-        
         # Create Triton HTTP Client and GRPC Client
         self._triton_http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
         self._triton_grpc_client = grpcclient.InferenceServerClient(url="localhost:8001", verbose=False)
