@@ -43,12 +43,16 @@ class Model:
         # Ensure the destination directory exists
         dest_dir = Path("/packages/inflight_batcher_llm/tensorrt_llm/1")
         dest_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Ensure empty version directory for `ensemble` model exists
+        ensemble_dir = Path("/packages/inflight_batcher_llm/ensemble/1")
+        ensemble_dir.mkdir(parents=True, exist_ok=True)
 
         # Move all files and directories from data_dir to dest_dir
         self.move_all_files(self._data_dir, dest_dir)
 
         # Kick off Triton Inference Server
-        subprocess.run(
+        process = subprocess.Popen(
             [
                 "tritonserver",
                 "--model-repository", "/packages/inflight_batcher_llm/",
@@ -56,14 +60,23 @@ class Model:
                 "--http-port", "8003"
             ]
         )
-
-        # Create Triton HTTP Client and GRPC Client
+        
+        # Create Triton HTTP Client and GRPC Client, retrying every 10 seconds until successful
         self._triton_http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
         self._triton_grpc_client = grpcclient.InferenceServerClient(url="localhost:8001", verbose=False)
         
-        # Wait for model to load
+        # Before checking if model is ready, wait for the server to come up
+        is_server_up = False
+        while not is_server_up:
+            try:
+                is_server_up = self._triton_http_client.is_server_live()
+            except ConnectionRefusedError:
+                time.sleep(2)
+                continue
+
+        # Wait for model to load into Triton Inference Server
         while self._triton_http_client.is_model_ready(model_name="ensemble") == False:
-            time.sleep(1)
+            time.sleep(2)
             continue
 
     def prepare_tensor(self, name, input):
@@ -72,6 +85,20 @@ class Model:
         t.set_data_from_numpy(input)
         return t
     
+    async def inner(self, user_data):
+        while True:
+            try:
+                result = user_data._completed_requests.get()
+                if not isinstance(result, InferenceServerException):
+                    res = result.as_numpy('text_output')
+                    yield res[0].decode("utf-8")
+                else:
+                    yield {"status": "error", "message": result.message()}
+                if result.get_response().parameters["triton_final_response"].bool_param:
+                    break
+            except Exception:
+                break
+
     async def predict(self, model_input):
         model_name = "ensemble"
         user_data = UserData()
@@ -92,7 +119,7 @@ class Model:
         streaming_data = np.array(streaming, dtype=bool)
         beam_width = [[beam_width]]
         beam_width_data = np.array(beam_width, dtype=np.uint32)
-        
+
         inputs = [
             self.prepare_tensor("text_input", input0_data),
             self.prepare_tensor("max_tokens", output0_len),
@@ -102,22 +129,12 @@ class Model:
             self.prepare_tensor("beam_width", beam_width_data),
         ]
 
-        # Establish stream and send request
         self._triton_grpc_client.start_stream(callback=partial(callback, user_data))
-        self._triton_grpc_client.async_stream_infer(model_name, inputs, request_id=str(self._request_id_counter), enable_empty_final_response=True)
-        
-        # Parse the responses
-        while True:
-            try:
-                result = user_data._completed_requests.get()
-                if not isinstance(result, InferenceServerException):
-                    yield result.as_numpy('text_output')
-                else:
-                    yield {"status": "error", "message": result.message()}
-                if result.get_response().parameters["triton_final_response"].bool_param:
-                    break
-            except Exception:
-                break
-        
-        # Stop the stream
-        self._triton_grpc_client.stop_stream()
+        self._triton_grpc_client.async_stream_infer(
+            model_name,
+            inputs,
+            request_id=str(self._request_id_counter),
+            enable_empty_final_response=True,
+        )
+
+        return self.inner(user_data)
