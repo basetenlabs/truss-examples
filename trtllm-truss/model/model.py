@@ -41,7 +41,7 @@ class Model:
 
     def load(self):
         # Ensure the destination directory exists
-        dest_dir = Path("/app/model/packages/inflight_batcher_llm/tensorrt_llm/1")
+        dest_dir = Path("/packages/inflight_batcher_llm/tensorrt_llm/1")
         dest_dir.mkdir(parents=True, exist_ok=True)
 
         # Move all files and directories from data_dir to dest_dir
@@ -51,7 +51,7 @@ class Model:
         subprocess.run(
             [
                 "tritonserver",
-                "--model-repository", "/app/model/packages/inflight_batcher_llm",
+                "--model-repository", "/packages/inflight_batcher_llm/",
                 "--grpc-port", "8001",
                 "--http-port", "8003"
             ]
