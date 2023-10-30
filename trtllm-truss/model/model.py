@@ -1,6 +1,5 @@
 import numpy as np
 import subprocess
-import shutil
 import time
 from pathlib import Path
 from functools import partial
@@ -95,22 +94,8 @@ class Model:
                                 np_to_triton_dtype(input.dtype))
         t.set_data_from_numpy(input)
         return t
-    
-    async def inner(self, user_data):
-        while True:
-            try:
-                result = user_data._completed_requests.get()
-                if not isinstance(result, InferenceServerException):
-                    res = result.as_numpy('text_output')
-                    yield res[0].decode("utf-8")
-                else:
-                    yield {"status": "error", "message": result.message()}
-                if result.get_response().parameters["triton_final_response"].bool_param:
-                    break
-            except Exception:
-                break
 
-    async def predict(self, model_input):
+    def predict(self, model_input):
         model_name = "ensemble"
         user_data = UserData()
         self._request_id_counter += 1
