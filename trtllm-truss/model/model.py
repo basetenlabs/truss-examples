@@ -9,6 +9,7 @@ import tritonclient.http as httpclient
 from tritonclient.utils import np_to_triton_dtype
 from tritonclient.utils import InferenceServerException
 from queue import Queue
+from threading import Thread
 
 
 class UserData:
@@ -26,7 +27,7 @@ class Model:
     def __init__(self, **kwargs):
         self._data_dir = kwargs["data_dir"]
         self._triton_http_client = None
-        self._triton_grpc_client = None
+        self._triton_grpc_client_map = {}
         self._request_id_counter = 0
 
     def move_all_files(self, src: Path, dest: Path):
@@ -38,6 +39,17 @@ class Model:
                     self.move_all_files(item, dest_item)
                 else:
                     item.rename(dest_item)
+    
+    def start_grpc_stream(self, user_data, model_name, inputs, stream_uuid):
+        grpc_client_instance = grpcclient.InferenceServerClient(url="localhost:8001", verbose=False)
+        self._triton_grpc_client_map[stream_uuid] = grpc_client_instance
+        grpc_client_instance.start_stream(callback=partial(callback, user_data))
+        grpc_client_instance.async_stream_infer(
+            model_name,
+            inputs,
+            request_id=stream_uuid,
+            enable_empty_final_response=True,
+        )
 
     def load(self):
         # Ensure the destination directory exists
@@ -63,7 +75,6 @@ class Model:
         
         # Create Triton HTTP Client and GRPC Client, retrying every 10 seconds until successful
         self._triton_http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
-        self._triton_grpc_client = grpcclient.InferenceServerClient(url="localhost:8001", verbose=False)
         
         # Before checking if model is ready, wait for the server to come up
         is_server_up = False
@@ -129,12 +140,33 @@ class Model:
             self.prepare_tensor("beam_width", beam_width_data),
         ]
 
-        self._triton_grpc_client.start_stream(callback=partial(callback, user_data))
-        self._triton_grpc_client.async_stream_infer(
-            model_name,
-            inputs,
-            request_id=str(self._request_id_counter),
-            enable_empty_final_response=True,
-        )
+        # Start GRPC stream in a separate thread
+        stream_uuid = str(self._request_id_counter)
+        stream_thread = Thread(target=self.start_grpc_stream, args=(user_data, model_name, inputs, stream_uuid))
+        stream_thread.start()
 
-        return self.inner(user_data)
+        while True:
+            try:
+                result = user_data._completed_requests.get()
+                if not isinstance(result, InferenceServerException):
+                    res = result.as_numpy('text_output')
+                    yield res[0].decode("utf-8")
+                else:
+                    yield {"status": "error", "message": result.message()}
+                
+                if result.get_response().parameters.get("triton_final_response") and \
+                        result.get_response().parameters["triton_final_response"].bool_param:
+                    triton_grpc_stream = self._triton_grpc_client_map[stream_uuid]
+                    triton_grpc_stream.stop_stream()
+                    break
+            except Exception as e:
+                triton_grpc_stream = self._triton_grpc_client_map[stream_uuid]
+                triton_grpc_stream.stop_stream()
+                yield {"status": "error", "message": str(e)}
+                break
+
+        # Join the streaming thread to ensure all resources are released
+        stream_thread.join()
+        
+        # Delete the GRPC client instance
+        del self._triton_grpc_client_map[stream_uuid]
