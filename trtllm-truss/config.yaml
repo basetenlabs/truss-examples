@@ -12,3 +12,6 @@ resources:
   use_gpu: true
 secrets: {}
 system_packages: []
+external_data:
+  - url: https://huggingface.co/baseten/llama-7b-chat-sq-int8kv-tp1-trtllm-engine/resolve/main/llama_float16_tp1_rank0.engine
+    local_data_path: llama_float16_tp1_rank0.engine
