@@ -12,3 +12,4 @@ resources:
   use_gpu: true
 secrets: {}
 system_packages: []
+predict_concurrency: 256
