@@ -80,7 +80,7 @@ output [
 parameters {
   key: "tokenizer_dir"
   value: {
-    string_value: "NousResearch/Llama-2-7b-hf"
+    string_value: "bigcode/starcoder"
   }
 }
 

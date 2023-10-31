@@ -1,3 +1,5 @@
+import os
+import requests
 import numpy as np
 import subprocess
 import time
@@ -28,6 +30,8 @@ class Model:
         self._triton_http_client = None
         self._triton_grpc_client_map = {}
         self._request_id_counter = 0
+        self._secrets = kwargs["secrets"]
+        self._hf_token = self._secrets["hf_access_token"]
 
     def move_all_files(self, src: Path, dest: Path):
             for item in src.iterdir():
@@ -51,6 +55,14 @@ class Model:
         )
 
     def load(self):
+        engine_files = {
+            "gpt_float16_tp2_rank0.engine": "https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank0.engine",
+            "gpt_float16_tp2_rank1.engine": "https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank1.engine",
+        }
+        for name, engine_url in engine_files.items():
+            with open(self._data_dir / name, "wb") as f:
+                f.write(requests.get(engine_url).content)
+
         # Ensure the destination directory exists
         dest_dir = Path("/packages/inflight_batcher_llm/tensorrt_llm/1")
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -63,13 +75,31 @@ class Model:
         self.move_all_files(self._data_dir, dest_dir)
 
         # Kick off Triton Inference Server
+        command = [
+            'mpirun',
+            '--allow-run-as-root',
+            '-n',
+            '1',
+            'tritonserver',
+            '--model-repository=/packages/inflight_batcher_llm/',
+            '--grpc-port=8001',
+            '--http-port=8003',
+            '--disable-auto-complete-config',
+            '--backend-config=python,shm-region-prefix-name=prefix0_',
+            ':',
+            '-n',
+            '1',
+            'tritonserver',
+            '--model-repository=/packages/inflight_batcher_llm/',
+            '--grpc-port=8001',
+            '--http-port=8003',
+            '--disable-auto-complete-config',
+            '--backend-config=python,shm-region-prefix-name=prefix1_',
+            ':'
+        ]
         process = subprocess.Popen(
-            [
-                "tritonserver",
-                "--model-repository", "/packages/inflight_batcher_llm/",
-                "--grpc-port", "8001",
-                "--http-port", "8003"
-            ]
+            command, 
+            env={ **os.environ, "HUGGING_FACE_HUB_TOKEN": self._hf_token},
         )
         
         # Create Triton HTTP Client and GRPC Client, retrying every 10 seconds until successful

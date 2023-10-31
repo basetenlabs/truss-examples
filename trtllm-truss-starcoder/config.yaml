@@ -10,10 +10,6 @@ requirements: []
 resources:
   accelerator: A100:2
   use_gpu: true
-secrets: {}
+secrets: 
+  hf_access_token: 
 system_packages: []
-external_data:
-  - url: https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank0.engine
-    local_data_path: gpt_float16_tp2_rank0.engine
-  - url: https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank1.engine
-    local_data_path: gpt_float16_tp2_rank1.engine
