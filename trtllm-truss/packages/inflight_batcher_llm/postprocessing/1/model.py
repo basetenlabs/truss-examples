@@ -29,7 +29,7 @@ import json
 import numpy as np
 import triton_python_backend_utils as pb_utils
 from transformers import AutoTokenizer, LlamaTokenizer, T5Tokenizer
-
+from collections import OrderedDict
 
 class TritonPythonModel:
     """Your Python model must use the same class name. Every Python model
@@ -75,11 +75,13 @@ class TritonPythonModel:
         # Parse model output configs
         output_config = pb_utils.get_output_config_by_name(
             model_config, "OUTPUT")
-
         # Convert Triton types to numpy types
         self.output_dtype = pb_utils.triton_string_to_numpy(
             output_config['data_type'])
 
+        self.state_dict = OrderedDict()
+        self.cache_size = 100
+   
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
         function receives a list of pb_utils.InferenceRequest as the only
@@ -105,49 +107,49 @@ class TritonPythonModel:
         # Every Python backend must iterate over everyone of the requests
         # and create a pb_utils.InferenceResponse for each of them.
         for idx, request in enumerate(requests):
+            # Get request ID
+            request_id = request.request_id()
+            
             # Get input tensors
-            tokens_batch = pb_utils.get_input_tensor_by_name(
-                request, 'TOKENS_BATCH').as_numpy()
+            tokens_batch = pb_utils.get_input_tensor_by_name(request, 'TOKENS_BATCH').as_numpy().flatten()
+            
+            # Get prior state for request ID
+            if request_id in self.state_dict:
+                previous_tokens = self.state_dict[request_id]['tokens']
+                accumulated_tokens = np.concatenate([previous_tokens, tokens_batch])
+                self.state_dict[request_id]['tokens'] = accumulated_tokens
+                
+                # Move request ID to end of queue to prevent it from being evicted
+                self.state_dict.move_to_end(request_id)
+            else:
+                # Evict least recently used item if cache is full
+                if len(self.state_dict) > self.cache_size:
+                    self.state_dict.popitem(last=False)
 
-            # Reshape Input
-            # tokens_batch = tokens_batch.reshape([-1, tokens_batch.shape[0]])
-            # tokens_batch = tokens_batch.T
+                self.state_dict[request_id] = {'tokens': tokens_batch, 'prev_str': ""}
 
-            # Postprocessing output data.
-            outputs = self._postprocessing(tokens_batch)
+            # Postprocess output data
+            new_string = self._postprocessing(self.state_dict[request_id]['tokens'])
+            old_string = self.state_dict[request_id]['prev_str']
+            
+            # Compute delta between previous and new string
+            delta = self._compute_delta(old_string, new_string)
+            self.state_dict[request_id]['prev_str'] = new_string
 
-            # Create output tensors. You need pb_utils.Tensor
-            # objects to create pb_utils.InferenceResponse.
-            output_tensor = pb_utils.Tensor(
-                'OUTPUT',
-                np.array(outputs).astype(self.output_dtype))
-
-            # Create InferenceResponse. You can set an error here in case
-            # there was a problem with handling this inference request.
-            # Below is an example of how you can set errors in inference
-            # response:
-            #
-            # pb_utils.InferenceResponse(
-            #    output_tensors=..., TritonError("An error occurred"))
-            inference_response = pb_utils.InferenceResponse(
-                output_tensors=[output_tensor])
+            # Create output tensor
+            output_tensor = pb_utils.Tensor('OUTPUT', np.array([delta]).astype(self.output_dtype))
+            inference_response = pb_utils.InferenceResponse(output_tensors=[output_tensor])
             responses.append(inference_response)
 
-        # You should return a list of pb_utils.InferenceResponse. Length
-        # of this list must match the length of `requests` list.
         return responses
 
+    def _compute_delta(self, prev_str, new_str):
+        delta = "".join([char for index, char in enumerate(new_str) if index >= len(prev_str) or char != prev_str[index]])
+        return delta
+
     def finalize(self):
-        """`finalize` is called only once when the model is being unloaded.
-        Implementing `finalize` function is optional. This function allows
-        the model to perform any necessary clean ups before exit.
-        """
         print('Cleaning up...')
 
-    def _postprocessing(self, tokens_batch):
-        outputs = []
-        for beam_tokens in tokens_batch:
-            for tokens in beam_tokens:
-                output = self.tokenizer.decode(tokens)
-                outputs.append(output.encode('utf8'))
-        return outputs
+    def _postprocessing(self, tokens):
+        decoded_tokens = self.tokenizer.decode(tokens)
+        return decoded_tokens
