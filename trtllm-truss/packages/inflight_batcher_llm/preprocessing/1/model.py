@@ -24,6 +24,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import csv
 import json
 from typing import List
@@ -57,8 +58,7 @@ class TritonPythonModel:
         """
         # Parse model configs
         model_config = json.loads(args['model_config'])
-        tokenizer_dir = model_config['parameters']['tokenizer_dir'][
-            'string_value']
+        tokenizer_dir = os.environ["triton_tokenizer_repository"]
         tokenizer_type = model_config['parameters']['tokenizer_type'][
             'string_value']
 

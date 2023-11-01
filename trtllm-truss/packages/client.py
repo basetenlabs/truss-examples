@@ -1,11 +1,14 @@
+import os
 import subprocess
 import time
 from functools import partial
 import tritonclient.grpc as grpcclient
 import tritonclient.http as httpclient
+from pathlib import Path
 from queue import Queue
 from utils import prepare_model_repository
 from tritonclient.utils import InferenceServerException
+from threading import Thread
 
 class UserData:
     def __init__(self):
@@ -18,10 +21,10 @@ def callback(user_data, result, error):
         user_data._completed_requests.put(result)
 
 class TritonClient:
-    def __init__(self, data_dir, model_repository_dir, tensort_parallel_count=1):
+    def __init__(self, data_dir: Path, model_repository_dir: Path, tensor_parallel_count=1):
         self._data_dir = data_dir
         self._model_repository_dir = model_repository_dir
-        self._tensor_parallel_count = tensort_parallel_count
+        self._tensor_parallel_count = tensor_parallel_count
         self._http_client = None
         self._grpc_client_map = {}
 
@@ -36,10 +39,18 @@ class TritonClient:
             request_id=stream_uuid,
             enable_empty_final_response=True,
         )
+        
+    def stop_grpc_stream(self, stream_uuid, stream_thread: Thread):
+        """Closes a GRPC stream and stops the associated thread."""
+        triton_grpc_stream = self._grpc_client_map[stream_uuid]
+        triton_grpc_stream.stop_stream()
+        stream_thread.join()
+        del self._grpc_client_map[stream_uuid]
     
     def start_server(
         self,
         mpi: int = 1,
+        env: dict = {},
     ):
         """Triton Inference Server has different startup commands depending on
         whether it is running in a TP=1 or TP>1 configuration. This function
@@ -47,7 +58,7 @@ class TritonClient:
         if mpi == 1:
             return subprocess.Popen([
                 "tritonserver",
-                "--model-repository", self._model_repository_dir,
+                "--model-repository", str(self._model_repository_dir),
                 "--grpc-port", "8001",
                 "--http-port", "8003"
             ])
@@ -60,19 +71,22 @@ class TritonClient:
                 "-n",
                 "1",
                 "tritonserver",
-                "--model-repository", self._model_repository_dir,
+                "--model-repository", str(self._model_repository_dir),
                 "--grpc-port", "8001",
                 "--http-port", "8003",
                 "--disable-auto-complete-config",
-                f"--backend-config=python,shm-region-prefix-name=prefix{i}_",
+                f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
                 ":"
             ]
-        return subprocess.Popen(command)    
+        return subprocess.Popen(
+            command,
+            env={**os.environ, **env},
+        )
 
-    def load_server_and_model(self):
+    def load_server_and_model(self, env: dict):
         """Loads the Triton server and the model."""
         prepare_model_repository(self._data_dir)
-        self.start_server(mpi=self._tensor_parallel_count)
+        self.start_server(mpi=self._tensor_parallel_count, env=env)
         
         self._http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
         is_server_up = False
