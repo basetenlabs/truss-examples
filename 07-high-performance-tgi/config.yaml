@@ -17,7 +17,7 @@ build:
 # Another important parameter to configure if you are choosing TGI is the `predict_concurrency`.
 # One of the main benefits of TGI is continuous batching -- in which multiple requests can be
 # processed at the same time. Without `predict_concurrency` set to a high enough number, you cannot take advantage of this
-# feature. 
+# feature.
 runtime:
   predict_concurrency: 128
 # The remaining config options listed are standard Truss Config options.
@@ -36,7 +36,7 @@ resources:
 secrets: {}
 system_packages: []
 # # Deploy the model
-# 
+#
 # Deploy the TGI model like you would other Trusses, with:
 # ```bash
 # $ truss push

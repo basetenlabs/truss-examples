@@ -51,7 +51,7 @@ The `predict` route is the primary method for generating text completions based 
 - __repetition_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
 - __no_repeat_ngram_size__ (optional, default=0): The size of the n-gram that should not appear more than once in the output text.
 - __use_cache__ (optional, default=True): A boolean determining whether the model should use the cache to avoid recomputing already computed hidden states during text generation.
-- __do_sample__ (optional, default=True): Controls the sampling strategy during the decoding process. Setting to False results in the generation process sampling the highest probability next token (greedy decoding). Otherwise, we sample non-greedily via Top-K or Top-P sampling. 
+- __do_sample__ (optional, default=True): Controls the sampling strategy during the decoding process. Setting to False results in the generation process sampling the highest probability next token (greedy decoding). Otherwise, we sample non-greedily via Top-K or Top-P sampling.
 
 ## Example usage
 
@@ -66,7 +66,7 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
+           "prompt": "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
            "stream": true,
            "max_tokens": 4096
          }' --no-buffer

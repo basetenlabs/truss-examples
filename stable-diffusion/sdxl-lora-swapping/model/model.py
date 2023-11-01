@@ -1,16 +1,16 @@
+import base64
+import functools
+import time
+from io import BytesIO
 from typing import Any
 
-from diffusers import DiffusionPipeline, AutoencoderKL
 import torch
-import base64
-from io import BytesIO
+from diffusers import AutoencoderKL, DiffusionPipeline
 from PIL import Image
-import time
-import functools
-
 
 # Good notebook to learn how to use diffusers + LoRA:
 # https://colab.research.google.com/gist/sayakpaul/109b7e792c64514fb3c057ecff4145ff/scratchpad.ipynb#scrollTo=GreOMxAcvlm8
+
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -29,8 +29,8 @@ class Model:
             use_safetensors=True,
         )
 
-        self.pipe.to('cuda')
-        
+        self.pipe.to("cuda")
+
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
             text_encoder_2=self.pipe.text_encoder_2,
@@ -59,7 +59,7 @@ class Model:
         lora = model_input.pop("lora", None)
         print(f"Loading LoRA weights: {lora}")
 
-        # example schema: 
+        # example schema:
         # {"repo_id": "nerijs/pixel-art-xl", "weights": "pixel-art-xl.safetensors"}
 
         # Note: if LoRA is None, the default behavior is to use the last loaded weights (or no weights if none were loaded)
@@ -75,7 +75,7 @@ class Model:
                 print("Loaded LoRA weights!")
             else:
                 print("Using previously loaded LoRA weights.")
-        
+
         with torch.inference_mode():
             image = self.pipe(
                 prompt=prompt,
@@ -83,7 +83,7 @@ class Model:
                 num_inference_steps=num_inference_steps,
                 denoising_end=high_noise_frac if use_refiner else 1.0,
                 output_type="latent" if use_refiner else "pil",
-                target_size=(target_size, target_size)
+                target_size=(target_size, target_size),
             ).images[0]
             if use_refiner:
                 image = self.refiner(
@@ -91,7 +91,7 @@ class Model:
                     num_inference_steps=num_inference_steps,
                     denoising_start=high_noise_frac,
                     image=image[None, :],
-                    target_size=(target_size, target_size)
+                    target_size=(target_size, target_size),
                 ).images[0]
         b64_results = self.convert_to_b64(image)
 

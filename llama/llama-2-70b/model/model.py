@@ -1,11 +1,18 @@
-import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer, TextIteratorStreamer, GenerationConfig
 from threading import Thread
 from typing import Dict
+
+import torch
+from transformers import (
+    GenerationConfig,
+    LlamaForCausalLM,
+    LlamaTokenizer,
+    TextIteratorStreamer,
+)
 
 CHECKPOINT = "meta-llama/Llama-2-70b-hf"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_TOP_P = 0.95
+
 
 class Model:
     def __init__(self, data_dir: str, config: Dict, **kwargs) -> None:
@@ -40,27 +47,37 @@ class Model:
         request["generate_args"] = generate_args
         return request
 
-    def load(self):        
+    def load(self):
         self.model = LlamaForCausalLM.from_pretrained(
             CHECKPOINT,
             use_auth_token=self.hf_access_token,
             torch_dtype=torch.float16,
-            device_map="auto")
+            device_map="auto",
+        )
 
         self.tokenizer = LlamaTokenizer.from_pretrained(
             CHECKPOINT,
             device_map="auto",
             torch_dtype=torch.float16,
-            use_auth_token=self.hf_access_token)
+            use_auth_token=self.hf_access_token,
+        )
 
     def stream_model(self, request: Dict):
         streamer = TextIteratorStreamer(self.tokenizer)
 
         with torch.no_grad():
             generation_args = request.pop("generate_args")
-            generation_config = GenerationConfig(**generation_args,)
+            generation_config = GenerationConfig(
+                **generation_args,
+            )
             prompt = request.pop("prompt")
-            inputs = self.tokenizer(prompt, return_tensors="pt", max_length=DEFAULT_MAX_LENGTH, truncation=True, padding=True)
+            inputs = self.tokenizer(
+                prompt,
+                return_tensors="pt",
+                max_length=DEFAULT_MAX_LENGTH,
+                truncation=True,
+                padding=True,
+            )
             input_ids = inputs["input_ids"].to("cuda")
             generation_kwargs = {
                 "input_ids": input_ids,
@@ -68,14 +85,16 @@ class Model:
                 "return_dict_in_generate": True,
                 "output_scores": True,
                 "max_new_tokens": generation_args["max_new_tokens"],
-                "streamer": streamer
+                "streamer": streamer,
             }
             thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
             thread.start()
+
             def inner():
                 for text in streamer:
                     yield text
                 thread.join()
+
         return inner()
 
     def predict(self, request: Dict):
@@ -87,11 +106,9 @@ class Model:
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
-                input_ids = self.tokenizer(
-                    prompt, return_tensors='pt').input_ids.cuda()
+                input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
                 output = self.model.generate(
-                    inputs=input_ids,
-                    **request["generate_args"]
+                    inputs=input_ids, **request["generate_args"]
                 )
 
                 return self.tokenizer.decode(output[0])

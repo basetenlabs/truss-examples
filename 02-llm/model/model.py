@@ -7,9 +7,7 @@
 #
 # In this example, we use the Huggingface transformers library to build a text generation model.
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # We use the 7B version of the Mistral model.
 CHECKPOINT = "mistralai/Mistral-7B-v0.1"
@@ -26,9 +24,8 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            CHECKPOINT,
-            torch_dtype=torch.float16,
-            device_map="auto")
+            CHECKPOINT, torch_dtype=torch.float16, device_map="auto"
+        )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             CHECKPOINT,
@@ -58,14 +55,8 @@ class Model:
             "pad_token_id": self.tokenizer.pad_token_id,
         }
 
-        input_ids = self.tokenizer(
-            prompt,
-            return_tensors="pt"
-        ).input_ids.cuda()
-        
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
+
         with torch.no_grad():
-            output = self.model.generate(
-                inputs=input_ids,
-                **generate_args
-            )
+            output = self.model.generate(inputs=input_ids, **generate_args)
             return self.tokenizer.decode(output[0])

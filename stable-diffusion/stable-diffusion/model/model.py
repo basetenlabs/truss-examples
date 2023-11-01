@@ -14,7 +14,6 @@ from diffusers import (
 )
 from PIL import Image
 
-
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.benchmark = True
 
@@ -70,7 +69,9 @@ class Model:
     def predict(self, request: Dict) -> Dict[str, List]:
         results = []
         random_seed = int.from_bytes(os.urandom(2), "big")
-        generator = torch.Generator("cuda").manual_seed(request.get("seed", random_seed))
+        generator = torch.Generator("cuda").manual_seed(
+            request.get("seed", random_seed)
+        )
         try:
             output = self.model(
                 **request,

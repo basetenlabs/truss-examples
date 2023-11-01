@@ -13,7 +13,9 @@ class Model:
         self._tokenizer = None
 
     def load(self):
-        self._tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+        self._tokenizer = LlamaTokenizer.from_pretrained(
+            "decapoda-research/llama-7b-hf"
+        )
         self._model = LlamaForCausalLM.from_pretrained(
             str(self._data_dir),
             torch_dtype=torch.float16,
@@ -35,7 +37,9 @@ class Model:
         """
         return request
 
-    def forward(self, prompt, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs):
+    def forward(
+        self, prompt, temperature=0.1, top_p=0.75, top_k=40, num_beams=2, **kwargs
+    ):
         inputs = self._tokenizer(
             prompt, return_tensors="pt", truncation=True, padding=False, max_length=1056
         )
@@ -60,10 +64,11 @@ class Model:
 
         decoded_output = []
         for beam in generation_output.sequences:
-            decoded_output.append(self._tokenizer.decode(beam, skip_special_tokens=True))
+            decoded_output.append(
+                self._tokenizer.decode(beam, skip_special_tokens=True)
+            )
 
         return decoded_output
-
 
     def predict(self, request: Dict) -> Dict[str, List]:
         prompt = request.pop("prompt")

@@ -38,7 +38,7 @@ resources:
   accelerator: A10G
 secrets: {}
 # # Deploy the model
-# 
+#
 # Deploy the model like you would other Trusses, with:
 # ```bash
 # $ truss push
@@ -48,7 +48,7 @@ secrets: {}
 #  Llama Truss, since bundling the model weights is now happening during the build.
 #  The deploy step & scale-ups will happen much faster with this approach.
 #  </Note>
-# 
+#
 # You can then invoke the model with:
 # ```bash
 # $ truss predict -d '{"inputs": "What is a large language model?"}'

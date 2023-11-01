@@ -50,7 +50,7 @@ The `predict` route is the primary method for generating text completions based 
 - __top_p__ (optional, default=0.95): The cumulative probability threshold for token sampling. The model will only consider tokens whose cumulative probability is below this threshold.
 - __top_k__ (optional, default=50): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
 - __frequency_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token sequence, with higher values discouraging repetition.
-- __prescence_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token if it's already been produced. 
+- __prescence_penalty__ (optional, default=1.0): Controls the model’s penalty on producing the same token if it's already been produced.
 - __use_beam_search__ (optional, default=True): Controls the sampling strategy during the decoding process. Setting to False results in the generation process sampling the highest probability next token (greedy decoding). Otherwise, we sample non-greedily via multinomial sampling. Define `n` and `best_of` if this is set to True.
 
 ## Example usage

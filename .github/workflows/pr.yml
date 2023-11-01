@@ -1,0 +1,17 @@
+name: PR
+
+on:
+  pull_request:
+
+concurrency:
+  group: pr-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-python/
+      - run: poetry install
+      - run: poetry run pre-commit run --all-files

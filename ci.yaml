@@ -2,7 +2,7 @@ tests:
   - 01-getting-started-bert
   - 02-llm
   - 03-llm-with-streaming
-  - 04-image-generation 
+  - 04-image-generation
   - 05-speech-to-text
   - 06-high-performance-cached-weights
   - 07-high-performance-tgi
@@ -10,3 +10,4 @@ tests:
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
   - stable-diffusion/dreamshaper-lcm
+  - jina-embeddings/jina-embeddings-v2-base-en

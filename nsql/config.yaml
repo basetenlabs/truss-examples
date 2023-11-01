@@ -1,6 +1,5 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_framework: custom
 model_type: Model
 description: NSQL is an open-source text-to-SQL AI model developed by Numbers Station.

@@ -2,7 +2,7 @@
 
 This repository packages [Replit Code 1.3B](https://huggingface.co/replit/replit-code-v1-3b) as a [Truss](https://truss.baseten.co).
 
-Replit Code 1.3B is an LLM released by Replit, optimized and trained for generating code autocompletions. 
+Replit Code 1.3B is an LLM released by Replit, optimized and trained for generating code autocompletions.
 
 ## Deploying Replit Code 1.3B
 

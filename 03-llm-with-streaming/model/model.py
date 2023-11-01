@@ -6,14 +6,20 @@
 # 10 - 20 seconds to generate. However, because LLMs generate tokens in sequence, useful output can be
 # made available to users sooner. To support this, in Truss, we support streaming output. In this example,
 # we build a Truss that streams the output of the Falcon-7B model.
-# 
+#
 # # Set up the imports and key constants
 #
 # In this example, we use the HuggingFace transformers library to build a text generation model.
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig, TextIteratorStreamer
-from typing import Dict
 from threading import Thread
+from typing import Dict
+
+import torch
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    GenerationConfig,
+    TextIteratorStreamer,
+)
 
 # We use the instruct version of the Falcon-7B model, and have some defaults
 # for inference parameters.
@@ -33,7 +39,7 @@ class Model:
 
     def load(self):
         self.tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT)
-        # 
+        #
         self.tokenizer.pad_token = self.tokenizer.eos_token_id
         self.model = AutoModelForCausalLM.from_pretrained(
             CHECKPOINT,
@@ -41,24 +47,21 @@ class Model:
             trust_remote_code=True,
             device_map="auto",
         )
-# # Define the predict function
-# 
-# In the `predict` function of the Truss, we implement the actual
-# inference logic. The two main steps are:
-# * Tokenize the input
-# * Call the model's `generate` function, ensuring that we pass a
-# `TextIteratorStreamer`. This is what gives us streaming output, and
-# and also do this in a Thread, so that it does not block the main
-# invocation.
-# * Return a generator that iterates over the `TextIteratorStreamer` object
+
+    # # Define the predict function
+    #
+    # In the `predict` function of the Truss, we implement the actual
+    # inference logic. The two main steps are:
+    # * Tokenize the input
+    # * Call the model's `generate` function, ensuring that we pass a
+    # `TextIteratorStreamer`. This is what gives us streaming output, and
+    # and also do this in a Thread, so that it does not block the main
+    # invocation.
+    # * Return a generator that iterates over the `TextIteratorStreamer` object
     def predict(self, request: Dict) -> Dict:
         prompt = request.pop("prompt")
         inputs = self.tokenizer(
-            prompt,
-            return_tensors="pt",
-            max_length=512,
-            truncation=True,
-            padding=True
+            prompt, return_tensors="pt", max_length=512, truncation=True, padding=True
         )
         input_ids = inputs["input_ids"].to("cuda")
 
@@ -81,15 +84,12 @@ class Model:
                 "output_scores": True,
                 "pad_token_id": self.tokenizer.eos_token_id,
                 "max_new_tokens": DEFAULT_MAX_NEW_TOKENS,
-                "streamer": streamer
+                "streamer": streamer,
             }
 
             # Spawn a thread to run the generation, so that it does not block the main
             # thread.
-            thread = Thread(
-                target=self.model.generate,
-                kwargs=generation_kwargs
-            )
+            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
             thread.start()
 
             # In Truss, the way to achieve streaming output is to return a generator

@@ -1,12 +1,12 @@
+import json
+import os
+import sys
 from typing import Any
 
-import sys
-import os
 import torch
 import transformers
-import json
+from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 
-from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -28,7 +28,7 @@ class Model:
         model.config.eos_token_id = 2
         model.half()
         model.eval()
-        
+
         self.model = model
         self.tokenizer = tokenizer
 
@@ -38,21 +38,23 @@ class Model:
         final_output = _output[0].split("### Response:")[1].strip()
         return final_output
 
-    
+
 def evaluate(
-        model,
-        tokenizer,
-        model_input,
-        input=None,
-        temperature=1,
-        top_p=0.9,
-        top_k=40,
-        num_beams=1,
-        max_new_tokens=2048,
-        **kwargs,
+    model,
+    tokenizer,
+    model_input,
+    input=None,
+    temperature=1,
+    top_p=0.9,
+    top_k=40,
+    num_beams=1,
+    max_new_tokens=2048,
+    **kwargs,
 ):
     prompts = generate_prompt(model_input, input)
-    inputs = tokenizer(prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True)
+    inputs = tokenizer(
+        prompts, return_tensors="pt", max_length=1024, truncation=True, padding=True
+    )
     input_ids = inputs["input_ids"].to("cuda")
     generation_config = GenerationConfig(
         temperature=temperature,

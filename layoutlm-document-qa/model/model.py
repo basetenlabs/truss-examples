@@ -16,6 +16,8 @@ class Model:
 
     def predict(self, model_input):
         return self._model(
-            model_input["url"], # e.g. "https://templates.invoicehome.com/invoice-template-us-neat-750px.png"
-            model_input["prompt"] # e.g. "What is the invoice number?"
+            model_input[
+                "url"
+            ],  # e.g. "https://templates.invoicehome.com/invoice-template-us-neat-750px.png"
+            model_input["prompt"],  # e.g. "What is the invoice number?"
         )

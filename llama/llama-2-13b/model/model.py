@@ -1,10 +1,12 @@
+from typing import Dict
+
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
-from typing import Dict
 
 CHECKPOINT = "meta-llama/Llama-2-13b-hf"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_TOP_P = 0.95
+
 
 class Model:
     def __init__(self, data_dir: str, config: Dict, **kwargs) -> None:
@@ -39,27 +41,22 @@ class Model:
         request["generate_args"] = generate_args
         return request
 
-    def load(self):        
+    def load(self):
         self.model = LlamaForCausalLM.from_pretrained(
-            CHECKPOINT,
-            use_auth_token=self.hf_access_token,
-            device_map="auto")
+            CHECKPOINT, use_auth_token=self.hf_access_token, device_map="auto"
+        )
 
         self.tokenizer = LlamaTokenizer.from_pretrained(
-            CHECKPOINT,
-            device_map="auto",
-            use_auth_token=self.hf_access_token)
-
+            CHECKPOINT, device_map="auto", use_auth_token=self.hf_access_token
+        )
 
     def predict(self, request: Dict) -> Dict:
         with torch.no_grad():
             try:
                 prompt = request.pop("prompt")
-                input_ids = self.tokenizer(
-                    prompt, return_tensors='pt').input_ids.cuda()
+                input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
                 output = self.model.generate(
-                    inputs=input_ids,
-                    **request["generate_args"]
+                    inputs=input_ids, **request["generate_args"]
                 )
 
                 return self.tokenizer.decode(output[0])

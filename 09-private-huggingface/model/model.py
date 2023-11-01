@@ -8,7 +8,7 @@
 #
 # # Setting up the model
 #
-# In this example, we use a private version of the [BERT base model](https://huggingface.co/bert-base-uncased). 
+# In this example, we use a private version of the [BERT base model](https://huggingface.co/bert-base-uncased).
 # The model is publicly available, but for the purposes of our example, we copied it into a private
 # model repository, with the path "baseten/docs-example-gated-model".
 #
@@ -16,9 +16,10 @@
 # transformers library, and defining the `Model` class.
 from transformers import pipeline
 
+
 class Model:
     # An important step in loading a model that requires authentication is to
-    # have access to the secrets defined for this model. We pull these out of 
+    # have access to the secrets defined for this model. We pull these out of
     # the keyword args in the `__init__` function.
     def __init__(self, **kwargs) -> None:
         self._secrets = kwargs["secrets"]
@@ -30,7 +31,7 @@ class Model:
         self._model = pipeline(
             "fill-mask",
             model="baseten/docs-example-gated-model",
-            use_auth_token=self._secrets["hf_access_token"]
+            use_auth_token=self._secrets["hf_access_token"],
         )
 
     def predict(self, model_input):

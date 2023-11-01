@@ -40,7 +40,7 @@ The predict route is the primary method for generating images based on a given s
 - __max_tokens__: (optional) The maximum number of tokens that will be generated
 - __temperature__: (optional) A temperature of 0 means the response is more deterministic. A temperature of greater than zero results in increasing variation in the completion.
 - __top_k__: (optional) Controls how model picks the next token from the top `k` tokens in its list, sorted by probability.
-- __top_p__: (optional) Controls how the model picks from the top tokens based on the sum of their probabilities. 
+- __top_p__: (optional) Controls how the model picks from the top tokens based on the sum of their probabilities.
 
 ## Example usage
 

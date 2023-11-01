@@ -1,24 +1,24 @@
-import torch
 import base64
-import qrcode
-from PIL import Image
-from PIL.Image import LANCZOS
 from io import BytesIO
 from typing import Dict
 
-
+import qrcode
+import torch
 from diffusers import (
-    StableDiffusionControlNetPipeline,
     ControlNetModel,
     DDIMScheduler,
-    DPMSolverMultistepScheduler,
     DEISMultistepScheduler,
-    HeunDiscreteScheduler,
+    DPMSolverMultistepScheduler,
+    EulerAncestralDiscreteScheduler,
     EulerDiscreteScheduler,
-    EulerAncestralDiscreteScheduler
+    HeunDiscreteScheduler,
+    StableDiffusionControlNetPipeline,
 )
+from PIL import Image
+from PIL.Image import LANCZOS
 
 BASE64_PREAMBLE = "data:image/png;base64,"
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -50,10 +50,12 @@ class Model:
         image_width, image_height = img.size
         image_width = (image_width + 255 + offset_min) // 256 * 256
         image_height = (image_height + 255 + offset_min) // 256 * 256
-        bg = Image.new('L', (image_width, image_height), 128)
+        bg = Image.new("L", (image_width, image_height), 128)
 
-        coords = ((image_width - img.size[0]) // 2 // 16 * 16,
-                  (image_height - img.size[1]) // 2 // 16 * 16)
+        coords = (
+            (image_width - img.size[0]) // 2 // 16 * 16,
+            (image_height - img.size[1]) // 2 // 16 * 16,
+        )
         bg.paste(img, coords)
         return bg
 
@@ -64,7 +66,9 @@ class Model:
         return img_str
 
     def b64_to_pil(self, b64_str):
-        return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+        return Image.open(
+            BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, "")))
+        )
 
     def load(self):
         controlnet = ControlNetModel.from_pretrained(
@@ -95,10 +99,16 @@ class Model:
         num_inference_steps = request.get("inference_steps", 40)
 
         SAMPLER_MAP = {
-            "DPM++ Karras SDE": lambda config: DPMSolverMultistepScheduler.from_config(config, use_karras=True, algorithm_type="sde-dpmsolver++"),
-            "DPM++ Karras": lambda config: DPMSolverMultistepScheduler.from_config(config, use_karras=True),
+            "DPM++ Karras SDE": lambda config: DPMSolverMultistepScheduler.from_config(
+                config, use_karras=True, algorithm_type="sde-dpmsolver++"
+            ),
+            "DPM++ Karras": lambda config: DPMSolverMultistepScheduler.from_config(
+                config, use_karras=True
+            ),
             "Heun": lambda config: HeunDiscreteScheduler.from_config(config),
-            "Euler a": lambda config: EulerAncestralDiscreteScheduler.from_config(config),
+            "Euler a": lambda config: EulerAncestralDiscreteScheduler.from_config(
+                config
+            ),
             "Euler": lambda config: EulerDiscreteScheduler.from_config(config),
             "DDIM": lambda config: DDIMScheduler.from_config(config),
             "DEIS": lambda config: DEISMultistepScheduler.from_config(config),
