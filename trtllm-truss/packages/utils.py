@@ -21,7 +21,7 @@ def prepare_model_repository(data_dir: Path):
     # Ensure the destination directory exists
     dest_dir = Path("/packages/inflight_batcher_llm/tensorrt_llm/1")
     dest_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Ensure empty version directory for `ensemble` model exists
     ensemble_dir = Path("/packages/inflight_batcher_llm/ensemble/1")
     ensemble_dir.mkdir(parents=True, exist_ok=True)

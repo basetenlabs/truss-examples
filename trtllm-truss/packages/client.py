@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 import time
 from functools import partial
@@ -39,14 +40,14 @@ class TritonClient:
             request_id=stream_uuid,
             enable_empty_final_response=True,
         )
-        
+
     def stop_grpc_stream(self, stream_uuid, stream_thread: Thread):
         """Closes a GRPC stream and stops the associated thread."""
         triton_grpc_stream = self._grpc_client_map[stream_uuid]
         triton_grpc_stream.stop_stream()
         stream_thread.join()
         del self._grpc_client_map[stream_uuid]
-    
+
     def start_server(
         self,
         mpi: int = 1,
@@ -56,12 +57,12 @@ class TritonClient:
         whether it is running in a TP=1 or TP>1 configuration. This function
         starts the server with the appropriate command."""
         if mpi == 1:
-            return subprocess.Popen([
+            command = [
                 "tritonserver",
                 "--model-repository", str(self._model_repository_dir),
                 "--grpc-port", "8001",
                 "--http-port", "8003"
-            ])
+            ]
         command = [
             "mpirun",
             "--allow-run-as-root",
@@ -87,7 +88,7 @@ class TritonClient:
         """Loads the Triton server and the model."""
         prepare_model_repository(self._data_dir)
         self.start_server(mpi=self._tensor_parallel_count, env=env)
-        
+
         self._http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
         is_server_up = False
         while not is_server_up:
@@ -104,16 +105,19 @@ class TritonClient:
     @staticmethod
     def stream_predict(user_data: UserData):
         """Static method to yield predictions or errors based on input and a streaming user_data queue."""
-        
+
         def _is_final_response(result):
             """Check if the given result is a final response according to Triton's specification."""
+            if isinstance(result, InferenceServerException):
+                return True
+
             if result:
                 final_response_param = result.get_response().parameters.get("triton_final_response")
                 return final_response_param.bool_param if final_response_param else False
             return False
 
         result = None
-        
+
         while not _is_final_response(result):
             try:
                 result = user_data._completed_requests.get()
@@ -121,13 +125,13 @@ class TritonClient:
                     res = result.as_numpy('text_output')
                     yield res[0].decode("utf-8")
                 else:
-                    yield {
+                    yield json.dumps({
                         "status": "error",
                         "message": result.message()
-                    }
+                    })
             except Exception as e:
-                yield {
+                yield json.dumps({
                     "status": "error",
                     "message": str(e)
-                }
+                })
                 break
