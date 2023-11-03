@@ -5,6 +5,7 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   tensor_parallelism: 1
+  tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
 model_name: trtllm-triton
 python_version: py311
 requirements: []
@@ -13,4 +14,5 @@ resources:
   use_gpu: true
 secrets: {}
 system_packages: []
-predict_concurrency: 256
+runtime:
+  predict_concurrency: 256
