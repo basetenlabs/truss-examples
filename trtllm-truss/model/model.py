@@ -21,7 +21,7 @@ class Model:
         self.triton_client = TritonClient(self._data_dir, TRITON_MODEL_REPOSITORY_PATH, self._tensor_parallel_count)
         self.triton_client.load_server_and_model(
             env={
-                "HUGGING_FACE_HUB_TOKEN": self._secrets["hf_access_token"]
+                "HUGGING_FACE_HUB_TOKEN": self._secrets["hf_access_token"],
                 "triton_tokenizer_repository": self._config["model_metadata"]["tokenizer_repository"],
             }
         )

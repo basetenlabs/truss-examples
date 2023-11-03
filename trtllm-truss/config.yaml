@@ -5,12 +5,19 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   tensor_parallelism: 1
+  tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
 model_name: trtllm-triton
 python_version: py311
 requirements: []
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
-system_packages: []
-predict_concurrency: 256
+secrets:
+  hf_access_token: <hf_token>
+system_packages:
+  - python3.10-venv
+runtime:
+  predict_concurrency: 256
+external_data:
+  - url: https://huggingface.co/baseten/llama2-7b-chat-hf-fp16-tp1/resolve/main/llama_float16_tp1_rank0.engine
+    local_data_path: llama_float16_tp1_rank0.engine
