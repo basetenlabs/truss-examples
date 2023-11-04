@@ -1,0 +1,43 @@
+spec_version: '2.0'
+base_image:
+  image: baseten/truss-server-base:3.11-gpu-v0.7.15
+bundled_packages_dir: packages
+data_dir: data
+description: Generate text from a prompt with this seven billion parameter language model.
+environment_variables: {}
+examples_filename: examples.yaml
+external_package_dirs: []
+input_type: Any
+live_reload: false
+model_class_filename: model.py
+model_class_name: Model
+model_framework: custom
+model_metadata:
+  repo_id: meta-llama/Llama-2-7b-chat-hf
+  example_model_input: {"prompt": "What's the meaning of life?", "max_length": 1024}
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  tags:
+  - text-generation
+model_module_dir: model
+model_name: Llama-2-chat 7B deepspeed
+model_type: custom
+python_version: py311
+requirements:
+- deepspeed-mii==0.1.0
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: A100
+secrets:
+  hf_access_token: null
+system_packages:
+- cuda-toolkit-12-2
+runtime:
+  predict_concurrency: 256
+hf_cache:
+  - repo_id: meta-llama/Llama-2-7b-chat-hf
+    allow_patterns:
+      - "*.json"
+      - "*.bin"
