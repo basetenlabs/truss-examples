@@ -56,8 +56,9 @@ class Model:
 
     def load(self):
         engine_files = {
-            "gpt_float16_tp2_rank0.engine": "https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank0.engine",
-            "gpt_float16_tp2_rank1.engine": "https://huggingface.co/baseten/starcoder-fp16-engine/resolve/main/gpt_float16_tp2_rank1.engine",
+            "gpt_float16_tp2_rank0.engine": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/gpt_float16_tp2_rank0.engine",
+            "gpt_float16_tp2_rank1.engine": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/gpt_float16_tp2_rank1.engine",
+            "config.json": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/config.json",
         }
         for name, engine_url in engine_files.items():
             with open(self._data_dir / name, "wb") as f:
