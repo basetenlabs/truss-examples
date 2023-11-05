@@ -56,9 +56,8 @@ class Model:
 
     def load(self):
         engine_files = {
-            "gpt_float16_tp2_rank0.engine": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/gpt_float16_tp2_rank0.engine",
-            "gpt_float16_tp2_rank1.engine": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/gpt_float16_tp2_rank1.engine",
-            "config.json": "https://huggingface.co/baseten/starcoder7b-fp16-engine/resolve/main/config.json",
+            "gpt_float16_tp1_rank0.engine": "https://huggingface.co/baseten/starcoder7b-fp16-tp1-engine/resolve/main/gpt_float16_tp1_rank0.engine",
+            "config.json": "https://huggingface.co/baseten/starcoder7b-fp16-tp1-engine/resolve/main/config.json",
         }
         for name, engine_url in engine_files.items():
             with open(self._data_dir / name, "wb") as f:
@@ -77,26 +76,10 @@ class Model:
 
         # Kick off Triton Inference Server
         command = [
-            'mpirun',
-            '--allow-run-as-root',
-            '-n',
-            '1',
-            'tritonserver',
-            '--model-repository=/packages/inflight_batcher_llm/',
-            '--grpc-port=8001',
-            '--http-port=8003',
-            '--disable-auto-complete-config',
-            '--backend-config=python,shm-region-prefix-name=prefix0_',
-            ':',
-            '-n',
-            '1',
-            'tritonserver',
-            '--model-repository=/packages/inflight_batcher_llm/',
-            '--grpc-port=8001',
-            '--http-port=8003',
-            '--disable-auto-complete-config',
-            '--backend-config=python,shm-region-prefix-name=prefix1_',
-            ':'
+            "tritonserver",
+            "--model-repository", "/packages/inflight_batcher_llm/",
+            "--grpc-port", "8001",
+            "--http-port", "8003"
         ]
         process = subprocess.Popen(
             command, 

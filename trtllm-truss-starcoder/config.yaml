@@ -8,7 +8,7 @@ model_name: trtllm-triton
 python_version: py311
 requirements: []
 resources:
-  accelerator: A100:2
+  accelerator: A100
   use_gpu: true
 secrets: 
   hf_access_token: 
