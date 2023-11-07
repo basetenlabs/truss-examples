@@ -198,6 +198,6 @@ class Model:
                 import io
                 image = Image.open(io.BytesIO(image_data))
                 b64_img = self.pil_to_b64(image)
-                result.append(b64_img)
+                result.append({"node_id": node_id, "image": b64_img})
 
-        return {"images": result}
+        return {"result": result}
