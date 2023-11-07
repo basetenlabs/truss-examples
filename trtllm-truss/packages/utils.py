@@ -1,3 +1,4 @@
+from huggingface_hub import snapshot_download
 from pathlib import Path
 import tritonclient.grpc as grpcclient
 from tritonclient.utils import np_to_triton_dtype
@@ -34,3 +35,15 @@ def prepare_grpc_tensor(name, input):
                             np_to_triton_dtype(input.dtype))
     t.set_data_from_numpy(input)
     return t
+
+def download_engine(engine_repository: str, fp: Path, auth_token=None):
+    """
+    Downloads the specified engine from Hugging Face Hub.
+    """
+    snapshot_download(
+        engine_repository,
+        local_dir=fp,
+        local_dir_use_symlinks=False,
+        max_workers=4,
+        **({"use_auth_token": auth_token} if auth_token is not None else {}),
+    )
