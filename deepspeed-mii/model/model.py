@@ -6,6 +6,7 @@ from huggingface_hub import login
 DEFAULT_RESPONSE_MAX_LENGTH = 512
 MAX_LENGTH = 4096
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.hf_access_token = kwargs["secrets"]["hf_access_token"]
@@ -23,7 +24,7 @@ class Model:
             # increase `tensor_parallel` to use more than one GPU
             tensor_parallel=1,
             # increase `max_length` if you need to support larger inputs/outputs
-            max_length=MAX_LENGTH
+            max_length=MAX_LENGTH,
         )
 
     def predict(self, request: Dict):
@@ -33,8 +34,8 @@ class Model:
         client = mii.client(self.repo)
         response = client.generate(
             request.pop("prompt"),
-            max_new_tokens=request.pop("max_length", DEFAULT_RESPONSE_MAX_LENGTH)
+            max_new_tokens=request.pop("max_length", DEFAULT_RESPONSE_MAX_LENGTH),
         )
         new_loop.close()
 
-        return '\n'.join(response.response)
+        return "\n".join(response.response)
