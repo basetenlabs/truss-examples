@@ -1,6 +1,7 @@
-from typing import Dict
-import mii
 import asyncio
+from typing import Dict
+
+import mii
 from huggingface_hub import login
 
 DEFAULT_RESPONSE_MAX_LENGTH = 512
