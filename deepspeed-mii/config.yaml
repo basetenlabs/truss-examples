@@ -13,7 +13,12 @@ model_class_filename: model.py
 model_class_name: Model
 model_framework: custom
 model_metadata:
+  # huggingface repo or folder with model files
   repo_id: meta-llama/Llama-2-7b-chat-hf
+  # increase `max_length` if you need to support larger inputs/outputs
+  max_length: 4096
+  # increase `tensor_parallel` to use more than one GPU
+  tensor_parallel: 1
   example_model_input: {"prompt": "What's the meaning of life?", "max_length": 1024}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
