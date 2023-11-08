@@ -16,3 +16,5 @@ resources:
 secrets:
   hf_access_token: null
 system_packages: []
+runtime:
+  predict_concurrency: 256
