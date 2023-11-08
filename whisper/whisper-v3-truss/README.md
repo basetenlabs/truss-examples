@@ -35,7 +35,7 @@ truss predict -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3
 You can also invoke your Whisper deployment via its REST API endpoint:
 
 ```bash
-curl -X POST "https://app.baseten.co/models/{MODEL_ID}/predict" \
+curl -X POST "https://model-{MODEL_ID}.api.baseten.co/development/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}'
