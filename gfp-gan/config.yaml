@@ -20,3 +20,8 @@ system_packages:
 - libsm6
 - libxext6
 spec_version: 2.0
+external_data:
+  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
+    local_data_path: RealESRGAN_x2plus.pth
+  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
+    local_data_path: GFPGANv1.3.pth
