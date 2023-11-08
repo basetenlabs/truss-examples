@@ -20,8 +20,8 @@ requirements:
 - invisible-watermark>=0.2.0
 - xformers
 # Caching the model will take about 10 minutes initially but you will get ~9s cold starts
-# If you don't want to cache the model, comment out the hf_cache key and its subchildren.
-hf_cache:
+# If you don't want to cache the model, comment out the model_cache key and its subchildren.
+model_cache:
   - repo_id: madebyollin/sdxl-vae-fp16-fix
     allow_patterns:
       - config.json
