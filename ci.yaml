@@ -10,3 +10,7 @@ tests:
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
   - jina-embeddings/jina-embeddings-v2-base-en
+  - stable-diffusion/stable-diffusion-xl-1.0
+  - deepspeed-mii
+  - pygmalion-6b
+  - whisper/faster-whisper-truss
