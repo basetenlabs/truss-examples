@@ -4,8 +4,9 @@ model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png
   example_model_input: {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
-model_name: whisper-v3
+model_name: Whisper V3
 python_version: py310
+description: Transcribe audio files across multiple languages.
 requirements:
   - torch==2.0.1
   - openai-whisper==20231106
