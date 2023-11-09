@@ -29,7 +29,7 @@ system_packages:
 - cuda-toolkit-12-2
 runtime:
   predict_concurrency: 256
-hf_cache:
+model_cache:
   - repo_id: meta-llama/Llama-2-7b-chat-hf
     allow_patterns:
       - "*.json"

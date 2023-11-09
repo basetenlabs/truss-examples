@@ -7,7 +7,7 @@ requirements:
 - transformers==4.30.2
 - torch==2.0.1
 - accelerate==0.21.0
-hf_cache:
+model_cache:
 - repo_id: PygmalionAI/pygmalion-6b
 resources:
   accelerator: A10G
