@@ -1,6 +1,6 @@
 build:
   arguments:
-    model_id: meta-llama/Llama-2-7b-chat-hf
+    model_id: NousResearch/Llama-2-7b-chat-hf
   model_server: TGI
 environment_variables: {}
 external_package_dirs: []
