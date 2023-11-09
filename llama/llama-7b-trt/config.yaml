@@ -4,8 +4,13 @@ base_image:
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
+  example_model_input: {"text_input": "What's the meaning of life?"}
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  tags:
+  - text-generation
   tensor_parallelism: 1
-  engine_repository: "baseten/llama2-7b-chat-hf-fp16-tp1-bs-256"
+  engine_repository: "baseten/llama_7b_sq0.8_bs_128_paged_per_token_per_channel"
   tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
 model_name: trtllm-trtllm
 python_version: py311

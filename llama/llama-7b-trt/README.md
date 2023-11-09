@@ -1,79 +1,41 @@
-# TRTLLM
- 
-### Overview
-This Truss adds support for TRT-LLM engines via Triton Inference Server. TRT-LLM is a highly-performant language model runtime. We leverage the C++ runtime to take advantage of in-flight batching (aka continous batching). 
+[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/llama)
 
-### Prerequisites 
+# LLaMA-7B-Chat Truss
 
-To use this Truss, your engine must be built with in-flight batching support. Refer to your architecture-specific `build.py` re: how to build with in-flight-batching support. 
+This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of LLaMA-7B-Chat. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA-7B-Chat.
 
-### Config
+## Truss
 
-This Truss is primarily config driven. This means that most settings you'll need to edit are located in the `config.yaml`. These settings are all located underneath the `model_metadata` key. 
+Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-- `tensor_parallelism` (int): If you built your model with tensor parallelism support, you'll need to set this value with the same value used during the build engine step. This value should be the same as the number of GPUs in the `resources` section. 
+## Deploying LLaMA-7B
 
-*Pipeline parallelism is not supported in this version but will be added later. As noted from Nvidia, pipeline parallelism reduces the need for high-bandwidth communication but may incur load-balancing issues and may be less efficient in terms of GPU utilization.*
+First, clone this repository:
 
-- `engine_repository` (str): We expect engines to be uploaded to Huggingface with a flat directory structure (i.e the engine and associated files are not underneath a folder structure). This value is the full `{org_name}/{repo_name}` string. Engines can be private or public.
-
-- `tokenizer_repository` (str): Engines do not come bundled with their own tokenizer. This is the Huggingface repository where we can find a tokenizer. Tokenizers can be private or public.
-
-If the engine and repository tokenizers are private, you'll need to update the `secrets` section of the `config.yaml` as follows:
-
-```
-secrets:
- hf_access_token: "my_hf_api_key"
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd llama/llama-7b-trt
 ```
 
-### Performance 
+Before deployment:
 
-TRT-LLM engines are designed to be highly performant. Once your Truss has been deployed, you may find that you're not fully utilizing the GPU. The following are levers to improve performance but require trial-and-error to identify appropriates. All of these values live inside the `config.pbtxt` for a given ensemble model. 
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
 
-#### Preprocessing / Postprocessing
+With `llama-7b-trt` as your working directory, you can deploy the model with:
 
+```sh
+truss push
 ```
-instance_group [
-    {
-        count: 1
-        kind: KIND_CPU
-    }
-]
-```
-By default, we load 1 instance of the pre/post models. If you find that the tokenizer is a bottleneck, increasing the `count` variable here will load more replicas of these models and Triton will automatically load balance across model instances. 
 
-### Tensorrt LLM
-```
-parameters: {
-  key: "max_tokens_in_paged_kv_cache"
-  value: {
-    string_value: "10000"
-  }
-}
-```
-By default, we set the `max_tokens_in_paged_kv_cache` to 10000. For a 7B model on 1 A100 with a batch size of 8, we have over 60GB of GPU memory left over. We can increase this value to 100k comfortably and allow for more tokens in the KV cache. Your mileage will vary based on the size of your model and the hardware you're running on. 
+Paste your Baseten API key if prompted.
 
-```
-parameters: {
-  key: "kv_cache_free_gpu_mem_fraction"
-  value: {
-    string_value: "0.1"
-  }
-}
-```
-TODO(Abu): __fill__
+For more information, see [Truss documentation](https://truss.baseten.co).
 
-```
-parameters: {
-  key: "max_num_sequences"
-  value: {
-    string_value: "64"
-  }
-}
-```
-The `max_num_sequences` param is the maximum numbers of requests that the inference server can maintain state for at a given time (state = KV cache + decoder state). If this value is greater than your max batch size, we'll try to ping pong processing between max_num_sequences // max_batch_size batches. This assumes that `enable_trt_overlap` is set to `True` (as it is by default in this Truss). Setting this value higher allows for more parallel processing but uses more GPU memory. 
+## LLaMA-7B API documentation
+This section provides an overview of the LLaMA-7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
 
-### API
+### API route: `predict`
 
 We expect requests will the following information:
 
@@ -86,3 +48,21 @@ We expect requests will the following information:
 - ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens. 
 
 This Truss will stream responses back. Responses will be buffered chunks of text. 
+
+## Example usage
+
+```sh
+truss predict -d '{"text_input": "What is the meaning of life?"}'
+```
+
+You can also invoke your model via a REST API
+
+```sh
+curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
+     -d '{
+           "text_input": "What's the meaning of life?",
+         }'
+
+```
