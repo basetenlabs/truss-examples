@@ -1,9 +1,11 @@
-import whisper
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict
-from pathlib import Path
+
 import requests
 import torch
+
+import whisper
 
 
 class Model:
@@ -24,11 +26,7 @@ class Model:
     def predict(self, request: Dict) -> Dict:
         with NamedTemporaryFile() as fp:
             fp.write(request["response"])
-            result = whisper.transcribe(
-                self.model,
-                fp.name,
-                temperature=0
-            )
+            result = whisper.transcribe(self.model, fp.name, temperature=0)
             segments = [
                 {"start": r["start"], "end": r["end"], "text": r["text"]}
                 for r in result["segments"]
