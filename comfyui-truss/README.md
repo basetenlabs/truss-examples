@@ -1,18 +1,23 @@
 ## ComfyUI Truss
 
-This truss is designed to allow ComfyUI users to easily convert their workflows into a production grade API service. 
+This truss is designed to allow ComfyUI users to easily convert their workflows into a production grade API service.
 
 ## Exporting the ComfyUI workflow
 
-Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON format the ComfyUI uses will not work. Instead, the workflow has to be saved in the API format. Here is how you can do that:
+This Truss is designed to run a Comfy UI workflow that is in the form of a JSON file. During model inference the entire JSON file containing the workflow will get passed as a request to the model.
 
-1. Go to ComfyUI and click on the gear icon for the project
+Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON format that ComfyUI uses will not work. Instead, the workflow has to be saved in the API format. Here is how you can do that:
+
+First, go to ComfyUI and click on the gear icon for the project
+
 ![gear_icon](images/comfyui-screenshot-1.png)
 
-2. Next, checkmark the box which says `Enable Dev Mode Options`
+Next, checkmark the box which says `Enable Dev Mode Options`
+
 ![enable_dev_mode_options](images/comfyui-screenshot-2.png)
 
-3. Now, if you go back to the project you will see an option called `Save(API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
+Now, if you go back to the project you will see a new option called `Save(API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
+
 ![save_api_format](images/comfyui-screenshot-3.png)
 
 
@@ -25,7 +30,7 @@ git clone https://github.com/basetenlabs/truss-examples/
 cd comfyui-truss
 ```
 
-For your ComfyUI workflow, you probably used one or more models. Those models need to be defined inside truss. From the root of the truss project, open up the file inside `data/model.json`. This file will contain all of the models that need to get downloaded in order for your ComfyUI workflow to run. Here is an example of the contents of this file:
+For your ComfyUI workflow, you probably used one or more models. Those models need to be defined inside truss. From the root of the truss project, create and open the file inside the data directory called `data/model.json`. This file will contain all of the models that need to get downloaded in order for your ComfyUI workflow to run. Here is an example of the contents of this file:
 
 ```json
 [
@@ -40,7 +45,7 @@ For your ComfyUI workflow, you probably used one or more models. Those models ne
 ]
 ```
 
-In this case, I have 2 models: SDXL and a controlnet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, controlnets should be stored inside `controlnet`, etc.
+In this case, I have 2 models: SDXL and a controlnet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, controlnets should be stored inside `controlnet`, etc.
 
 
 ## Deployment
@@ -136,7 +141,7 @@ values = {
 }
 ```
 
-Just be sure that the variable names in the workflow template match the names inside the values object. 
+Just be sure that the variable names in the workflow template match the names inside the values object.
 
 Here is a complete example of how you make a prediction request to your truss in python:
 
@@ -287,9 +292,9 @@ values = {
 }
 
 data = {"json_workflow": sdxl_controlnet_workflow, "values": values}
-res = requests.post("https://app.baseten.co/model_versions/<YOUR-MODEL-ID>/predict", headers=headers, json=data)
+res = requests.post("https://model-{MODEL_ID}.api.baseten.co/development/predict", headers=headers, json=data)
 res = res.json()
-model_output = res.get("model_output").get("result")
+model_output = res.get("result")
 print(model_output)
 ```
 
@@ -309,4 +314,3 @@ Here is the output of the request above:
 ```
 
 The output of the model is a list of JSON objects containing the ID of the output node along with the generated image as a base64 string.
-
