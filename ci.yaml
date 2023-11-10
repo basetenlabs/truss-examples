@@ -10,3 +10,4 @@ tests:
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
   - jina-embeddings/jina-embeddings-v2-base-en
+  - whisper/whisper-v3-truss
