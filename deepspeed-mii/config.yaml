@@ -1,4 +1,6 @@
 spec_version: '2.0'
+base_image:
+  image: baseten/truss-server-base:3.11-gpu-v0.7.15
 model_name: Llama-2-chat 7B DeepSpeed MII
 description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:
@@ -27,3 +29,8 @@ system_packages:
 - cuda-toolkit-12-2
 runtime:
   predict_concurrency: 256
+hf_cache:
+  - repo_id: meta-llama/Llama-2-7b-chat-hf
+    allow_patterns:
+      - "*.json"
+      - "*.bin"
