@@ -32,6 +32,7 @@ import triton_python_backend_utils as pb_utils
 from transformers import AutoTokenizer, LlamaTokenizer, T5Tokenizer
 from collections import OrderedDict
 
+
 class TritonPythonModel:
     """Your Python model must use the same class name. Every Python model
     that is created must have "TritonPythonModel" as the class name.
@@ -53,35 +54,32 @@ class TritonPythonModel:
           * model_name: Model name
         """
         # Parse model configs
-        model_config = json.loads(args['model_config'])
+        model_config = json.loads(args["model_config"])
         tokenizer_dir = os.environ["triton_tokenizer_repository"]
-        tokenizer_type = model_config['parameters']['tokenizer_type'][
-            'string_value']
+        tokenizer_type = model_config["parameters"]["tokenizer_type"]["string_value"]
 
-        if tokenizer_type == 't5':
-            self.tokenizer = T5Tokenizer(vocab_file=tokenizer_dir,
-                                         padding_side='left')
-        elif tokenizer_type == 'auto':
-            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir,
-                                                           padding_side='left')
-        elif tokenizer_type == 'llama':
+        if tokenizer_type == "t5":
+            self.tokenizer = T5Tokenizer(vocab_file=tokenizer_dir, padding_side="left")
+        elif tokenizer_type == "auto":
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer_dir, padding_side="left"
+            )
+        elif tokenizer_type == "llama":
             self.tokenizer = LlamaTokenizer.from_pretrained(
-                tokenizer_dir, legacy=False, padding_side='left')
+                tokenizer_dir, legacy=False, padding_side="left"
+            )
         else:
-            raise AttributeError(
-                f'Unexpected tokenizer type: {tokenizer_type}')
+            raise AttributeError(f"Unexpected tokenizer type: {tokenizer_type}")
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # Parse model output configs
-        output_config = pb_utils.get_output_config_by_name(
-            model_config, "OUTPUT")
+        output_config = pb_utils.get_output_config_by_name(model_config, "OUTPUT")
         # Convert Triton types to numpy types
-        self.output_dtype = pb_utils.triton_string_to_numpy(
-            output_config['data_type'])
+        self.output_dtype = pb_utils.triton_string_to_numpy(output_config["data_type"])
 
         self.state_dict = OrderedDict()
         self.cache_size = 100
-   
+
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
         function receives a list of pb_utils.InferenceRequest as the only
@@ -109,16 +107,20 @@ class TritonPythonModel:
         for idx, request in enumerate(requests):
             # Get request ID
             request_id = request.request_id()
-            
+
             # Get input tensors
-            tokens_batch = pb_utils.get_input_tensor_by_name(request, 'TOKENS_BATCH').as_numpy().flatten()
-            
+            tokens_batch = (
+                pb_utils.get_input_tensor_by_name(request, "TOKENS_BATCH")
+                .as_numpy()
+                .flatten()
+            )
+
             # Get prior state for request ID
             if request_id in self.state_dict:
-                previous_tokens = self.state_dict[request_id]['tokens']
+                previous_tokens = self.state_dict[request_id]["tokens"]
                 accumulated_tokens = np.concatenate([previous_tokens, tokens_batch])
-                self.state_dict[request_id]['tokens'] = accumulated_tokens
-                
+                self.state_dict[request_id]["tokens"] = accumulated_tokens
+
                 # Move request ID to end of queue to prevent it from being evicted
                 self.state_dict.move_to_end(request_id)
             else:
@@ -126,29 +128,39 @@ class TritonPythonModel:
                 if len(self.state_dict) > self.cache_size:
                     self.state_dict.popitem(last=False)
 
-                self.state_dict[request_id] = {'tokens': tokens_batch, 'prev_str': ""}
+                self.state_dict[request_id] = {"tokens": tokens_batch, "prev_str": ""}
 
             # Postprocess output data
-            new_string = self._postprocessing(self.state_dict[request_id]['tokens'])
-            old_string = self.state_dict[request_id]['prev_str']
-            
+            new_string = self._postprocessing(self.state_dict[request_id]["tokens"])
+            old_string = self.state_dict[request_id]["prev_str"]
+
             # Compute delta between previous and new string
             delta = self._compute_delta(old_string, new_string)
-            self.state_dict[request_id]['prev_str'] = new_string
+            self.state_dict[request_id]["prev_str"] = new_string
 
             # Create output tensor
-            output_tensor = pb_utils.Tensor('OUTPUT', np.array([delta]).astype(self.output_dtype))
-            inference_response = pb_utils.InferenceResponse(output_tensors=[output_tensor])
+            output_tensor = pb_utils.Tensor(
+                "OUTPUT", np.array([delta]).astype(self.output_dtype)
+            )
+            inference_response = pb_utils.InferenceResponse(
+                output_tensors=[output_tensor]
+            )
             responses.append(inference_response)
 
         return responses
 
     def _compute_delta(self, prev_str, new_str):
-        delta = "".join([char for index, char in enumerate(new_str) if index >= len(prev_str) or char != prev_str[index]])
+        delta = "".join(
+            [
+                char
+                for index, char in enumerate(new_str)
+                if index >= len(prev_str) or char != prev_str[index]
+            ]
+        )
         return delta
 
     def finalize(self):
-        print('Cleaning up...')
+        print("Cleaning up...")
 
     def _postprocessing(self, tokens):
         decoded_tokens = self.tokenizer.decode(tokens)

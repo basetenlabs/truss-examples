@@ -11,9 +11,11 @@ from utils import prepare_model_repository
 from tritonclient.utils import InferenceServerException
 from threading import Thread
 
+
 class UserData:
     def __init__(self):
         self._completed_requests = Queue()
+
 
 def callback(user_data, result, error):
     if error:
@@ -21,8 +23,11 @@ def callback(user_data, result, error):
     else:
         user_data._completed_requests.put(result)
 
+
 class TritonClient:
-    def __init__(self, data_dir: Path, model_repository_dir: Path, tensor_parallel_count=1):
+    def __init__(
+        self, data_dir: Path, model_repository_dir: Path, tensor_parallel_count=1
+    ):
         self._data_dir = data_dir
         self._model_repository_dir = model_repository_dir
         self._tensor_parallel_count = tensor_parallel_count
@@ -31,7 +36,9 @@ class TritonClient:
 
     def start_grpc_stream(self, user_data, model_name, inputs, stream_uuid):
         """Starts a GRPC stream and sends a request to the Triton server."""
-        grpc_client_instance = grpcclient.InferenceServerClient(url="localhost:8001", verbose=False)
+        grpc_client_instance = grpcclient.InferenceServerClient(
+            url="localhost:8001", verbose=False
+        )
         self._grpc_client_map[stream_uuid] = grpc_client_instance
         grpc_client_instance.start_stream(callback=partial(callback, user_data))
         grpc_client_instance.async_stream_infer(
@@ -59,9 +66,12 @@ class TritonClient:
         if mpi == 1:
             command = [
                 "tritonserver",
-                "--model-repository", str(self._model_repository_dir),
-                "--grpc-port", "8001",
-                "--http-port", "8003"
+                "--model-repository",
+                str(self._model_repository_dir),
+                "--grpc-port",
+                "8001",
+                "--http-port",
+                "8003",
             ]
         command = [
             "mpirun",
@@ -72,12 +82,15 @@ class TritonClient:
                 "-n",
                 "1",
                 "tritonserver",
-                "--model-repository", str(self._model_repository_dir),
-                "--grpc-port", "8001",
-                "--http-port", "8003",
+                "--model-repository",
+                str(self._model_repository_dir),
+                "--grpc-port",
+                "8001",
+                "--http-port",
+                "8003",
                 "--disable-auto-complete-config",
                 f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
-                ":"
+                ":",
             ]
         return subprocess.Popen(
             command,
@@ -89,7 +102,9 @@ class TritonClient:
         prepare_model_repository(self._data_dir)
         self.start_server(mpi=self._tensor_parallel_count, env=env)
 
-        self._http_client = httpclient.InferenceServerClient(url="localhost:8003", verbose=False)
+        self._http_client = httpclient.InferenceServerClient(
+            url="localhost:8003", verbose=False
+        )
         is_server_up = False
         while not is_server_up:
             try:
@@ -112,8 +127,12 @@ class TritonClient:
                 return True
 
             if result:
-                final_response_param = result.get_response().parameters.get("triton_final_response")
-                return final_response_param.bool_param if final_response_param else False
+                final_response_param = result.get_response().parameters.get(
+                    "triton_final_response"
+                )
+                return (
+                    final_response_param.bool_param if final_response_param else False
+                )
             return False
 
         result = None
@@ -122,16 +141,10 @@ class TritonClient:
             try:
                 result = user_data._completed_requests.get()
                 if not isinstance(result, InferenceServerException):
-                    res = result.as_numpy('text_output')
+                    res = result.as_numpy("text_output")
                     yield res[0].decode("utf-8")
                 else:
-                    yield json.dumps({
-                        "status": "error",
-                        "message": result.message()
-                    })
+                    yield json.dumps({"status": "error", "message": result.message()})
             except Exception as e:
-                yield json.dumps({
-                    "status": "error",
-                    "message": str(e)
-                })
+                yield json.dumps({"status": "error", "message": str(e)})
                 break
