@@ -24,13 +24,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import json
+import os
+from collections import OrderedDict
 
 import numpy as np
 import triton_python_backend_utils as pb_utils
 from transformers import AutoTokenizer, LlamaTokenizer, T5Tokenizer
-from collections import OrderedDict
 
 
 class TritonPythonModel:

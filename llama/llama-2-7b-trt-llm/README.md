@@ -44,12 +44,12 @@ We expect requests will the following information:
 
 - ```text_input``` (str): The prompt you'd like to complete
 - ```output_len``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
-- ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1. 
+- ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
 - ```bad_words_list``` (list, default:[]): A list of words to not include in generated output.
 - ```stop_words_list``` (list, default:[]): A list of words to stop generation upon encountering.
-- ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens. 
+- ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
 
-This Truss will stream responses back. Responses will be buffered chunks of text. 
+This Truss will stream responses back. Responses will be buffered chunks of text.
 
 ## Example usage
 

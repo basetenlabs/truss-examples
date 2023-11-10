@@ -1,6 +1,7 @@
-from huggingface_hub import snapshot_download
 from pathlib import Path
+
 import tritonclient.grpc as grpcclient
+from huggingface_hub import snapshot_download
 from tritonclient.utils import np_to_triton_dtype
 
 

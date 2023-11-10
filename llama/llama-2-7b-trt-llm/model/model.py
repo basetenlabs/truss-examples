@@ -1,9 +1,10 @@
-import numpy as np
-from client import UserData, TritonClient
-from threading import Thread
-from utils import prepare_grpc_tensor, download_engine
-from pathlib import Path
 from itertools import count
+from pathlib import Path
+from threading import Thread
+
+import numpy as np
+from client import TritonClient, UserData
+from utils import download_engine, prepare_grpc_tensor
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 

@@ -1,15 +1,16 @@
-import os
 import json
+import os
 import subprocess
 import time
 from functools import partial
-import tritonclient.grpc as grpcclient
-import tritonclient.http as httpclient
 from pathlib import Path
 from queue import Queue
-from utils import prepare_model_repository
-from tritonclient.utils import InferenceServerException
 from threading import Thread
+
+import tritonclient.grpc as grpcclient
+import tritonclient.http as httpclient
+from tritonclient.utils import InferenceServerException
+from utils import prepare_model_repository
 
 
 class UserData:
