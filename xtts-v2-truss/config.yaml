@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: xtts-v2
+python_version: py310
+requirements:
+  - git+https://github.com/coqui-ai/TTS.git
+resources:
+  cpu: "3"
+  memory: 10Gi
+  use_gpu: true
+  accelerator: T4
+secrets: {}
+system_packages: []
