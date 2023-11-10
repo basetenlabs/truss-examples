@@ -4,7 +4,7 @@
 
 This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of LLaMA2-7B-Chat. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA2-7B-Chat.
 
-**Note: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
+**Warning: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
 
 ## Truss
 
