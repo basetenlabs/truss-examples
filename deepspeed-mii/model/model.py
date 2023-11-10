@@ -1,11 +1,11 @@
 import asyncio
-from typing import Dict, Any
-
-import queue
-import mii
-import threading
-from huggingface_hub import login
 import logging
+import queue
+import threading
+from typing import Any, Dict
+
+import mii
+from huggingface_hub import login
 
 DEFAULT_RESPONSE_MAX_LENGTH = 512
 
