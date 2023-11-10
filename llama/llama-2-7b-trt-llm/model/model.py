@@ -1,11 +1,13 @@
-import numpy as np
-from client import UserData, TritonClient
-from threading import Thread
-from utils import prepare_grpc_tensor, download_engine
-from pathlib import Path
 from itertools import count
+from pathlib import Path
+from threading import Thread
+
+import numpy as np
+from client import TritonClient, UserData
+from utils import download_engine, prepare_grpc_tensor
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -16,7 +18,9 @@ class Model:
         self.triton_client = None
 
     def load(self):
-        tensor_parallel_count = self._config["model_metadata"].get("tensor_parallelism", 1)
+        tensor_parallel_count = self._config["model_metadata"].get(
+            "tensor_parallelism", 1
+        )
         is_hf_token = "hf_access_token" in self._secrets._base_secrets.keys()
         is_external_engine_repo = "engine_repository" in self._config["model_metadata"]
 
@@ -26,18 +30,20 @@ class Model:
             model_repository_dir=TRITON_MODEL_REPOSITORY_PATH,
             tensor_parallel_count=tensor_parallel_count,
         )
-        
+
         # Download model from Hugging Face Hub if specified
         if is_external_engine_repo:
             download_engine(
                 engine_repository=self._config["model_metadata"]["engine_repository"],
                 fp=self._data_dir,
-                auth_token=self._secrets["hf_access_token"] if is_hf_token else None
+                auth_token=self._secrets["hf_access_token"] if is_hf_token else None,
             )
-        
+
         # Load Triton Server and model
         env = {
-            "triton_tokenizer_repository": self._config["model_metadata"]["tokenizer_repository"],
+            "triton_tokenizer_repository": self._config["model_metadata"][
+                "tokenizer_repository"
+            ],
         }
         if is_hf_token:
             env["HUGGING_FACE_HUB_TOKEN"] = self._secrets["hf_access_token"]
@@ -74,13 +80,13 @@ class Model:
             prepare_grpc_tensor("stop_words", stop_words_list),
             prepare_grpc_tensor("stream", streaming_data),
             prepare_grpc_tensor("beam_width", beam_width_data),
-            prepare_grpc_tensor("repetition_penalty", repetition_penalty_data)
+            prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
         ]
 
         # Start GRPC stream in a separate thread
         stream_thread = Thread(
             target=self.triton_client.start_grpc_stream,
-            args=(user_data, model_name, inputs, stream_uuid)
+            args=(user_data, model_name, inputs, stream_uuid),
         )
         stream_thread.start()
 
