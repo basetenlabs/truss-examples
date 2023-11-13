@@ -4,7 +4,7 @@ This truss is designed to allow ComfyUI users to easily convert their workflows 
 
 ## Exporting the ComfyUI workflow
 
-This Truss is designed to run a Comfy UI workflow that is in the form of a JSON file. During model inference the entire JSON file containing the workflow will get passed as a request to the model.
+This Truss is designed to run a Comfy UI workflow that is in the form of a JSON file.
 
 Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON format that ComfyUI uses will not work. Instead, the workflow has to be saved in the API format. Here is how you can do that:
 
@@ -47,27 +47,9 @@ For your ComfyUI workflow, you probably used one or more models. Those models ne
 
 In this case, I have 2 models: SDXL and a controlnet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, controlnets should be stored inside `controlnet`, etc.
 
+We also need to place the JSON workflow from step 1 inside the data directory. In the data directory create an open a file called `data/comfy_ui_workflow.json`. Copy and paste the entire JSON workflow that we saved in step 1 into this file.
 
-## Deployment
-
-Before deployment:
-
-1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
-
-With `comfyui-truss` as your working directory, you can deploy the model with:
-
-```sh
-truss push
-```
-
-Paste your Baseten API key if prompted.
-
-For more information, see [Truss documentation](https://truss.baseten.co).
-
-## Model Inference
-
-The main thing we need for inference is the JSON workflow we exported in step 1. Inside the JSON workflow file, there might be some inputs such as the positive prompt or negative prompt that are hard coded. We want these inputs to be dynamically sent to the model, so we can use handlebars to templatize them. Here is an example of a JSON workflow with templatized inputs:
+In the JSON workflow file, there might be some inputs such as the positive prompt or negative prompt that are hard coded. We want these inputs to be dynamically sent to the model, so we can use handlebars to templatize them. Here is an example of a JSON workflow with templatized inputs:
 
 ```json
 {
@@ -131,7 +113,30 @@ The main thing we need for inference is the JSON workflow we exported in step 1.
 }
 ```
 
-This is not the entire JSON workflow file, but the nodes 6, 7, and 11 accept variable inputs. You can do this by using the handlebars format of `{{variable_name_here}}`. Inside a seperate JSON object we can define the values for these variables such as:
+This is not the entire JSON workflow file, but the nodes 6, 7, and 11 accept variable inputs. You can do this by using the handlebars format of `{{variable_name_here}}`.
+
+Once you have both the `data/comfy_ui_workflow.json` and `data/model.json` set up correctly we can begin deployment.
+
+## Deployment
+
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `comfyui-truss` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+## Model Inference
+
+When an inference request is sent to the Truss, the `comfy_ui_workflow.json` in the data directory is sent to ComfyUI. If you recall, there are some templatized variables inside that json file using the handlebars format of `{{variable_name_here}}`. During inference time, we can dynamically pass in those templatized variables to our Truss prediction request like so:
 
 ```python
 values = {
@@ -141,13 +146,12 @@ values = {
 }
 ```
 
-Just be sure that the variable names in the workflow template match the names inside the values object.
+Just be sure that the variable names in the `comfy_ui_workflow.json` template match the names inside the values object.
 
 Here is a complete example of how you make a prediction request to your truss in python:
 
-```python
-headers = {"Authorization": f"Api-Key YOUR-BASETEN-API-KEY-HERE"}
-
+This is the content of `data/comfy_ui_workflow.json`:
+```json
 sdxl_controlnet_workflow = {
   "3": {
     "inputs": {
@@ -284,6 +288,11 @@ sdxl_controlnet_workflow = {
     "class_type": "PreviewImage"
   }
 }
+```
+
+Here is the actual API request sent to Truss:
+```python
+headers = {"Authorization": f"Api-Key YOUR-BASETEN-API-KEY-HERE"}
 
 values = {
   "positive_prompt": "An igloo on a snowy day, 4k, hd",
@@ -291,7 +300,7 @@ values = {
   "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png"
 }
 
-data = {"json_workflow": sdxl_controlnet_workflow, "values": values}
+data = {"workflow_values": values}
 res = requests.post("https://model-{MODEL_ID}.api.baseten.co/development/predict", headers=headers, json=data)
 res = res.json()
 model_output = res.get("result")

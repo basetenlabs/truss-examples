@@ -1,6 +1,7 @@
-environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+description: Deploy a ComfyUI workflow as a Truss
+model_metadata:
+  example_model_input: {"workflow_values": {"positive_prompt": "An igloo on a snowy day, 4k, hd", "negative_prompt": "blurry, text, low quality", "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png"}}
 model_name: comfyui-truss
 python_version: py310
 requirements:
@@ -22,5 +23,4 @@ resources:
   memory: 14Gi
   use_gpu: true
   accelerator: T4
-secrets: {}
 system_packages: []
