@@ -3,6 +3,7 @@ import copy
 import io
 import json
 import os
+import time
 import uuid
 from io import BytesIO
 from multiprocessing import Process
@@ -31,6 +32,7 @@ class Model:
         self.client_id = str(uuid.uuid4())
 
     def load(self):
+        # Start the ComfyUI server
         global side_process
         if side_process is None:
             side_process = Process(
@@ -42,10 +44,26 @@ class Model:
             )
             side_process.start()
 
+        # Load the workflow file as a python dictionary
         with open(
             os.path.join(self._data_dir, "comfy_ui_workflow.json"), "r"
         ) as json_file:
             self.json_workflow = json.load(json_file)
+
+        # Connect to the ComfyUI server via websockets
+        socket_connected = False
+        while not socket_connected:
+            try:
+                self.ws = websocket.WebSocket()
+                self.ws.connect(
+                    "ws://{}/ws?clientId={}".format(self.server_address, self.client_id)
+                )
+                socket_connected = True
+            except Exception as e:
+                print("Could not connect to comfyUI server. Trying again...")
+                time.sleep(5)
+
+        print("Truss has successfully connected to the ComfyUI server!")
 
     def pil_to_b64(self, pil_img):
         buffered = BytesIO()
@@ -54,12 +72,6 @@ class Model:
         return img_str
 
     def predict(self, request: Dict) -> Dict:
-        if not self.ws:
-            self.ws = websocket.WebSocket()
-            self.ws.connect(
-                "ws://{}/ws?clientId={}".format(self.server_address, self.client_id)
-            )
-
         template_values = request.pop("workflow_values")
 
         template_values, tempfiles = convert_request_file_url_to_path(template_values)
