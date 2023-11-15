@@ -1,10 +1,11 @@
 import sys
 import time
+import json
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 from truss.cli.cli import _get_truss_from_directory
-from truss.remote.remote_factory import USER_TRUSSRC_PATH, RemoteFactory
+from truss.remote.remote_factory import RemoteFactory, RemoteConfig
 from truss.truss_handle import TrussHandle
 
 REMOTE_NAME = "ci"
@@ -12,14 +13,13 @@ BASETEN_HOST = "https://app.staging.baseten.co"
 
 
 def write_trussrc_file(api_key: str):
-    file_contents = f"""
-[{REMOTE_NAME}]
-remote_provider=baseten
-remote_url={BASETEN_HOST}
-api_key={api_key}"""
-    with open(USER_TRUSSRC_PATH, "w") as f:
-        f.write(file_contents)
-
+    ci_user = RemoteConfig(name=REMOTE_NAME, configs={
+        "api_key": api_key,
+        "remote_url": BASETEN_HOST,
+        "remote_provider": "baseten"
+    })
+    RemoteFactory.update_remote_config(ci_user)
+    
 
 @retry(wait=wait_fixed(60), stop=stop_after_attempt(20), reraise=True)
 def attempt_inference(truss_handle, model_version_id, api_key):
@@ -31,9 +31,15 @@ def attempt_inference(truss_handle, model_version_id, api_key):
     """
     print("Started attempt inference")
     try:
-        example_model_input = truss_handle.spec.config.model_metadata[
-            "example_model_input"
-        ]
+        if "example_model_input" in truss_handle.spec.config.model_metadata:
+            example_model_input = truss_handle.spec.config.model_metadata[
+                "example_model_input"
+            ]
+        else:
+            example_model_input = json.loads((
+                truss_handle._truss_dir
+                / truss_handle.spec.config.model_metadata["example_model_input_file"]).read_text()
+            )
     except KeyError:
         raise Exception("No example_model_input defined in Truss config")
 

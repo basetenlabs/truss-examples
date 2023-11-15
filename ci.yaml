@@ -10,4 +10,8 @@ tests:
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
   - jina-embeddings/jina-embeddings-v2-base-en
+<<<<<<< HEAD
   - whisper/whisper-v3-truss
+=======
+  - gfp-gan
+>>>>>>> b97fe3c (Finish testing and add to CI)

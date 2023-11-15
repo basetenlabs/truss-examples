@@ -3,6 +3,7 @@ description: Restore photos with this image-to-image model.
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/tencent.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/gfp-gan.png
+  example_model_input_file: input.json
   tags:
   - image-restoration
 model_name: GFP-GAN
