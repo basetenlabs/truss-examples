@@ -61,7 +61,7 @@ class Model:
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
-        end_id = model_input.get("end_id", 2) #EOS token for Llama2
+        end_id = model_input.get("end_id", 2)  # EOS token for Llama2
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
