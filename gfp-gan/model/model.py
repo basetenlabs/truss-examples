@@ -29,7 +29,7 @@ ESRGAN_PATH = "RealESRGAN_x2plus.pth"
 RESIZE_DEFAULT_MAX = 1400
 
 
-class RestorationModel:
+class Model:
     def __init__(self, **kwargs) -> None:
         self._data_dir = kwargs.get("data_dir")
         self._config = kwargs.get("config")
