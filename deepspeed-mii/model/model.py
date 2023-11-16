@@ -43,7 +43,8 @@ class Model:
     def predict(self, request: Dict):
         prompt = request.pop("prompt")
         generate_args = {
-            "max_new_tokens": request.pop("max_length", DEFAULT_RESPONSE_MAX_LENGTH)
+            "max_new_tokens": request.pop("max_length", DEFAULT_RESPONSE_MAX_LENGTH),
+            "ignore_eos": request.pop("ignore_eos", False),
         }
 
         if request.pop("stream", False):

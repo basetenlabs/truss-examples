@@ -15,7 +15,7 @@ model_metadata:
   - text-generation
 python_version: py311
 requirements:
-- deepspeed-mii==0.1.0
+- deepspeed-mii==0.1.1
 resources:
   cpu: "3"
   memory: 14Gi
