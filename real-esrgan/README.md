@@ -58,7 +58,7 @@ b64_img = pil_to_b64(img)
 
 headers = {"Authorization": f"Api-Key <BASETEN-API-KEY>"}
 data = {"image": b64_img}
-res = requests.post("https://app.baseten.co/model_versions/{model_version}/predict", headers=headers, json=data)
+res = requests.post("https://model-{MODEL_ID}.api.baseten.co/development/predict", headers=headers, json=data)
 output = res.json()
 
 result_b64 = output.get("model_output").get("upscaled_image")
