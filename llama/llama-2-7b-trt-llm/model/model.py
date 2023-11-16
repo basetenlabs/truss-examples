@@ -1,6 +1,7 @@
 from itertools import count
 from pathlib import Path
 from threading import Thread
+from transformers import AutoTokenizer
 
 import numpy as np
 from client import TritonClient, UserData
@@ -21,7 +22,10 @@ class Model:
         tensor_parallel_count = self._config["model_metadata"].get(
             "tensor_parallelism", 1
         )
-        is_hf_token = "hf_access_token" in self._secrets._base_secrets.keys()
+        if "hf_access_token" in self._secrets._base_secrets.keys():
+            hf_access_token = self._secrets["hf_access_token"]
+        else:
+            hf_access_token = None
         is_external_engine_repo = "engine_repository" in self._config["model_metadata"]
 
         # Instantiate TritonClient
@@ -36,19 +40,20 @@ class Model:
             download_engine(
                 engine_repository=self._config["model_metadata"]["engine_repository"],
                 fp=self._data_dir,
-                auth_token=self._secrets["hf_access_token"] if is_hf_token else None,
+                auth_token=hf_access_token,
             )
 
         # Load Triton Server and model
-        env = {
-            "triton_tokenizer_repository": self._config["model_metadata"][
-                "tokenizer_repository"
-            ],
-        }
-        if is_hf_token:
-            env["HUGGING_FACE_HUB_TOKEN"] = self._secrets["hf_access_token"]
+        tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
+        env = { "triton_tokenizer_repository": tokenizer_repository }
+        if hf_access_token is not None:
+            env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
 
         self.triton_client.load_server_and_model(env=env)
+
+        # setup eos token
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_repository, token = hf_access_token)
+        self.eos_token_id = tokenizer.eos_token_id
 
     def predict(self, model_input):
         user_data = UserData()
@@ -61,7 +66,11 @@ class Model:
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
-        end_id = model_input.get("end_id", 2)  # EOS token for Llama2
+        if not model_input.get("ignore_eos", False):
+            end_id = model_input.get("end_id", self.eos_token_id)
+        else:
+            # do nothing, trt-llm by default doesn't stop on `eos`
+            pass
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
