@@ -6,6 +6,7 @@ model_metadata:
 model_name: Real ESRGAN
 python_version: py310
 requirements:
+  - git+https://github.com/xinntao/Real-ESRGAN.git@5ca1078535923d485892caee7d7804380bfc87fd
   - numpy==1.23.5
   - torch==2.0.1
   - torchvision==0.15.2
@@ -21,7 +22,6 @@ resources:
   memory: 14Gi
   use_gpu: true
   accelerator: T4
-secrets: {}
 system_packages:
   - libgl1-mesa-glx
   - libglib2.0-0

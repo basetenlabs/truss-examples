@@ -1,36 +1,15 @@
 import base64
 import io
 import os
-import subprocess
-import sys
 from io import BytesIO
 from typing import Dict
 
 import numpy as np
-from PIL import Image
-
-git_repo_url = "https://github.com/xinntao/Real-ESRGAN.git"
-git_clone_command = ["git", "clone", git_repo_url]
-commit_hash = "5ca1078535923d485892caee7d7804380bfc87fd"
-original_working_directory = os.getcwd()
-
-try:
-    subprocess.run(git_clone_command, check=True)
-    print("Git repository cloned successfully!")
-
-    os.chdir(os.path.join(original_working_directory, "Real-ESRGAN"))
-    checkout_command = ["git", "checkout", commit_hash]
-    subprocess.run(checkout_command, check=True)
-    subprocess.run([sys.executable, "setup.py", "develop"], check=True)
-
-except Exception as e:
-    print(e)
-    raise Exception("Error cloning Real-ESRGAN repo :(")
-
-sys.path.append(os.path.join(os.getcwd()))
-
 from basicsr.archs.rrdbnet_arch import RRDBNet
+from PIL import Image
 from realesrgan import RealESRGANer
+
+original_working_directory = os.getcwd()
 
 
 class Model:
