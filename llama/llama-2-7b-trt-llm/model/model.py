@@ -1,10 +1,10 @@
 from itertools import count
 from pathlib import Path
 from threading import Thread
-from transformers import AutoTokenizer
 
 import numpy as np
 from client import TritonClient, UserData
+from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
@@ -45,14 +45,16 @@ class Model:
 
         # Load Triton Server and model
         tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
-        env = { "triton_tokenizer_repository": tokenizer_repository }
+        env = {"triton_tokenizer_repository": tokenizer_repository}
         if hf_access_token is not None:
             env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
 
         self.triton_client.load_server_and_model(env=env)
 
         # setup eos token
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_repository, token = hf_access_token)
+        tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_repository, token=hf_access_token
+        )
         self.eos_token_id = tokenizer.eos_token_id
 
     def predict(self, model_input):
