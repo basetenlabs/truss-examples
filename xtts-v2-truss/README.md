@@ -65,4 +65,9 @@ output = base64_to_wav(res.get('output'), "test_output.wav")
 The output of the model is a base64 string as well, so you can convert it to a wav file using the `base64_to_wav` function.
 
 Here is the input file for Samuel Jackson's voice:
-![speaker voice](samuel_jackson_voice.mp4)
+![speaker voice](https://github.com/htrivedi99/truss-examples/assets/15642666/6ae79c53-f63a-4e0a-b6fc-d397fee6162e)
+
+Here is the output file for the text to speech:
+![output](https://github.com/htrivedi99/truss-examples/assets/15642666/2a2f9a80-860d-4ef1-a530-7892a8bd874e)
+
+In this README, the audio files are in the MP4 format because github does not allow the WAV format. However, for the truss itself using the WAV format is recommended.
