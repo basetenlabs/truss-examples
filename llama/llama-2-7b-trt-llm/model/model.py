@@ -68,11 +68,7 @@ class Model:
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
-        if not model_input.get("ignore_eos", False):
-            end_id = model_input.get("end_id", self.eos_token_id)
-        else:
-            # do nothing, trt-llm by default doesn't stop on `eos`
-            pass
+        ignore_eos = model_input.get("ignore_eos", False)
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
@@ -84,8 +80,6 @@ class Model:
         beam_width = [[beam_width]]
         beam_width_data = np.array(beam_width, dtype=np.uint32)
         repetition_penalty_data = np.array([[repetition_penalty]], dtype=np.float32)
-        end_id = [[end_id]]
-        end_id_data = np.array(end_id, dtype=np.uint32)
 
         inputs = [
             prepare_grpc_tensor("text_input", input0_data),
@@ -95,8 +89,15 @@ class Model:
             prepare_grpc_tensor("stream", streaming_data),
             prepare_grpc_tensor("beam_width", beam_width_data),
             prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
-            prepare_grpc_tensor("end_id", end_id_data),
         ]
+
+        if not ignore_eos:
+            end_id = [[self.eos_token_id]]
+            end_id_data = np.array(end_id, dtype=np.uint32)
+            inputs.append(prepare_grpc_tensor("end_id", end_id_data))
+        else:
+            # do nothing, trt-llm by default doesn't stop on `eos`
+            pass
 
         # Start GRPC stream in a separate thread
         stream_thread = Thread(
