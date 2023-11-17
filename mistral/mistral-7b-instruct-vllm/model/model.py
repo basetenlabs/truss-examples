@@ -11,6 +11,7 @@ class Model:
         self.model_args = None
         self.llm_engine = None
         self.repo_id = kwargs["config"]["model_metadata"]["repo_id"]
+        self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
 
     def load(self) -> None:
         self.model_args = AsyncEngineArgs(model=self.repo_id)
@@ -50,7 +51,7 @@ class Model:
     async def predict(self, request: dict) -> Any:
         prompt = request.pop("prompt")
         stream = request.pop("stream", True)
-        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
+        formatted_prompt = self.prompt_format.replace("{prompt}", prompt)
         sampling_params = SamplingParams(**request)
         idx = str(uuid.uuid4().hex)
         vllm_generator = self.llm_engine.generate(
