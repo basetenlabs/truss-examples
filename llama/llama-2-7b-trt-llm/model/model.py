@@ -1,11 +1,14 @@
-import numpy as np
-from client import UserData, TritonClient
-from threading import Thread
-from utils import prepare_grpc_tensor, download_engine
-from pathlib import Path
 from itertools import count
+from pathlib import Path
+from threading import Thread
+
+import numpy as np
+from client import TritonClient, UserData
+from transformers import AutoTokenizer
+from utils import download_engine, prepare_grpc_tensor
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -16,8 +19,13 @@ class Model:
         self.triton_client = None
 
     def load(self):
-        tensor_parallel_count = self._config["model_metadata"].get("tensor_parallelism", 1)
-        is_hf_token = "hf_access_token" in self._secrets._base_secrets.keys()
+        tensor_parallel_count = self._config["model_metadata"].get(
+            "tensor_parallelism", 1
+        )
+        if "hf_access_token" in self._secrets._base_secrets.keys():
+            hf_access_token = self._secrets["hf_access_token"]
+        else:
+            hf_access_token = None
         is_external_engine_repo = "engine_repository" in self._config["model_metadata"]
 
         # Instantiate TritonClient
@@ -26,23 +34,28 @@ class Model:
             model_repository_dir=TRITON_MODEL_REPOSITORY_PATH,
             tensor_parallel_count=tensor_parallel_count,
         )
-        
+
         # Download model from Hugging Face Hub if specified
         if is_external_engine_repo:
             download_engine(
                 engine_repository=self._config["model_metadata"]["engine_repository"],
                 fp=self._data_dir,
-                auth_token=self._secrets["hf_access_token"] if is_hf_token else None
+                auth_token=hf_access_token,
             )
-        
+
         # Load Triton Server and model
-        env = {
-            "triton_tokenizer_repository": self._config["model_metadata"]["tokenizer_repository"],
-        }
-        if is_hf_token:
-            env["HUGGING_FACE_HUB_TOKEN"] = self._secrets["hf_access_token"]
+        tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
+        env = {"triton_tokenizer_repository": tokenizer_repository}
+        if hf_access_token is not None:
+            env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
 
         self.triton_client.load_server_and_model(env=env)
+
+        # setup eos token
+        tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_repository, token=hf_access_token
+        )
+        self.eos_token_id = tokenizer.eos_token_id
 
     def predict(self, model_input):
         user_data = UserData()
@@ -55,6 +68,7 @@ class Model:
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
+        ignore_eos = model_input.get("ignore_eos", False)
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
@@ -74,13 +88,20 @@ class Model:
             prepare_grpc_tensor("stop_words", stop_words_list),
             prepare_grpc_tensor("stream", streaming_data),
             prepare_grpc_tensor("beam_width", beam_width_data),
-            prepare_grpc_tensor("repetition_penalty", repetition_penalty_data)
+            prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
         ]
+
+        if not ignore_eos:
+            end_id_data = np.array([[self.eos_token_id]], dtype=np.uint32)
+            inputs.append(prepare_grpc_tensor("end_id", end_id_data))
+        else:
+            # do nothing, trt-llm by default doesn't stop on `eos`
+            pass
 
         # Start GRPC stream in a separate thread
         stream_thread = Thread(
             target=self.triton_client.start_grpc_stream,
-            args=(user_data, model_name, inputs, stream_uuid)
+            args=(user_data, model_name, inputs, stream_uuid),
         )
         stream_thread.start()
 

@@ -1,7 +1,9 @@
-from huggingface_hub import snapshot_download
 from pathlib import Path
+
 import tritonclient.grpc as grpcclient
+from huggingface_hub import snapshot_download
 from tritonclient.utils import np_to_triton_dtype
+
 
 def move_all_files(src: Path, dest: Path):
     """
@@ -14,6 +16,7 @@ def move_all_files(src: Path, dest: Path):
             move_all_files(item, dest_item)
         else:
             item.rename(dest_item)
+
 
 def prepare_model_repository(data_dir: Path):
     """
@@ -30,11 +33,12 @@ def prepare_model_repository(data_dir: Path):
     # Move all files and directories from data_dir to dest_dir
     move_all_files(data_dir, dest_dir)
 
+
 def prepare_grpc_tensor(name, input):
-    t = grpcclient.InferInput(name, input.shape,
-                            np_to_triton_dtype(input.dtype))
+    t = grpcclient.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
     t.set_data_from_numpy(input)
     return t
+
 
 def download_engine(engine_repository: str, fp: Path, auth_token=None):
     """
