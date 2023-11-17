@@ -10,11 +10,10 @@ class Model:
     def __init__(self, **kwargs) -> None:
         self.model_args = None
         self.llm_engine = None
+        self.repo_id = kwargs["config"]["model_metadata"]["repo_id"]
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(
-            model="mistralai/Mistral-7B-Instruct-v0.1",
-        )
+        self.model_args = AsyncEngineArgs(model=self.repo_id)
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
     def preprocess(self, request: dict):
@@ -43,19 +42,33 @@ class Model:
             generate_args["presence_penalty"] = request["presence_penalty"]
         if "use_beam_search" in request.keys():
             generate_args["use_beam_search"] = request["use_beam_search"]
+        if "ignore_eos" in request.keys():
+            generate_args["ignore_eos"] = request["ignore_eos"]
         request = {**request, **generate_args}
         return request
 
     async def predict(self, request: dict) -> Any:
         prompt = request.pop("prompt")
+        stream = request.pop("stream", True)
         formatted_prompt = f"<s>[INST] {prompt} [/INST]"
         sampling_params = SamplingParams(**request)
         idx = str(uuid.uuid4().hex)
-        generator = self.llm_engine.generate(formatted_prompt, sampling_params, idx)
+        vllm_generator = self.llm_engine.generate(
+            formatted_prompt, sampling_params, idx
+        )
 
-        full_text = ""
-        async for output in generator:
-            text = output.outputs[0].text
-            delta = text[len(full_text) :]
-            full_text = text
-            yield delta
+        async def generator():
+            full_text = ""
+            async for output in vllm_generator:
+                text = output.outputs[0].text
+                delta = text[len(full_text) :]
+                full_text = text
+                yield delta
+
+        if stream:
+            return generator()
+        else:
+            full_text = ""
+            async for delta in generator():
+                full_text += delta
+            return {"result": full_text}
