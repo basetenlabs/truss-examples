@@ -92,8 +92,7 @@ class Model:
         ]
 
         if not ignore_eos:
-            end_id = [[self.eos_token_id]]
-            end_id_data = np.array(end_id, dtype=np.uint32)
+            end_id_data = np.array([[self.eos_token_id]], dtype=np.uint32)
             inputs.append(prepare_grpc_tensor("end_id", end_id_data))
         else:
             # do nothing, trt-llm by default doesn't stop on `eos`
