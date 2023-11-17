@@ -62,8 +62,8 @@ class Model:
         model_name = "ensemble"
         stream_uuid = str(next(self._request_id_counter))
 
-        prompt = model_input.get("text_input")
-        output_len = model_input.get("output_len", 50)
+        prompt = model_input.get("prompt")
+        max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
@@ -72,7 +72,7 @@ class Model:
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
-        output0_len = np.ones_like(input0).astype(np.uint32) * output_len
+        output0_len = np.ones_like(input0).astype(np.uint32) * max_tokens
         bad_words_list = np.array([bad_words_list], dtype=object)
         stop_words_list = np.array([stop_words_list], dtype=object)
         streaming = [[True]]
