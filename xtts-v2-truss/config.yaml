@@ -1,14 +1,17 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: xtts-v2
+model_metadata:
+  example_model_input: {"text": "I love robots. Robots are cool!", "speaker_voice": <BASE64-STRING>, "language": "en"}
+  tags:
+  - text-to-speech
+base_image:
+  image: bolabaseten/xtts-base:v0.0.1
+  python_executable_path: /usr/bin/python3
+model_name: XTTS V2
 python_version: py310
-requirements:
-  - git+https://github.com/coqui-ai/TTS.git
 resources:
   cpu: "3"
   memory: 10Gi
   use_gpu: true
   accelerator: T4
-secrets: {}
 system_packages: []
