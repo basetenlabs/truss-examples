@@ -34,7 +34,7 @@ class Model:
             "use_beam_search": False,
         }
         generate_args.update(request)
-        
+
         sampling_params = SamplingParams(**generate_args)
         idx = str(uuid.uuid4().hex)
         vllm_generator = self.llm_engine.generate(
