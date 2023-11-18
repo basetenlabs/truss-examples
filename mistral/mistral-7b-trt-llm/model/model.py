@@ -105,12 +105,12 @@ class Model:
         stream_thread.start()
 
         def generate():
-             # Yield results from the queue
-             for i in TritonClient.stream_predict(user_data):
-                 yield i
+            # Yield results from the queue
+            for i in TritonClient.stream_predict(user_data):
+                yield i
 
-             # Clean up GRPC stream and thread
-             self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
+            # Clean up GRPC stream and thread
+            self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
 
         if stream:
             return generate()
