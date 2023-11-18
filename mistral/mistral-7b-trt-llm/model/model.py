@@ -62,23 +62,22 @@ class Model:
         model_name = "ensemble"
         stream_uuid = str(next(self._request_id_counter))
 
-        prompt = model_input.get("text_input")
-        output_len = model_input.get("output_len", 50)
+        prompt = model_input.get("prompt")
+        max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
         bad_words_list = model_input.get("bad_words_list", [""])
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
         ignore_eos = model_input.get("ignore_eos", False)
+        stream = model_input.get("stream", True)
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
-        output0_len = np.ones_like(input0).astype(np.uint32) * output_len
+        output0_len = np.ones_like(input0).astype(np.uint32) * max_tokens
         bad_words_list = np.array([bad_words_list], dtype=object)
         stop_words_list = np.array([stop_words_list], dtype=object)
-        streaming = [[True]]
-        streaming_data = np.array(streaming, dtype=bool)
-        beam_width = [[beam_width]]
-        beam_width_data = np.array(beam_width, dtype=np.uint32)
+        stream_data = np.array([[stream]], dtype=bool)
+        beam_width_data = np.array([[beam_width]], dtype=np.uint32)
         repetition_penalty_data = np.array([[repetition_penalty]], dtype=np.float32)
 
         inputs = [
@@ -86,7 +85,7 @@ class Model:
             prepare_grpc_tensor("max_tokens", output0_len),
             prepare_grpc_tensor("bad_words", bad_words_list),
             prepare_grpc_tensor("stop_words", stop_words_list),
-            prepare_grpc_tensor("stream", streaming_data),
+            prepare_grpc_tensor("stream", stream_data),
             prepare_grpc_tensor("beam_width", beam_width_data),
             prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
         ]
@@ -105,9 +104,15 @@ class Model:
         )
         stream_thread.start()
 
-        # Yield results from the queue
-        for i in TritonClient.stream_predict(user_data):
-            yield i
+        def generate():
+             # Yield results from the queue
+             for i in TritonClient.stream_predict(user_data):
+                 yield i
 
-        # Clean up GRPC stream and thread
-        self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
+             # Clean up GRPC stream and thread
+             self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
+
+        if stream:
+            return generate()
+        else:
+            return {"text": "".join(generate())}
