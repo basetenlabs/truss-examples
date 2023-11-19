@@ -42,8 +42,8 @@ This section provides an overview of the LLaMA2-7B API, its parameters, and how 
 We expect requests will the following information:
 
 
-- ```text_input``` (str): The prompt you'd like to complete
-- ```output_len``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
+- ```prompt``` (str): The prompt you'd like to complete
+- ```max_tokens``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
 - ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
 - ```bad_words_list``` (list, default:[]): A list of words to not include in generated output.
 - ```stop_words_list``` (list, default:[]): A list of words to stop generation upon encountering.
@@ -54,7 +54,7 @@ This Truss will stream responses back. Responses will be buffered chunks of text
 ## Example usage
 
 ```sh
-truss predict -d '{"text_input": "What is the meaning of life?"}'
+truss predict -d '{"prompt": "What is the meaning of life?"}'
 ```
 
 You can also invoke your model via a REST API
@@ -64,7 +64,7 @@ curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "text_input": "What's the meaning of life?",
+           "prompt": "What's the meaning of life?",
          }'
 
 ```

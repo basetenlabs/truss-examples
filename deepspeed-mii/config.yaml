@@ -8,7 +8,7 @@ model_metadata:
   max_length: 4096
   # increase `tensor_parallel` to use more than one GPU
   tensor_parallel: 1
-  example_model_input: {"prompt": "What's the meaning of life?", "max_length": 1024}
+  example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
   tags:
