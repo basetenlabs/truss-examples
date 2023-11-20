@@ -12,7 +12,9 @@ class Model:
         self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
 
     def load(self) -> None:
-        self.llm_engine = AsyncLLMEngine.from_engine_args(AsyncEngineArgs(**self.engine_args))
+        self.llm_engine = AsyncLLMEngine.from_engine_args(
+            AsyncEngineArgs(**self.engine_args)
+        )
 
     async def predict(self, request: dict) -> Any:
         prompt = request.pop("prompt")
