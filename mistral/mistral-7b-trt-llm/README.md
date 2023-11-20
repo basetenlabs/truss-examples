@@ -1,8 +1,8 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/llama)
+[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/mistral)
 
-# LLaMA2-7B-Chat Truss
+# Mistral-7B Truss
 
-This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of LLaMA2-7B-Chat. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA2-7B-Chat.
+This is a [Truss](https://truss.baseten.co/) for Mistral 7B. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B.
 
 **Warning: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
 
@@ -10,13 +10,13 @@ This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of 
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-## Deploying LLaMA2-7B-Chat
+## Deploying Mistral-7B
 
 First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd llama/llama-2-7b-trt-llm
+cd mistral/mistral-7b-trt-llm
 ```
 
 Before deployment:
@@ -24,7 +24,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `llama-2-7b-trt-llm` as your working directory, you can deploy the model with:
+With `mistral-7b-trt-llm` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
@@ -34,8 +34,8 @@ Paste your Baseten API key if prompted.
 
 For more information, see [Truss documentation](https://truss.baseten.co).
 
-## LLaMA2-7B API documentation
-This section provides an overview of the LLaMA2-7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
+## Mistral 7B API documentation
+This section provides an overview of the Mistral 7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
 
 ### API route: `predict`
 
