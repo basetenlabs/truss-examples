@@ -8,14 +8,13 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 class Model:
     def __init__(self, **kwargs) -> None:
-        self.model_args = None
-        self.llm_engine = None
-        self.repo_id = kwargs["config"]["model_metadata"]["repo_id"]
+        self.engine_args = kwargs["config"]["model_metadata"]["engine_args"]
         self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(model=self.repo_id)
-        self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
+        self.llm_engine = AsyncLLMEngine.from_engine_args(
+            AsyncEngineArgs(**self.engine_args)
+        )
 
     async def predict(self, request: dict) -> Any:
         prompt = request.pop("prompt")
