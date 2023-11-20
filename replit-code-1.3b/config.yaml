@@ -20,12 +20,12 @@ model_type: custom
 python_version: py39
 requirements:
 - torch
-- peft
 - sentencepiece
 - accelerate
 - bitsandbytes
 - einops
-- git+https://github.com/huggingface/transformers.git
+- transformers==4.33.0
+- scipy
 resources:
   cpu: "3"
   memory: 14Gi
