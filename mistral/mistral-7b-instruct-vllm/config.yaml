@@ -1,6 +1,7 @@
 description: Generate text with an instruction-tuned version of Mistral 7B.
 model_metadata:
-  repo_id: mistralai/Mistral-7B-Instruct-v0.1
+  engine_args:
+    model: mistralai/Mistral-7B-Instruct-v0.1
   prompt_format: <s>[INST] {prompt} [/INST]
   example_model_input: {"prompt": "What is the Mistral wind?"}
   pretty_name: Mistral 7B Instruct
