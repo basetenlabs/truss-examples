@@ -1,6 +1,6 @@
 # Mistral 7B Instruct Truss
 
-This is a [Truss](https://truss.baseten.co/) for Mistral 7B Instruct. Mistral 7B Instruct parameter language model released by [Mistral](https://mistral.ai/) that outperforms other models in the 7B model class. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct.
+This is a [Truss](https://truss.baseten.co/) for Mistral 7B Instruct, that supports chat. Mistral 7B Instruct parameter language model released by [Mistral](https://mistral.ai/) that outperforms other models in the 7B model class. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct.
 
 ## Truss
 
@@ -12,7 +12,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd mistral-7b-instruct
+cd mistral-7b-chat
 ```
 
 Before deployment:
@@ -20,7 +20,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `mistral-7b-instruct` as your working directory, you can deploy the model with:
+With `mistral-7b-chat` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
@@ -56,7 +56,7 @@ The `predict` route is the primary method for generating text completions based 
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "What is the Mistral wind?"}'
+truss predict -d '{"messages": [{"role": "user", "content": "What is the mistral wind?"}]}'
 ```
 
 You can also invoke your model via a REST API:
@@ -66,8 +66,6 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt": "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
-           "stream": true,
-           "max_tokens": 4096
+          {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
          }' --no-buffer
 ```
