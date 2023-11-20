@@ -14,7 +14,7 @@ class Model:
         self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(model=self.repo_id)
+        self.model_args = AsyncEngineArgs(model=self.repo_id, max_model_len=4000)
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
     async def predict(self, request: dict) -> Any:
