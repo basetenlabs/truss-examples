@@ -1,5 +1,3 @@
-environment_variables: {}
-external_package_dirs: []
 description: Generate text with an instruction-tuned version of Mistral 7B.
 model_metadata:
   example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
@@ -9,8 +7,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: Mistral 7B Chat
-model_framework: custom
-model_type: custom
 python_version: py311
 requirements:
 - sentencepiece
@@ -22,4 +18,3 @@ resources:
   use_gpu: true
   memory: 25Gi
 secrets: {}
-system_packages: []
