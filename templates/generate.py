@@ -73,7 +73,7 @@ def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
     return merged.replace("<model_input>", model_input)
 
 def apply_template(file: Path, variables: Dict[str, str]):
-    env = Environment(loader=FileSystemLoader(file.parent), undefined=StrictUndefined)
+    env = Environment(loader=FileSystemLoader(file.parent), undefined=StrictUndefined, keep_trailing_newline=True)
     template = env.get_template(file.name)
     rendered_template = template.render(variables)
     file.with_suffix('').write_text(rendered_template)
