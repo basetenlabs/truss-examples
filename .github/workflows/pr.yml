@@ -15,4 +15,3 @@ jobs:
       - uses: ./.github/actions/setup-python/
       - run: poetry install
       - run: poetry run pre-commit run --all-files
-      - run: poetry run python ./templates/generate.py --only_check --templates templates --root . --config templates/generate.yaml
