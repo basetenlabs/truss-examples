@@ -12,6 +12,16 @@ mistral/mistral-7b-trt-llm:
     model_name: Mistral 7B TRT
   ignore:
     - README.md
+  replaces:
+    packages/inflight_batcher_llm/ensemble/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 2048
+    packages/inflight_batcher_llm/postprocessing/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 2048
+    packages/inflight_batcher_llm/preprocessing/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 2048
 llama/llama-2-7b-trt-llm:
   based_on: trt-llm
   config:
@@ -24,3 +34,13 @@ llama/llama-2-7b-trt-llm:
     model_name: Llama 7B Chat TRT
   ignore:
     - README.md
+  replaces:
+    packages/inflight_batcher_llm/ensemble/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 128
+    packages/inflight_batcher_llm/postprocessing/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 128
+    packages/inflight_batcher_llm/preprocessing/config.pbtxt:
+      from_str: <max_batch_size>
+      to_str: 128

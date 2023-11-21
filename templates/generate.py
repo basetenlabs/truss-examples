@@ -11,10 +11,15 @@ import os
 from truss.patch.hash import directory_content_hash
 
 
+class Replacement(BaseModel):
+    from_str: str
+    to_str: str
+
 class Generate(BaseModel):
     based_on: str
     config: Dict[str, Any]
     ignore: List[str]
+    replaces: Dict[str, Replacement]
 
 def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
     logging.info(f"processing {str(dst)}")
@@ -37,6 +42,12 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
         merged_config = merge_configs(template_config, generate.config)
         with open(Path(temp_dir) / "config.yaml", "w") as file:
             file.write(merged_config)
+        # apply replaces
+        for file, replace in generate.replaces.items():
+            with open(Path(temp_dir) / file, "r") as current:
+                content = current.read()
+            with open(Path(temp_dir) / file, "w") as current:
+                current.write(content.replace(replace.from_str, replace.to_str))
 
         if only_check:
             # check if directories are the same
