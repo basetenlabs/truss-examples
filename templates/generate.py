@@ -27,33 +27,27 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
     logging.info(f"processing {str(dst)}")
     with tempfile.TemporaryDirectory() as temp_dir:
         # copy template
-        for filename in (templates / generate.based_on).iterdir():
-            source_file = templates / generate.based_on / filename
-            destination_file = Path(temp_dir) / filename
-
-            if source_file.is_file():
-                shutil.copy2(source_file, destination_file)
-            elif source_file.is_dir():
-                shutil.copytree(source_file, destination_file)
+        generated = Path(temp_dir) / "truss"
+        shutil.copytree(templates / generate.based_on, generated)
         # copy ignore files
         for ignored in generate.ignore:
-            shutil.copy2(dst / ignored, Path(temp_dir) / ignored)
+            shutil.copy2(dst / ignored, generated / ignored)
         # apply config changes
-        with open(Path(temp_dir) / "config.yaml", "r") as file:
+        with open(generated / "config.yaml", "r") as file:
             template_config = yaml.safe_load(file)
         merged_config = merge_configs(template_config, generate.config)
-        with open(Path(temp_dir) / "config.yaml", "w") as file:
+        with open(generated / "config.yaml", "w") as file:
             file.write(merged_config)
         # apply replaces
         for file, replace in generate.replaces.items():
-            with open(Path(temp_dir) / file, "r") as current:
+            with open(generated / file, "r") as current:
                 content = current.read()
-            with open(Path(temp_dir) / file, "w") as current:
+            with open(generated / file, "w") as current:
                 current.write(content.replace(replace.from_str, replace.to_str))
 
         if only_check:
             # check if directories are the same
-            if directory_content_hash(Path(temp_dir)) == directory_content_hash(dst):
+            if directory_content_hash(generated) == directory_content_hash(dst):
                 logging.info("Generated content is the same as existing")
             else:
                 raise Exception("Generated content is different from existing")
@@ -61,7 +55,7 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
             # copy generated directory
             if dst.exists():
                 shutil.rmtree(dst)
-            shutil.copytree(temp_dir, dst)
+            shutil.copytree(generated, dst)
 
 
 def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
