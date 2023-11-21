@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from pydantic import BaseModel
 from truss.patch.hash import directory_content_hash
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 class Replacement(BaseModel):
     from_str: str
@@ -39,7 +39,7 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
         merged_config = merge_configs(template_config, generate.config)
         (generated / "config.yaml").write_text(merged_config)
         # apply template variables
-        for filepath in generated.rglob('*'):
+        for filepath in generated.rglob("*"):
             if filepath.suffix == ".jinja":
                 apply_template(filepath, generate.template)
 
@@ -72,12 +72,18 @@ def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
     merged = yaml.dump(template, default_flow_style=False, width=120)
     return merged.replace("<model_input>", model_input)
 
+
 def apply_template(file: Path, variables: Dict[str, str]):
-    env = Environment(loader=FileSystemLoader(file.parent), undefined=StrictUndefined, keep_trailing_newline=True)
+    env = Environment(
+        loader=FileSystemLoader(file.parent),
+        undefined=StrictUndefined,
+        keep_trailing_newline=True,
+    )
     template = env.get_template(file.name)
     rendered_template = template.render(variables)
-    file.with_suffix('').write_text(rendered_template)
+    file.with_suffix("").write_text(rendered_template)
     file.unlink()
+
 
 def run(args):
     with open(args.config, "r") as file:
