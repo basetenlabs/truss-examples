@@ -1,13 +1,7 @@
-description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
 model_metadata:
-  example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
-  pretty_name: Mistral 7B Chat
-  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
-  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   tags:
   - text-generation
   - openai-compatible
-model_name: Mistral 7B Chat
 python_version: py311
 requirements:
 - sentencepiece
@@ -18,4 +12,3 @@ resources:
   accelerator: A10G
   use_gpu: true
   memory: 25Gi
-secrets: {}

@@ -36,6 +36,7 @@ mistral/mistral-7b-chat:
       pretty_name: Mistral 7B Chat
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      model: mistralai/Mistral-7B-Instruct-v0.1
     description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
     model_name: Mistral 7B Chat
   ignore:
@@ -48,6 +49,7 @@ zephyr/zephyr-7b-alpha:
       pretty_name: Zephyr 7B Alpha
       avatar_url: https://cdn.baseten.co/production/static/explore/huggingface_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/zephyr_profile.png
+      model: HuggingFaceH4/zephyr-7b-alpha
     description: Zephyr 7B Alpha, optimized for chat! Compatible with OpenAI Client
     model_name: Zephyr 7B Alpha
   ignore:

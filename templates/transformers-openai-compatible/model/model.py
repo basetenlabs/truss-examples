@@ -11,18 +11,19 @@ from transformers import (
 
 class Model:
     def __init__(self, **kwargs):
+        self.repo_id = kwargs["config"]["model_metadata"]["model"]
         self.tokenizer = None
         self.model = None
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            self.repo_id,
             torch_dtype=torch.float16,
             device_map="auto",
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            self.repo_id,
             device_map="auto",
             torch_dtype=torch.float16,
         )
