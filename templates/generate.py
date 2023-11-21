@@ -26,24 +26,21 @@ class Generate(BaseModel):
 def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
     logging.info(f"processing {str(dst)}")
     with tempfile.TemporaryDirectory() as temp_dir:
-        # copy template
         generated = Path(temp_dir) / "truss"
+
+        # copy template
         shutil.copytree(templates / generate.based_on, generated)
         # copy ignore files
         for ignored in generate.ignore:
             shutil.copy2(dst / ignored, generated / ignored)
         # apply config changes
-        with open(generated / "config.yaml", "r") as file:
-            template_config = yaml.safe_load(file)
+        template_config = yaml.safe_load((generated / "config.yaml").read_text())
         merged_config = merge_configs(template_config, generate.config)
-        with open(generated / "config.yaml", "w") as file:
-            file.write(merged_config)
+        (generated / "config.yaml").write_text(merged_config)
         # apply replaces
         for file, replace in generate.replaces.items():
-            with open(generated / file, "r") as current:
-                content = current.read()
-            with open(generated / file, "w") as current:
-                current.write(content.replace(replace.from_str, replace.to_str))
+            content = (generated / file).read_text()
+            (generated / file).write_text(content.replace(replace.from_str, replace.to_str))
 
         if only_check:
             # check if directories are the same
