@@ -6,6 +6,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   tags:
   - text-generation
+  - openai-compatible
 model_name: Mistral 7B Chat
 python_version: py311
 requirements:
