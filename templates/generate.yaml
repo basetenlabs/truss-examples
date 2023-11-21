@@ -28,3 +28,27 @@ llama/llama-2-7b-trt-llm:
     - README.md
   template:
     max_batch_size: 128
+mistral/mistral-7b-chat:
+  based_on: transformers-openai-compatible
+  config:
+    model_metadata:
+      example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
+      pretty_name: Mistral 7B Chat
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+    description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
+    model_name: Mistral 7B Chat
+  ignore:
+    - README.md
+zephyr/zephyr-7b-alpha:
+  based_on: transformers-openai-compatible
+  config:
+    model_metadata:
+      example_model_input: {"messages": [{"role": "user", "content": "What is the meaning of life?"}]}
+      pretty_name: Zephyr 7B Alpha
+      avatar_url: https://cdn.baseten.co/production/static/explore/huggingface_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/zephyr_profile.png
+    description: Zephyr 7B Alpha, optimized for chat! Compatible with OpenAI Client
+    model_name: Zephyr 7B Alpha
+  ignore:
+    - README.md
