@@ -8,6 +8,8 @@ from transformers import (
     TextIteratorStreamer,
 )
 
+CHECKPOINT = "HuggingFaceH4/zephyr-7b-alpha"
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -16,13 +18,13 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            CHECKPOINT,
             torch_dtype=torch.float16,
             device_map="auto",
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            CHECKPOINT,
             device_map="auto",
             torch_dtype=torch.float16,
         )
@@ -40,6 +42,7 @@ class Model:
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
+
         request["generate_args"] = {
             request[k] if k in request else generate_args[k]
             for k in generate_args.keys()
