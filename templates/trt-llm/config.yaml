@@ -1,0 +1,14 @@
+base_image:
+  image: docker.io/baseten/triton_trt_llm:v2
+  python_executable_path: /usr/bin/python3
+model_metadata:
+  example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
+  tags:
+  - text-generation
+python_version: py311
+requirements:
+- tritonclient[all]
+resources:
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
