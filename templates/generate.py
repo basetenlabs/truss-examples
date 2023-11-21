@@ -15,11 +15,13 @@ class Replacement(BaseModel):
     from_str: str
     to_str: str
 
+
 class Generate(BaseModel):
     based_on: str
     config: Dict[str, Any]
     ignore: List[str]
     replaces: Dict[str, Replacement]
+
 
 def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
     logging.info(f"processing {str(dst)}")
@@ -77,6 +79,7 @@ def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
     template["model_metadata"]["example_model_input"] = "<model_input>"
     merged = yaml.dump(template, default_flow_style=False, width=120)
     return merged.replace("<model_input>", model_input)
+
 
 def run(args):
     with open(args.config, "r") as file:
