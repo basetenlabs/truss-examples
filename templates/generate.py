@@ -1,5 +1,6 @@
 import logging
 import yaml
+import json
 from pydantic import BaseModel
 from typing import Dict, Any, List
 from pathlib import Path
@@ -8,6 +9,7 @@ import tempfile
 import shutil
 import os
 from truss.patch.hash import directory_content_hash
+
 
 class Generate(BaseModel):
     based_on: str
@@ -21,7 +23,7 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
         for filename in os.listdir(templates / generate.based_on):
             source_file = templates / generate.based_on / filename
             destination_file = Path(temp_dir) / filename
-        
+
             if os.path.isfile(source_file):
                 shutil.copy2(source_file, destination_file)
             elif os.path.isdir(source_file):
@@ -30,12 +32,12 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
         for ignored in generate.ignore:
             shutil.copy2(dst / ignored, Path(temp_dir) / ignored)
         # apply config changes
-        with open(Path(temp_dir) / "config.yaml", 'r') as file:
+        with open(Path(temp_dir) / "config.yaml", "r") as file:
             template_config = yaml.safe_load(file)
-        merge_configs(template_config, generate.config)
-        with open(Path(temp_dir) / "config.yaml", 'w') as file:
-            yaml.dump(template_config, file, default_flow_style=False)
-        
+        merged_config = merge_configs(template_config, generate.config)
+        with open(Path(temp_dir) / "config.yaml", "w") as file:
+            file.write(merged_config)
+
         if only_check:
             # check if directories are the same
             if directory_content_hash(Path(temp_dir)) == directory_content_hash(dst):
@@ -48,6 +50,7 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
                 shutil.rmtree(dst)
             shutil.copytree(temp_dir, dst)
 
+
 def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
     def merge(d1, d2):
         for key in d2:
@@ -55,26 +58,49 @@ def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
                 merge(d1[key], d2[key])
             else:
                 d1[key] = d2[key]
+
     merge(template, patch)
 
+    # we need this hack to preserve `model_input` as one line json in merged config
+    model_input = json.dumps(template["model_metadata"]["example_model_input"])
+    template["model_metadata"]["example_model_input"] = "<model_input>"
+    merged = yaml.dump(template, default_flow_style=False, width=120)
+    return merged.replace("<model_input>", model_input)
+
 def run(args):
-    with open(args.config, 'r') as file:
+    with open(args.config, "r") as file:
         data = yaml.safe_load(file)
         generates = {key: Generate(**value) for key, value in data.items()}
 
     for dst, generate in generates.items():
         process(Path(args.root) / dst, Path(args.templates), generate, args.only_check)
 
+
 def main():
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(description="Generate trusses based on templates")
-    parser.add_argument("--only_check", default=False, action='store_true', help="Only check that nothing will be changed after generation")
-    parser.add_argument("--root", type=str, default="..", help="Root directory to put generated trusses to")
-    parser.add_argument("--templates", type=str, default=".", help="Templates directory")
-    parser.add_argument("--config", type=str, default="generate.yaml", help="Generate config")
+    parser.add_argument(
+        "--only_check",
+        default=False,
+        action="store_true",
+        help="Only check that nothing will be changed after generation",
+    )
+    parser.add_argument(
+        "--root",
+        type=str,
+        default="..",
+        help="Root directory to put generated trusses to",
+    )
+    parser.add_argument(
+        "--templates", type=str, default=".", help="Templates directory"
+    )
+    parser.add_argument(
+        "--config", type=str, default="generate.yaml", help="Generate config"
+    )
 
     run(parser.parse_args())
+
 
 if __name__ == "__main__":
     main()
