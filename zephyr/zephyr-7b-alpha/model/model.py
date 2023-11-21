@@ -42,23 +42,12 @@ class Model:
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
-        if "max_tokens" in request.keys():
-            generate_args["max_new_tokens"] = request["max_tokens"]
-        if "temperature" in request.keys():
-            generate_args["temperature"] = request["temperature"]
-        if "top_p" in request.keys():
-            generate_args["top_p"] = request["top_p"]
-        if "top_k" in request.keys():
-            generate_args["top_k"] = request["top_k"]
-        if "repetition_penalty" in request.keys():
-            generate_args["repetition_penalty"] = request["repetition_penalty"]
-        if "no_repeat_ngram_size" in request.keys():
-            generate_args["no_repeat_ngram_size"] = request["no_repeat_ngram_size"]
-        if "use_cache" in request.keys():
-            generate_args["use_cache"] = request["use_cache"]
-        if "do_sample" in request.keys():
-            generate_args["do_sample"] = request["do_sample"]
-        request["generate_args"] = generate_args
+
+        request["generate_args"] = {
+            request[k] if k in request else generate_args[k]
+            for k in generate_args.keys()
+        }
+
         return request
 
     def stream(self, input_ids: list, generation_args: dict):
