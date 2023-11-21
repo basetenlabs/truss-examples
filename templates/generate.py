@@ -40,7 +40,9 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
         # apply replaces
         for file, replace in generate.replaces.items():
             content = (generated / file).read_text()
-            (generated / file).write_text(content.replace(replace.from_str, replace.to_str))
+            (generated / file).write_text(
+                content.replace(replace.from_str, replace.to_str)
+            )
 
         if only_check:
             # check if directories are the same
