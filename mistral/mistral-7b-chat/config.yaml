@@ -1,4 +1,4 @@
-description: Generate text with an instruction-tuned version of Mistral 7B.
+description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
 model_metadata:
   example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
   pretty_name: Mistral 7B Chat
