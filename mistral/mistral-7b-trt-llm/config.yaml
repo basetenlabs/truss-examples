@@ -1,18 +1,16 @@
 base_image:
   image: docker.io/baseten/triton_trt_llm:v2
   python_executable_path: /usr/bin/python3
-environment_variables: {}
-external_package_dirs: []
+description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:
-  example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  engine_repository: baseten/mistral7b-fp16-ifb-2k-2k
+  example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
   tags:
   - text-generation
   tensor_parallelism: 1
-  engine_repository: "baseten/mistral7b-fp16-ifb-2k-2k"
-  tokenizer_repository: "mistralai/Mistral-7B-v0.1"
-description: Generate text from a prompt with this seven billion parameter language model.
+  tokenizer_repository: mistralai/Mistral-7B-v0.1
 model_name: Mistral 7B TRT
 python_version: py311
 requirements:
@@ -20,7 +18,5 @@ requirements:
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
-system_packages: []
 runtime:
   predict_concurrency: 256
