@@ -1,7 +1,6 @@
 import argparse
 import json
 import logging
-import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -28,13 +27,13 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
     logging.info(f"processing {str(dst)}")
     with tempfile.TemporaryDirectory() as temp_dir:
         # copy template
-        for filename in os.listdir(templates / generate.based_on):
+        for filename in (templates / generate.based_on).iterdir():
             source_file = templates / generate.based_on / filename
             destination_file = Path(temp_dir) / filename
 
-            if os.path.isfile(source_file):
+            if source_file.is_file():
                 shutil.copy2(source_file, destination_file)
-            elif os.path.isdir(source_file):
+            elif source_file.is_dir():
                 shutil.copytree(source_file, destination_file)
         # copy ignore files
         for ignored in generate.ignore:
@@ -60,7 +59,7 @@ def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
                 raise Exception("Generated content is different from existing")
         else:
             # copy generated directory
-            if os.path.exists(dst):
+            if dst.exists():
                 shutil.rmtree(dst)
             shutil.copytree(temp_dir, dst)
 
