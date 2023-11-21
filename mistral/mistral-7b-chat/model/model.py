@@ -41,7 +41,7 @@ class Model:
             "pad_token_id": self.tokenizer.pad_token_id,
         }
         request["generate_args"] = {
-            request[k] if k in request else generate_args[k]
+            k: request[k] if k in request else generate_args[k]
             for k in generate_args.keys()
         }
 

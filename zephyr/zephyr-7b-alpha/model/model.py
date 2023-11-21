@@ -44,7 +44,7 @@ class Model:
         }
 
         request["generate_args"] = {
-            request[k] if k in request else generate_args[k]
+            k: request[k] if k in request else generate_args[k]
             for k in generate_args.keys()
         }
 
