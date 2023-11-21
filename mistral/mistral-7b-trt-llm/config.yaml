@@ -1,6 +1,8 @@
 base_image:
   image: docker.io/baseten/triton_trt_llm:v2
   python_executable_path: /usr/bin/python3
+build:
+  model_server: TRT_LLM
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
@@ -21,6 +23,7 @@ resources:
   accelerator: A100
   use_gpu: true
 secrets: {}
-system_packages: []
+system_packages:
+- python3.10-venv
 runtime:
   predict_concurrency: 256
