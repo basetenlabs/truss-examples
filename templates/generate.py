@@ -1,8 +1,80 @@
 import logging
+import yaml
+from pydantic import BaseModel
+from typing import Dict, Any, List
+from pathlib import Path
+import argparse
+import tempfile
+import shutil
+import os
+from truss.patch.hash import directory_content_hash
+
+class Generate(BaseModel):
+    based_on: str
+    config: Dict[str, Any]
+    ignore: List[str]
+
+def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
+    logging.info(f"processing {str(dst)}")
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # copy template
+        for filename in os.listdir(templates / generate.based_on):
+            source_file = templates / generate.based_on / filename
+            destination_file = Path(temp_dir) / filename
+        
+            if os.path.isfile(source_file):
+                shutil.copy2(source_file, destination_file)
+            elif os.path.isdir(source_file):
+                shutil.copytree(source_file, destination_file)
+        # copy ignore files
+        for ignored in generate.ignore:
+            shutil.copy2(dst / ignored, Path(temp_dir) / ignored)
+        # apply config changes
+        with open(Path(temp_dir) / "config.yaml", 'r') as file:
+            template_config = yaml.safe_load(file)
+        merge_configs(template_config, generate.config)
+        with open(Path(temp_dir) / "config.yaml", 'w') as file:
+            yaml.dump(template_config, file, default_flow_style=False)
+        
+        if only_check:
+            # check if directories are the same
+            if directory_content_hash(Path(temp_dir)) == directory_content_hash(dst):
+                logging.info("Generated content is the same as existing")
+            else:
+                raise Exception("Generated content is different from existing")
+        else:
+            # copy generated directory
+            if os.path.exists(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(temp_dir, dst)
+
+def merge_configs(template: Dict[str, Any], patch: Dict[str, Any]):
+    def merge(d1, d2):
+        for key in d2:
+            if key in d1 and isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                merge(d1[key], d2[key])
+            else:
+                d1[key] = d2[key]
+    merge(template, patch)
+
+def run(args):
+    with open(args.config, 'r') as file:
+        data = yaml.safe_load(file)
+        generates = {key: Generate(**value) for key, value in data.items()}
+
+    for dst, generate in generates.items():
+        process(Path(args.root) / dst, Path(args.templates), generate, args.only_check)
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    logging.info("generating based on templates")
+
+    parser = argparse.ArgumentParser(description="Generate trusses based on templates")
+    parser.add_argument("--only_check", default=False, action='store_true', help="Only check that nothing will be changed after generation")
+    parser.add_argument("--root", type=str, default="..", help="Root directory to put generated trusses to")
+    parser.add_argument("--templates", type=str, default=".", help="Templates directory")
+    parser.add_argument("--config", type=str, default="generate.yaml", help="Generate config")
+
+    run(parser.parse_args())
 
 if __name__ == "__main__":
     main()

@@ -12,4 +12,4 @@ mistral/mistral-7b-trt-llm:
     resources:
       accelerator: A100
   ignore:
-    README.md
+    - README.md
