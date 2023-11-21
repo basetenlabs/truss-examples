@@ -1,8 +1,6 @@
 base_image:
   image: nvcr.io/nvidia/tritonserver:23.10-trtllm-python-py3
   python_executable_path: /usr/bin/python3
-build:
-  model_server: TRT_LLM
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
