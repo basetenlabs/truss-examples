@@ -79,7 +79,10 @@ class Model:
             return self.stream(model_inputs, generation_args)
 
         with torch.no_grad():
-            try:
-                return self._model(text_inputs=model_inputs, **generation_args)
-            except Exception as exc:
-                return {"status": "error", "data": None, "message": str(exc)}
+
+            results = self._model(text_inputs=model_inputs, **generation_args)
+
+            if len(results) > 0:
+                return results[0].get("generated_text")
+
+            raise Exception("No results returned from model")
