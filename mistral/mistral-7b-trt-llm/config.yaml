@@ -23,7 +23,6 @@ resources:
   accelerator: A100
   use_gpu: true
 secrets: {}
-system_packages:
-- python3.10-venv
+system_packages: []
 runtime:
   predict_concurrency: 256
