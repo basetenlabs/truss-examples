@@ -8,6 +8,7 @@ requirements:
 - accelerate
 - transformers==4.34.0
 - torch==2.0.1
+- hf_transfer==0.1.4
 resources:
   accelerator: A10G
   use_gpu: true
