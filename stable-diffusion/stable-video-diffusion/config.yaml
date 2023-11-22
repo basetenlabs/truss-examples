@@ -1,7 +1,11 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: stable-video-diffusion
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/stable-video-diffusion.png
+  tags:
+  - image-to-video
+model_name: Stable Video Diffusion
 python_version: py310
 requirements:
   - einops==0.7.0
