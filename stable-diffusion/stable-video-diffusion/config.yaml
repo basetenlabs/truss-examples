@@ -5,6 +5,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/stable-video-diffusion.png
   tags:
   - image-to-video
+description: Stable Video Diffusion can turn any image into a short video.
 model_name: Stable Video Diffusion
 python_version: py310
 requirements:
