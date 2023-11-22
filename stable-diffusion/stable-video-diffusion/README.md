@@ -3,6 +3,9 @@
 This Truss allows you to create small videos ( < 10 seconds) using the [Stable Video Diffusion model](https://stability.ai/news/stable-video-diffusion-open-ai-video-model). The model only requires a single image as input and converts it into a video.
 
 
+https://github.com/htrivedi99/truss-examples/assets/15642666/53d3ea1f-952e-4224-8bd4-3ff95eeac8c0
+
+
 ## Deploying the Truss
 
 First, clone this repository:
