@@ -54,4 +54,3 @@ We expect requests will the following information:
 - ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
 
 This Truss will stream responses back. Responses will be buffered chunks of text.
-
