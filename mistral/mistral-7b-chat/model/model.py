@@ -3,18 +3,16 @@ from threading import Thread
 import torch
 from transformers import GenerationConfig, TextIteratorStreamer, pipeline
 
-CHECKPOINT = "mistralai/Mistral-7B-Instruct-v0.1"
-
 
 class Model:
     def __init__(self, **kwargs):
+        self._repo_id = kwargs["config"]["model_metadata"]["model"]
         self._model = None
 
     def load(self):
-
         self._model = pipeline(
             "text-generation",
-            model=CHECKPOINT,
+            model=self._repo_id,
             torch_dtype=torch.bfloat16,
             device_map="auto",
         )
