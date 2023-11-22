@@ -65,7 +65,8 @@ class Model:
 
         messages = model_input.get("messages")
         prompt = self.tokenizer.apply_chat_template(
-            messages, tokenize = False, 
+            messages,
+            tokenize=False,
         )
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
