@@ -4,7 +4,8 @@
 
 This is a [Truss](https://truss.baseten.co/) for Mistral 7B. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B.
 
-**Warning: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
+This truss differs from `mistral-7b-trt-llm` by supporting building trt-llm engines on the fly on the model load.
+This significantly increases model start time and therefore it's **not intended for production use**.
 
 ## Truss
 
@@ -16,7 +17,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd mistral/mistral-7b-trt-llm
+cd mistral/mistral-7b-trt-llm-build-engine
 ```
 
 Before deployment:
@@ -24,7 +25,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `mistral-7b-trt-llm` as your working directory, you can deploy the model with:
+With `mistral-7b-trt-llm-build-engine` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
