@@ -21,7 +21,7 @@ class Generate(BaseModel):
     based_on: str
     config: Dict[str, Any]
     ignore: List[str]
-    template: Dict[str, str]
+    template: Dict[str, str] = {}
 
 
 def process(dst: Path, templates: Path, generate: Generate, only_check: bool):
