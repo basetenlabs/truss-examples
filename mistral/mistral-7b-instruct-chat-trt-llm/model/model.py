@@ -17,6 +17,7 @@ class Model:
         self._secrets = kwargs["secrets"]
         self._request_id_counter = count(start=1)
         self.triton_client = None
+        self.tokenizer = None
 
     def load(self):
         tensor_parallel_count = self._config["model_metadata"].get(
@@ -52,17 +53,20 @@ class Model:
         self.triton_client.load_server_and_model(env=env)
 
         # setup eos token
-        tokenizer = AutoTokenizer.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(
             tokenizer_repository, token=hf_access_token
         )
-        self.eos_token_id = tokenizer.eos_token_id
+        self.eos_token_id = self.tokenizer.eos_token_id
 
     def predict(self, model_input):
         user_data = UserData()
         model_name = "ensemble"
         stream_uuid = str(next(self._request_id_counter))
 
-        prompt = model_input.get("prompt")
+        messages = model_input.get("messages")
+        prompt = self.tokenizer.apply_chat_template(
+            messages, tokenize = False, 
+        )
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
         bad_words_list = model_input.get("bad_words_list", [""])
