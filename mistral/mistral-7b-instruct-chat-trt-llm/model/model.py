@@ -120,4 +120,4 @@ class Model:
         if stream:
             return generate()
         else:
-            return {"text": "".join(generate())}
+            return "".join(generate())
