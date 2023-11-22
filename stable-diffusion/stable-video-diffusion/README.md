@@ -32,10 +32,13 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Using the model
 
-The model takes a JSON payload with two fields:
+The model takes a JSON payload with one required field and 4 optional fields:
 
-- `image`: The input image as a base64 string. This model was trained on images that are 1024 × 576 in size. Other image dimensions work as well for the most part, but to get the best results using 1024 × 576 images is recommended.
-- `duration`: The duration of the output video clip in seconds. This number cannot be greater than 10 as the GPU runs out of memory at that point.
+- `image` (required): The input image as a base64 string. This model was trained on images that are 1024 × 576 in size. Other image dimensions work as well for the most part, but to get the best results using 1024 × 576 images is recommended.
+- `num_frames` (optional) - The total number of frames in the output clip
+- `num_steps` (optional) - Steps takes at each iteration
+- `fps` (optional) - Frames per second for the clip
+- `decoding_t` (optional) - The number of frames decoded per second. This number cannot be greater than 10 as the GPU runs out of memory at that point.
 
 It returns a JSON object with the `output` key containing the generated video as a base64 string.
 
@@ -58,7 +61,12 @@ def image_to_base64(file_path):
 
     return base64_string
 
-data = {"image": image_to_base64("path/to/image/cheetah.jpeg"), "duration": 5}
+data = {
+    "image": image_to_base64("path/to/image/cheetah.jpeg"),
+    "num_frames": 14,
+    "fps": 10,
+    "decoding_t": 5
+}
 headers = {"Authorization": f"Api-Key <BASETEN-API-KEY>"}
 res = requests.post("https://model-<model-id>.api.baseten.co/development/predict", headers=headers, json=data)
 res = res.json()
@@ -73,8 +81,7 @@ You can also invoke the model via REST API:
 curl -X POST "https://model-<model-id>.api.baseten.co/development/predict" \
      -H "Content-Type: application/json" \
      -H "Authorization: Api-Key {BASETEN-API-KEY}" \
-     -d '{"image": "<image-as-b64-string>",
-           "duration": 5}'
+     -d '{"image": "<image-as-b64-string>"}'
 ```
 
 For inspiration, here are some sample input images you can use:
