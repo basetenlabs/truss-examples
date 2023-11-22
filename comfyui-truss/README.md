@@ -10,15 +10,15 @@ Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON
 
 First, go to ComfyUI and click on the gear icon for the project
 
-![gear_icon](images/comfyui-screenshot-1.png)
+![gear_icon](extras/comfyui-screenshot-1.png)
 
 Next, checkmark the box which says `Enable Dev Mode Options`
 
-![enable_dev_mode_options](images/comfyui-screenshot-2.png)
+![enable_dev_mode_options](extras/comfyui-screenshot-2.png)
 
-Now, if you go back to the project you will see a new option called `Save(API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
+Now, if you go back to the project you will see a new option called `Save (API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
 
-![save_api_format](images/comfyui-screenshot-3.png)
+![save_api_format](extras/comfyui-screenshot-3.png)
 
 
 ## Setting up the project
