@@ -6,6 +6,11 @@ from model.helper import b64_to_pil, mp4_to_base64, sample
 
 original_working_directory = os.getcwd()
 
+DEFAULT_NUM_FRAMES = 14
+DEFAULT_NUM_STEPS = 25
+DEFAULT_FPS = 6
+DEFAULT_DECODING_T = 5
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -48,10 +53,12 @@ class Model:
 
     def predict(self, model_input: Dict) -> Dict:
         image_b64 = model_input.get("image")
-        num_frames = int(model_input.get("num_frames", 14))
-        num_steps = int(model_input.get("num_steps", 25))
-        fps_id = int(model_input.get("fps", 6))
-        frames_decoded_per_second = int(model_input.get("decoding_t", 5))
+        num_frames = int(model_input.get("num_frames", DEFAULT_NUM_FRAMES))
+        num_steps = int(model_input.get("num_steps", DEFAULT_NUM_STEPS))
+        fps_id = int(model_input.get("fps", DEFAULT_FPS))
+        frames_decoded_per_second = int(
+            model_input.get("decoding_t", DEFAULT_DECODING_T)
+        )
 
         if frames_decoded_per_second > 10:
             return {
