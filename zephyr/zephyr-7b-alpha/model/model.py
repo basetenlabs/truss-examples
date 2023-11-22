@@ -53,6 +53,7 @@ class Model:
             "output_scores": True,
             "max_new_tokens": generation_args["max_new_tokens"],
             "streamer": streamer,
+            "return_full_text": False,
         }
 
         with torch.no_grad():
