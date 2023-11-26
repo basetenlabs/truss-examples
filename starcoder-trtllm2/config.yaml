@@ -20,3 +20,5 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: 
+  hf_access_token: 
