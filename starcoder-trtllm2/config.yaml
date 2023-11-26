@@ -1,5 +1,5 @@
 base_image:
-  image: docker.io/baseten/triton_trt_llm:v2
+  image: public.ecr.aws/q8h3f2p1/baseten/triton_trt_llm:v1
   python_executable_path: /usr/bin/python3
 description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:
