@@ -1,0 +1,56 @@
+mistral/mistral-7b-trt-llm:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/triton_trt_llm:v2
+    model_metadata:
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mistral7b-fp16-ifb-2k-2k"
+      tokenizer_repository: "mistralai/Mistral-7B-v0.1"
+    description: Generate text from a prompt with this seven billion parameter language model.
+    model_name: Mistral 7B TRT
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 2048
+llama/llama-2-7b-trt-llm:
+  based_on: trt-llm
+  config:
+    model_metadata:
+      avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+      engine_repository: "baseten/llama_7b_sq0.8_4096ctx_64bs"
+      tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
+    description: Generate text from a prompt with this seven billion parameter language model.
+    model_name: Llama 7B Chat TRT
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 128
+mistral/mistral-7b-chat:
+  based_on: transformers-openai-compatible
+  config:
+    model_metadata:
+      example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
+      pretty_name: Mistral 7B Chat
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      model: mistralai/Mistral-7B-Instruct-v0.1
+    description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
+    model_name: Mistral 7B Chat
+  ignore:
+    - README.md
+zephyr/zephyr-7b-alpha:
+  based_on: transformers-openai-compatible
+  config:
+    model_metadata:
+      example_model_input: {"messages": [{"role": "user", "content": "What is the meaning of life?"}]}
+      pretty_name: Zephyr 7B Alpha
+      avatar_url: https://cdn.baseten.co/production/static/explore/huggingface_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/zephyr_profile.png
+      model: HuggingFaceH4/zephyr-7b-alpha
+    description: Zephyr 7B Alpha, optimized for chat! Compatible with OpenAI Client
+    model_name: Zephyr 7B Alpha
+  ignore:
+    - README.md
