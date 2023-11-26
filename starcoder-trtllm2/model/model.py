@@ -23,6 +23,7 @@ class Model:
             "tensor_parallelism", 1
         )
         if "hf_access_token" in self._secrets._base_secrets.keys():
+            print("hf_access_token found in secrets, setting it")
             hf_access_token = self._secrets["hf_access_token"]
         else:
             hf_access_token = None
