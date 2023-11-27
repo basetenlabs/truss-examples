@@ -15,7 +15,6 @@ model_name: Llama 7B Chat TRT
 python_version: py311
 requirements:
 - tritonclient[all]
-- transformers==4.34.1
 resources:
   accelerator: A100
   use_gpu: true

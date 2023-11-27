@@ -20,6 +20,9 @@ mistral/mistral-7b-instruct-chat-trt-llm:
       - openai-compatible
     description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with OpenAI Client
     model_name: Mistral 7B Instruct Chat TRT-LLM
+    requirements:
+    - tritonclient[all]
+    - transformers==4.34.1
   ignore:
     - README.md
   template:
@@ -45,6 +48,7 @@ mistral/mistral-7b-trt-llm-build-engine:
     base_image:
       image: docker.io/baseten/triton_trt_llm:v2
     model_metadata:
+      example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
       tokenizer_repository: "mistralai/Mistral-7B-v0.1"

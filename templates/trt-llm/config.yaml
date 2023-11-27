@@ -9,7 +9,6 @@ model_metadata:
 python_version: py311
 requirements:
 - tritonclient[all]
-- transformers==4.34.1
 resources:
   use_gpu: true
   accelerator: A100
