@@ -18,7 +18,9 @@ class Model:
         self._request_id_counter = count(start=1)
         self.triton_client = None
         self.tokenizer = None
-        self.uses_openai_api = "openai-compatible" in self._config["model_metadata"]["tags"]
+        self.uses_openai_api = (
+            "openai-compatible" in self._config["model_metadata"]["tags"]
+        )
 
     def load(self):
         tensor_parallel_count = self._config["model_metadata"].get(
