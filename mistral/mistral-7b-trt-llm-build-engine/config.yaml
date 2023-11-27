@@ -10,6 +10,7 @@ model_metadata:
       64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
     cmd: examples/llama/build.py
   example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
+  pipeline_parallelism: 2
   tags:
   - text-generation
   tensor_parallelism: 1
@@ -20,7 +21,7 @@ requirements:
 - tritonclient[all]
 - pynvml==11.5.0
 resources:
-  accelerator: A100
+  accelerator: A100:2
   use_gpu: true
 runtime:
   predict_concurrency: 256
