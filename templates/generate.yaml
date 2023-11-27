@@ -60,6 +60,7 @@ mistral/mistral-7b-trt-llm-build-engine:
     requirements:
     - tritonclient[all]
     - pynvml==11.5.0
+    pipeline_parallelism: 2
   ignore:
     - README.md
     - model/model.py

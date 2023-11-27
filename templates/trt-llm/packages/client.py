@@ -27,11 +27,11 @@ def callback(user_data, result, error):
 
 class TritonClient:
     def __init__(
-        self, data_dir: Path, model_repository_dir: Path, tensor_parallel_count=1
+        self, data_dir: Path, model_repository_dir: Path, parallel_count=1
     ):
         self._data_dir = data_dir
         self._model_repository_dir = model_repository_dir
-        self._tensor_parallel_count = tensor_parallel_count
+        self._parallel_count = parallel_count
         self._http_client = None
         self._grpc_client_map = {}
 
@@ -101,7 +101,7 @@ class TritonClient:
     def load_server_and_model(self, env: dict):
         """Loads the Triton server and the model."""
         prepare_model_repository(self._data_dir)
-        self.start_server(mpi=self._tensor_parallel_count, env=env)
+        self.start_server(mpi=self._parallel_count, env=env)
 
         self._http_client = httpclient.InferenceServerClient(
             url="localhost:8003", verbose=False
