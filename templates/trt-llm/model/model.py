@@ -18,6 +18,7 @@ class Model:
         self._request_id_counter = count(start=1)
         self.triton_client = None
         self.tokenizer = None
+        self.uses_openai_api = "openai-compatible" in self._config["model_metadata"]["tags"]
 
     def load(self):
         tensor_parallel_count = self._config["model_metadata"].get(
@@ -63,7 +64,7 @@ class Model:
         model_name = "ensemble"
         stream_uuid = str(next(self._request_id_counter))
 
-        if "openai-compatible" in self._config["model_metadata"]["tags"]:
+        if self.uses_openai_api:
             prompt = self.tokenizer.apply_chat_template(
                 model_input.get("messages"),
                 tokenize=False,
@@ -123,4 +124,7 @@ class Model:
         if stream:
             return generate()
         else:
-            return "".join(generate())
+            if self.uses_openai_api
+                return "".join(generate())
+            else:
+                return {"text": "".join(generate())}
