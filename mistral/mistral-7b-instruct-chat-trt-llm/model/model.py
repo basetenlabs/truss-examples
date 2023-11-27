@@ -63,11 +63,14 @@ class Model:
         model_name = "ensemble"
         stream_uuid = str(next(self._request_id_counter))
 
-        messages = model_input.get("messages")
-        prompt = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-        )
+        if "openai-compatible" in self._config["model_metadata"]["tags"]:
+            prompt = self.tokenizer.apply_chat_template(
+                model_input.get("messages"),
+                tokenize=False,
+            )
+        else:
+            prompt = model_input.get("prompt")
+
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
         bad_words_list = model_input.get("bad_words_list", [""])

@@ -1,25 +1,17 @@
 base_image:
   image: docker.io/baseten/triton_trt_llm:v2
   python_executable_path: /usr/bin/python3
-environment_variables: {}
-external_package_dirs: []
+description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with OpenAI Client
 model_metadata:
-  example_model_input: {
-    "messages": [
-      {"role": "user", "content": "What is your favourite condiment?"},
-      {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
-      {"role": "user", "content": "Do you have mayonnaise recipes?"}
-    ]
-  }
-  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
-  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  engine_repository: baseten/mistral_7b_instruct_fp16_tp1
+  example_model_input: {"messages": [{"role": "user", "content": "What is your favourite condiment?"}, {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"}, {"role": "user", "content": "Do you have mayonnaise recipes?"}]}
   tags:
   - text-generation
   - openai-compatible
   tensor_parallelism: 1
-  engine_repository: "baseten/mistral_7b_instruct_fp16_tp1"
-  tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.1"
-description: Generate text from a prompt with this seven billion parameter language model.
+  tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.1
 model_name: Mistral 7B Instruct Chat TRT-LLM
 python_version: py311
 requirements:
@@ -28,7 +20,5 @@ requirements:
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
-system_packages: []
 runtime:
   predict_concurrency: 256

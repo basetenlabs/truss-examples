@@ -1,7 +1,34 @@
+mistral/mistral-7b-instruct-chat-trt-llm:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/triton_trt_llm:v2
+    model_metadata:
+      example_model_input: {
+        "messages": [
+          {"role": "user", "content": "What is your favourite condiment?"},
+          {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+          {"role": "user", "content": "Do you have mayonnaise recipes?"}
+        ]
+      }
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mistral_7b_instruct_fp16_tp1"
+      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.1"
+      tags:
+      - text-generation
+      - openai-compatible
+    description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with OpenAI Client
+    model_name: Mistral 7B Instruct Chat TRT-LLM
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 2048
 llama/llama-2-7b-trt-llm:
   based_on: trt-llm
   config:
     model_metadata:
+      example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
       avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
       engine_repository: "baseten/llama_7b_sq0.8_4096ctx_64bs"
