@@ -20,8 +20,8 @@ class Model:
         self.triton_client = None
 
     def load(self):
-        tensor_parallel_count = self._config["model_metadata"].get(
-            "tensor_parallelism", 1
+        parallel_count = self._config["model_metadata"].get(
+            "parallelism", 1
         )
         if "hf_access_token" in self._secrets._base_secrets.keys():
             hf_access_token = self._secrets["hf_access_token"]
@@ -34,7 +34,7 @@ class Model:
         self.triton_client = TritonClient(
             data_dir=self._data_dir,
             model_repository_dir=TRITON_MODEL_REPOSITORY_PATH,
-            tensor_parallel_count=tensor_parallel_count,
+            parallel_count=parallel_count,
         )
 
         # Download model from Hugging Face Hub if specified
@@ -53,7 +53,7 @@ class Model:
                     ),
                     dst=self._data_dir,
                     hf_auth_token=hf_access_token,
-                    tensor_parallelism=tensor_parallel_count,
+                    parallelism=parallel_count,
                 )
             else:
                 raise Exception(

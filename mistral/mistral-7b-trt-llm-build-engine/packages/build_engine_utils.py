@@ -14,7 +14,6 @@ class BuildConfig(BaseModel):
 
     output_arg: str = "--output_dir"
     model_arg: str = "--model_dir"
-    tp_arg: str = "--tp_size"
     world_arg: str = "--world_size"
 
 
@@ -23,7 +22,7 @@ def build_engine(
     config: BuildConfig,
     dst: Path,
     hf_auth_token: str,
-    tensor_parallelism: int,
+    parallelism: int,
 ):
     logging.info(f"building {model_repo} with {config} at {dst}")
 
@@ -40,8 +39,7 @@ def build_engine(
             + config.args.split(" ")
             + [config.output_arg, str(dst)]
             + [config.model_arg, str(model_dst)]
-            + [config.tp_arg, str(tensor_parallelism)]
-            + [config.world_arg, str(tensor_parallelism)]
+            + [config.world_arg, str(parallelism)]
         )
         logging.info(f"build engine with command \"{' '.join(build_cmd)}\"")
         completed_process = subprocess.run(build_cmd, capture_output=False)
