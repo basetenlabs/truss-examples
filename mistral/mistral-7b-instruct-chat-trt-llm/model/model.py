@@ -124,7 +124,7 @@ class Model:
         if stream:
             return generate()
         else:
-            if self.uses_openai_api
+            if self.uses_openai_api:
                 return "".join(generate())
             else:
                 return {"text": "".join(generate())}
