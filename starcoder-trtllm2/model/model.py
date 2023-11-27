@@ -6,6 +6,7 @@ import numpy as np
 from client import TritonClient, UserData
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
+import os
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 
@@ -50,11 +51,12 @@ class Model:
         if hf_access_token is not None:
             env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
 
+        os.environ = {**os.environ, "HUGGING_FACE_HUB_TOKEN": hf_access_token}
         self.triton_client.load_server_and_model(env=env)
 
         # setup eos token
         tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_repository, token=hf_access_token
+            tokenizer_repository
         )
         self.eos_token_id = tokenizer.eos_token_id
 
