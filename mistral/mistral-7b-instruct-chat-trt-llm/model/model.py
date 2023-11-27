@@ -26,6 +26,9 @@ class Model:
         tensor_parallel_count = self._config["model_metadata"].get(
             "tensor_parallelism", 1
         )
+        pipeline_parallel_count = self._config["model_metadata"].get(
+            "pipeline_parallelism", 1
+        )
         if "hf_access_token" in self._secrets._base_secrets.keys():
             hf_access_token = self._secrets["hf_access_token"]
         else:
@@ -36,7 +39,7 @@ class Model:
         self.triton_client = TritonClient(
             data_dir=self._data_dir,
             model_repository_dir=TRITON_MODEL_REPOSITORY_PATH,
-            tensor_parallel_count=tensor_parallel_count,
+            parallel_count=tensor_parallel_count * pipeline_parallel_count,
         )
 
         # Download model from Hugging Face Hub if specified

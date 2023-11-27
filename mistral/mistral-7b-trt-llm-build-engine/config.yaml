@@ -10,10 +10,10 @@ model_metadata:
       64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
     cmd: examples/llama/build.py
   example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
+  pipeline_parallelism: 2
   tags:
   - text-generation
   tensor_parallelism: 1
-  pipeline_parallelism: 2
   tokenizer_repository: mistralai/Mistral-7B-v0.1
 model_name: Mistral 7B TRT
 python_version: py311
