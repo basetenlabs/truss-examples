@@ -26,9 +26,7 @@ def callback(user_data, result, error):
 
 
 class TritonClient:
-    def __init__(
-        self, data_dir: Path, model_repository_dir: Path, parallel_count=1
-    ):
+    def __init__(self, data_dir: Path, model_repository_dir: Path, parallel_count=1):
         self._data_dir = data_dir
         self._model_repository_dir = model_repository_dir
         self._parallel_count = parallel_count

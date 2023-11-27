@@ -20,9 +20,7 @@ class Model:
         self.triton_client = None
 
     def load(self):
-        tensor_parallelism = self._config["model_metadata"].get(
-            "tensor_parallelism", 1
-        )
+        tensor_parallelism = self._config["model_metadata"].get("tensor_parallelism", 1)
         pipeline_parallelism = self._config["model_metadata"].get(
             "pipeline_parallelism", 1
         )
