@@ -73,7 +73,8 @@ parameters: {
   }
 }
 ```
-The `max_num_sequences` param is the maximum numbers of requests that the inference server can maintain state for at a given time (state = KV cache + decoder state). If this value is greater than your max batch size, we'll try to ping pong processing between max_num_sequences // max_batch_size batches. This assumes that `enable_trt_overlap` is set to `True` (as it is by default in this Truss). Setting this value higher allows for more parallel processing but uses more GPU memory.
+The `max_num_sequences` param is the maximum numbers of requests that the inference server can maintain state for at a given time (state = KV cache + decoder state).
+See this [comment](https://github.com/NVIDIA/TensorRT-LLM/issues/65#issuecomment-1774332446) for more details. Setting this value higher allows for more parallel processing but uses more GPU memory.
 
 ### API
 
