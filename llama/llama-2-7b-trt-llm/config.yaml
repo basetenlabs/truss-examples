@@ -5,7 +5,7 @@ description: Generate text from a prompt with this seven billion parameter langu
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
-  engine_repository: baseten/llama_7b_sq0.8_4096ctx_64bs
+  engine_repository: baseten/llama_7b_bs_64_kv_4k
   example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
   tags:
   - text-generation
