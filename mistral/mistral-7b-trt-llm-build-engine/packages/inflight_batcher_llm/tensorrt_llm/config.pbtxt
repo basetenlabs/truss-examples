@@ -203,6 +203,6 @@ parameters: {
 parameters: {
   key: "enable_trt_overlap"
   value: {
-    string_value: "True"
+    string_value: "False"
   }
 }
