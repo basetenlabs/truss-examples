@@ -30,3 +30,10 @@ repos:
         language: system
         types: [python]
         pass_filenames: true
+  - repo: local
+    hooks:
+      - id: generate
+        name: generate-local
+        entry: poetry run python ./templates/generate.py --only_check --templates templates --root . --config templates/generate.yaml
+        language: system
+        pass_filenames: false
