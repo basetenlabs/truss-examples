@@ -6,6 +6,8 @@ import torch
 from diffusers import AutoPipelineForText2Image
 from PIL import Image
 
+GUIDANCE_SCALE = 0.0
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -25,7 +27,10 @@ class Model:
 
     def predict(self, model_input: Dict) -> Dict:
         prompt = model_input.get("prompt")
+        num_steps = int(model_input.get("num_steps"))
+        if num_steps < 1 or num_steps > 4:
+            return {"result": "Bad input: num_steps must be between 1 and 4"}
         output_image = self.model(
-            prompt=prompt, num_inference_steps=1, guidance_scale=0.0
+            prompt=prompt, num_inference_steps=num_steps, guidance_scale=GUIDANCE_SCALE
         ).images[0]
         return {"result": self.convert_to_b64(output_image)}

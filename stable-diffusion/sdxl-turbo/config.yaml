@@ -13,7 +13,6 @@ requirements:
   - torch==2.0.1
   - transformers==4.35.2
   - diffusers==0.23.1
-  - scipy==1.11.3
   - hf_transfer==0.1.4
   - xformers==0.0.22
   - accelerate==0.24.1
