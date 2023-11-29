@@ -9,7 +9,7 @@ model_metadata:
   example_model_input: {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
   tags:
   - speech-recognition
-hf_cache:
+model_cache:
 - repo_id: guillaumekln/faster-whisper-large-v2
 requirements:
 - faster-whisper

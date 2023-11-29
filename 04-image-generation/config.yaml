@@ -42,7 +42,7 @@ system_packages:
 #
 # To enable caching, add the following to the config:
 # ```yaml
-# hf_cache:
+# model_cache:
 #   - repo_id: madebyollin/sdxl-vae-fp16-fix
 #     allow_patterns:
 #       - config.json

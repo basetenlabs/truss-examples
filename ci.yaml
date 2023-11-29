@@ -14,3 +14,7 @@ tests:
   - whisper/whisper-v3-truss
   - gfp-gan
   - zephyr/zephyr-7b-alpha
+  - stable-diffusion/stable-diffusion-xl-1.0
+  - deepspeed-mii
+  - pygmalion-6b
+  - whisper/faster-whisper-truss
