@@ -4,6 +4,9 @@ SDXL Turbo is a significant improvement over SDXL allowing for image generation 
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
+![turbo](https://github.com/htrivedi99/truss-examples/assets/15642666/904aac3e-f06d-4161-b2c6-cf48522779ce)
+
+
 ## Deploy SDXL Turbo
 
 First, clone this repository:
