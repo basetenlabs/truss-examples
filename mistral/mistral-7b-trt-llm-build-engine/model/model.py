@@ -7,6 +7,7 @@ from build_engine_utils import BuildConfig, build_engine
 from client import TritonClient
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
+from tritonclient.utils import InferenceServerException
 
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
@@ -120,8 +121,11 @@ class Model:
                 "inputs": inputs,
             }
 
-        response_iterator = self._triton_grpc_client.stream_infer(inputs_iterator=async_request_iterator())
+        try:
+            response_iterator = self._triton_grpc_client.stream_infer(inputs_iterator=async_request_iterator())
 
-        # TODO(pankaj) Support non-streaming case
-        async for resp in response_iterator:
-            yield resp
+            # TODO(pankaj) Support non-streaming case
+            async for resp in response_iterator:
+                yield resp
+        except InferenceServerException as error:
+            print(error)
