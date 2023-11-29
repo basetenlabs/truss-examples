@@ -1,0 +1,16 @@
+base_image:
+  image: nvcr.io/nvidia/tritonserver:23.10-trtllm-python-py3
+  python_executable_path: /usr/bin/python3
+model_metadata:
+  example_model_input: {}
+  tags:
+  - text-generation
+  tensor_parallelism: 1
+python_version: py311
+requirements:
+- tritonclient[all]
+resources:
+  use_gpu: true
+  accelerator: A100
+runtime:
+  predict_concurrency: 256
