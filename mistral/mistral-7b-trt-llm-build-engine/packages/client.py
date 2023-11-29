@@ -71,6 +71,8 @@ class TritonClient:
                 "8001",
                 "--http-port",
                 "8003",
+                "--log-verbose",
+                "2",
             ]
         command = [
             "mpirun",
@@ -87,6 +89,8 @@ class TritonClient:
                 "8001",
                 "--http-port",
                 "8003",
+                "--log-verbose",
+                "2",
                 "--disable-auto-complete-config",
                 f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
                 ":",
