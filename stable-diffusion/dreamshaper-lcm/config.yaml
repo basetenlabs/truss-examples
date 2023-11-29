@@ -1,0 +1,17 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Dreamshaper Latent Consistency Model
+python_version: py311
+requirements:
+- diffusers=0.21.4
+- transformers=4.34.1
+- accelerate=0.23.0
+- torch=2.1.0
+resources:
+  accelerator: A10G
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
