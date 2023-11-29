@@ -10,7 +10,7 @@ class Model:
 
     def load(self):
         self._model = DiffusionPipeline.from_pretrained("SimianLuo/LCM_Dreamshaper_v7", custom_pipeline="latent_consistency_txt2img", custom_revision="main").to(torch_device="cuda", torch_dtype=torch.float32)
-    
+
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
