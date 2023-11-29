@@ -4,9 +4,10 @@ from threading import Thread
 
 import numpy as np
 from build_engine_utils import BuildConfig, build_engine
-from client import TritonClient, UserData
+from client import TritonClient
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
+
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 
@@ -18,6 +19,7 @@ class Model:
         self._secrets = kwargs["secrets"]
         self._request_id_counter = count(start=1)
         self.triton_client = None
+        self._triton_grpc_client = None
 
     def load(self):
         tensor_parallelism = self._config["model_metadata"].get("tensor_parallelism", 1)
@@ -67,7 +69,7 @@ class Model:
         if hf_access_token is not None:
             env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
 
-        self.triton_client.load_server_and_model(env=env)
+        self._triton_grpc_client = self.triton_client.load_server_and_model(env=env)
 
         # setup eos token
         tokenizer = AutoTokenizer.from_pretrained(
@@ -75,11 +77,8 @@ class Model:
         )
         self.eos_token_id = tokenizer.eos_token_id
 
-    def predict(self, model_input):
-        user_data = UserData()
+    async def predict(self, model_input):
         model_name = "ensemble"
-        stream_uuid = str(next(self._request_id_counter))
-
         prompt = model_input.get("prompt")
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
@@ -87,7 +86,7 @@ class Model:
         stop_words_list = model_input.get("stop_words_list", [""])
         repetition_penalty = model_input.get("repetition_penalty", 1.0)
         ignore_eos = model_input.get("ignore_eos", False)
-        stream = model_input.get("stream", True)
+        stream = model_input.get("stream", True)  # todo
 
         input0 = [[prompt]]
         input0_data = np.array(input0).astype(object)
@@ -115,22 +114,14 @@ class Model:
             # do nothing, trt-llm by default doesn't stop on `eos`
             pass
 
-        # Start GRPC stream in a separate thread
-        stream_thread = Thread(
-            target=self.triton_client.start_grpc_stream,
-            args=(user_data, model_name, inputs, stream_uuid),
-        )
-        stream_thread.start()
+        async def async_request_iterator():
+            yield {
+                "model_name": model_name,
+                "inputs": inputs,
+            }
 
-        def generate():
-            # Yield results from the queue
-            for i in TritonClient.stream_predict(user_data):
-                yield i
+        response_iterator = self._triton_grpc_client.stream_infer(inputs_iterator=async_request_iterator())
 
-            # Clean up GRPC stream and thread
-            self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
-
-        if stream:
-            return generate()
-        else:
-            return {"text": "".join(generate())}
+        # TODO(pankaj) Support non-streaming case
+        async for resp in response_iterator:
+            yield resp
