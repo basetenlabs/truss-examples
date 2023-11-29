@@ -37,9 +37,10 @@ Model inference runs well on an T4 with 16 GB of VRAM, with invocation time aver
 
 ## Invoking SDXL Turbo
 
-This model only takes a single input called `prompt` and outputs a single image with the dimensions(512x512) encoded as a base 64 string.
+This model only takes two inputs called `prompt` and `num_steps` and outputs a single image with the dimensions(512x512) encoded as a base 64 string.
 
-- `prompt`: Text describing the desired image
+- `prompt` (required): Text describing the desired image
+- `num_steps` (optional): Number of steps the model should iterate. Must be between 1-4.
 
 It returns a JSON object with the `result` field containing the generated image as a base 64 string.
 
