@@ -31,3 +31,8 @@ resources:
 system_packages:
   - libgl1-mesa-glx
   - ffmpeg
+external_data:
+  - url: https://huggingface.co/stabilityai/stable-video-diffusion-img2vid/resolve/main/svd.safetensors
+    local_data_path: weights/svd.safetensors
+  - url: https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt
+    local_data_path: weights/ViT-L-14.pt
