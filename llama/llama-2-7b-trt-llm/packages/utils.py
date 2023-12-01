@@ -3,7 +3,10 @@ from pathlib import Path
 import tritonclient.grpc as grpcclient
 from huggingface_hub import snapshot_download
 from tritonclient.utils import np_to_triton_dtype
+import socket
 
+GRPC_SERVICE_PORT = 8001
+HTTP_SERVICE_PORT = 8003
 
 def move_all_files(src: Path, dest: Path):
     """
@@ -51,3 +54,16 @@ def download_engine(engine_repository: str, fp: Path, auth_token=None):
         max_workers=4,
         **({"use_auth_token": auth_token} if auth_token is not None else {}),
     )
+
+def server_loaded():
+    def port_is_available(port):
+        available = False
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            try:
+                sock.bind(("0.0.0.0", port))
+                available = True
+            except:
+                pass
+        return available
+        
+    return not port_is_available(GRPC_SERVICE_PORT) or not port_is_available(HTTP_SERVICE_PORT)

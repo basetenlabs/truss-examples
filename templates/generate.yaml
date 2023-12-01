@@ -23,6 +23,9 @@ mistral/mistral-7b-instruct-chat-trt-llm:
     requirements:
     - tritonclient[all]
     - transformers==4.34.1
+    runtime:
+      predict_concurrency: 256
+      num_workers: 2
   ignore:
     - README.md
   template:

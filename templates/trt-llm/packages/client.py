@@ -10,7 +10,7 @@ from threading import Thread
 import tritonclient.grpc as grpcclient
 import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
-from utils import prepare_model_repository
+from utils import prepare_model_repository, server_loaded, GRPC_SERVICE_PORT, HTTP_SERVICE_PORT
 
 
 class UserData:
@@ -36,7 +36,7 @@ class TritonClient:
     def start_grpc_stream(self, user_data, model_name, inputs, stream_uuid):
         """Starts a GRPC stream and sends a request to the Triton server."""
         grpc_client_instance = grpcclient.InferenceServerClient(
-            url="localhost:8001", verbose=False
+            url=f"localhost:{GRPC_SERVICE_PORT}", verbose=False
         )
         self._grpc_client_map[stream_uuid] = grpc_client_instance
         grpc_client_instance.start_stream(callback=partial(callback, user_data))
@@ -68,9 +68,9 @@ class TritonClient:
                 "--model-repository",
                 str(self._model_repository_dir),
                 "--grpc-port",
-                "8001",
+                f"{GRPC_SERVICE_PORT}",
                 "--http-port",
-                "8003",
+                f"{HTTP_SERVICE_PORT}",
             ]
         command = [
             "mpirun",
@@ -84,9 +84,9 @@ class TritonClient:
                 "--model-repository",
                 str(self._model_repository_dir),
                 "--grpc-port",
-                "8001",
+                f"{GRPC_SERVICE_PORT}",
                 "--http-port",
-                "8003",
+                f"{HTTP_SERVICE_PORT}",
                 "--disable-auto-complete-config",
                 f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
                 ":",
@@ -98,12 +98,13 @@ class TritonClient:
 
     def load_server_and_model(self, env: dict):
         """Loads the Triton server and the model."""
-        prepare_model_repository(self._data_dir)
-        self.start_server(mpi=self._parallel_count, env=env)
-
+        if not server_loaded():
+            prepare_model_repository(self._data_dir)
+            self.start_server(mpi=self._parallel_count, env=env)            
+            
         self._http_client = httpclient.InferenceServerClient(
-            url="localhost:8003", verbose=False
-        )
+                url=f"localhost:{HTTP_SERVICE_PORT}", verbose=False
+            )
         is_server_up = False
         while not is_server_up:
             try:
