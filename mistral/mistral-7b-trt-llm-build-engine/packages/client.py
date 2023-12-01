@@ -10,7 +10,12 @@ from threading import Thread
 import tritonclient.grpc as grpcclient
 import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
-from utils import prepare_model_repository, server_loaded, GRPC_SERVICE_PORT, HTTP_SERVICE_PORT
+from utils import (
+    GRPC_SERVICE_PORT,
+    HTTP_SERVICE_PORT,
+    prepare_model_repository,
+    server_loaded,
+)
 
 
 class UserData:
@@ -100,11 +105,11 @@ class TritonClient:
         """Loads the Triton server and the model."""
         if not server_loaded():
             prepare_model_repository(self._data_dir)
-            self.start_server(mpi=self._parallel_count, env=env)            
-            
+            self.start_server(mpi=self._parallel_count, env=env)
+
         self._http_client = httpclient.InferenceServerClient(
-                url=f"localhost:{HTTP_SERVICE_PORT}", verbose=False
-            )
+            url=f"localhost:{HTTP_SERVICE_PORT}", verbose=False
+        )
         is_server_up = False
         while not is_server_up:
             try:
