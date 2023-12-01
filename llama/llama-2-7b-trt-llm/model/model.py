@@ -1,14 +1,15 @@
 from itertools import count
 from pathlib import Path
 from threading import Thread
-
+from datetime import datetime
 import numpy as np
-from client import TritonClient, UserData
+from client import TritonClient
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
+import threading
+import asyncio
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
-
 
 class Model:
     def __init__(self, **kwargs):
@@ -18,9 +19,7 @@ class Model:
         self._request_id_counter = count(start=1)
         self.triton_client = None
         self.tokenizer = None
-        self.uses_openai_api = (
-            "openai-compatible" in self._config["model_metadata"]["tags"]
-        )
+        self.uses_openai_api = False
 
     def load(self):
         tensor_parallel_count = self._config["model_metadata"].get(
@@ -55,7 +54,6 @@ class Model:
         env = {"triton_tokenizer_repository": tokenizer_repository}
         if hf_access_token is not None:
             env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
-
         self.triton_client.load_server_and_model(env=env)
 
         # setup eos token
@@ -64,11 +62,12 @@ class Model:
         )
         self.eos_token_id = self.tokenizer.eos_token_id
 
-    def predict(self, model_input):
-        user_data = UserData()
-        model_name = "ensemble"
-        stream_uuid = str(next(self._request_id_counter))
+    async def predict(self, model_input):
+        # Get the event loop for the current context
+        loop = asyncio.get_running_loop()
+        self.triton_client.start_grpc_stream(loop)
 
+        stream_uuid = str(next(self._request_id_counter))
         if self.uses_openai_api:
             prompt = self.tokenizer.apply_chat_template(
                 model_input.get("messages"),
@@ -104,32 +103,10 @@ class Model:
             prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
         ]
 
-        if not ignore_eos:
-            end_id_data = np.array([[self.eos_token_id]], dtype=np.uint32)
-            inputs.append(prepare_grpc_tensor("end_id", end_id_data))
-        else:
-            # do nothing, trt-llm by default doesn't stop on `eos`
-            pass
+        await self.triton_client.send_inference(inputs, stream_uuid)
 
-        # Start GRPC stream in a separate thread
-        stream_thread = Thread(
-            target=self.triton_client.start_grpc_stream,
-            args=(user_data, model_name, inputs, stream_uuid),
-        )
-        stream_thread.start()
-
-        def generate():
-            # Yield results from the queue
-            for i in TritonClient.stream_predict(user_data):
+        async def generate():
+            async for i in TritonClient.stream_predict(self.triton_client.response_manager, stream_uuid):
                 yield i
 
-            # Clean up GRPC stream and thread
-            self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
-
-        if stream:
-            return generate()
-        else:
-            if self.uses_openai_api:
-                return "".join(generate())
-            else:
-                return {"text": "".join(generate())}
+        return generate()
