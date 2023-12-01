@@ -74,18 +74,17 @@ increasing the `max_new_tokens` parameter to 200-300.
 
 
 ```sh
-truss predict -d '{"prompt": "def fib(n):", "do_sample": True, "max_new_tokens": 300}'
+truss predict -d '{"prompt": "def fib(n):", "do_sample": "True", "max_new_tokens": 300}'
 ```
 
 You can also invoke your model via a REST API
 
 ```
-curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{
-           "prompt": "def fib(n):",
-           "do_sample": True,
-           "max_new_tokens": 300,
-         }'
+curl -X POST https://model-<Your_Model_Id>.api.baseten.co/development/predict \
+  -H 'Authorization: Api-Key YOUR_API_KEY' \
+  -d '{
+        "prompt": "def fibonacci(n):",
+        "do_sample": "True",
+        "max_new_tokens": 300
+      }'
 ```
