@@ -68,7 +68,7 @@ class Model:
     def predict(self, model_input):
         user_data = UserData()
         model_name = "ensemble"
-        stream_uuid = uuid.uuid4().int & (1<<64)-1
+        stream_uuid = str(uuid.uuid4().int & (1<<32)-1)
 
 
         if self.uses_openai_api:
