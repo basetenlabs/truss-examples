@@ -2,7 +2,7 @@
 
 This repository packages [Blip Image Captioning Large](https://huggingface.co/Salesforce/blip-image-captioning-large) as a [Truss](https://truss.baseten.co).
 
-Replit Code 1.3B is an LLM released by Replit, optimized and trained for generating code autocompletions.
+Blip Image Captioning Large is a Image to Text model, specifically for generating image captions.
 
 ## Deploying Blip Image Captioning Large
 
@@ -70,7 +70,7 @@ truss predict -d '{"image_url": "https://storage.googleapis.com/sfr-vision-langu
 
 Or with the REST API
 
-curl -X POST https://model-<Your Model ID>.api.baseten.co/development/predict \
+curl -X POST https://model-<Your_Model_ID>.api.baseten.co/development/predict \
   -H 'Authorization: Api-Key YOUR_API_KEY' \
   -d '{"image_url": "https://storage.googleapis.com/sfr-vision-language-research/BLIP/demo.jpg", "text": "a photography of"}'
 
@@ -84,7 +84,7 @@ truss predict -d '{"image_url": "https://storage.googleapis.com/sfr-vision-langu
 
 Or with the REST API
 
-curl -X POST https://model-<Your Model ID>.api.baseten.co/development/predict \
+curl -X POST https://model-<Your_Model_ID>.api.baseten.co/development/predict \
   -H 'Authorization: Api-Key YOUR_API_KEY' \
   -d '{"image_url": "https://storage.googleapis.com/sfr-vision-language-research/BLIP/demo.jpg"}'
 
