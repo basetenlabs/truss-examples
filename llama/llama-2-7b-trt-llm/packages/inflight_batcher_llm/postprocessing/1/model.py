@@ -27,7 +27,7 @@
 import json
 import os
 from collections import OrderedDict
-
+import time
 import numpy as np
 import triton_python_backend_utils as pb_utils
 from transformers import AutoTokenizer, LlamaTokenizer, T5Tokenizer
@@ -99,7 +99,7 @@ class TritonPythonModel:
           A list of pb_utils.InferenceResponse. The length of this list must
           be the same as `requests`
         """
-
+        begin = time.time()
         responses = []
 
         # Every Python backend must iterate over everyone of the requests
@@ -142,10 +142,15 @@ class TritonPythonModel:
             output_tensor = pb_utils.Tensor(
                 "OUTPUT", np.array([delta]).astype(self.output_dtype)
             )
+            time_tensor = pb_utils.Tensor(
+                "TIME", np.array([time.time()]).astype(np.float64)
+            )
             inference_response = pb_utils.InferenceResponse(
-                output_tensors=[output_tensor]
+                output_tensors=[output_tensor, time_tensor]
             )
             responses.append(inference_response)
+
+        # print(f"Time taken in postprocess {time.time() - begin}")
 
         return responses
 
