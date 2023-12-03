@@ -1,0 +1,22 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: CogVLM
+python_version: py311
+requirements:
+- torch==2.0.1
+- sentencepiece==0.1.99
+- protobuf==4.25.1
+- transformers==4.35.2
+- einops==0.7.0
+- torchvision==0.15.2
+- Pillow==10.1.0
+- xformers==0.0.22
+- accelerate==0.25.0
+resources:
+  accelerator: A100
+  cpu: '3'
+  memory: 15Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
