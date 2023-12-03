@@ -102,7 +102,7 @@ if __name__ == '__main__':
         if r['id'] == 7:
             r['id'] = 1
         elif r['id'] < 7:
-            r['id'] += 1 
+            r['id'] += 1
 
     records.sort(key=lambda x: x['id'])
 

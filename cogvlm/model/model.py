@@ -43,5 +43,5 @@ class Model:
             outputs = outputs[:, inputs['input_ids'].shape[1]:]
             result = self.tokenizer.decode(outputs[0])
 
-        print(result)   
+        print(result)
         return {"result": result}

@@ -146,4 +146,3 @@ print("=====================================")
 
     with open(args.output_result, 'w') as f:
         json.dump(sqa_results, f, indent=2)
-
