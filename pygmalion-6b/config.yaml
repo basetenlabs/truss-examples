@@ -1,7 +1,7 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: null
+model_name: pygmalion6b
 python_version: py39
 requirements:
 - transformers==4.30.2
