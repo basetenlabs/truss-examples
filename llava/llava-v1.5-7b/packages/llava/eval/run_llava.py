@@ -95,11 +95,9 @@ def eval_model(args):
 
     image_files = image_parser(args)
     images = load_images(image_files)
-    images_tensor = process_images(
-        images,
-        image_processor,
-        model.config
-    ).to(model.device, dtype=torch.float16)
+    images_tensor = process_images(images, image_processor, model.config).to(
+        model.device, dtype=torch.float16
+    )
 
     input_ids = (
         tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors="pt")

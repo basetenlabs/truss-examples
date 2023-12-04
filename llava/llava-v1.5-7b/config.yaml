@@ -9,8 +9,8 @@ requirements:
 - transformers==4.31.0
 - tokenizers>=0.12.1,<0.14
 - sentencepiece==0.1.99
-- shortuuid
-- scipy
+- shortuuid==1.0.11
+- scipy==1.11.4
 - accelerate==0.21.0
 - peft==0.4.0
 - bitsandbytes==0.41.0
