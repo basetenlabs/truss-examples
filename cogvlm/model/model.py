@@ -1,8 +1,9 @@
-import torch
-from transformers import AutoModelForCausalLM, LlamaTokenizer
-from PIL import Image
-from io import BytesIO
 import base64
+from io import BytesIO
+
+import torch
+from PIL import Image
+from transformers import AutoModelForCausalLM, LlamaTokenizer
 
 BASE64_PREAMBLE = "data:image/png;base64,"
 
