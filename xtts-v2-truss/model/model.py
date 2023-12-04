@@ -10,7 +10,6 @@ class Model:
         self.model = None
 
     def load(self):
-        os.environ["COQUI_TOS_AGREED"] = "1"
         self.model = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
 
     def base64_to_wav(self, base64_string, output_file_path):

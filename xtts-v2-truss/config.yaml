@@ -1,5 +1,5 @@
-environment_variables: {}
-external_package_dirs: []
+environment_variables:
+  COQUI_TOS_AGREED: "1"
 model_metadata:
   example_model_input: {"text": "I love robots. Robots are cool!", "speaker_voice": <BASE64-STRING>, "language": "en"}
   tags:
@@ -8,10 +8,8 @@ base_image:
   image: bolabaseten/xtts-base:v0.0.1
   python_executable_path: /usr/bin/python3
 model_name: XTTS V2
-python_version: py310
 resources:
   cpu: "3"
   memory: 10Gi
   use_gpu: true
   accelerator: T4
-system_packages: []
