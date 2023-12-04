@@ -1,0 +1,26 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: llava-v1.5-7b
+python_version: py311
+requirements:
+- torch==2.0.1
+- torchvision==0.15.2
+- transformers==4.31.0
+- tokenizers>=0.12.1,<0.14
+- sentencepiece==0.1.99
+- shortuuid==1.0.11
+- scipy==1.11.4
+- accelerate==0.21.0
+- peft==0.4.0
+- bitsandbytes==0.41.0
+- einops==0.6.1
+- einops-exts==0.0.4
+- timm==0.6.13
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 15Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
