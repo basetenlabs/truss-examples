@@ -11,7 +11,7 @@ model_class_filename: model.py
 model_class_name: Model
 model_framework: custom
 model_metadata:
-  example_model_input: {"prompt": "Write code for fibonacci"}
+  example_model_input: {"prompt": "Write code for fibonacci", "do_sample": "True", "max_new_tokens": 300}
   tags:
   - text-generation
 model_module_dir: model
@@ -20,12 +20,12 @@ model_type: custom
 python_version: py39
 requirements:
 - torch
-- peft
 - sentencepiece
 - accelerate
 - bitsandbytes
 - einops
-- git+https://github.com/huggingface/transformers.git
+- transformers==4.33.0
+- scipy
 resources:
   cpu: "3"
   memory: 14Gi
