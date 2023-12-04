@@ -3,7 +3,13 @@ import sys
 import time
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_fixed, wait_random_exponential
+from tenacity import (
+    Retrying,
+    retry,
+    stop_after_attempt,
+    wait_fixed,
+    wait_random_exponential,
+)
 from truss.cli.cli import _get_truss_from_directory
 from truss.remote.remote_factory import RemoteConfig, RemoteFactory
 from truss.truss_handle import TrussHandle
@@ -62,7 +68,7 @@ def attempt_inference(truss_handle, model_version_id, api_key):
 def deploy_truss(truss_handle: TrussHandle) -> str:
     remote_provider = RemoteFactory.create(remote=REMOTE_NAME)
     model_name = truss_handle.spec.config.model_name
-    with retry(
+    for _ in Retrying(
         wait=wait_random_exponential(multiplier=1, max=120),
         stop=stop_after_attempt(5),
         reraise=True,
