@@ -5,22 +5,20 @@ It sends worker addresses to clients.
 import argparse
 import asyncio
 import dataclasses
-from enum import Enum, auto
 import json
 import logging
-import time
-from typing import List, Union
 import threading
+import time
+from enum import Enum, auto
+from typing import List, Union
 
-from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
 import numpy as np
 import requests
 import uvicorn
-
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 from llava.constants import CONTROLLER_HEART_BEAT_EXPIRATION
 from llava.utils import build_logger, server_error_msg
-
 
 logger = build_logger("controller", "controller.log")
 

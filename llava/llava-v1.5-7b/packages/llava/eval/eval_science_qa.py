@@ -1,8 +1,8 @@
 import argparse
 import json
 import os
-import re
 import random
+import re
 
 
 def get_args():

@@ -1,8 +1,8 @@
 import argparse
 import json
 import os
-import re
 import random
+import re
 from collections import defaultdict
 
 

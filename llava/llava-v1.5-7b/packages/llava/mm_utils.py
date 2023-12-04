@@ -1,10 +1,10 @@
-from PIL import Image
-from io import BytesIO
 import base64
+from io import BytesIO
 
 import torch
-from transformers import StoppingCriteria
 from llava.constants import IMAGE_TOKEN_INDEX
+from PIL import Image
+from transformers import StoppingCriteria
 
 
 def load_image_from_base64(image):

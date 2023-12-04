@@ -1,5 +1,5 @@
 import dataclasses
-from enum import auto, Enum
+from enum import Enum, auto
 from typing import List, Tuple
 
 
@@ -116,6 +116,7 @@ class Conversation:
                 if type(msg) is tuple:
                     import base64
                     from io import BytesIO
+
                     from PIL import Image
 
                     msg, image, image_process_mode = msg

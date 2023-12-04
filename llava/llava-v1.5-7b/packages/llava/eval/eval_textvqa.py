@@ -1,6 +1,6 @@
-import os
 import argparse
 import json
+import os
 import re
 
 from llava.eval.m4c_evaluator import TextVQAAccuracyEvaluator

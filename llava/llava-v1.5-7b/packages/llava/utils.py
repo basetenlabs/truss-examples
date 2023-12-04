@@ -5,7 +5,6 @@ import os
 import sys
 
 import requests
-
 from llava.constants import LOGDIR
 
 server_error_msg = (

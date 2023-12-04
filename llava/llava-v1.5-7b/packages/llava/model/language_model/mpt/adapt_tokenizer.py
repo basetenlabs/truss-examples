@@ -1,4 +1,5 @@
 from typing import Union
+
 from transformers import AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
 
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]

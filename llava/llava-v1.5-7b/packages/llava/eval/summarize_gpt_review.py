@@ -1,10 +1,9 @@
+import argparse
 import json
 import os
 from collections import defaultdict
 
 import numpy as np
-
-import argparse
 
 
 def parse_args():

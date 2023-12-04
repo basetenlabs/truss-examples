@@ -35,7 +35,7 @@ class Model:
         image = model_input["image"]
 
         if image[:5] == "https":
-            image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
+            image = Image.open(requests.get(image, stream=True).raw).convert("RGB")
         else:
             image = b64_to_pil(image)
 

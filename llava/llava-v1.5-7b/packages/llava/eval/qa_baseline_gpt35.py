@@ -1,14 +1,14 @@
 """Generate answers with GPT-3.5"""
 # Note: you need to be using OpenAI Python v0.27.0 for the code below to work
 import argparse
+import concurrent.futures
 import json
 import os
 import time
-import concurrent.futures
 
 import openai
-import tqdm
 import shortuuid
+import tqdm
 
 MODEL = "gpt-3.5-turbo"
 MODEL_ID = "gpt-3.5-turbo:20230327"

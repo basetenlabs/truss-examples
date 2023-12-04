@@ -1,11 +1,11 @@
 import argparse
 import json
 import os
+import time
 
 import openai
-import tqdm
 import ray
-import time
+import tqdm
 
 NUM_SECONDS_TO_SLEEP = 3
 

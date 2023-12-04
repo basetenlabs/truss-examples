@@ -4,35 +4,33 @@ A model worker executes the model.
 import argparse
 import asyncio
 import json
-import time
 import threading
+import time
 import uuid
+from functools import partial
+from threading import Thread
 
-from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.responses import StreamingResponse
 import requests
 import torch
 import uvicorn
-from functools import partial
-
-from llava.constants import WORKER_HEART_BEAT_INTERVAL
-from llava.utils import build_logger, server_error_msg, pretty_print_semaphore
-from llava.model.builder import load_pretrained_model
-from llava.mm_utils import (
-    process_images,
-    load_image_from_base64,
-    tokenizer_image_token,
-    KeywordsStoppingCriteria,
-)
+from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi.responses import StreamingResponse
 from llava.constants import (
-    IMAGE_TOKEN_INDEX,
-    DEFAULT_IMAGE_TOKEN,
-    DEFAULT_IM_START_TOKEN,
     DEFAULT_IM_END_TOKEN,
+    DEFAULT_IM_START_TOKEN,
+    DEFAULT_IMAGE_TOKEN,
+    IMAGE_TOKEN_INDEX,
+    WORKER_HEART_BEAT_INTERVAL,
 )
+from llava.mm_utils import (
+    KeywordsStoppingCriteria,
+    load_image_from_base64,
+    process_images,
+    tokenizer_image_token,
+)
+from llava.model.builder import load_pretrained_model
+from llava.utils import build_logger, pretty_print_semaphore, server_error_msg
 from transformers import TextIteratorStreamer
-from threading import Thread
-
 
 GB = 1 << 30
 

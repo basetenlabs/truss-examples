@@ -1,14 +1,17 @@
-import torch
-from PIL import Image
-from io import BytesIO
 import base64
+from io import BytesIO
 
-# All of these files (in the package directory) are from the 
+import torch
+from llava.conversation import SeparatorStyle, conv_templates
+
+# All of these files (in the package directory) are from the
 # original LLaVA repository: https://github.com/haotian-liu/LLaVA/
-from llava.mm_utils import get_model_name_from_path
-from llava.mm_utils import tokenizer_image_token, KeywordsStoppingCriteria
-from llava.conversation import conv_templates, SeparatorStyle
-
+from llava.mm_utils import (
+    KeywordsStoppingCriteria,
+    get_model_name_from_path,
+    tokenizer_image_token,
+)
+from PIL import Image
 
 model_path = "liuhaotian/llava-v1.5-7b"
 DEFAULT_IMAGE_TOKEN = "<image>"
@@ -45,7 +48,7 @@ class Model:
         image = model_input["image"]
 
         if image[:5] == "https":
-            image = Image.open(requests.get(image, stream=True).raw).convert('RGB')
+            image = Image.open(requests.get(image, stream=True).raw).convert("RGB")
         else:
             image = b64_to_pil(image)
 

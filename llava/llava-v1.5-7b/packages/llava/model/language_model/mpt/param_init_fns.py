@@ -3,8 +3,10 @@ import warnings
 from collections.abc import Sequence
 from functools import partial
 from typing import Optional, Tuple, Union
+
 import torch
 from torch import nn
+
 from .norm import NORM_CLASS_REGISTRY
 
 
