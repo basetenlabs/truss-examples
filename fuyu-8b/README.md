@@ -56,7 +56,7 @@ print(res)
 ```
 
 Here is the example input image used:
-
+![sample_graph](https://github.com/htrivedi99/truss-examples/assets/15642666/9e475fdb-da45-474b-8b93-9b272784d42b)
 
 Here is the output:
 ```txt
