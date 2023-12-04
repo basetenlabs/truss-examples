@@ -1,0 +1,17 @@
+environment_variables: {}
+model_metadata:
+  example_model_input: {"image": "<BASE64-IMAGE-HERE>", "prompt": "What is the highest marketing expenditure?", "max_new_tokens": 50}
+model_name: Fuyu 8B
+python_version: py310
+requirements:
+  - transformers==4.35.0
+  - scipy==1.11.3
+  - accelerate==0.24.1
+  - bitsandbytes==0.41.1
+  - Pillow==9.4.0
+  - torch==2.1.0
+resources:
+  cpu: "3"
+  memory: 24Gi
+  use_gpu: true
+  accelerator: A100:1
