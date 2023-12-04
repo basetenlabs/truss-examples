@@ -1,5 +1,8 @@
 environment_variables: {}
 external_package_dirs: []
+base_image:
+  image: baseten/truss-server-base:3.10-gpu-v0.4.9
+  python_executable_path: /usr/bin/python3
 model_name: Faster Whisper
 python_version: py39
 model_metadata:
