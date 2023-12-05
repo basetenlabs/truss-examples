@@ -9,7 +9,6 @@ model_metadata:
   example_model_input: {"messages": [{"role": "user", "content": "What is your favourite condiment?"}, {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"}, {"role": "user", "content": "Do you have mayonnaise recipes?"}]}
   tags:
   - text-generation
-  - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.1
 model_name: Mistral 7B Instruct Chat TRT-LLM
