@@ -1,6 +1,6 @@
 # IP Adapter
 
-This is a [Truss](https://truss.baseten.co/) for [IP Adapter](https://github.com/tencent-ailab/IP-Adapter). IP Adapter can create variations of a given input image based on a prompt, while retaining the aesthetic of the origina image. 
+This is a [Truss](https://truss.baseten.co/) for [IP Adapter](https://github.com/tencent-ailab/IP-Adapter). IP Adapter can create variations of a given input image based on a prompt, while retaining the aesthetic of the origina image.
 
 
 ## Deploying IP Adapter
