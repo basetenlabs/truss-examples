@@ -1,5 +1,5 @@
 base_image:
-  image: nvcr.io/nvidia/tritonserver:23.11-trtllm-python-py3
+  image: baseten/tritonserver-trtllm:r23.11-v0.6.1
   python_executable_path: /usr/bin/python3
 description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with OpenAI Client
 model_metadata:
