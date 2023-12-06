@@ -16,6 +16,12 @@ requirements:
   - hf_transfer==0.1.4
   - xformers==0.0.22
   - accelerate==0.24.1
+model_cache:
+- repo_id: stabilityai/sdxl-turbo
+  allow_patterns:
+    - "*.json"
+    - "*.fp16.safetensors"
+    - "*.txt"
 resources:
   cpu: "3"
   memory: 20Gi

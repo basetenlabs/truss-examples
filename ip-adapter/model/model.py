@@ -24,7 +24,9 @@ class Model:
         self.pipeline = None
 
     def load(self):
-        # Load model here and assign to self._model.
+        # You can also use an SDXL pipeline with an IP adapter for SDXL
+        # be sure to see all your optiosn here:
+        # https://huggingface.co/h94/IP-Adapter
         self.pipeline = StableDiffusionPipeline.from_pretrained(
             "runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16
         )
