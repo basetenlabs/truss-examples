@@ -99,3 +99,25 @@ zephyr/zephyr-7b-alpha:
     model_name: Zephyr 7B Alpha
   ignore:
     - README.md
+whisper/faster-whisper-v2:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v2
+    description: Faster Whisper v2
+    model_name: Faster Whisper v2
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v2
+  ignore:
+    - README.md
+whisper/faster-whisper-v3:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v3
+    description: Faster Whisper v3
+    model_name: Faster Whisper v3
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v3
+  ignore:
+    - README.md

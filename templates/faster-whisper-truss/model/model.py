@@ -13,7 +13,7 @@ class Model:
         self._model = None
 
     def load(self):
-        self._model = WhisperModel("large-v2")
+        self._model = WhisperModel(self._config["model_metadata"]["model_id"])
 
     def preprocess(self, request: Dict) -> Dict:
         resp = requests.get(request["url"])
