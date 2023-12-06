@@ -4,6 +4,10 @@ This repository packages [Magic Animate](https://github.com/magic-research/magic
 
 Magic Animate allows you to create human image animation using a diffusion model. The model combines two inputs, a picture of a person and a densepose motion sequence, so that the human in the picture gets animated based on the provided motion sequence. Here is an example:
 
+
+https://github.com/htrivedi99/truss-examples/assets/15642666/914d7b50-c0e3-40fc-a146-c53743c82cbd
+
+
 ## Deploying Magic Animate
 
 First, clone this repository:
@@ -73,5 +77,11 @@ base64_to_mp4(res.get("output"), "magic-animate.mp4")
 
 Here is the example `monalisa.png` image:
 
+![monalisa](https://github.com/htrivedi99/truss-examples/assets/15642666/9e9f4e40-6c55-415b-b37c-3271572ffb77)
+
 
 Here is the example densepose sequence `demo4.mp4`:
+
+https://github.com/htrivedi99/truss-examples/assets/15642666/c20a9761-1279-4c0b-9de1-7fd73cb43fd7
+
+
