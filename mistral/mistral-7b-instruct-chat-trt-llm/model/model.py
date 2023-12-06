@@ -1,3 +1,4 @@
+import uuid
 from itertools import count
 from pathlib import Path
 from threading import Thread
@@ -6,7 +7,6 @@ import numpy as np
 from client import TritonClient, UserData
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor
-import uuid
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 
@@ -68,7 +68,7 @@ class Model:
     def predict(self, model_input):
         user_data = UserData()
         model_name = "ensemble"
-        stream_uuid = str(uuid.uuid4().int & (1<<32)-1)
+        stream_uuid = str(uuid.uuid4().int & (1 << 32) - 1)
 
         if self.uses_openai_api:
             prompt = self.tokenizer.apply_chat_template(
