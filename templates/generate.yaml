@@ -108,8 +108,7 @@ whisper/faster-whisper-v2:
     model_name: Faster Whisper v2
     model_cache:
       - repo_id: Systran/faster-whisper-large-v2
-  ignore:
-    - README.md
+  ignore: []
 whisper/faster-whisper-v3:
   based_on: faster-whisper-truss
   config:
@@ -119,5 +118,4 @@ whisper/faster-whisper-v3:
     model_name: Faster Whisper v3
     model_cache:
       - repo_id: Systran/faster-whisper-large-v3
-  ignore:
-    - README.md
+  ignore: []
