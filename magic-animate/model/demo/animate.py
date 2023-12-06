@@ -238,6 +238,11 @@ class MagicAnimate:
         animation_path = f"{savedir}/{time_str}.mp4"
 
         os.makedirs(savedir, exist_ok=True)
+
+        # Save video as a grid
         save_videos_grid(samples_per_video, animation_path)
+
+        # Save individual video
+        save_videos_grid(samples_per_video[2:], f"{savedir}/individual.mp4")
 
         return animation_path

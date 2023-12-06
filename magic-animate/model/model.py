@@ -15,6 +15,8 @@ DEFAULT_GUIDANCE_SCALE = 7.5
 IMAGE_WIDTH = 512
 IMAGE_HEIGHT = 512
 BASE64_PREAMBLE = "data:image/png;base64,"
+GRID = False
+INDIVIDUAL_CLIP_PATH = "/app/demo/outputs/individual.mp4"
 
 
 class Model:
@@ -60,6 +62,7 @@ class Model:
         guidance_scale = float(
             model_input.get("guidance_scale", DEFAULT_GUIDANCE_SCALE)
         )
+        grid = bool(model_input.get("grid", GRID))
 
         reference_image_pil = self.b64_to_pil(reference_image)
         reference_image = np.array(
@@ -73,8 +76,16 @@ class Model:
         output_animation_path = os.path.join(os.getcwd(), output_animation_path)
         print("output animation path: ", output_animation_path)
 
-        result_b64 = self.mp4_to_base64(output_animation_path)
+        individual_clip = self.mp4_to_base64(INDIVIDUAL_CLIP_PATH)
+
+        if grid:
+            grid_clip = self.mp4_to_base64(output_animation_path)
+            output = {"output": individual_clip, "grid_clip": grid_clip}
+        else:
+            output = {"output": individual_clip}
+
         os.remove(motion_sequence_mp4)
         os.remove(output_animation_path)
+        os.remove(INDIVIDUAL_CLIP_PATH)
 
-        return {"output": result_b64}
+        return output

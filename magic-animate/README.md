@@ -40,6 +40,9 @@ Here are the following inputs for the model:
 3. `seed` (optional): A random seed for the model.
 4. `steps` (optional): The number of iterations the model runs through.
 5. `guidance_scale` (optional): Used to determine how closely the image generation follows the prompt.
+6. `grid` (optional): A boolean value which controls if the output comes back with all the clips or just the individual output.
+
+If `grid` is passed in as `True` the model will respond with a JSON object with two keys: `output` and `grid_clip`. If `grid` is not passed in or is set to `False` the JSON object returned only has one key `output`. Both `output` and `grid_clip` are MP4 files returned as a base64 string.
 
 Here is an example of how to invoke this model:
 
@@ -69,10 +72,11 @@ def base64_to_mp4(base64_string, output_file_path):
 img = Image.open("/path/to/image/monalisa.png")
 input_img = pil_to_b64(img)
 motion_sequence = mp4_to_base64("/path/to/densepose/sequence/demo4.mp4")
-data = {"reference_image": input_img, "motion_sequence": motion_sequence, "steps": 10}
+data = {"reference_image": input_img, "motion_sequence": motion_sequence, "steps": 10, "grid": True}
 res = requests.post("https://model-<model-id>.api.baseten.co/development/predict", headers=headers, json=data)
 res = res.json()
 base64_to_mp4(res.get("output"), "magic-animate.mp4")
+base64_to_mp4(res.get("grid_clip"), "grid.mp4")
 ```
 
 Here is the example `monalisa.png` image:
