@@ -83,5 +83,3 @@ Here is the example `monalisa.png` image:
 Here is the example densepose sequence `demo4.mp4`:
 
 https://github.com/htrivedi99/truss-examples/assets/15642666/c20a9761-1279-4c0b-9de1-7fd73cb43fd7
-
-
