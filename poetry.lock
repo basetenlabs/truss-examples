@@ -458,13 +458,13 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-auth"
-version = "2.25.0"
+version = "2.25.1"
 description = "Google Authentication Library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google-auth-2.25.0.tar.gz", hash = "sha256:cabc5c6fd327d71baa820f745118ecb2b709412d153419a43173d91495ef8715"},
-    {file = "google_auth-2.25.0-py2.py3-none-any.whl", hash = "sha256:2e7d37702e617ea9f4ac2568625a9fc2cdea910dcdca90e378db09ac94ee9ab3"},
+    {file = "google-auth-2.25.1.tar.gz", hash = "sha256:d5d66b8f4f6e3273740d7bb73ddefa6c2d1ff691704bd407d51c6b5800e7c97b"},
+    {file = "google_auth-2.25.1-py2.py3-none-any.whl", hash = "sha256:dfd7b44935d498e106c08883b2dac0ad36d8aa10402a6412e9a1c9d74b4773f1"},
 ]
 
 [package.dependencies]
@@ -1758,7 +1758,7 @@ watchfiles = "^0.19.0"
 type = "git"
 url = "https://github.com/basetenlabs/truss.git"
 reference = "HEAD"
-resolved_reference = "e6fa998189fc0ab5b0dabf539fd02eeb456e5cba"
+resolved_reference = "1ddd700252aeefe3cab3235ae730370bcd6e5a54"
 
 [[package]]
 name = "typer"
