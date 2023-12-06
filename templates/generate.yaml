@@ -58,14 +58,15 @@ mistral/mistral-7b-trt-llm-build-engine:
       engine_build:
         cmd: examples/llama/build.py
         args: --remove_input_padding --use_gpt_attention_plugin float16 --enable_context_fmha --use_gemm_plugin float16 --max_batch_size 64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
-      pipeline_parallelism: 2
+      tensor_parallelism: 1
+      pipeline_parallelism: 1
     description: Generate text from a prompt with this seven billion parameter language model.
     model_name: Mistral 7B TRT
     requirements:
     - tritonclient[all]
     - pynvml==11.5.0
     resources:
-      accelerator: A100:2
+      accelerator: A100
   ignore:
     - README.md
     - model/model.py
@@ -98,3 +99,23 @@ zephyr/zephyr-7b-alpha:
     model_name: Zephyr 7B Alpha
   ignore:
     - README.md
+whisper/faster-whisper-v2:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v2
+    description: Faster Whisper v2
+    model_name: Faster Whisper v2
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v2
+  ignore: []
+whisper/faster-whisper-v3:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v3
+    description: Faster Whisper v3
+    model_name: Faster Whisper v3
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v3
+  ignore: []

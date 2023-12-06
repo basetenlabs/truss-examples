@@ -1,0 +1,15 @@
+environment_variables:
+  COQUI_TOS_AGREED: "1"
+model_metadata:
+  example_model_input: {"text": "I love robots. Robots are cool!", "speaker_voice": <BASE64-STRING>, "language": "en"}
+  tags:
+  - text-to-speech
+python_version: py310
+requirements:
+  - git+https://github.com/coqui-ai/TTS.git@v0.21.3
+model_name: XTTS V2
+resources:
+  cpu: "3"
+  memory: 10Gi
+  use_gpu: true
+  accelerator: T4
