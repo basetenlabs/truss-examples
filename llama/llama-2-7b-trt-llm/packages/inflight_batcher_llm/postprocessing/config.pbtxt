@@ -39,6 +39,11 @@ output [
     name: "OUTPUT"
     data_type: TYPE_STRING
     dims: [ -1, -1 ]
+  },
+  {
+    name: "TIME"
+    data_type: TYPE_FP64
+    dims: [1, -1]
   }
 ]
 
