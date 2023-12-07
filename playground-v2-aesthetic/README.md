@@ -6,6 +6,8 @@ Playground v2 is a diffusion-based text-to-image generative model. The model was
 
 Here are some examples of the outputs from this model:
 
+![aesthetic_images](https://github.com/htrivedi99/truss-examples/assets/15642666/6c3fc815-73ec-4ab1-abab-7723884791f1)
+
 
 ## Deployment
 
