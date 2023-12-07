@@ -45,7 +45,7 @@ For your ComfyUI workflow, you probably used one or more models. Those models ne
 ]
 ```
 
-In this case, I have 2 models: SDXL and a controlnet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, controlnets should be stored inside `controlnet`, etc.
+In this case, I have 2 models: SDXL and a ControlNet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, ControlNets should be stored inside `controlnet`, etc.
 
 We also need to place the JSON workflow from step 1 inside the data directory. In the data directory create an open a file called `data/comfy_ui_workflow.json`. Copy and paste the entire JSON workflow that we saved in step 1 into this file.
 
@@ -292,19 +292,32 @@ sdxl_controlnet_workflow = {
 
 Here is the actual API request sent to Truss:
 ```python
-headers = {"Authorization": f"Api-Key YOUR-BASETEN-API-KEY-HERE"}
+import random
+import base64
 
+# Set essential values
+model_id = ""
+baseten_api_key = ""
+# Set prompts and ControlNet image
 values = {
-  "positive_prompt": "An igloo on a snowy day, 4k, hd",
+  "positive_prompt": "An illustration of a forest, at sunset, fall colors, 4k, hd",
   "negative_prompt": "blurry, text, low quality",
-  "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png"
+  "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png",
+  "seed": random.randint(1, 1000000)
 }
-
-data = {"workflow_values": values}
-res = requests.post("https://model-{MODEL_ID}.api.baseten.co/development/predict", headers=headers, json=data)
+# Call model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/development/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json={"workflow_values": values}
+)
+# Get output image
 res = res.json()
-model_output = res.get("result")
-print(model_output)
+output = res["result"][1]["image"]
+# Save image to file
+img_file = open("comfyui.jpeg", 'wb')
+img_file.write(img)
+img_file.close()
 ```
 
 Here is the output of the request above:
