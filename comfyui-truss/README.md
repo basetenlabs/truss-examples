@@ -294,13 +294,14 @@ Here is the actual API request sent to Truss:
 ```python
 import random
 import base64
+import requests
 
 # Set essential values
-model_id = ""
-baseten_api_key = ""
-# Set prompts and ControlNet image
+model_id = "rwnpdo23"
+baseten_api_key = "roSAXWel.VnDsidTMcJItqENWdOPBqT4WDuvvjxs5"
+# Set prompts and controlnet image
 values = {
-  "positive_prompt": "An illustration of a forest, at sunset, fall colors, 4k, hd",
+  "positive_prompt": "A top down view of a river through the woods",
   "negative_prompt": "blurry, text, low quality",
   "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png",
   "seed": random.randint(1, 1000000)
@@ -313,10 +314,11 @@ res = requests.post(
 )
 # Get output image
 res = res.json()
-output = res["result"][1]["image"]
+preamble = "data:image/png;base64,"
+output = base64.b64decode(res["result"][1]["image"].replace(preamble, ""))
 # Save image to file
-img_file = open("comfyui.jpeg", 'wb')
-img_file.write(img)
+img_file = open("comfyui.png", 'wb')
+img_file.write(output)
 img_file.close()
 ```
 
