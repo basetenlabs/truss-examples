@@ -78,7 +78,7 @@ class TritonPythonModel:
         self.output_dtype = pb_utils.triton_string_to_numpy(output_config["data_type"])
 
         self.state_dict = OrderedDict()
-        # TODO(pankaj) This should come from the batch size 
+        # TODO(pankaj) This should come from the batch size
         self.cache_size = 2048
 
     def execute(self, requests):
@@ -115,6 +115,8 @@ class TritonPythonModel:
                 .as_numpy()
                 .flatten()
             )
+            if len(tokens_batch) == 0:
+                continue
 
             # Postprocess output data
             prev_token = self._get_prev_token(request_id)
@@ -142,6 +144,9 @@ class TritonPythonModel:
 
         return responses
 
+    def finalize(self):
+        print("Cleaning up...")
+
     def _store_prev_token(self, request_id, token):
         if request_id in self.state_dict:
             self.state_dict[request_id]["prev_token"] = token
@@ -160,7 +165,6 @@ class TritonPythonModel:
             return self.state_dict[request_id]["prev_token"]
         return None
 
-
     def _compute_delta(self, prev_str, new_str):
         delta = "".join(
             [
@@ -170,9 +174,6 @@ class TritonPythonModel:
             ]
         )
         return delta
-
-    def finalize(self):
-        print("Cleaning up...")
 
     def _postprocessing(self, tokens):
         decoded_tokens = self.tokenizer.decode(tokens)
