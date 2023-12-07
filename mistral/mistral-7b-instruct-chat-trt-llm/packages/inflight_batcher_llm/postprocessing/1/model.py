@@ -78,7 +78,8 @@ class TritonPythonModel:
         self.output_dtype = pb_utils.triton_string_to_numpy(output_config["data_type"])
 
         self.state_dict = OrderedDict()
-        self.cache_size = 100
+        # TODO(pankaj) This should come from the batch size 
+        self.cache_size = 2048
 
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
@@ -115,28 +116,20 @@ class TritonPythonModel:
                 .flatten()
             )
 
-            # Get prior state for request ID
-            if request_id in self.state_dict:
-                previous_tokens = self.state_dict[request_id]["tokens"]
-                accumulated_tokens = np.concatenate([previous_tokens, tokens_batch])
-                self.state_dict[request_id]["tokens"] = accumulated_tokens
-
-                # Move request ID to end of queue to prevent it from being evicted
-                self.state_dict.move_to_end(request_id)
-            else:
-                # Evict least recently used item if cache is full
-                if len(self.state_dict) > self.cache_size:
-                    self.state_dict.popitem(last=False)
-
-                self.state_dict[request_id] = {"tokens": tokens_batch, "prev_str": ""}
-
             # Postprocess output data
-            new_string = self._postprocessing(self.state_dict[request_id]["tokens"])
-            old_string = self.state_dict[request_id]["prev_str"]
-
-            # Compute delta between previous and new string
-            delta = self._compute_delta(old_string, new_string)
-            self.state_dict[request_id]["prev_str"] = new_string
+            prev_token = self._get_prev_token(request_id)
+            self._store_prev_token(request_id, tokens_batch[-1])
+            if prev_token is None:
+                delta = self.tokenizer.decode(tokens_batch)
+            else:
+                # TODO(pankaj) Figure out how to make tokenizer.decode not
+                # ignore initial whitespace so we can avoid this hack.
+                # Get string with and without previous token and diff. This hack
+                # is needed because tokenizer.decode strips initial whitespace.
+                old_string = self.tokenizer.decode([prev_token])
+                with_prev_token = np.concatenate(([prev_token], tokens_batch))
+                new_string = self.tokenizer.decode(with_prev_token)
+                delta = self._compute_delta(old_string, new_string)
 
             # Create output tensor
             output_tensor = pb_utils.Tensor(
@@ -148,6 +141,25 @@ class TritonPythonModel:
             responses.append(inference_response)
 
         return responses
+
+    def _store_prev_token(self, request_id, token):
+        if request_id in self.state_dict:
+            self.state_dict[request_id]["prev_token"] = token
+
+            # Move request ID to end of queue to prevent it from being evicted
+            self.state_dict.move_to_end(request_id)
+        else:
+            # Evict least recently used item if cache is full
+            if len(self.state_dict) > self.cache_size:
+                self.state_dict.popitem(last=False)
+
+            self.state_dict[request_id] = {"prev_token": token}
+
+    def _get_prev_token(self, request_id):
+        if request_id in self.state_dict:
+            return self.state_dict[request_id]["prev_token"]
+        return None
+
 
     def _compute_delta(self, prev_str, new_str):
         delta = "".join(
