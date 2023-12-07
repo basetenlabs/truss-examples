@@ -1,0 +1,21 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"prompt": "An astronaut snowboarding on an alient planet, highly detailed, 8K"}
+  pretty_name: Playground V2 Aesthetic
+  avatar_url: https://cdn.baseten.co/production/static/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  tags:
+  - image-generation
+model_name: Playground V2 Aesthetic
+python_version: py310
+requirements:
+  - diffusers==0.24.0
+  - transformers==4.35.2
+  - accelerate==0.25.0
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: A10G
+system_packages: []
