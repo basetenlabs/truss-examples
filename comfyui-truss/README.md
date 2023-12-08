@@ -10,15 +10,15 @@ Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON
 
 First, go to ComfyUI and click on the gear icon for the project
 
-![gear_icon](extras/comfyui-screenshot-1.png)
+![gear_icon](../assets/comfyui-screenshot-1.png)
 
 Next, checkmark the box which says `Enable Dev Mode Options`
 
-![enable_dev_mode_options](extras/comfyui-screenshot-2.png)
+![enable_dev_mode_options](../assets/comfyui-screenshot-2.png)
 
 Now, if you go back to the project you will see a new option called `Save (API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
 
-![save_api_format](extras/comfyui-screenshot-3.png)
+![save_api_format](../assets/comfyui-screenshot-3.png)
 
 
 ## Setting up the project
@@ -292,13 +292,14 @@ sdxl_controlnet_workflow = {
 
 Here is the actual API request sent to Truss:
 ```python
+import os
 import random
 import base64
 import requests
 
 # Set essential values
-model_id = "rwnpdo23"
-baseten_api_key = "roSAXWel.VnDsidTMcJItqENWdOPBqT4WDuvvjxs5"
+model_id = ""
+baseten_api_key = ""
 # Set prompts and controlnet image
 values = {
   "positive_prompt": "A top down view of a river through the woods",
@@ -320,6 +321,7 @@ output = base64.b64decode(res["result"][1]["image"].replace(preamble, ""))
 img_file = open("comfyui.png", 'wb')
 img_file.write(output)
 img_file.close()
+os.system("open comfyui.png")
 ```
 
 Here is the output of the request above:
