@@ -23,7 +23,7 @@ model_cache:
 resources:
   accelerator: null
   cpu: "3"
-  memory: 14Gi
+  memory: 4Gi
   use_gpu: true
   accelerator: T4
 system_packages: []
