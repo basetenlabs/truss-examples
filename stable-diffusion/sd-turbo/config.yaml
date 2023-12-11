@@ -21,9 +21,6 @@ model_cache:
     - "*.fp16.safetensors"
     - "*.txt"
 resources:
-  accelerator: null
-  cpu: "3"
-  memory: 4Gi
   use_gpu: true
   accelerator: T4
 system_packages: []
