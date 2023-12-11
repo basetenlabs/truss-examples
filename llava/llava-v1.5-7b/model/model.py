@@ -2,10 +2,12 @@ import base64
 from io import BytesIO
 
 import torch
-from llava.conversation import SeparatorStyle, conv_templates
+import requests
 
 # All of these files (in the package directory) are from the
 # original LLaVA repository: https://github.com/haotian-liu/LLaVA/
+from llava.model.builder import load_pretrained_model
+from llava.conversation import SeparatorStyle, conv_templates
 from llava.mm_utils import (
     KeywordsStoppingCriteria,
     get_model_name_from_path,
