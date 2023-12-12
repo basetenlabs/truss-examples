@@ -5,13 +5,14 @@ from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
+
 class Model:
     def __init__(self, **kwargs):
         self.model = None
         self.llm_engine = None
 
         # Install megablocks and run ray process
-        subprocess.run(['pip', 'install', 'megablocks'])
+        subprocess.run(["pip", "install", "megablocks"])
         command = "ray start --head"
         subprocess.check_output(command, shell=True, text=True)
 
