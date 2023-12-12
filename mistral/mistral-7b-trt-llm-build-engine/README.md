@@ -6,6 +6,7 @@ This is a [Truss](https://truss.baseten.co/) for Mistral 7B. This README will wa
 
 This truss differs from `mistral-7b-trt-llm` by supporting building trt-llm engines on the fly on the model load.
 This significantly increases model start time and therefore it's **not intended for production use**.
+To make use of this feature, specify both the build command in `model_metadata.engine_build` (details in `packages/build_engine_utils.py`) and huggingface repository with your weights and tokenizer in `model_metadata.tokenizer_repository`.
 
 ## Truss
 
