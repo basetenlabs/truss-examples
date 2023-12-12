@@ -7,6 +7,4 @@ requirements:
 - vllm==0.2.4
 resources:
   accelerator: A100:2
-  cpu: '1'
-  memory: 2Gi
   use_gpu: true
