@@ -1,13 +1,14 @@
 import base64
 from io import BytesIO
 
+import torch
 from diffusers import AutoPipelineForText2Image
 from PIL import Image
-import torch
 
 DEFAULT_NUM_STEPS = 1
 # SD Turbo does not use guidance_scale; disable it by setting to 0.0.
 GUIDANCE_SCALE = 0.0
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -18,7 +19,7 @@ class Model:
             "stabilityai/sd-turbo", torch_dtype=torch.float16, variant="fp16"
         )
         self.model.to("cuda")
-    
+
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
