@@ -1,15 +1,12 @@
 base_image:
   image: nvcr.io/nvidia/pytorch:23.11-py3
   python_executable_path: /usr/bin/python3
-environment_variables: {}
-external_package_dirs: []
-model_metadata: {}
-model_name: Mixtral 8x7B vLLM
+model_name: Mixtral 8x7B
 python_version: py310
 requirements:
 - vllm==0.2.4
 resources:
   accelerator: A100:2
+  cpu: '1'
+  memory: 2Gi
   use_gpu: true
-secrets: {}
-system_packages: []
