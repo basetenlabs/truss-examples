@@ -60,3 +60,5 @@ print(res)
 The output of the model is a base64 string, so you can convert it to a wav file using the `base64_to_wav` function.
 
 Here is the output from the model using the input above:
+
+https://github.com/htrivedi99/truss-examples/assets/15642666/d35a9da3-f49c-4820-ab1e-08982d893598
