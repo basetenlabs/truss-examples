@@ -42,6 +42,7 @@ Here is an example of how to invoke this model:
 ```python
 import base64
 import requests
+import os
 
 def base64_to_wav(base64_string, output_file_path):
   binary_data = base64.b64decode(base64_string)
@@ -54,7 +55,7 @@ headers = {"Authorization": f"Api-Key <BASETEN-API-KEY>"}
 res = requests.post("https://model-<model-id>.api.baseten.co/development/predict", headers=headers, json=data)
 res = res.json()
 output = base64_to_wav(res.get('output'), "piper-tts-output.wav")
-print(res)
+os.system("open piper-tts-output.wav")
 ```
 
 The output of the model is a base64 string, so you can convert it to a wav file using the `base64_to_wav` function.
