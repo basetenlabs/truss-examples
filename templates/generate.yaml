@@ -64,7 +64,7 @@ mistral/mistral-7b-trt-llm-build-engine:
       - text-generation
       - openai-compatible
     description: Generate text from a prompt with this seven billion parameter language model.
-    model_name: Mistral 7B Instrcut v0.2 TRT
+    model_name: Mistral 7B Instruct v0.2 TRT
     requirements:
     - tritonclient[all]
     - pynvml==11.5.0

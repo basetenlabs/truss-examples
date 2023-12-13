@@ -16,7 +16,7 @@ model_metadata:
   - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
-model_name: Mistral 7B Instrcut v0.2 TRT
+model_name: Mistral 7B Instruct v0.2 TRT
 python_version: py311
 requirements:
 - tritonclient[all]
