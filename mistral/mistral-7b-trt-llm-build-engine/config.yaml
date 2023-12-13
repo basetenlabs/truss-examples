@@ -21,6 +21,7 @@ python_version: py311
 requirements:
 - tritonclient[all]
 - pynvml==11.5.0
+- transformers==4.34.0
 resources:
   accelerator: A100
   use_gpu: true
