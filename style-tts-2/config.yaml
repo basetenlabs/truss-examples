@@ -1,0 +1,20 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Style TTS 2
+python_version: py310
+requirements:
+  - scipy==1.11.4
+  - numpy==1.23.5
+  - torch==2.1.0
+  - torchaudio==2.1.0
+  - requests==2.31.0
+  - phonemizer==3.2.1
+  - nltk==3.8.1
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: T4
+system_packages:
+  - espeak-ng
