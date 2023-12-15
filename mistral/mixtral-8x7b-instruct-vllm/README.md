@@ -1,6 +1,6 @@
 # Mixtral 8x7B Instruct Truss
 
-This is a [Truss](https://truss.baseten.co/) for Mistral 8x7B Instruct. Mixtral 8x7B Instruct parameter language model released by [Mistral AI](https://mistral.ai/). It is a mixture-of-experts (MoE) model. This README will walk you through how to deploy this Truss on Baseten to get your own instance of it.
+This is a [Truss](https://truss.baseten.co/) for Mixtral 8x7B Instruct. Mixtral 8x7B Instruct parameter language model released by [Mistral AI](https://mistral.ai/). It is a mixture-of-experts (MoE) model. This README will walk you through how to deploy this Truss on Baseten to get your own instance of it.
 
 
 ## Deployment
@@ -29,7 +29,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ### Hardware notes
 
-You need two A100s to run Mixtral at `fp16`.
+You need two A100s to run Mixtral at `fp16`. If you need access to A100s, please [contact us](mailto:support@baseten.co).
 
 ## Mixtral 8x7B Instruct API documentation
 
