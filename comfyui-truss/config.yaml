@@ -2,12 +2,13 @@ external_package_dirs: []
 description: Deploy a ComfyUI workflow as a Truss
 model_metadata:
   example_model_input: {"workflow_values": {"positive_prompt": "An igloo on a snowy day, 4k, hd", "negative_prompt": "blurry, text, low quality", "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png"}}
-model_name: comfyui-truss
+model_name: ComfyUI Workflow
 python_version: py310
 requirements:
   - websocket-client==1.6.4
   - torch==2.1.0
   - torchsde==0.2.6
+  - torchvision==0.16.0
   - einops==0.7.0
   - transformers==4.34.1
   - safetensors==0.4.0

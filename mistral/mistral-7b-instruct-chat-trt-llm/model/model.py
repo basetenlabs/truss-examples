@@ -1,3 +1,4 @@
+import os
 from itertools import count
 from pathlib import Path
 from threading import Thread
@@ -67,7 +68,7 @@ class Model:
     def predict(self, model_input):
         user_data = UserData()
         model_name = "ensemble"
-        stream_uuid = str(next(self._request_id_counter))
+        stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
 
         if self.uses_openai_api:
             prompt = self.tokenizer.apply_chat_template(

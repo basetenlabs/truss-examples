@@ -15,4 +15,5 @@ tests:
   - gfp-gan
   - zephyr/zephyr-7b-alpha
   - stable-diffusion/stable-diffusion-xl-1.0
-  - whisper/faster-whisper-truss
+  - whisper/faster-whisper-v2
+  - whisper/faster-whisper-v3

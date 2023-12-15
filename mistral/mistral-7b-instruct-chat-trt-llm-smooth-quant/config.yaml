@@ -1,0 +1,25 @@
+base_image:
+  image: docker.io/baseten/triton_trt_llm:r23.11-v0.6.1
+  python_executable_path: /usr/bin/python3
+description: Mistral 7B Instruct, with INT8 smooth quantization, optimized with TRT-LLM for chat! Compatible with OpenAI Client
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  engine_repository: baseten/mistral_7b_instruct_v0.2_4096x1024x64_sq_0.5
+  example_model_input: {"messages": [{"role": "user", "content": "What is your favourite condiment?"}, {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"}, {"role": "user", "content": "Do you have mayonnaise recipes?"}], "max_tokens": 512}
+  tags:
+  - text-generation
+  - openai-compatible
+  tensor_parallelism: 1
+  tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
+model_name: Mistral 7B Instruct Chat TRT-LLM
+python_version: py311
+requirements:
+- tritonclient[all]
+- transformers==4.34.1
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  num_workers: 2
+  predict_concurrency: 256

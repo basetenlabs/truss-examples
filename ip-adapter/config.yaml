@@ -1,0 +1,16 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: IP Adapter
+python_version: py311
+requirements:
+- torch==2.1.1
+- diffusers==0.24.0
+- transformers==4.35.2
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 15Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
