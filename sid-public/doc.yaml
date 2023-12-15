@@ -1,0 +1,5 @@
+title: "Getting Started"
+description: "Building your first Truss"
+files:
+  - model/model.py
+  - config.yaml
