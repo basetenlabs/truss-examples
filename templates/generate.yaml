@@ -30,6 +30,72 @@ mistral/mistral-7b-instruct-chat-trt-llm:
     - README.md
   template:
     max_batch_size: 2048
+mistral/mistral-7b-instruct-chat-trt-llm-weights-only-quant:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/triton_trt_llm:r23.11-v0.6.1
+    model_metadata:
+      example_model_input: {
+        "messages": [
+          {"role": "user", "content": "What is your favourite condiment?"},
+          {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+          {"role": "user", "content": "Do you have mayonnaise recipes?"}
+        ],
+        "max_tokens": 512
+      }
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mistral_7b_instruct_v0.2_4096x1024x64_weights_only"
+      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.2"
+      tags:
+      - text-generation
+      - openai-compatible
+    description: Mistral 7B Instruct, with INT8 weights only quantization, optimized with TRT-LLM for chat! Compatible with OpenAI Client
+    model_name: Mistral 7B Instruct Chat TRT-LLM
+    requirements:
+    - tritonclient[all]
+    - transformers==4.34.1
+    runtime:
+      predict_concurrency: 256
+      num_workers: 2
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 2048
+mistral/mistral-7b-instruct-chat-trt-llm-smooth-quant:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/triton_trt_llm:r23.11-v0.6.1
+    model_metadata:
+      example_model_input: {
+        "messages": [
+          {"role": "user", "content": "What is your favourite condiment?"},
+          {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+          {"role": "user", "content": "Do you have mayonnaise recipes?"}
+        ],
+        "max_tokens": 512
+      }
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mistral_7b_instruct_v0.2_4096x1024x64_sq_0.5"
+      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.2"
+      tags:
+      - text-generation
+      - openai-compatible
+    description: Mistral 7B Instruct, with INT8 smooth quantization, optimized with TRT-LLM for chat! Compatible with OpenAI Client
+    model_name: Mistral 7B Instruct Chat TRT-LLM
+    requirements:
+    - tritonclient[all]
+    - transformers==4.34.1
+    runtime:
+      predict_concurrency: 256
+      num_workers: 2
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 2048
 llama/llama-2-7b-trt-llm:
   based_on: trt-llm
   config:
@@ -51,20 +117,24 @@ mistral/mistral-7b-trt-llm-build-engine:
     base_image:
       image: docker.io/baseten/triton_trt_llm:v2
     model_metadata:
-      example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
+      example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-      tokenizer_repository: "mistralai/Mistral-7B-v0.1"
+      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.2"
       engine_build:
         cmd: examples/llama/build.py
         args: --remove_input_padding --use_gpt_attention_plugin float16 --enable_context_fmha --use_gemm_plugin float16 --max_batch_size 64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
       tensor_parallelism: 1
       pipeline_parallelism: 1
+      tags:
+      - text-generation
+      - openai-compatible
     description: Generate text from a prompt with this seven billion parameter language model.
-    model_name: Mistral 7B TRT
+    model_name: Mistral 7B Instruct v0.2 TRT
     requirements:
     - tritonclient[all]
     - pynvml==11.5.0
+    - transformers==4.34.0
     resources:
       accelerator: A100
   ignore:
@@ -99,3 +169,23 @@ zephyr/zephyr-7b-alpha:
     model_name: Zephyr 7B Alpha
   ignore:
     - README.md
+whisper/faster-whisper-v2:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v2
+    description: Faster Whisper v2
+    model_name: Faster Whisper v2
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v2
+  ignore: []
+whisper/faster-whisper-v3:
+  based_on: faster-whisper-truss
+  config:
+    model_metadata:
+      model_id: large-v3
+    description: Faster Whisper v3
+    model_name: Faster Whisper v3
+    model_cache:
+      - repo_id: Systran/faster-whisper-large-v3
+  ignore: []

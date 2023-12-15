@@ -2,16 +2,17 @@
 
 # Mistral-7B Truss
 
-This is a [Truss](https://truss.baseten.co/) for Mistral 7B. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B.
+This is a [Truss](https://truss.baseten.co/) for Mistral 7B Instruct v0.2. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct v0.2.
 
 This truss differs from `mistral-7b-trt-llm` by supporting building trt-llm engines on the fly on the model load.
 This significantly increases model start time and therefore it's **not intended for production use**.
+To make use of this feature, specify both the build command in `model_metadata.engine_build` (details in `packages/build_engine_utils.py`) and huggingface repository with your weights and tokenizer in `model_metadata.tokenizer_repository`.
 
 ## Truss
 
 Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten. Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
-## Deploying Mistral-7B
+## Deploying Mistral 7B Instruct v0.2
 
 First, clone this repository:
 
@@ -40,10 +41,14 @@ This section provides an overview of the Mistral 7B API, its parameters, and how
 
 ### API route: `predict`
 
+This model is designed for our ChatCompletions endpoint:
+
+- [ChatCompletions endpoint tutorial](https://www.baseten.co/blog/gpt-vs-mistral-migrate-to-open-source-llms-with-minor-code-changes/)
+- [ChatCompletions endpoint reference docs](https://docs.baseten.co/api-reference/openai)
+
 We expect requests will the following information:
 
-
-- ```prompt``` (str): The prompt you'd like to complete
+- ```messages``` (str): The prompt you'd like to complete
 - ```max_tokens``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
 - ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
 - ```bad_words_list``` (list, default:[]): A list of words to not include in generated output.
@@ -51,21 +56,3 @@ We expect requests will the following information:
 - ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
 
 This Truss will stream responses back. Responses will be buffered chunks of text.
-
-## Example usage
-
-```sh
-truss predict -d '{"prompt": "What is the meaning of life?"}'
-```
-
-You can also invoke your model via a REST API
-
-```sh
-curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
-     -H "Content-Type: application/json" \
-     -H 'Authorization: Api-Key {YOUR_API_KEY}' \
-     -d '{
-           "prompt": "What's the meaning of life?",
-         }'
-
-```
