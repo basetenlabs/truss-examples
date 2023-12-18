@@ -158,6 +158,8 @@ mistral/mixtral-8x7b-instruct-trt-llm:
     runtime:
       predict_concurrency: 256
       num_workers: 2
+    resources:
+      accelerator: A100:2
   ignore:
     - README.md
   template:

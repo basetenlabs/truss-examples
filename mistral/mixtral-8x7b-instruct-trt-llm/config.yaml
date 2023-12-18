@@ -18,7 +18,7 @@ requirements:
 - tritonclient[all]
 - transformers==4.36.0
 resources:
-  accelerator: A100
+  accelerator: A100:2
   use_gpu: true
 runtime:
   num_workers: 2
