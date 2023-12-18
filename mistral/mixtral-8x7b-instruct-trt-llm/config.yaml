@@ -10,7 +10,7 @@ model_metadata:
   tags:
   - text-generation
   - openai-compatible
-  tensor_parallelism: 1
+  tensor_parallelism: 2
   tokenizer_repository: mistralai/Mixtral-8x7B-v0.1
 model_name: Mixtral 8x7B Instruct TRT-LLM
 python_version: py311
