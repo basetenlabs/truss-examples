@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/mistral)
-
 # Mixtral-8x7B-Instruct Truss
 
 This is a [Truss](https://truss.baseten.co/) for Mixtral 8x7B Instruct. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct.
