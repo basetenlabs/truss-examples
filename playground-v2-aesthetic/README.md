@@ -67,17 +67,31 @@ curl -X POST " https://model-<model-id>.api.baseten.co/development/predict" \
 You can also use Python to invoke the model:
 
 ``` python
+import os
+import json
+import base64
 import requests
-from PIL import Image
-BASE64_PREAMBLE = "data:image/png;base64,"
 
-def b64_to_pil(b64_str):
-    return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+# Set essential values
+model_id = ""
+baseten_api_key = ""
 
-headers = {"Authorization": f"Api-Key <API-KEY>"}
-data = {"prompt": "a futuristic motorcycle, neon colors, cyberpunk city, detailed, 8K", "steps": 30, "negative_prompt": "blurry, low quality", "scheduler": "K_EULER_ANCESTRAL"}
-res = requests.post("https://model-<model-id>.api.baseten.co/development/predict", headers=headers, json=data)
+# Call model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/development/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json={
+        "prompt": "a futuristic motorcycle, neon colors, cyberpunk city, detailed, 8K",
+        "steps": 50
+    }
+)
+# Get output image
 res = res.json()
-img = b64_to_pil(res.get("output"))
-img.show()
+output = json.loads(res)["output"]
+image = base64.b64decode(output)
+# Save image to file
+img_file = open("playground.png", "wb")
+img_file.write(image)
+img_file.close()
+os.system("open playground.png")
 ```
