@@ -7,7 +7,7 @@ import numpy as np
 from build_engine_utils import BuildConfig, build_engine
 from client import TritonClient, UserData
 from transformers import AutoTokenizer
-from utils import download_engine, prepare_grpc_tensor
+from utils import download_engine, prepare_grpc_tensor, server_loaded
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 
@@ -46,11 +46,12 @@ class Model:
 
         # Download model from Hugging Face Hub if specified
         if is_external_engine_repo:
-            download_engine(
-                engine_repository=self._config["model_metadata"]["engine_repository"],
-                fp=self._data_dir,
-                auth_token=hf_access_token,
-            )
+            if not server_loaded():
+                download_engine(
+                    engine_repository=self._config["model_metadata"]["engine_repository"],
+                    fp=self._data_dir,
+                    auth_token=hf_access_token,
+                )
         tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
         if "engine_build" in self._config["model_metadata"]:
             if not is_external_engine_repo:
