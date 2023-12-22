@@ -47,7 +47,9 @@ class Model:
         if is_external_engine_repo:
             if not server_loaded():
                 download_engine(
-                    engine_repository=self._config["model_metadata"]["engine_repository"],
+                    engine_repository=self._config["model_metadata"][
+                        "engine_repository"
+                    ],
                     fp=self._data_dir,
                     auth_token=hf_access_token,
                 )
