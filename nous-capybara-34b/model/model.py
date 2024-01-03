@@ -1,7 +1,13 @@
+from threading import Thread
 from typing import Dict
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    GenerationConfig,
+    TextIteratorStreamer,
+)
 
 MODEL_NAME = "NousResearch/Nous-Capybara-34B"
 MAX_LENGTH = 256
@@ -11,6 +17,7 @@ NO_REPEAT_NGRAM_SIZE = 5
 TEMPERATURE = 0.7
 TOP_K = 40
 TOP_P = 0.8
+DEFAULT_STREAM = True
 
 
 class Model:
@@ -47,12 +54,45 @@ class Model:
         request["generate_args"] = generate_args
         return request
 
-    def predict(self, model_input: Dict) -> Dict:
+    def stream(self, input_ids: list, generation_args: dict):
+        streamer = TextIteratorStreamer(self.tokenizer)
+        generation_config = GenerationConfig(**generation_args)
+        generation_kwargs = {
+            "input_ids": input_ids,
+            "generation_config": generation_config,
+            "return_dict_in_generate": True,
+            "output_scores": True,
+            "max_new_tokens": generation_args["max_length"],
+            "streamer": streamer,
+        }
+
+        with torch.no_grad():
+            # Begin generation in a separate thread
+            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+            thread.start()
+
+            # Yield generated text as it becomes available
+            def inner():
+                for text in streamer:
+                    yield text
+                thread.join()
+
+        return inner()
+
+    def predict(self, model_input: Dict):
         prompt = model_input.get("prompt")
+        stream = model_input.get("stream", DEFAULT_STREAM)
         generation_args = model_input.pop("generate_args")
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.cuda()
 
-        outputs = self.model.generate(inputs=input_ids, **generation_args)
+        formatted_prompt = f"USER: {prompt}\n ASSISTANT:"
+        input_ids = self.tokenizer(
+            formatted_prompt, return_tensors="pt"
+        ).input_ids.cuda()
 
-        model_output = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return {"output": model_output}
+        if stream:
+            return self.stream(input_ids, generation_args)
+
+        with torch.no_grad():
+            outputs = self.model.generate(inputs=input_ids, **generation_args)
+            model_output = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            return {"output": model_output}

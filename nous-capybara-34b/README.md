@@ -50,6 +50,7 @@ The predict route is the primary method for generating text completions based on
 - __top_k__ (optional, default=40): The number of top tokens to consider when sampling. The model will only consider the top_k highest-probability tokens.
 - __repetition_penalty__ (optional, default=1.3): Helps the model generate more diverse content instead of repeating previous phrases.
 - __no_repeat_ngram_size__ (optional, default=5): Specifies the length of token sets that are completely blocked from repeating at all.
+- __stream__ (optional, default=True): Allows you to receive the tokens are they are generated in a stream like fashion.
 
 The API also supports passing any parameter supported by HuggingFace's `Transformers.generate`.
 
@@ -71,12 +72,13 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt": "There is a place where time stands still. A place of breath taking wonder, but also",
-           "max_tokens": 512
+           "prompt": "What happens if I go to the top of the tallest mountian in california with a bucket of water and tip it over the highest cliff?",
+           "max_tokens": 512,
+           "stream": False
          }'
 ```
 
-The model can also be invoked using Python:
+By default streaming the tokens is enabled. Here is an example of how to invoke the model with streaming in Python:
 ```python
 import requests
 headers = {"Authorization": f"Api-Key BASETEN-API-KEY"}
@@ -84,8 +86,12 @@ headers = {"Authorization": f"Api-Key BASETEN-API-KEY"}
 res = requests.post(
     "https://model-<model-id>.api.baseten.co/development/predict",
     headers=headers,
-    json={"prompt": "There's a place where time stands still. A place of breath taking wonder, but also",
-          "max_tokens": 512, "temperature": 0.9}
+    json={"prompt": "What happens if I go to the top of the tallest mountian in california with a bucket of water and tip it over the highest cliff?",
+          "max_tokens": 512, "temperature": 0.9, "stream": True},
+    stream=True
 )
-print(res.json())
+res.raise_for_status()
+
+for word in res:
+    print(word.decode("utf-8"))
 ```
