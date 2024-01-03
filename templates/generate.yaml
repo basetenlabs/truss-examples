@@ -2,7 +2,7 @@ mistral/mistral-7b-instruct-chat-trt-llm:
   based_on: trt-llm
   config:
     base_image:
-      image: docker.io/baseten/triton_trt_llm:v2
+      image: docker.io/baseten/triton_trt_llm:r23.12-v0.7.1
     model_metadata:
       example_model_input: {
         "messages": [
@@ -13,8 +13,8 @@ mistral/mistral-7b-instruct-chat-trt-llm:
       }
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-      engine_repository: "baseten/mistral_7b_instruct_fp16_tp1"
-      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.1"
+      engine_repository: "baseten/mistral_7b_instruct_v0.2_2000x2000x64"
+      tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.2"
       tags:
       - text-generation
       - openai-compatible
