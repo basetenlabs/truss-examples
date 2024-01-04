@@ -59,6 +59,66 @@ Here is an example of the `messages` the model takes as input:
 
 ## Example usage of the API in Python:
 
+This model is designed to work with the OpenAI Chat Completions format. Here is an example of how to stream tokens using chat completions:
+
+```python
+from openai import OpenAI
+import os
+
+model_id = ""
+
+client = OpenAI(
+   api_key=os.environ["BASETEN_API_KEY"],
+   base_url=f"https://bridge.baseten.co/{model_id}/v1"
+)
+
+res = client.chat.completions.create(
+ model="mistral-7b",
+ messages=[
+   {"role": "user", "content": "What is a mistral?"},
+   {"role": "assistant", "content": "A mistral is a type of cold, dry wind that blows across the southern slopes of the Alps from the Valais region of Switzerland into the Ligurian Sea near Genoa. It is known for its strong and steady gusts, sometimes reaching up to 60 miles per hour."},
+   {"role": "user", "content": "How does the mistral wind form?"}
+ ],
+ temperature=0.5,
+ max_tokens=50,
+ top_p=0.95,
+ stream=True
+)
+
+for chunk in res:
+    print(chunk.choices[0].delta.content)
+```
+
+Similarly, here is a non-streaming example:
+
+```python
+from openai import OpenAI
+import os
+
+model_id = ""
+
+client = OpenAI(
+   api_key=os.environ["BASETEN_API_KEY"],
+   base_url=f"https://bridge.baseten.co/{model_id}/v1"
+)
+
+res = client.chat.completions.create(
+ model="mistral-7b",
+ messages=[
+   {"role": "user", "content": "What is a mistral?"},
+   {"role": "assistant", "content": "A mistral is a type of cold, dry wind that blows across the southern slopes of the Alps from the Valais region of Switzerland into the Ligurian Sea near Genoa. It is known for its strong and steady gusts, sometimes reaching up to 60 miles per hour."},
+   {"role": "user", "content": "How does the mistral wind form?"}
+ ],
+ temperature=0.5,
+ max_tokens=50,
+ top_p=0.95
+)
+
+print(res.choices[0].message.content)
+```
+
+It's not necessary to use OpenAI Chat Completions. You can also invoke the model using http requests.
+
 Streaming Example:
 
 ```python
@@ -126,11 +186,9 @@ res = requests.post(
 print(res.json())
 ```
 
-When the model is invoked without streaming the output is a JSON object with a single key called `output`.
+When the model is invoked without streaming the output is a string which contains the generated text.
 Here is an example of the LLM output:
 
-```json
-{
-  "output": "[INST] What is a mistral? [/INST]A mistral is a type of cold, dry wind that blows across the southern slopes of the Alps from the Valais region of Switzerland into the Ligurian Sea near Genoa. It is known for its strong and steady gusts, sometimes reaching up to 60 miles per hour.  [INST] How does the mistral wind form? [/INST]The mistral wind forms as a result of the movement of cold air from the high mountains of the Swiss Alps towards the sea. The cold air collides with the warmer air over the Mediterranean Sea, causing the cold air to rise rapidly and creating a cyclonic circulation. As the warm air rises, the cold air flows into the valley, creating a strong, steady wind known as the mistral.\n\nThe mistral is typically strongest during the winter months when the air is cold."
-}
+```
+"[INST] What is a mistral? [/INST]A mistral is a type of cold, dry wind that blows across the southern slopes of the Alps from the Valais region of Switzerland into the Ligurian Sea near Genoa. It is known for its strong and steady gusts, sometimes reaching up to 60 miles per hour.  [INST] How does the mistral wind form? [/INST]The mistral wind forms as a result of the movement of cold air from the high mountains of the Swiss Alps towards the sea. The cold air collides with the warmer air over the Mediterranean Sea, causing the cold air to rise rapidly and creating a cyclonic circulation. As the warm air rises, the cold air flows into the valley, creating a strong, steady wind known as the mistral.\n\nThe mistral is typically strongest during the winter months when the air is cold."
 ```
