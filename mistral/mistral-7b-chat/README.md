@@ -65,6 +65,7 @@ This model is designed to work with the OpenAI Chat Completions format. Here is 
 from openai import OpenAI
 import os
 
+# Replace the empty string with your model id below
 model_id = ""
 
 client = OpenAI(
@@ -72,6 +73,7 @@ client = OpenAI(
    base_url=f"https://bridge.baseten.co/{model_id}/v1"
 )
 
+# Call model endpoint
 res = client.chat.completions.create(
  model="mistral-7b",
  messages=[
@@ -85,6 +87,7 @@ res = client.chat.completions.create(
  stream=True
 )
 
+# Print the generated tokens as they get streamed
 for chunk in res:
     print(chunk.choices[0].delta.content)
 ```
@@ -95,6 +98,7 @@ Similarly, here is a non-streaming example:
 from openai import OpenAI
 import os
 
+# Replace the empty string with your model id below
 model_id = ""
 
 client = OpenAI(
@@ -102,6 +106,7 @@ client = OpenAI(
    base_url=f"https://bridge.baseten.co/{model_id}/v1"
 )
 
+# Call model endpoint
 res = client.chat.completions.create(
  model="mistral-7b",
  messages=[
@@ -114,6 +119,7 @@ res = client.chat.completions.create(
  top_p=0.95
 )
 
+# Print the output of the model
 print(res.choices[0].message.content)
 ```
 
@@ -124,6 +130,7 @@ Streaming Example:
 ```python
 import requests
 
+# Replace the empty string with your model id below
 model_id = ""
 baseten_api_key = os.environ["BASETEN_API_KEY"]
 
@@ -143,6 +150,7 @@ data = {
     "no_repeat_ngram_size": 3
 }
 
+# Call model endpoint
 res = requests.post(
     f"https://model-{model_id}.api.baseten.co/production/predict",
     headers={"Authorization": f"Api-Key {baseten_api_key}"},
@@ -150,6 +158,7 @@ res = requests.post(
     stream=True
 )
 
+# Print the generated tokens as they get streamed
 for content in res.iter_content():
     print(content.decode("utf-8"), end="", flush=True)
 ```
@@ -159,6 +168,7 @@ Non-streaming Example:
 ```python
 import requests
 
+# Replace the empty string with your model id below
 model_id = ""
 baseten_api_key = os.environ["BASETEN_API_KEY"]
 
@@ -177,12 +187,14 @@ data = {
     "no_repeat_ngram_size": 3
 }
 
+# Call model endpoint
 res = requests.post(
     f"https://model-{model_id}.api.baseten.co/production/predict",
     headers={"Authorization": f"Api-Key {baseten_api_key}"},
     json=data
 )
 
+# Print the output of the model
 print(res.json())
 ```
 
