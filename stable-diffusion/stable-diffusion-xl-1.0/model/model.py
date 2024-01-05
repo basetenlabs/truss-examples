@@ -61,6 +61,8 @@ class Model:
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
         negative_prompt = model_input.pop("negative_prompt", None)
+        width = model_input.pop("width", 1024)
+        height = model_input.pop("height", 1024)
         use_refiner = model_input.pop("use_refiner", True)
         num_inference_steps = model_input.pop("num_inference_steps", 30)
         denoising_frac = model_input.pop("denoising_frac", 0.8)
@@ -102,6 +104,8 @@ class Model:
         image = self.pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
+            width=width,
+            height=height,
             generator=generator,
             end_cfg=end_cfg_frac,
             num_inference_steps=num_inference_steps,

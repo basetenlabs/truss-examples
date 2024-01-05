@@ -73,3 +73,93 @@ curl -X POST "https://app.baseten.co/models/MODEL_ID/predict" \
 ```
 
 Again, the model will return a dictionary containing the base64-encoded image, which will need to be decoded and saved.
+
+Here is a complete example of invoking this model in Python:
+
+```python
+import requests
+import os
+import base64
+from PIL import Image
+from io import BytesIO
+
+# Replace the empty string with your model id below
+model_id = ""
+baseten_api_key = os.environ["BASETEN_API_KEY"]
+BASE64_PREAMBLE = "data:image/png;base64,"
+
+# Function used to convert a base64 string to a PIL image
+def b64_to_pil(b64_str):
+    return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+
+data = {
+  "prompt": "a little boy looking through a large magical portal, the boy sees a futuristic human civilization in that portal, extremely detailed, trending on artstation, 8k"
+}
+
+# Call model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/production/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json=data
+)
+
+# Get output image
+res = res.json()
+output = res.get("data")
+
+# Convert the base64 model output to an image
+img = b64_to_pil(output)
+img.save("output_image.png")
+os.system("open output_image.png")
+```
+
+Here is the output image for the prompt shown in the request above:
+
+
+Here's another example using more SDXL configurations:
+
+```python
+import requests
+import os
+import base64
+from PIL import Image
+from io import BytesIO
+
+# Replace the empty string with your model id below
+model_id = ""
+baseten_api_key = os.environ["BASETEN_API_KEY"]
+BASE64_PREAMBLE = "data:image/png;base64,"
+
+# Function used to convert a base64 string to a PIL image
+def b64_to_pil(b64_str):
+    return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+
+data = {
+  "prompt": "Extremely detailed and intricate scene of baby phoenix hatchling cuddled up resting on a pile of ashes surrounded by fire and smoke, rays of sunlight shine on the phoenix, in the background is a dense dark forest, settings: f/8 aperture, full shot, hyper realistic, 4k",
+  "negative_prompt": "worst quality, low quality",
+  "width": 1248,
+  "height": 832,
+  "num_inference_steps": 35,
+  "use_refiner": False,
+  "scheduler": "DPM++ 2M",
+  "guidance_scale": 14
+}
+
+# Call model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/production/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json=data
+)
+
+# Get output image
+res = res.json()
+output = res.get("data")
+
+# Convert the base64 model output to an image
+img = b64_to_pil(output)
+img.save("output_image.png")
+os.system("open output_image.png")
+```
+
+This is the output image for the prompt above:
