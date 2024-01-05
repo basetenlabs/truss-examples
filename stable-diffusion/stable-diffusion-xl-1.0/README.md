@@ -114,7 +114,7 @@ os.system("open output_image.png")
 ```
 
 Here is the output image for the prompt shown in the request above:
-
+![a_little_boy_looking_through_a_large_magical_portal,_the_boy_sees_a_futuristic_human_civilization_in](https://github.com/htrivedi99/truss-examples/assets/15642666/c534c752-29cb-4da8-b24e-fda6bef5876c)
 
 Here's another example using more SDXL configurations:
 
@@ -163,3 +163,4 @@ os.system("open output_image.png")
 ```
 
 This is the output image for the prompt above:
+![Extremely_detailed_and_intricate_scene_of_baby_phoenix_hatchling_cuddled_up_resting_on_a_pile_of_ash](https://github.com/htrivedi99/truss-examples/assets/15642666/1fbf004a-9741-4c83-90a8-9e7d51dfd4e2)
