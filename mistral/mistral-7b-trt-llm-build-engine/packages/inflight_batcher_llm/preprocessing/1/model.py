@@ -58,11 +58,9 @@ class TritonPythonModel:
         model_config = json.loads(args["model_config"])
         tokenizer_dir = os.environ["triton_tokenizer_repository"]
         tokenizer_type = model_config["parameters"]["tokenizer_type"]["string_value"]
-        self.add_special_tokens = model_config['parameters'].get(
-            'add_special_tokens',
-            {'string_value': "false"})['string_value'].lower() in [
-                'true', '1', 't', 'y', 'yes'
-            ]
+        self.add_special_tokens = model_config["parameters"].get(
+            "add_special_tokens", {"string_value": "false"}
+        )["string_value"].lower() in ["true", "1", "t", "y", "yes"]
 
         if tokenizer_type == "t5":
             self.tokenizer = T5Tokenizer(vocab_file=tokenizer_dir, padding_side="left")
@@ -189,13 +187,14 @@ class TritonPythonModel:
 
     def _create_request(self, query):
         """
-            query : batch string (2D numpy array)
+        query : batch string (2D numpy array)
         """
         start_ids = [
             np.array(
                 self.tokenizer.encode(
-                    s[0].decode(),
-                    add_special_tokens=self.add_special_tokens)).astype(int)
+                    s[0].decode(), add_special_tokens=self.add_special_tokens
+                )
+            ).astype(int)
             for s in query
         ]
         start_lengths = np.array([[len(ids)] for ids in start_ids]).astype(int)
@@ -203,11 +202,17 @@ class TritonPythonModel:
         max_len = 0
         for seq in start_ids:
             max_len = max(max_len, seq.shape[0])
-        start_ids = np.stack([
-            np.pad(seq, (0, max_len - seq.shape[0]),
-                   'constant',
-                   constant_values=(0, self.pad_id)) for seq in start_ids
-        ])
+        start_ids = np.stack(
+            [
+                np.pad(
+                    seq,
+                    (0, max_len - seq.shape[0]),
+                    "constant",
+                    constant_values=(0, self.pad_id),
+                )
+                for seq in start_ids
+            ]
+        )
 
         return start_ids, start_lengths
 
