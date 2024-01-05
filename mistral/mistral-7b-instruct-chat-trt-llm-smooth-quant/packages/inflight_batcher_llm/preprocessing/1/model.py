@@ -30,9 +30,7 @@ import os
 from typing import List
 
 import numpy as np
-import torch
 import triton_python_backend_utils as pb_utils
-from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoTokenizer, LlamaTokenizer, T5Tokenizer
 
 
@@ -60,6 +58,11 @@ class TritonPythonModel:
         model_config = json.loads(args["model_config"])
         tokenizer_dir = os.environ["triton_tokenizer_repository"]
         tokenizer_type = model_config["parameters"]["tokenizer_type"]["string_value"]
+        self.add_special_tokens = model_config['parameters'].get(
+            'add_special_tokens',
+            {'string_value': "false"})['string_value'].lower() in [
+                'true', '1', 't', 'y', 'yes'
+            ]
 
         if tokenizer_type == "t5":
             self.tokenizer = T5Tokenizer(vocab_file=tokenizer_dir, padding_side="left")
@@ -186,16 +189,25 @@ class TritonPythonModel:
 
     def _create_request(self, query):
         """
-        query : batch string (2D numpy array)
+            query : batch string (2D numpy array)
         """
         start_ids = [
-            torch.IntTensor(self.tokenizer.encode(s[0].decode())) for s in query
+            np.array(
+                self.tokenizer.encode(
+                    s[0].decode(),
+                    add_special_tokens=self.add_special_tokens)).astype(int)
+            for s in query
         ]
-        start_lengths = torch.IntTensor([[len(ids)] for ids in start_ids])
+        start_lengths = np.array([[len(ids)] for ids in start_ids]).astype(int)
 
-        start_ids = pad_sequence(start_ids, batch_first=True, padding_value=self.pad_id)
-        # input_len = min(start_lengths)
-        # attn_mask = torch.ones((batch_size, input_len, input_len)).tril()
+        max_len = 0
+        for seq in start_ids:
+            max_len = max(max_len, seq.shape[0])
+        start_ids = np.stack([
+            np.pad(seq, (0, max_len - seq.shape[0]),
+                   'constant',
+                   constant_values=(0, self.pad_id)) for seq in start_ids
+        ])
 
         return start_ids, start_lengths
 

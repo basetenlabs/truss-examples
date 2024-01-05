@@ -63,7 +63,7 @@ class TritonPythonModel:
             {'string_value': "false"})['string_value'].lower() in [
                 'true', '1', 't', 'y', 'yes'
             ]
-        
+
         if tokenizer_type == "t5":
             self.tokenizer = T5Tokenizer(vocab_file=tokenizer_dir, padding_side="left")
         elif tokenizer_type == "auto":
