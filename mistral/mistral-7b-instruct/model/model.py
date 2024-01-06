@@ -40,8 +40,8 @@ class Model:
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
-        if "max_tokens" in request.keys():
-            generate_args["max_new_tokens"] = request["max_tokens"]
+        if "max_new_tokens" in request.keys():
+            generate_args["max_new_tokens"] = request["max_new_tokens"]
         if "temperature" in request.keys():
             generate_args["temperature"] = request["temperature"]
         if "top_p" in request.keys():
