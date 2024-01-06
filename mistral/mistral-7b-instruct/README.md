@@ -62,7 +62,7 @@ truss predict -d '{"prompt": "What is the Mistral wind?"}'
 You can also invoke your model via a REST API:
 
 ```
-curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
+curl -X POST "https://model-<MODEL_ID>.api.baseten.co/production/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
@@ -80,11 +80,14 @@ import os
 
 # Replace the empty string with your model id below
 model_id = ""
-prompt = "What is mistral wind?"
 baseten_api_key = os.environ["BASETEN_API_KEY"]
 
+url = f"https://model-{model_id}.api.baseten.co/production/predict"
+
+headers = {"Authorization": f"Api-Key {baseten_api_key}"}
+
 data = {
-    "prompt": prompt,
+    "prompt": "What is mistral wind?",
     "stream": True,
     "max_new_tokens": 100,
     "temperature": 0.9,
@@ -95,15 +98,10 @@ data = {
 }
 
 # Call model endpoint
-res = requests.post(
-    f"https://model-{model_id}.api.baseten.co/production/predict",
-    headers={"Authorization": f"Api-Key {baseten_api_key}"},
-    json=data,
-    stream=True
-)
+response = requests.post(url, headers=headers, json=data, stream=True)
 
 # Print the generated tokens as they get streamed
-for content in res.iter_content():
+for content in response.iter_content():
     print(content.decode("utf-8"), end="", flush=True)
 ```
 
@@ -115,11 +113,14 @@ import os
 
 # Replace the empty string with your model id below
 model_id = ""
-prompt = "What is mistral wind?"
 baseten_api_key = os.environ["BASETEN_API_KEY"]
 
+url = f"https://model-{model_id}.api.baseten.co/production/predict"
+
+headers = {"Authorization": f"Api-Key {baseten_api_key}"}
+
 data = {
-    "prompt": prompt,
+    "prompt": "What is mistral wind?",
     "stream": False,
     "max_new_tokens": 100,
     "temperature": 0.9,
@@ -130,16 +131,13 @@ data = {
 }
 
 # Call model endpoint
-res = requests.post(
-    f"https://model-{model_id}.api.baseten.co/production/predict",
-    headers={"Authorization": f"Api-Key {baseten_api_key}"},
-    json=data
-)
+response = requests.post(url, headers=headers, json=data)
 
 # Print the output of the model
-print(res.json())
+print(response.json())
 ```
 
+## Output
 The output of the model is a string containing the generated text. Here is an example of the LLM output:
 
 ```
