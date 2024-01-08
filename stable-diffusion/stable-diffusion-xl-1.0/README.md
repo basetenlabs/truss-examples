@@ -76,6 +76,8 @@ Again, the model will return a dictionary containing the base64-encoded image, w
 
 Here is a complete example of invoking this model in Python:
 
+## Model Input
+
 ```python
 import requests
 import os
@@ -111,6 +113,11 @@ output = res.get("data")
 img = b64_to_pil(output)
 img.save("output_image.png")
 os.system("open output_image.png")
+```
+
+## Model Output
+```json
+{"data": "iVBORw0KGgoAAAANSUhEUgAABAAAAAQA..."}
 ```
 
 Here is the output image for the prompt shown in the request above:
@@ -160,6 +167,11 @@ output = res.get("data")
 img = b64_to_pil(output)
 img.save("output_image.png")
 os.system("open output_image.png")
+```
+
+Here is the model output:
+```json
+{"data": "iVBORw0KGgoAAAANSUhEUgAABAAAAAQA..."}
 ```
 
 This is the output image for the prompt above:
