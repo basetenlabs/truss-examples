@@ -11,7 +11,6 @@ model_metadata:
   pipeline_parallelism: 1
   tags:
   - text-generation
-  - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: NousResearch/Llama-2-13b-chat-hf
 model_name: NousResearch/Llama-2-13b-chat-hf
