@@ -13,8 +13,8 @@ model_metadata:
   - text-generation
   - openai-compatible
   tensor_parallelism: 1
-  tokenizer_repository: meta-llama/Llama-2-13b-chat-hf
-model_name: meta-llama/Llama-2-13b-chat-hf
+  tokenizer_repository: NousResearch/Llama-2-13b-chat-hf
+model_name: NousResearch/Llama-2-13b-chat-hf
 python_version: py311
 requirements:
 - tritonclient[all]
