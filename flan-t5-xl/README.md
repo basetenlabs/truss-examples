@@ -1,16 +1,14 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/flan_t5)
-
 # FLAN-T5 XL Truss
 
 [Flan-T5 XL](https://huggingface.co/google/flan-t5-xl?text=Q%3A+%28+False+or+not+False+or+False+%29+is%3F+A%3A+Let%27s+think+step+by+step) is an open-source large language model developed by Google.
 
 Flan-T5 XL has a number of use cases such as:
 
-* Sentiment analysis
-* Paraphrasing/sentence similarity
-* Natural language inference
-* Sentence completion
-* Question answering
+- Sentiment analysis
+- Paraphrasing/sentence similarity
+- Natural language inference
+- Sentence completion
+- Question answering
 
 Flan-T5 XL is similar to T5 except it is "instruction tuned". In practice, this means that the model is comparable to GPT-3 in multitask benchmarks because it is fine-tuned to follow human inputs / instructions.
 
@@ -37,14 +35,15 @@ truss push
 Paste your Baseten API key if prompted.
 
 For more information, see [Truss documentation](https://truss.baseten.co).
+
 ## FLAN-T5 XL API documentation
 
 ### Input
 
 The input should be a list of dictionaries and may contain the following key:
 
-* `prompt` - the prompt for text generation
-* `bad_words` - an optional list of strings to avoid in the generated output
+- `prompt` - the prompt for text generation
+- `bad_words` - an optional list of strings to avoid in the generated output
 
 The [official documentation](https://huggingface.co/docs/transformers/main/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate) has information on additional parameters.
 
@@ -59,9 +58,9 @@ The [official documentation](https://huggingface.co/docs/transformers/main/en/ma
 
 The result will be a dictionary containing:
 
-* `status` - either `success` or `failed`
-* `data` - the output text
-* `message` - will contain details in the case of errors
+- `status` - either `success` or `failed`
+- `data` - the output text
+- `message` - will contain details in the case of errors
 
 ```
 {
