@@ -3,10 +3,6 @@ base_image:
   python_executable_path: /usr/bin/python3
 description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:
-  engine_build:
-    args: --remove_input_padding --use_gpt_attention_plugin float16 --enable_context_fmha --use_gemm_plugin float16 --max_batch_size
-      64 --use_inflight_batching --max_input_len 300 --max_output_len 300 --paged_kv_cache
-    cmd: examples/llama/build.py
   example_model_input: {"prompt": "What's the meaning of life?"}
   pipeline_parallelism: 1
   tags:
@@ -17,8 +13,7 @@ model_name: NousResearch/Llama-2-13b-chat-hf
 python_version: py311
 requirements:
 - tritonclient[all]
-- pynvml==11.5.0
-- transformers==4.34.0
+- transformers==4.34.1
 resources:
   accelerator: A100
   use_gpu: true

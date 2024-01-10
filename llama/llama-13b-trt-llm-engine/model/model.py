@@ -61,25 +61,9 @@ class Model:
                     fp=self._data_dir,
                     auth_token=hf_access_token,
                 )
-        tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
-        if "engine_build" in self._config["model_metadata"]:
-            if not is_external_engine_repo:
-                build_engine(
-                    model_repo=tokenizer_repository,
-                    config=BuildConfig(
-                        **self._config["model_metadata"]["engine_build"]
-                    ),
-                    dst=self._data_dir,
-                    hf_auth_token=hf_access_token,
-                    tensor_parallelism=tensor_parallel_count,
-                    pipeline_parallelism=pipeline_parallel_count,
-                )
-            else:
-                raise Exception(
-                    "`engine_build` and `engine_repository` can't be specified at the same time"
-                )
 
         # Load Triton Server and model
+        tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
         env = {"triton_tokenizer_repository": tokenizer_repository}
         if hf_access_token is not None:
             env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
