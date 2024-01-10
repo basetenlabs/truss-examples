@@ -24,3 +24,4 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 256
+  num_workers: 2
