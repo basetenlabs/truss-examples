@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/mistral)
-
 # Mistral-7B Truss
 
 This is a [Truss](https://truss.baseten.co/) for Mistral 7B Instruct v0.2. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct v0.2.
@@ -37,7 +35,8 @@ Paste your Baseten API key if prompted.
 For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Mistral 7B API documentation
-This section provides an overview of the Mistral 7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
+
+This section provides an overview of the Mistral 7B API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate text based on the provided instruction.
 
 ### API route: `predict`
 
@@ -48,11 +47,11 @@ This model is designed for our ChatCompletions endpoint:
 
 We expect requests will the following information:
 
-- ```messages``` (str): The prompt you'd like to complete
-- ```max_tokens``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
-- ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
-- ```bad_words_list``` (list, default:[]): A list of words to not include in generated output.
-- ```stop_words_list``` (list, default:[]): A list of words to stop generation upon encountering.
-- ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
+- `messages` (str): The prompt you'd like to complete
+- `max_tokens` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
+- `beam_width` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
+- `bad_words_list` (list, default:[]): A list of words to not include in generated output.
+- `stop_words_list` (list, default:[]): A list of words to stop generation upon encountering.
+- `repetition_penalty` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
 
 This Truss will stream responses back. Responses will be buffered chunks of text.

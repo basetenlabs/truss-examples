@@ -1,15 +1,13 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/whisper)
-
 # Whisper Truss
 
 [Whisper](https://github.com/openai/whisper) is a speech-to-text model by [OpenAI](https://openai.com/blog/whisper/) that transcribes audio in dozens of languages with remarkable accuracy. It is open-source under the [MIT license](https://github.com/openai/whisper/blob/main/LICENSE) and hosted on Baseten as a pre-trained model. Read the [Whisper model card](https://github.com/openai/whisper/blob/main/model-card.md) for more details.
 
 Whisper's leap in transcription quality unlocks tons of compelling use cases, including:
 
-* Moderating audio content
-* Auditing call center logs
-* Automatically generating video subtitles
-* Improving podcast SEO with transcripts
+- Moderating audio content
+- Auditing call center logs
+- Automatically generating video subtitles
+- Improving podcast SEO with transcripts
 
 ## Deploying Whisper
 
@@ -53,7 +51,7 @@ This deployment of Whisper takes input as a JSON dictionary with the key `url` c
 
 ```json
 {
-    "url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"
+  "url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"
 }
 ```
 
@@ -63,19 +61,19 @@ The model returns a fairly lengthy dictionary. For most uses, you'll be interest
 
 ```json
 {
-    "language": "english",
-    "segments": [
-        {
-        "start": 0,
-        "end": 6.5200000000000005,
-        "text": " Four score and seven years ago, our fathers brought forth upon this continent a new nation"
-        },
-        {
-        "start": 6.52,
-        "end": 21.6,
-        "text": " conceived in liberty and dedicated to the proposition that all men are created equal."
-        }
-    ],
-    "text": " Four score and seven years ago, our fathers brought forth upon this continent..."
+  "language": "english",
+  "segments": [
+    {
+      "start": 0,
+      "end": 6.5200000000000005,
+      "text": " Four score and seven years ago, our fathers brought forth upon this continent a new nation"
+    },
+    {
+      "start": 6.52,
+      "end": 21.6,
+      "text": " conceived in liberty and dedicated to the proposition that all men are created equal."
+    }
+  ],
+  "text": " Four score and seven years ago, our fathers brought forth upon this continent..."
 }
 ```

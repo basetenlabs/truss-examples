@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/stable_diffusion)
-
 # Stable Diffusion Truss
 
 This is a [Truss](https://truss.baseten.co/) for Stable Diffusion v2.1 using the `StableDiffusionPipeline` from the `diffusers` library. This README will walk you through how to deploy this Truss on Baseten to get your own instance of the Stable Diffusion.
@@ -69,16 +67,17 @@ curl -X POST "https://app.baseten.co/models/MODEL_ID/predict" \
 
 Again, the model will return a dictionary containing the base64-encoded image, which will need to be decoded and saved.
 
-
 ### Stable Diffusion API documentation
+
 This section provides an overview of the Stable Diffusion API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate images based on the provided parameters.
 
 #### API route: `predict`
+
 The predict route is the primary method for generating images based on a given set of parameters. It takes several parameters:
 
-- __prompt__: The input text you'd like to generate an image for
-- __scheduler__: (optional, default: DDIM) The scheduler used for the diffusion process. Choose from: "ddim", "dpm", "euler", "lms", or "pndm".
-- __seed__: (optional) A random seed for deterministic results. If not provided, a random seed will be generated.
-- __negative_prompt__: (optional) A string representing the negative prompt, or prompts that indicate what you don't want to generate.
+- **prompt**: The input text you'd like to generate an image for
+- **scheduler**: (optional, default: DDIM) The scheduler used for the diffusion process. Choose from: "ddim", "dpm", "euler", "lms", or "pndm".
+- **seed**: (optional) A random seed for deterministic results. If not provided, a random seed will be generated.
+- **negative_prompt**: (optional) A string representing the negative prompt, or prompts that indicate what you don't want to generate.
 
 The API also supports passing any parameter supported by Diffuser's `StableDiffusionPipeline`.
