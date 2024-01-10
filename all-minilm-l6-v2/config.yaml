@@ -1,0 +1,16 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"text": ["I want to eat pasta", "I want to eat pizza"]}
+model_framework: custom
+model_name: all-miniLM-L6-v2
+python_version: py39
+requirements:
+- sentence-transformers==2.2.2
+resources:
+  accelerator: null
+  cpu: '3'
+  memory: 14Gi
+  use_gpu: false
+secrets: {}
+system_packages: []
