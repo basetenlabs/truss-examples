@@ -184,15 +184,17 @@ mistral/mistral-7b-trt-llm-build-engine:
   based_on: trt-llm
   config:
     base_image:
-      image: docker.io/baseten/triton_trt_llm:v2
+      image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_hf_autohash_5
     model_metadata:
       example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
       cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
       tokenizer_repository: "mistralai/Mistral-7B-Instruct-v0.2"
-      engine_build:
-        cmd: examples/llama/build.py
-        args: --remove_input_padding --use_gpt_attention_plugin float16 --enable_context_fmha --use_gemm_plugin float16 --max_batch_size 64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
+      engine:
+        args:
+          max_input_len: 2000
+          max_output_len: 2010
+          max_batch_size: 64
       tensor_parallelism: 1
       pipeline_parallelism: 1
       tags:
