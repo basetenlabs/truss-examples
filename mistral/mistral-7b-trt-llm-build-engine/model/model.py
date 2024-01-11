@@ -3,8 +3,8 @@ from itertools import count
 from pathlib import Path
 from threading import Thread
 
-import numpy as np
 import build_engine_utils
+import numpy as np
 from client import TritonClient, UserData
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor, server_loaded
@@ -72,7 +72,9 @@ class Model:
                     "`engine_build` and `engine_repository` can't be specified at the same time"
                 )
         if "engine" in self._config["model_metadata"]:
-            import sys, shutil, os
+            import os
+            import shutil
+            import sys
 
             sys.path.append("/app/baseten")
             from build_engine import Engine, build_engine
