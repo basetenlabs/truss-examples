@@ -89,9 +89,6 @@ class Model:
         else:
             prompt = model_input.get("prompt")
 
-        prompt = (
-            f"{B_INST} {B_SYS} {DEFAULT_SYSTEM_PROMPT} {E_SYS} {prompt} {E_INST}"
-        )
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
         bad_words_list = model_input.get("bad_words_list", [""])
