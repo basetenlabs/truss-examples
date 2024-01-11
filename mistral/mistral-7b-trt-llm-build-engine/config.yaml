@@ -1,14 +1,15 @@
 base_image:
-  image: docker.io/baseten/triton_trt_llm:v2
+  image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_hf_autohash_5
   python_executable_path: /usr/bin/python3
 description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-  engine_build:
-    args: --remove_input_padding --use_gpt_attention_plugin float16 --enable_context_fmha --use_gemm_plugin float16 --max_batch_size
-      64 --use_inflight_batching --max_input_len 2000 --max_output_len 2000 --paged_kv_cache
-    cmd: examples/llama/build.py
+  engine:
+    args:
+      max_input_len: 2000
+      max_output_len: 2010
+      max_batch_size: 64
   example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
   pipeline_parallelism: 1
   tags:
