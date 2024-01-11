@@ -73,9 +73,11 @@ class Model:
                 )
         if "engine" in self._config["model_metadata"]:
             import sys, shutil, os
-            sys.path.append('/app/baseten')
+
+            sys.path.append("/app/baseten")
             from build_engine import Engine, build_engine
             from trtllm_utils import docker_tag_aware_file_cache
+
             engine = Engine(**self._config["model_metadata"]["engine"])
             engine.repo = tokenizer_repository
             with docker_tag_aware_file_cache("/root/.cache/trtllm"):
