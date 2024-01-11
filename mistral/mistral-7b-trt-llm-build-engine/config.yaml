@@ -9,7 +9,7 @@ model_metadata:
     args:
       max_batch_size: 64
       max_input_len: 2000
-      max_output_len: 2010
+      max_output_len: 2000
   example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
   pipeline_parallelism: 1
   tags:
