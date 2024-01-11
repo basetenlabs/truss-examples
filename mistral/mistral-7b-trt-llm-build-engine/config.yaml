@@ -1,5 +1,5 @@
 base_image:
-  image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_hf_autohash_5
+  image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_20240111
   python_executable_path: /usr/bin/python3
 description: Generate text from a prompt with this seven billion parameter language model.
 model_metadata:

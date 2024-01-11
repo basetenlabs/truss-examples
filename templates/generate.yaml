@@ -184,7 +184,7 @@ mistral/mistral-7b-trt-llm-build-engine:
   based_on: trt-llm
   config:
     base_image:
-      image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_hf_autohash_5
+      image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_20240111
     model_metadata:
       example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
       avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
