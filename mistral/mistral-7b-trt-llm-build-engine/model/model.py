@@ -3,8 +3,8 @@ from itertools import count
 from pathlib import Path
 from threading import Thread
 
+import build_engine_utils
 import numpy as np
-from build_engine_utils import BuildConfig, build_engine
 from client import TritonClient, UserData
 from transformers import AutoTokenizer
 from utils import download_engine, prepare_grpc_tensor, server_loaded
@@ -57,9 +57,9 @@ class Model:
         tokenizer_repository = self._config["model_metadata"]["tokenizer_repository"]
         if "engine_build" in self._config["model_metadata"]:
             if not is_external_engine_repo:
-                build_engine(
+                build_engine_utils.build_engine(
                     model_repo=tokenizer_repository,
-                    config=BuildConfig(
+                    config=build_engine_utils.BuildConfig(
                         **self._config["model_metadata"]["engine_build"]
                     ),
                     dst=self._data_dir,
@@ -71,6 +71,28 @@ class Model:
                 raise Exception(
                     "`engine_build` and `engine_repository` can't be specified at the same time"
                 )
+        if "engine" in self._config["model_metadata"]:
+            import os
+            import shutil
+            import sys
+
+            sys.path.append("/app/baseten")
+            from build_engine import Engine, build_engine
+            from trtllm_utils import docker_tag_aware_file_cache
+
+            engine = Engine(**self._config["model_metadata"]["engine"])
+            engine.repo = tokenizer_repository
+            with docker_tag_aware_file_cache("/root/.cache/trtllm"):
+                built_engine = build_engine(engine, download_remote=True)
+
+                if not os.path.exists(self._data_dir):
+                    os.makedirs(self._data_dir)
+
+                for filename in os.listdir(str(built_engine)):
+                    source_file = os.path.join(str(built_engine), filename)
+                    destination_file = os.path.join(self._data_dir, filename)
+                    if not os.path.exists(destination_file):
+                        shutil.copy(source_file, destination_file)
 
         # Load Triton Server and model
         env = {"triton_tokenizer_repository": tokenizer_repository}
