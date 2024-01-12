@@ -8,7 +8,6 @@ python_version: py39
 requirements:
 - sentence-transformers==2.2.2
 resources:
-  accelerator: null
   cpu: '3'
   memory: 14Gi
   use_gpu: false
