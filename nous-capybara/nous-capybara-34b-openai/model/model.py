@@ -13,6 +13,19 @@ MODEL_NAME = "NousResearch/Nous-Capybara-34B"
 DEFAULT_STREAM = False
 
 
+def _format_prompt(messages: list[dict], add_generation_prompt: bool = True) -> str:
+    formatted_prompts = []
+    for message in messages:
+        if message["role"] == "user":
+            formatted_prompts.append(f"USER: {message['content']}")
+        elif message["role"] == "assistant":
+            formatted_prompts.append(f"ASSISTANT: {message['content']}")
+    if add_generation_prompt:
+        formatted_prompts.append("ASSISTANT:")
+
+    return "\n".join(formatted_prompts)
+
+
 class Model:
     def __init__(self, **kwargs):
         self.model = None
@@ -80,19 +93,8 @@ class Model:
     def predict(self, request: dict):
         stream = request.pop("stream", DEFAULT_STREAM)
         messages = request.pop("messages")
-
-        # TODO: consider setting chat_template
-        formatted_prompts = []
-        for message in messages:
-            if message["role"] == "user":
-                formatted_prompts.append(f"USER: {message['content']}")
-            elif message["role"] == "assistant":
-                formatted_prompts.append(f"ASSISTANT: {message['content']}")
-        formatted_prompts.append("ASSISTANT:")
-        formatted_prompt = "\n".join(formatted_prompts)
-
         input_ids = self.tokenizer(
-            formatted_prompt, return_tensors="pt"
+            _format_prompt(messages), return_tensors="pt"
         ).input_ids.cuda()
 
         generation_args = request.pop("generate_args")
