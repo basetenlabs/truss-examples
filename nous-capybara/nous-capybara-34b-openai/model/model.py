@@ -9,13 +9,7 @@ from transformers import (
 )
 
 MODEL_NAME = "NousResearch/Nous-Capybara-34B"
-MAX_LENGTH = 256
-DO_SAMPLE = True
-REPETITION_PENALTY = 1.3
-NO_REPEAT_NGRAM_SIZE = 5
-TEMPERATURE = 0.7
-TOP_K = 40
-TOP_P = 0.8
+
 DEFAULT_STREAM = False
 
 
@@ -36,22 +30,26 @@ class Model:
         )
 
     def preprocess(self, request: dict):
-        # TODO: update inputs to be OpenAI compatible
         generate_args = {
-            "max_new_tokens": request.get("max_tokens") or MAX_LENGTH,
-            "temperature": request.get("temperature", TEMPERATURE),
-            "top_p": request.get("top_p", TOP_P),
-            "top_k": request.get("top_k", TOP_K),
-            "repetition_penalty": request.get("repetition_penalty", REPETITION_PENALTY),
-            "no_repeat_ngram_size": request.get(
-                "no_repeat_ngram_size", NO_REPEAT_NGRAM_SIZE
-            ),
-            "do_sample": request.get("do_sample", DO_SAMPLE),
+            "max_new_tokens": 256,
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "top_k": 40,
+            "repetition_penalty": 1.3,
+            "no_repeat_ngram_size": 5,
             "use_cache": True,
+            "do_sample": True,
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
-        request["generate_args"] = generate_args
+
+        request["generate_args"] = {
+            k: request[k]
+            if k in request and request[k] is not None
+            else generate_args[k]
+            for k in generate_args.keys()
+        }
+
         return request
 
     def stream(self, input_ids: list, generation_args: dict):
