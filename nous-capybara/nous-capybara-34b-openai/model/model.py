@@ -1,5 +1,4 @@
 from threading import Thread
-from typing import Dict
 
 import torch
 from transformers import (
@@ -17,7 +16,7 @@ NO_REPEAT_NGRAM_SIZE = 5
 TEMPERATURE = 0.7
 TOP_K = 40
 TOP_P = 0.8
-DEFAULT_STREAM = True
+DEFAULT_STREAM = False
 
 
 class Model:
@@ -37,8 +36,9 @@ class Model:
         )
 
     def preprocess(self, request: dict):
+        # TODO: update inputs to be OpenAI compatible
         generate_args = {
-            "max_length": request.get("max_tokens", MAX_LENGTH),
+            "max_new_tokens": request.get("max_tokens") or MAX_LENGTH,
             "temperature": request.get("temperature", TEMPERATURE),
             "top_p": request.get("top_p", TOP_P),
             "top_k": request.get("top_k", TOP_K),
@@ -62,7 +62,7 @@ class Model:
             "generation_config": generation_config,
             "return_dict_in_generate": True,
             "output_scores": True,
-            "max_new_tokens": generation_args["max_length"],
+            "max_new_tokens": generation_args["max_new_tokens"],
             "streamer": streamer,
         }
 
@@ -79,20 +79,31 @@ class Model:
 
         return inner()
 
-    def predict(self, model_input: Dict):
-        prompt = model_input.get("prompt")
-        stream = model_input.get("stream", DEFAULT_STREAM)
-        generation_args = model_input.pop("generate_args")
+    def predict(self, request: dict):
+        stream = request.pop("stream", DEFAULT_STREAM)
+        messages = request.pop("messages")
 
-        formatted_prompt = f"USER: {prompt}\n ASSISTANT:"
+        # TODO: consider setting chat_template
+        formatted_prompts = []
+        for message in messages:
+            if message["role"] == "user":
+                formatted_prompts.append(f"USER: {message['content']}")
+            elif message["role"] == "assistant":
+                formatted_prompts.append(f"ASSISTANT: {message['content']}")
+        formatted_prompts.append("ASSISTANT:")
+        formatted_prompt = "\n".join(formatted_prompts)
+
         input_ids = self.tokenizer(
             formatted_prompt, return_tensors="pt"
         ).input_ids.cuda()
+
+        generation_args = request.pop("generate_args")
 
         if stream:
             return self.stream(input_ids, generation_args)
 
         with torch.no_grad():
             outputs = self.model.generate(inputs=input_ids, **generation_args)
-            model_output = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            return {"output": model_output}
+            if len(outputs) > 0:
+                return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            raise Exception("No results returned from model")
