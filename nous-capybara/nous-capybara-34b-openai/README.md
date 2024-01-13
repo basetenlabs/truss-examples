@@ -10,6 +10,8 @@ This model is designed for our ChatCompletions endpoint:
 - [ChatCompletions endpoint tutorial](https://www.baseten.co/blog/gpt-vs-mistral-migrate-to-open-source-llms-with-minor-code-changes/)
 - [ChatCompletions endpoint reference docs](https://docs.baseten.co/api-reference/openai)
 
+Note that Nous Capybara currently does not support system messages (see [here](https://huggingface.co/NousResearch/Nous-Capybara-34B/discussions/5)).
+
 See the script below for an example of calling the model, with and without streaming:
 ```python
 from openai import OpenAI

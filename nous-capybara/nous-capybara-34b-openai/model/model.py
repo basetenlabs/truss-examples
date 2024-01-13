@@ -20,6 +20,7 @@ def _format_prompt(messages: list[dict], add_generation_prompt: bool = True) -> 
             formatted_prompts.append(f"USER: {message['content']}")
         elif message["role"] == "assistant":
             formatted_prompts.append(f"ASSISTANT: {message['content']}")
+        # Note: Capybara doesn't support system messages. See https://huggingface.co/NousResearch/Nous-Capybara-34B/discussions/8
     if add_generation_prompt:
         formatted_prompts.append("ASSISTANT:")
 
