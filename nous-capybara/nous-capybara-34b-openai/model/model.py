@@ -50,6 +50,7 @@ class Model:
         )
 
     def preprocess(self, request: dict):
+        # Set generate_args to default values.
         default_generate_args = {
             "max_new_tokens": 256,
             "temperature": 0.7,
@@ -62,13 +63,12 @@ class Model:
             "eos_token_id": self.tokenizer.eos_token_id,
             "pad_token_id": self.tokenizer.pad_token_id,
         }
+        request["generate_args"] = default_generate_args
 
-        request["generate_args"] = {
-            k: request[k]
-            if k in request and request[k] is not None
-            else default_generate_args[k]
-            for k in default_generate_args.keys()
-        }
+        # Override generate_args with values provided in the user's request.
+        for k in default_generate_args:
+            if k in request and request[k] is not None:
+                request["generate_args"][k] = request[k]
 
         return request
 
@@ -111,6 +111,4 @@ class Model:
 
         with torch.no_grad():
             outputs = self.model.generate(inputs=input_ids, **generation_args)
-            if len(outputs) > 0:
-                return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            raise Exception("No results returned from model")
+            return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
