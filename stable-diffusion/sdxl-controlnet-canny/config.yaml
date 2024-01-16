@@ -1,7 +1,14 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: Stable Diffusion XL + ControlNet Canny
+model_metadata:
+  model_metadata:
+  example_model_input: {"prompt": "aerial view, a futuristic research complex in a bright foggy jungle, hard lighting"}
+  pretty_name: Stable Diffusion ControlNet
+  avatar_url: https://cdn.baseten.co/production/static/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  tags:
+  - image-generation
+model_name: SDXL ControlNet Canny
 python_version: py39
 requirements:
   - accelerate==0.23.0
