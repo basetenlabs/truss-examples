@@ -2,6 +2,29 @@
 
 This is a [Truss](https://truss.baseten.co/) for [Nous Capybara 34B](https://huggingface.co/NousResearch/Nous-Capybara-34B), compatible with our [bridge endpoint for OpenAI ChatCompletion users](https://docs.baseten.co/api-reference/openai).
 
+## Deployment
+
+First, clone this repository:
+
+```sh
+git clone https://github.com/basetenlabs/truss-examples/
+cd nous-capybara/nous-capybara-34b-openai
+```
+
+Before deployment:
+
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+
+With `nous-capybara/nous-capybara-34b-openai` as your working directory, you can deploy the model with:
+
+```sh
+truss push
+```
+
+Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## Model API reference
 
