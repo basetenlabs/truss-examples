@@ -1,7 +1,13 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: Stable Diffusion XL + ControlNet Depth
+model_metadata:
+  example_model_input: {"prompt": "large bed, abstract painting on the wall, fluffy rug on the floor, ambient lighting, extremely detailed"}
+  pretty_name: Stable Diffusion ControlNet Depth
+  avatar_url: https://cdn.baseten.co/production/static/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  tags:
+  - image-generation
+model_name: SDXL ControlNet Depth
 python_version: py39
 requirements:
   - accelerate==0.23.0
