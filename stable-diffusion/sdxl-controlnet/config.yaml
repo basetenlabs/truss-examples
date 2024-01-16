@@ -1,6 +1,6 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: 
+model_metadata:
   example_model_input: {"prompt": "aerial view, a futuristic research complex in a bright foggy jungle, hard lighting"}
   pretty_name: Stable Diffusion ControlNet
   avatar_url: https://cdn.baseten.co/production/static/stability.png
