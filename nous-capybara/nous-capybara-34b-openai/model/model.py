@@ -14,6 +14,12 @@ DEFAULT_STREAM = False
 
 
 def _format_prompt(messages: list[dict], add_generation_prompt: bool = True) -> str:
+    """Given a list of messages in the form: [{'role': 'user', 'content': 'hello world'}], returns
+    the messages as a string in the form that Nous-Capybara expects:
+    'USER: hello world
+    ASSISTANT:'
+
+    This is a workaround for Nous-Capybara not being configured with a chat template (see https://huggingface.co/NousResearch/Nous-Capybara-34B/discussions/5)"""
     formatted_prompts = []
     for message in messages:
         if message["role"] == "user":
@@ -44,7 +50,7 @@ class Model:
         )
 
     def preprocess(self, request: dict):
-        generate_args = {
+        default_generate_args = {
             "max_new_tokens": 256,
             "temperature": 0.7,
             "top_p": 0.8,
@@ -60,8 +66,8 @@ class Model:
         request["generate_args"] = {
             k: request[k]
             if k in request and request[k] is not None
-            else generate_args[k]
-            for k in generate_args.keys()
+            else default_generate_args[k]
+            for k in default_generate_args.keys()
         }
 
         return request
