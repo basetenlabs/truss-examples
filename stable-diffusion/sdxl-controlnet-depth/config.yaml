@@ -16,7 +16,7 @@ requirements:
   - opencv-python==4.8.0.76
   - diffusers==0.21.2
 resources:
-  accelerator: A100
+  accelerator: A10G:2
   cpu: 3500m
   memory: 20Gi
   use_gpu: true
