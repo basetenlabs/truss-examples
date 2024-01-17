@@ -16,6 +16,8 @@ model_name: Stable Diffusion XL - TensorRT
 model_framework: custom
 model_type: custom
 python_version: py39
+system_packages:
+- python3.10-venv
 requirements:
 - accelerate
 - colored
@@ -38,8 +40,6 @@ requirements:
 - tensorrt==8.6.1.post1
 resources:
   accelerator: A100
-  cpu: 10000m
-  memory: 120Gi
   use_gpu: true
 secrets: {}
 runtime:
