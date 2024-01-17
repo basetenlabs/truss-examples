@@ -23,8 +23,8 @@ model_cache:
     - "*.fp16.safetensors"
 resources:
   accelerator: A10G
-  cpu: '3'
-  memory: 15Gi
+  cpu: "2"
+  memory: 10Gi
   use_gpu: true
 secrets: {}
 system_packages: []
