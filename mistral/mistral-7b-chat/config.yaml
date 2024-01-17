@@ -18,5 +18,5 @@ requirements:
 - hf_transfer==0.1.4
 resources:
   accelerator: A10G
-  memory: 10Gi
+  memory: 25Gi
   use_gpu: true
