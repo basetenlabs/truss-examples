@@ -25,11 +25,11 @@ class Model:
         )
 
     def load(self):
-        tensor_parallel_count = self._config["model_metadata"].get(
-            "tensor_parallelism", 1
+        tensor_parallel_count = self._config["model_metadata"]["engine"]["args"].get(
+            "tp_size", 1
         )
-        pipeline_parallel_count = self._config["model_metadata"].get(
-            "pipeline_parallelism", 1
+        pipeline_parallel_count = self._config["model_metadata"]["engine"]["args"].get(
+            "pp_size", 1
         )
         if "hf_access_token" in self._secrets._base_secrets.keys():
             hf_access_token = self._secrets["hf_access_token"]
