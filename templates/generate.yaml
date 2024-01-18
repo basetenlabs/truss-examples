@@ -195,8 +195,8 @@ mistral/mistral-7b-trt-llm-build-engine:
           max_input_len: 2000
           max_output_len: 2000
           max_batch_size: 64
-      tensor_parallelism: 1
-      pipeline_parallelism: 1
+          tp_size: 1
+          pp_size: 1
       tags:
       - text-generation
       - openai-compatible
@@ -205,7 +205,7 @@ mistral/mistral-7b-trt-llm-build-engine:
     requirements:
     - tritonclient[all]
     - pynvml==11.5.0
-    - transformers==4.34.0
+    - transformers==4.35.0
     resources:
       accelerator: A100
   ignore:

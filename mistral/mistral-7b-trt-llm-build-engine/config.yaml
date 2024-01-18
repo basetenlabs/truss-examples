@@ -10,8 +10,9 @@ model_metadata:
       max_batch_size: 64
       max_input_len: 2000
       max_output_len: 2000
+      pp_size: 1
+      tp_size: 1
   example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
-  pipeline_parallelism: 1
   tags:
   - text-generation
   - openai-compatible
@@ -22,7 +23,7 @@ python_version: py311
 requirements:
 - tritonclient[all]
 - pynvml==11.5.0
-- transformers==4.34.0
+- transformers==4.35.0
 resources:
   accelerator: A100
   use_gpu: true
