@@ -10,7 +10,8 @@ live_reload: false
 model_class_filename: model.py
 model_class_name: Model
 model_framework: custom
-model_metadata: {}
+model_metadata:
+  repo_id: "meta-llama/Llama-2-7b-hf"
 model_module_dir: model
 model_name: Falcon 7B
 model_type: custom
