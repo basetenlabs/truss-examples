@@ -20,6 +20,6 @@ requirements:
 resources:
   accelerator: A10G
   use_gpu: true
-  memory: 25Gi
+  memory: 10Gi
 secrets: {}
 system_packages: []

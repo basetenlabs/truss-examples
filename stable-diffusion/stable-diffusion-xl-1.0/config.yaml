@@ -38,8 +38,8 @@ model_cache:
       - sd_xl_refiner_1.0.safetensors
 resources:
   accelerator: A10G
-  cpu: 3500m
-  memory: 20Gi
+  cpu: "2"
+  memory: 10Gi
   use_gpu: true
 secrets: {}
 system_packages:
