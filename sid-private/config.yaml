@@ -13,7 +13,6 @@ model_name: bert
 python_version: py310
 model_metadata:
   example_model_input: { "text": "Hello my name is {MASK}" }
-  repo_id: "squidarth/sid-private-model"
 
 
 # ### Set up python requirements
