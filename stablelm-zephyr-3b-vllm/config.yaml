@@ -1,0 +1,11 @@
+base_image:
+  image: bolabaseten/vllm-base:dd7e8f5
+  python_executable_path: /usr/bin/python3
+environment_variables:
+  PYTHONPATH: /workspace/
+model_name: StableLM Zephyr 3B
+runtime:
+  predict_concurrency: 128
+resources:
+  accelerator: A10G
+  use_gpu: true
