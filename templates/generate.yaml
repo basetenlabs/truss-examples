@@ -174,6 +174,7 @@ llama/llama-2-7b-trt-llm:
       cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
       engine_repository: "baseten/llama_7b_sq0.8_4096ctx_64bs"
       tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
+      repo_id: "NousResearch/Llama-2-7b-chat-hf"
     description: Generate text from a prompt with this seven billion parameter language model.
     model_name: Llama 7B Chat TRT
   ignore:

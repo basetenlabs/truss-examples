@@ -13,6 +13,7 @@ model_metadata:
   example_model_input: {"prompt": "What's the meaning of life?", "temperature": 0.1, "top_p": 0.75,"num_beams": 4}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  repo_id: meta-llama/Llama-2-7b-chat-hf
   tags:
   - text-generation
 model_module_dir: model

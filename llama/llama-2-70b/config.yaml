@@ -10,7 +10,8 @@ live_reload: false
 model_class_filename: model.py
 model_class_name: Model
 model_framework: custom
-model_metadata: {}
+model_metadata:
+  repo_id: meta-llama/Llama-2-70b-hf
 model_module_dir: model
 model_name: Llama 70B
 model_type: custom
