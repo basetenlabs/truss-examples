@@ -18,23 +18,26 @@ model_type: custom
 python_version: py39
 system_packages:
 - python3.10-venv
+- ffmpeg
+- libsm6
+- libxext6
 requirements:
 - accelerate
 - colored
-- controlnet_aux==0.0.6
 - cuda-python
-- diffusers==0.23.1
 - ftfy
-- matplotlib
 - nvtx
-- onnx==1.14.0
-- onnxruntime==1.15.1
+# [Important] This version is necessary
 - opencv-python==4.8.0.74
 - scipy
 - transformers==4.31.0
+- safetensors
 - hf_transfer
+# [Important] trt may not work with all versions, this version is important
+- diffusers==0.23.1
+- invisible-watermark>=0.2.0
+# [Important] Make sure nvidia packages are at the end
 - --extra-index-url https://pypi.ngc.nvidia.com
-- onnx-graphsurgeon>=0.3.27
 - polygraphy
 - --extra-index-url https://pypi.nvidia.com
 - tensorrt==8.6.1.post1
