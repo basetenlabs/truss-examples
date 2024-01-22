@@ -2,7 +2,7 @@ base_image:
   image: nvcr.io/nvidia/pytorch:23.11-py3
   python_executable_path: /usr/bin/python
 description: Generate original images from text prompts.
-environment_variables: 
+environment_variables:
   HF_HUB_ENABLE_HF_TRANSFER: 1
 external_package_dirs: []
 model_metadata:

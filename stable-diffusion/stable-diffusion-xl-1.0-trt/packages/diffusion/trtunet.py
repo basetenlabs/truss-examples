@@ -1,23 +1,22 @@
+import numpy as np
+import tensorrt as trt
+import torch
 from cuda import cudart
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from polygraphy.backend.common import bytes_from_path
 from polygraphy.backend.trt import engine_from_bytes
-import numpy as np
-import tensorrt as trt
-import torch
-
 
 numpy_to_torch_dtype_dict = {
-    np.uint8      : torch.uint8,
-    np.int8       : torch.int8,
-    np.int16      : torch.int16,
-    np.int32      : torch.int32,
-    np.int64      : torch.int64,
-    np.float16    : torch.float16,
-    np.float32    : torch.float32,
-    np.float64    : torch.float64,
-    np.complex64  : torch.complex64,
-    np.complex128 : torch.complex128
+    np.uint8: torch.uint8,
+    np.int8: torch.int8,
+    np.int16: torch.int16,
+    np.int32: torch.int32,
+    np.int64: torch.int64,
+    np.float16: torch.float16,
+    np.float32: torch.float32,
+    np.float64: torch.float64,
+    np.complex64: torch.complex64,
+    np.complex128: torch.complex128,
 }
 if np.version.full_version >= "1.24.0":
     numpy_to_torch_dtype_dict[np.bool_] = torch.bool
@@ -77,40 +76,49 @@ class TRTUnet:
         # latent_height and latent_width from sample
         # and first one from encoder_hidden_states.
         latent_shape = (
-            self._tensors['encoder_hidden_states'].shape[0],
+            self._tensors["encoder_hidden_states"].shape[0],
             4,
-            self._tensors['sample'].shape[2],
-            self._tensors['sample'].shape[3],
+            self._tensors["sample"].shape[2],
+            self._tensors["sample"].shape[3],
         )
-        if 'latent' not in self._tensors or self._tensors['latent'].shape != latent_shape:
-            self._tensors['latent'] = torch.empty(latent_shape, dtype=torch.float16, device="cuda")
+        if (
+            "latent" not in self._tensors
+            or self._tensors["latent"].shape != latent_shape
+        ):
+            self._tensors["latent"] = torch.empty(
+                latent_shape, dtype=torch.float16, device="cuda"
+            )
 
         # Register these tensors into the context, engine will read from and
         # write to these tensors.
         for name, tensor in self._tensors.items():
             self._context.set_tensor_address(name, tensor.data_ptr())
-        
+
         noerror = self._context.execute_async_v3(self._stream)
         if not noerror:
             raise ValueError(f"ERROR: inference failed.")
-        
+
         # synchronize since above call is async.
         torch.cuda.synchronize()
         return self._tensors
-        
+
     def __call__(self, *args, **kwargs):
         sample = args[0]
         sample_float = sample.float() if sample.dtype != torch.float32 else sample
         timestep = args[1]
-        timestep_float = timestep.float() if timestep.dtype != torch.float32 else timestep
+        timestep_float = (
+            timestep.float() if timestep.dtype != torch.float32 else timestep
+        )
         encoder_hidden_states = kwargs["encoder_hidden_states"]
         text_embeds = kwargs["added_cond_kwargs"]["text_embeds"]
         time_ids = kwargs["added_cond_kwargs"]["time_ids"]
-        result = self.infer({
-            "sample": sample_float,
-            "timestep": timestep_float,
-            "encoder_hidden_states": encoder_hidden_states,
-            "text_embeds": text_embeds,
-            "time_ids": time_ids,
-        })
+        result = self.infer(
+            {
+                "sample": sample_float,
+                "timestep": timestep_float,
+                "encoder_hidden_states": encoder_hidden_states,
+                "text_embeds": text_embeds,
+                "time_ids": time_ids,
+            }
+        )
         return UNet2DConditionOutput(sample=result["latent"])

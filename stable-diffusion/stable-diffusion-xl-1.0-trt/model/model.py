@@ -3,15 +3,14 @@ import time
 from io import BytesIO
 from typing import Any
 
-from PIL import Image
+import tensorrt as trt
+import torch
 from diffusers import AutoencoderKL, DiffusionPipeline, DPMSolverMultistepScheduler
 from diffusion.trtunet import TRTUnet
 from huggingface_hub import snapshot_download
-import torch
-import tensorrt as trt
+from PIL import Image
 
 torch.backends.cuda.matmul.allow_tf32 = True
-
 
 
 class Model:
@@ -19,7 +18,9 @@ class Model:
         self._model = None
 
     def load(self):
-        snapshot_download(repo_id="baseten/sdxl-1.0-trt-8.6.1.post1-engine", local_dir="/app/data")
+        snapshot_download(
+            repo_id="baseten/sdxl-1.0-trt-8.6.1.post1-engine", local_dir="/app/data"
+        )
         vae = AutoencoderKL.from_pretrained(
             "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
         )
@@ -39,7 +40,7 @@ class Model:
 
         self.pipe.unet.to(memory_format=torch.channels_last)
         self.pipe.to("cuda")
-        self.pipe.unet = _wrap_in_tunet(self.pipe.unet, 'engine')
+        self.pipe.unet = _wrap_in_tunet(self.pipe.unet, "engine")
 
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -50,7 +51,7 @@ class Model:
             variant="fp16",
         )
         self.refiner.to("cuda")
-        self.refiner.unet = _wrap_in_tunet(self.refiner.unet, 'engine_xl_refiner')
+        self.refiner.unet = _wrap_in_tunet(self.refiner.unet, "engine_xl_refiner")
 
         # image = self.pipe(prompt="a golden retriever", num_inference_steps=30, output_type="pil").images[0]
         # image = self.refiner(prompt="a golden retriever", num_inference_steps=30, output_type="pil").images[0]
@@ -138,8 +139,8 @@ def _wrap_in_tunet(unet, engine_dir_name):
     unet.to("cpu")
     torch.cuda.empty_cache()
     tunet = TRTUnet(
-        unet, 
-        engine_path=f'/app/data/{engine_dir_name}/unetxl.trt{trt.__version__}.plan',
+        unet,
+        engine_path=f"/app/data/{engine_dir_name}/unetxl.trt{trt.__version__}.plan",
     )
     tunet.load()
     return tunet
