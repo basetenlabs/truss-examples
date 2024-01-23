@@ -1,16 +1,16 @@
-# Stable Diffusion XL Truss
+# Stable Diffusion XL TensorRT Truss
 
 Stable Diffusion XL 1.0 is the largest, most capable open-source image generation model of its kind. This README covers deploying and invoking this model.
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
-## Deploy Stable Diffusion XL
+## Deploy Stable Diffusion XL TensorRT
 
 First, clone this repository:
 
 ```
 git clone https://github.com/basetenlabs/truss-examples/
-cd stable-diffusion-xl-1.0
+cd stable-diffusion/stable-diffusion-xl-1.0-trt
 ```
 
 Before deployment:
@@ -18,7 +18,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `stable-diffusion-xl-1.0` as your working directory, you can deploy the model with:
+With `stable-diffusion-xl-1.0-trt` as your working directory, you can deploy the model with:
 
 ```
 truss push
@@ -32,14 +32,14 @@ Once your Truss is deployed, you can start using SDXL through the Baseten platfo
 
 ### Hardware notes
 
-Model inference runs well on an A10 with 24 GB of VRAM, with invocation time averaging ~8 seconds. If speed is essential, running inference on an A100 cuts invocation time to ~4 seconds.
+Running inference on an A100 cuts invocation time to ~3.5 seconds.
 
-## Invoking Stable Diffusion XL
+## Invoking Stable Diffusion XL TensorRT
 
-Stable Diffusion XL returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
+Stable Diffusion XL TensorRT returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
 
 ```sh
-truss predict -d '{"prompt": "A tree in a field under the night sky"}' | python show.py
+truss predict -d '{"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}' | python show.py
 ```
 
 The output will be a dictionary with a key `data` mapping to a base64 encoded image. It's processed with this script:
@@ -63,12 +63,11 @@ os.system(f'open {file_name}')
 You can also invoke your model via a REST API:
 
 ```
-curl -X POST "https://app.baseten.co/models/MODEL_ID/predict" \
+curl -X POST "https://app.baseten.co/models/{MODEL_ID}/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "prompt": "A tree in a field under the night sky",
-           "use_refiner": True
+           "prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"
          }'
 ```
 

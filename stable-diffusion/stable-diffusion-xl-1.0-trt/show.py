@@ -1,5 +1,5 @@
 """
-truss predict -d '{"prompt": "A heavily constructed solarpunk bridge over a canyon at sunset"}' | python show.py
+truss predict -d '{"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}' | python show.py
 """
 
 import base64
