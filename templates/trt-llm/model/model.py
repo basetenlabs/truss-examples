@@ -10,6 +10,7 @@ from utils import download_engine, server_loaded
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
 
+
 class Model:
     def __init__(self, **kwargs):
         self._data_dir = kwargs["data_dir"]
