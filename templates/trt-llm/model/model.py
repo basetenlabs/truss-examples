@@ -4,12 +4,11 @@ from pathlib import Path
 from threading import Thread
 
 import numpy as np
-from client import TritonClient, UserData
+from client import TritonClient
 from transformers import AutoTokenizer
-from utils import download_engine, prepare_grpc_tensor, server_loaded
+from utils import download_engine, server_loaded
 
 TRITON_MODEL_REPOSITORY_PATH = Path("/packages/inflight_batcher_llm/")
-
 
 class Model:
     def __init__(self, **kwargs):
@@ -68,9 +67,7 @@ class Model:
         )
         self.eos_token_id = self.tokenizer.eos_token_id
 
-    def predict(self, model_input):
-        user_data = UserData()
-        model_name = "ensemble"
+    async def predict(self, model_input):
         stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
 
         if self.uses_openai_api:
@@ -89,46 +86,21 @@ class Model:
         ignore_eos = model_input.get("ignore_eos", False)
         stream = model_input.get("stream", True)
 
-        input0 = [[prompt]]
-        input0_data = np.array(input0).astype(object)
-        output0_len = np.ones_like(input0).astype(np.uint32) * max_tokens
-        bad_words_list = np.array([bad_words_list], dtype=object)
-        stop_words_list = np.array([stop_words_list], dtype=object)
-        stream_data = np.array([[stream]], dtype=bool)
-        beam_width_data = np.array([[beam_width]], dtype=np.uint32)
-        repetition_penalty_data = np.array([[repetition_penalty]], dtype=np.float32)
-
-        inputs = [
-            prepare_grpc_tensor("text_input", input0_data),
-            prepare_grpc_tensor("max_tokens", output0_len),
-            prepare_grpc_tensor("bad_words", bad_words_list),
-            prepare_grpc_tensor("stop_words", stop_words_list),
-            prepare_grpc_tensor("stream", stream_data),
-            prepare_grpc_tensor("beam_width", beam_width_data),
-            prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
-        ]
-
-        if not ignore_eos:
-            end_id_data = np.array([[self.eos_token_id]], dtype=np.uint32)
-            inputs.append(prepare_grpc_tensor("end_id", end_id_data))
-        else:
-            # do nothing, trt-llm by default doesn't stop on `eos`
-            pass
-
-        # Start GRPC stream in a separate thread
-        stream_thread = Thread(
-            target=self.triton_client.start_grpc_stream,
-            args=(user_data, model_name, inputs, stream_uuid),
-        )
-        stream_thread.start()
-
-        def generate():
-            # Yield results from the queue
-            for i in TritonClient.stream_predict(user_data):
+        async def generate():
+            result_iterator = self.triton_client.infer(
+                request_id=stream_uuid,
+                prompt=prompt,
+                max_tokens=max_tokens,
+                beam_width=beam_width,
+                bad_words=bad_words_list,
+                stop_words=stop_words_list,
+                stream=stream,
+                repetition_penalty=repetition_penalty,
+                ignore_eos=ignore_eos,
+                eos_token_id=self.eos_token_id,
+            )
+            async for i in result_iterator:
                 yield i
-
-            # Clean up GRPC stream and thread
-            self.triton_client.stop_grpc_stream(stream_uuid, stream_thread)
 
         if stream:
             return generate()
