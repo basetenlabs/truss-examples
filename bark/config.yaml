@@ -12,6 +12,7 @@ model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/sunoai.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/bark.png
+  example_model_input: Bark this out
   tags:
   - text-to-speech
 model_module_dir: model
