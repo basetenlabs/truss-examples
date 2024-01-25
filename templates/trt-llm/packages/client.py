@@ -56,6 +56,39 @@ class TritonClient:
             time.sleep(2)
             continue
 
+    def build_server_start_command(
+            self,
+            mpi: int = 1,
+            env: dict = {},
+    ):
+        base_command = [
+            "tritonserver",
+            "--model-repository",
+            str(self._model_repository_dir),
+            "--grpc-port",
+            str(GRPC_SERVICE_PORT),
+            "--http-port",
+            str(HTTP_SERVICE_PORT),
+        ]
+
+        if mpi == 1:
+            # To enable verbose logging, uncomment the following code. However, note
+            # that this significantly degrades performance.
+            # return base_command + ["--log-verbose", "1"]
+            return base_command
+
+        mpirun_command = ["mpirun", "--allow-run-as-root"]
+        mpi_commands = [
+            "-n",
+            "1",
+            *base_command,
+            "--disable-auto-complete-config",
+            f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
+        ] * mpi
+
+        return mpirun_command + [": ".join(mpi_commands)]
+
+
     def start_server(
         self,
         mpi: int = 1,
@@ -65,38 +98,7 @@ class TritonClient:
         whether it is running in a TP=1 or TP>1 configuration. This function
         starts the server with the appropriate command."""
 
-        def _build_server_start_command(
-            mpi: int = 1,
-            env: dict = {},
-        ):
-            base_command = [
-                "tritonserver",
-                "--model-repository",
-                str(self._model_repository_dir),
-                "--grpc-port",
-                str(GRPC_SERVICE_PORT),
-                "--http-port",
-                str(HTTP_SERVICE_PORT),
-            ]
-
-            if mpi == 1:
-                # To enable verbose logging, uncomment the following code. However, note
-                # that this significantly degrades performance.
-                # return base_command + ["--log-verbose", "1"]
-                return base_command
-
-            mpirun_command = ["mpirun", "--allow-run-as-root"]
-            mpi_commands = [
-                "-n",
-                "1",
-                *base_command,
-                "--disable-auto-complete-config",
-                f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
-            ] * mpi
-
-            return mpirun_command + [": ".join(mpi_commands)]
-
-        command = _build_server_start_command(mpi, env)
+        command = self.build_server_start_command(mpi, env)
         return subprocess.Popen(
             command,
             env={**os.environ, **env},
