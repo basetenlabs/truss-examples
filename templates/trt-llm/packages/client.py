@@ -57,9 +57,9 @@ class TritonClient:
             continue
 
     def build_server_start_command(
-            self,
-            mpi: int = 1,
-            env: dict = {},
+        self,
+        mpi: int = 1,
+        env: dict = {},
     ):
         base_command = [
             "tritonserver",
@@ -87,7 +87,6 @@ class TritonClient:
         ] * mpi
 
         return mpirun_command + [": ".join(mpi_commands)]
-
 
     def start_server(
         self,
