@@ -14,6 +14,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/bark.png
   tags:
   - text-to-speech
+  example_model_input: '"text to speech models are cool"'
 model_module_dir: model
 model_name: Bark
 model_type: custom
