@@ -93,6 +93,12 @@ Here is an example of the outputs given the following input.
 
 Input image:
 
+![input image](https://github.com/basetenlabs/truss-examples/assets/15642666/a0491a6f-795b-4e2a-aa66-8830f4fb86b3)
+
 Image without background:
 
+![removed-bg](https://github.com/basetenlabs/truss-examples/assets/15642666/a94ceba8-9a62-4e38-9fbe-f6f9382c8086)
+
 Image mask:
+
+![mask](https://github.com/basetenlabs/truss-examples/assets/15642666/14bcaea1-2136-4cdb-b896-bbed9e99fa89)
