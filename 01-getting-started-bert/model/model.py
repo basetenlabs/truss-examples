@@ -22,7 +22,7 @@ class Model:
     # For this Truss example, we define a HuggingFace pipeline, and choose
     # the `text-classification` task, which uses BERT for text classification under the hood.
     #
-    # Note that the the load function runs when the
+    # Note that the load function runs when the
     def load(self):
         self._model = pipeline("text-classification")
 
