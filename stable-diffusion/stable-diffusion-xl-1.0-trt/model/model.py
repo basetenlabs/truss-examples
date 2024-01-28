@@ -47,16 +47,21 @@ class Model:
         self.pipe.text_encoder = _wrap_in_trtclip(
             self.pipe.text_encoder, "engine", cuda_stream
         )
+        self.pipe.text_encoder_2 = _wrap_in_trtclip2(
+            self.pipe.text_encoder_2, "engine", cuda_stream
+        )
 
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
-            text_encoder_2=self.pipe.text_encoder_2,
             vae=self.pipe.vae,
             torch_dtype=torch.float16,
             use_safetensors=True,
             variant="fp16",
         )
         self.refiner.to("cuda")
+        self.refiner.text_encoder_2 = _wrap_in_trtclip2(
+            self.refiner.text_encoder_2, "engine_xl_refiner", cuda_stream
+        )
         self.refiner.unet = _wrap_in_tunet(
             self.refiner.unet, "engine_xl_refiner", cuda_stream
         )
@@ -67,7 +72,6 @@ class Model:
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
-        image.save("/tmp/x.jpg", format="JPEG")  # todo remove
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_b64
 
@@ -149,16 +153,21 @@ def _wrap_in_tunet(unet, engine_dir_name, stream):
 
 
 def _wrap_in_trtclip(clip, engine_dir_name, stream):
-    return _wrap_in_trt(clip, engine_dir_name, "clip", TRTClip, stream)
+    return _wrap_in_trt(clip, engine_dir_name, "clip", TRTClip, stream, is_clip2=False)
 
 
-def _wrap_in_trt(model, engine_dir_name, engine_name, trt_class, stream):
+def _wrap_in_trtclip2(clip, engine_dir_name, stream):
+    return _wrap_in_trt(clip, engine_dir_name, "clip2", TRTClip, stream, is_clip2=True)
+
+
+def _wrap_in_trt(model, engine_dir_name, engine_name, trt_class, stream, **kwargs):
     model.to("cpu")
     torch.cuda.empty_cache()
     trt_model = trt_class(
         model,
         stream=stream,
         engine_path=f"/app/data/{engine_dir_name}/{engine_name}.trt{trt.__version__}.plan",
+        **kwargs,
     )
     trt_model.load()
     return trt_model
