@@ -6,32 +6,15 @@ from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from polygraphy.backend.common import bytes_from_path
 from polygraphy.backend.trt import engine_from_bytes
 
-numpy_to_torch_dtype_dict = {
-    np.uint8: torch.uint8,
-    np.int8: torch.int8,
-    np.int16: torch.int16,
-    np.int32: torch.int32,
-    np.int64: torch.int64,
-    np.float16: torch.float16,
-    np.float32: torch.float32,
-    np.float64: torch.float64,
-    np.complex64: torch.complex64,
-    np.complex128: torch.complex128,
-}
-if np.version.full_version >= "1.24.0":
-    numpy_to_torch_dtype_dict[np.bool_] = torch.bool
-else:
-    numpy_to_torch_dtype_dict[np.bool] = torch.bool
-
 
 class TRTUnet:
-    def __init__(self, orig_unet, engine_path):
+    def __init__(self, orig_unet, engine_path, stream):
         # Load trt engine
         self._orig_unet = orig_unet
         self._engine_path = engine_path
         self._engine = None
         self._context = None
-        self._stream = None
+        self._stream = stream
         self._tensors = {}
         self._binding_indices = {}
 
@@ -41,7 +24,8 @@ class TRTUnet:
     def load(self):
         self._engine = engine_from_bytes(bytes_from_path(self._engine_path))
         self._context = self._engine.create_execution_context()
-        self._stream = cudart.cudaStreamCreate()[1]
+        if self._stream is None:
+            self._stream = cudart.cudaStreamCreate()[1]
 
         # Couldn't find an engine api to get binding id from name, also
         # calling engine could be expensive, so cache these upfront. These

@@ -5,7 +5,9 @@ from typing import Any
 
 import tensorrt as trt
 import torch
+from cuda import cudart
 from diffusers import AutoencoderKL, DiffusionPipeline, DPMSolverMultistepScheduler
+from diffusion.trtclip import TRTClip
 from diffusion.trtunet import TRTUnet
 from huggingface_hub import snapshot_download
 from PIL import Image
@@ -38,9 +40,13 @@ class Model:
         # DPM++ 2M SDE Karras (for 30+ steps, when speed doesn't matter)
         # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config, algorithm_type="sde-dpmsolver++", use_karras_sigmas=True)
 
+        cuda_stream = cudart.cudaStreamCreate()[1]
         self.pipe.unet.to(memory_format=torch.channels_last)
         self.pipe.to("cuda")
-        self.pipe.unet = _wrap_in_tunet(self.pipe.unet, "engine")
+        self.pipe.unet = _wrap_in_tunet(self.pipe.unet, "engine", cuda_stream)
+        self.pipe.text_encoder = _wrap_in_trtclip(
+            self.pipe.text_encoder, "engine", cuda_stream
+        )
 
         self.refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -51,7 +57,9 @@ class Model:
             variant="fp16",
         )
         self.refiner.to("cuda")
-        self.refiner.unet = _wrap_in_tunet(self.refiner.unet, "engine_xl_refiner")
+        self.refiner.unet = _wrap_in_tunet(
+            self.refiner.unet, "engine_xl_refiner", cuda_stream
+        )
 
         # image = self.pipe(prompt="a golden retriever", num_inference_steps=30, output_type="pil").images[0]
         # image = self.refiner(prompt="a golden retriever", num_inference_steps=30, output_type="pil").images[0]
@@ -59,6 +67,7 @@ class Model:
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
+        image.save("/tmp/x.jpg", format="JPEG")  # todo remove
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_b64
 
@@ -135,12 +144,21 @@ class Model:
         return {"status": "success", "data": b64_results, "time": end_time}
 
 
-def _wrap_in_tunet(unet, engine_dir_name):
-    unet.to("cpu")
+def _wrap_in_tunet(unet, engine_dir_name, stream):
+    return _wrap_in_trt(unet, engine_dir_name, "unetxl", TRTUnet, stream)
+
+
+def _wrap_in_trtclip(clip, engine_dir_name, stream):
+    return _wrap_in_trt(clip, engine_dir_name, "clip", TRTClip, stream)
+
+
+def _wrap_in_trt(model, engine_dir_name, engine_name, trt_class, stream):
+    model.to("cpu")
     torch.cuda.empty_cache()
-    tunet = TRTUnet(
-        unet,
-        engine_path=f"/app/data/{engine_dir_name}/unetxl.trt{trt.__version__}.plan",
+    trt_model = trt_class(
+        model,
+        stream=stream,
+        engine_path=f"/app/data/{engine_dir_name}/{engine_name}.trt{trt.__version__}.plan",
     )
-    tunet.load()
-    return tunet
+    trt_model.load()
+    return trt_model
