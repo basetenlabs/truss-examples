@@ -153,9 +153,10 @@ class TritonClient:
             inputs_iterator=input_generator(),
         )
 
-        async for result in result_iterator:
-            if not isinstance(result, InferenceServerException):
-                res = result[0].as_numpy("text_output")
-                yield res[0].decode("utf-8")
+        async for response in result_iterator:
+            result, error = response
+            if result:
+                result = result.as_numpy("text_output")
+                yield result[0].decode("utf-8")
             else:
-                yield json.dumps({"status": "error", "message": result.message()})
+                yield json.dumps({"status": "error", "message": error.message()})
