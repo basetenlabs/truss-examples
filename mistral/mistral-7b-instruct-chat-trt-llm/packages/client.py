@@ -2,13 +2,12 @@ import json
 import os
 import subprocess
 import time
-from functools import partial
 from pathlib import Path
+from typing import AsyncGenerator, Optional
 
 import numpy as np
 import tritonclient.grpc.aio as grpcclient
 import tritonclient.http as httpclient
-from tritonclient.utils import InferenceServerException
 from utils import (
     GRPC_SERVICE_PORT,
     HTTP_SERVICE_PORT,
@@ -20,21 +19,21 @@ from utils import (
 
 class TritonClient:
     def __init__(self, data_dir: Path, model_repository_dir: Path, parallel_count=1):
-        self._data_dir = data_dir
-        self._model_repository_dir = model_repository_dir
+        self._data_dir: Path = data_dir
+        self._model_repository_dir: Path = model_repository_dir
         self._parallel_count = parallel_count
-        self._http_client = None
-        self.grpc_client_instance = None
+        self._http_client: Optional[httpclient.InferenceServerClient] = None
+        self.grpc_client_instance: Optional[grpcclient.InferenceServerClient] = None
 
-    def start_grpc_stream(self):
+    def start_grpc_stream(self) -> grpcclient.InferenceServerClient:
         if self.grpc_client_instance:
-            return
+            return self.grpc_client_instance
 
-        self.grpc_client_instance = grpcclient.InferenceServerClient(
+        return grpcclient.InferenceServerClient(
             url=f"localhost:{GRPC_SERVICE_PORT}", verbose=False
         )
 
-    def load_server_and_model(self, env: dict):
+    def load_server_and_model(self, env: dict) -> None:
         """Loads the Triton server and the model."""
         if not server_loaded():
             prepare_model_repository(self._data_dir)
@@ -52,15 +51,11 @@ class TritonClient:
                 time.sleep(2)
                 continue
 
-        while self._http_client.is_model_ready(model_name="ensemble") == False:
+        while not self._http_client.is_model_ready(model_name="ensemble"):
             time.sleep(2)
             continue
 
-    def build_server_start_command(
-        self,
-        mpi: int = 1,
-        env: dict = {},
-    ):
+    def build_server_start_command(self, mpi: int = 1, env: dict = {}) -> list:
         base_command = [
             "tritonserver",
             "--model-repository",
@@ -72,27 +67,31 @@ class TritonClient:
         ]
 
         if mpi == 1:
-            # To enable verbose logging, uncomment the following code. However, note
-            # that this significantly degrades performance.
-            # return base_command + ["--log-verbose", "1"]
             return base_command
 
         mpirun_command = ["mpirun", "--allow-run-as-root"]
-        mpi_commands = [
-            "-n",
-            "1",
-            *base_command,
-            "--disable-auto-complete-config",
-            f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
-        ] * mpi
+        # Generate mpi_commands with a unique shm-region-prefix-name for each MPI process
+        mpi_commands = []
+        for i in range(mpi):
+            mpi_command = [
+                "-n",
+                "1",
+                *base_command,
+                "--disable-auto-complete-config",
+                f"--backend-config=python,shm-region-prefix-name=prefix{str(i)}_",
+            ]
+            mpi_commands.append(" ".join(mpi_command))
 
-        return mpirun_command + [": ".join(mpi_commands)]
+        # Join the individual mpi commands with ' : ' as required by mpirun syntax for multiple commands
+        combined_mpi_commands = " : ".join(mpi_commands)
+
+        return mpirun_command + [combined_mpi_commands]
 
     def start_server(
         self,
         mpi: int = 1,
         env: dict = {},
-    ):
+    ) -> subprocess.Popen:
         """Triton Inference Server has different startup commands depending on
         whether it is running in a TP=1 or TP>1 configuration. This function
         starts the server with the appropriate command."""
@@ -114,13 +113,10 @@ class TritonClient:
         stream: bool = True,
         repetition_penalty: float = 1.0,
         ignore_eos: bool = False,
-        eos_token_id: int = None,
+        eos_token_id: Optional[int] = None,
         model_name="ensemble",
-    ):
+    ) -> AsyncGenerator[str, None]:
         """Infer a response from the model."""
-        if not self.grpc_client_instance:
-            self.start_grpc_stream()
-
         prompt_data = np.array([[prompt]], dtype=object)
         output_len_data = np.ones_like(prompt_data).astype(np.uint32) * max_tokens
         bad_words_data = np.array([bad_words], dtype=object)
@@ -149,6 +145,7 @@ class TritonClient:
         async def input_generator():
             yield {"model_name": model_name, "inputs": inputs, "request_id": request_id}
 
+        self.grpc_client_instance = self.start_grpc_stream()
         result_iterator = self.grpc_client_instance.stream_infer(
             inputs_iterator=input_generator(),
         )
