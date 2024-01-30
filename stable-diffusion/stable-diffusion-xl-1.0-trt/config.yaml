@@ -16,7 +16,21 @@ model_name: Stable Diffusion XL - TensorRT
 model_framework: custom
 model_type: custom
 model_cache:
-- repo_id: "baseten/sdxl-1.0-trt-8.6.1.post1-engine"
+  - repo_id: "baseten/sdxl-1.0-trt-8.6.1.post1-engine"
+  - repo_id: madebyollin/sdxl-vae-fp16-fix
+    allow_patterns:
+      - config.json
+      - diffusion_pytorch_model.safetensors
+  - repo_id: stabilityai/stable-diffusion-xl-base-1.0
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - sd_xl_base_1.0.safetensors
+  - repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - sd_xl_refiner_1.0.safetensors
 python_version: py39
 system_packages:
 - python3.10-venv
