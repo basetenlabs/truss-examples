@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  llm_model: databricks/dolly-v2-3b
+model_name: JsonFormatter
+python_version: py311
+requirements:
+- jsonformer
+- transformers
+- accelerate
+resources:
+  accelerator: A10G
+secrets: {}
+system_packages: []
