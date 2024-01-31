@@ -1,7 +1,9 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from jsonformer.main import Jsonformer
 import json
 from pathlib import Path
+
+from jsonformer.main import Jsonformer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -15,10 +17,13 @@ class Model:
         self._default_schema = None
 
     def load(self):
-        self._model = AutoModelForCausalLM.from_pretrained(self._model_name, use_cache=True, device_map="auto")
-        self._tokenizer = AutoTokenizer.from_pretrained(self._model_name, use_fast=True, use_cache=True)
+        self._model = AutoModelForCausalLM.from_pretrained(
+            self._model_name, use_cache=True, device_map="auto"
+        )
+        self._tokenizer = AutoTokenizer.from_pretrained(
+            self._model_name, use_fast=True, use_cache=True
+        )
         self._default_schema = json.loads((self._data_dir / "schema.json").read_text())
-        
 
     def predict(self, model_input: dict):
         schema = self._default_schema
