@@ -12,7 +12,7 @@ model_framework: custom
 model_name: Jina Embeddings V2 Base EN
 python_version: py39
 requirements:
-- transformers==4.34.1
+- transformers==4.37.2
 - torch==2.0.1
 resources:
   accelerator: null
