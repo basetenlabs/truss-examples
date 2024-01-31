@@ -7,6 +7,7 @@ model_metadata:
   cover_image_url: https://cdn.baseten.co/production/static/explore/jina-embeddings.png
   tags:
   - text-embeddings
+  repo_id: "jinaai/jina-embeddings-v2-base-en"
 model_framework: custom
 model_name: Jina Embeddings V2 Base EN
 python_version: py39
@@ -18,5 +19,6 @@ resources:
   cpu: '4'
   memory: 16Gi
   use_gpu: false
-secrets: {}
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 system_packages: []
