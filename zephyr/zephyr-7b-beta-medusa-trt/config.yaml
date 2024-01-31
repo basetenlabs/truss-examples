@@ -1,0 +1,22 @@
+base_image:
+  image: baseten/trtllm-new-base-pankaj:v1
+  python_executable_path: /usr/bin/python3
+description: Zephyr 7B Alpha, optimized for chat! Compatible with OpenAI Client
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: 1
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/huggingface_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/zephyr_profile.png
+  model: HuggingFaceH4/zephyr-7b-beta
+  pretty_name: Zephyr 7B Beta TensorRT-LLM Medusa
+  tags:
+  - text-generation
+model_name: Zephyr 7B Beta TensorRT-LLM Medusa
+python_version: py310
+requirements:
+- hf_transfer
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 1
