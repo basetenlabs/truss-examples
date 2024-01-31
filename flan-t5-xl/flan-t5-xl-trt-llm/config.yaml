@@ -12,10 +12,8 @@ requirements:
 resources:
   accelerator: A100
   use_gpu: true
-secrets:
-  hf_access_token: HF_TOKEN_HERE
 runtime:
-  predict_concurrency: 256
+  predict_concurrency: 16
 system_packages:
 - libopenmpi-dev
 - mpich

@@ -9,13 +9,12 @@ from transformers import AutoConfig, AutoTokenizer, set_seed
 
 class Model:
     def __init__(self, **kwargs):
+        # self._secrets = kwargs["secrets"]
         self._config = kwargs["config"]
         self._data_dir = kwargs["data_dir"]
-        self._secrets = kwargs["secrets"]
         self.model = None
         self.tokenizer = None
         self.model_config = None
-        self.hf_token = self._secrets["hf_access_token"]
 
     def load(self):
         hugging_face_repo = self._config["model_metadata"]["repo_id"]
@@ -23,7 +22,6 @@ class Model:
             hugging_face_repo,
             local_dir=os.path.join(self._data_dir, "weights"),
             max_workers=4,
-            use_auth_token=self.hf_token,
         )
         print("Downloaded weights succesfully!")
 
