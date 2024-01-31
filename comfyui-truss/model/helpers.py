@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -7,8 +8,6 @@ import urllib.parse
 import urllib.request
 
 import requests
-
-import logging
 
 COMFYUI_DIR = "/app/ComfyUI"
 
