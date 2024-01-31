@@ -4,7 +4,7 @@ base_image:
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  repo_id: htrivedi99/flan-t5-xl-trt-test
+  repo_id: baseten/flan-t5-xl-trt-A100-tp1-1024x200
 model_name: Flan T5 XL TRT
 requirements:
   - mpi4py==3.1.5
