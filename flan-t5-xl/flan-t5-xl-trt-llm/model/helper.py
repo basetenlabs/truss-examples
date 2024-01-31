@@ -1,11 +1,9 @@
-import tensorrt as trt
-import tensorrt_llm
-import torch
-
-print("imports tensorrt llm successfully")
 import json
 from pathlib import Path
 
+import tensorrt as trt
+import tensorrt_llm
+import torch
 from tensorrt_llm import logger
 from tensorrt_llm._utils import torch_to_numpy, trt_dtype_to_torch
 from tensorrt_llm.runtime import ModelConfig, SamplingConfig

@@ -1,44 +1,15 @@
 import os
 import random
-import subprocess
-
-from huggingface_hub import snapshot_download
-from transformers import AutoConfig, AutoTokenizer, set_seed
-
-# # Don't ask why we need to do this
-# install_command = ["pip", "install", "tensorrt_llm", "-U", "--pre", "--extra-index-url", "https://pypi.nvidia.com"]
-# subprocess.run(install_command, check=True)
-# print("TRT package installed.")
-#
-# install_command = ["pip", "uninstall", "torch", "-y"]
-# subprocess.run(install_command, check=True)
-# install_command = ["pip", "uninstall", "triton", "-y"]
-# subprocess.run(install_command, check=True)
-#
-# install_command = ["pip", "install", "torch==2.1.0"]
-# subprocess.run(install_command, check=True)
-# install_command = ["pip", "install", "triton==2.1.0"]
-# subprocess.run(install_command, check=True)
-
-
-install_command = ["pip", "list"]
-subprocess.run(install_command, check=True)
-
 
 import torch
+from huggingface_hub import snapshot_download
 from model.helper import TRTLLMEncDecModel
-
-# import tensorrt as trt
-# import tensorrt_llm
-# print("imports tensorrt llm successfully")
-# from tensorrt_llm import logger
-# from tensorrt_llm._utils import torch_to_numpy, trt_dtype_to_torch
-# from tensorrt_llm.runtime import ModelConfig, SamplingConfig
+from transformers import AutoConfig, AutoTokenizer, set_seed
 
 
 class Model:
     def __init__(self, **kwargs):
-        # self._config = kwargs["config"]
+        self._config = kwargs["config"]
         self._data_dir = kwargs["data_dir"]
         self._secrets = kwargs["secrets"]
         self.model = None
@@ -47,8 +18,9 @@ class Model:
         self.hf_token = self._secrets["hf_access_token"]
 
     def load(self):
+        hugging_face_repo = self._config["model_metadata"]["repo_id"]
         snapshot_download(
-            "htrivedi99/flan-t5-xl-trt-test",
+            hugging_face_repo,
             local_dir=os.path.join(self._data_dir, "weights"),
             max_workers=4,
             use_auth_token=self.hf_token,

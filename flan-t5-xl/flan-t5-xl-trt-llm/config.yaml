@@ -1,15 +1,14 @@
+base_image:
+  image: bolabaseten/tensorrt-llm-python:latest
+  python_executable_path: /usr/bin/python3
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_metadata:
+  repo_id: htrivedi99/flan-t5-xl-trt-test
 model_name: Flan T5 XL TRT
-python_version: py310
 requirements:
   - mpi4py==3.1.5
   - pynvml==11.5.0
-  - transformers==4.36.1
-  - accelerate==0.25.0
-  - tensorrt-llm --pre --index-url https://pypi.nvidia.com
-  - torch==2.1.0
 resources:
   accelerator: A100
   use_gpu: true
