@@ -44,6 +44,28 @@ def download_tempfile(file_url, filename):
         return None
 
 
+def add_custom_node(git_url: str):
+    repo = git_url.split(".")
+    if repo[-1] == "git":
+        repo_name = repo[-2].split("/")[-1]
+    else:
+        repo_name = repo[1].split("/")[-1]
+
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            git_url,
+            f"{os.getcwd()}/custom_nodes/{repo_name}",
+            "--recursive",
+        ]
+    )
+    print(
+        "all directories in comfy custom nodes: ",
+        os.listdir(f"{os.getcwd()}/custom_nodes"),
+    )
+
+
 def setup_comfyui(original_working_directory, data_dir):
     git_repo_url = "https://github.com/comfyanonymous/ComfyUI.git"
     commit_hash = "248aa3e56355d75ac3d8632af769e6c700d9bfac"
@@ -68,12 +90,17 @@ def setup_comfyui(original_working_directory, data_dir):
 
         if data and len(data) > 0:
             for model in data:
-                download_model(
-                    model_url=model.get("url"),
-                    destination_path=os.path.join(
-                        os.getcwd(), "models", model.get("path")
-                    ),
-                )
+                if model.get("path") == "custom_nodes":
+                    # Install custom nodes
+                    add_custom_node(model.get("url"))
+                else:
+                    # Download checkpoints, loras, vaes, etc.
+                    download_model(
+                        model_url=model.get("url"),
+                        destination_path=os.path.join(
+                            os.getcwd(), "models", model.get("path")
+                        ),
+                    )
 
         print("Finished downloading models!")
 

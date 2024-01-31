@@ -115,6 +115,20 @@ In the JSON workflow file, there might be some inputs such as the positive promp
 
 This is not the entire JSON workflow file, but the nodes 6, 7, and 11 accept variable inputs. You can do this by using the handlebars format of `{{variable_name_here}}`.
 
+## Custom Nodes
+If your workflow uses custom nodes you add it to the `data/model.json`. Let's take an example. Suppose you want to add the [UltimateSDUpscale](https://github.com/ssitu/ComfyUI_UltimateSDUpscale) custom node. Inside your `data/model.json` you can define it like so:
+
+```json
+[
+    {
+        "url": "https://github.com/ssitu/ComfyUI_UltimateSDUpscale",
+        "path": "custom_nodes"
+    }
+]
+```
+
+The `url` must point to a github url and the `path` must be "custom_nodes".
+
 Once you have both the `data/comfy_ui_workflow.json` and `data/model.json` set up correctly we can begin deployment.
 
 ## Deployment
