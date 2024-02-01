@@ -12,6 +12,7 @@ requirements:
 - gfpgan==1.3.8
 - realesrgan==0.3.0
 - basicsr==1.4.2
+- torchvision==0.16.2
 resources:
   cpu: "3"
   memory: 8Gi
