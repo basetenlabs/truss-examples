@@ -22,7 +22,7 @@ TARGET_MODEL_KEY = "target_model"
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--prompt", type=str, default="Once upon a time")
-    parser.add_argument("--max_num_generated_tokens", type=int, default=60)
+    parser.add_argument("--max_num_generated_tokens", type=int, default=30)
 
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--runtime_top_k", type=int, default=None)
@@ -31,8 +31,12 @@ def parse_arguments():
     parser.add_argument("--bad_word_list", type=str, default=None)
     parser.add_argument("--stop_words_list", type=str, default=None)
 
-    parser.add_argument("--concurrent", type=bool, default=False)
-    parser.add_argument("--verbose", type=bool, default=True)
+    parser.add_argument(
+        "--concurrent", action=argparse.BooleanOptionalAction, default=False
+    )
+    parser.add_argument(
+        "--verbose", action=argparse.BooleanOptionalAction, default=True
+    )
     parser.add_argument("--iteration_delay", type=float, default=0.0)
     args = parser.parse_args()
 
@@ -103,26 +107,24 @@ if __name__ == "__main__":
 
         helpers.enable_timing()
 
-        with helpers.timeit("A - speculative_gen"):
-            state_co = spec_dec.run_speculative_inference(
-                target_model,
-                draft_model,
-                request,
-                max_num_draft_tokens=4,
-                result_queue=asyncio.Queue(),
-                verbose=args.verbose,
-                iteration_delay=args.iteration_delay,
-            )
+        state_co = spec_dec.run_speculative_inference(
+            target_model,
+            draft_model,
+            request,
+            max_num_draft_tokens=4,
+            result_queue=asyncio.Queue(),
+            verbose=args.verbose,
+            iteration_delay=args.iteration_delay,
+        )
 
-        with helpers.timeit("B - direct_gen"):
-            direct_gen_co = target_model.generate(
-                request.prompt,
-                request.max_num_generated_tokens,
-                request.request_id + "123",
-                request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
-            )
+        direct_gen_co = target_model.generate(
+            request.prompt,
+            request.max_num_generated_tokens,
+            request.request_id + "123",
+            request.sampling_config,
+            request.bad_word_list,
+            request.stop_words_list,
+        )
 
         if args.concurrent:
             state = asyncio.ensure_future(state_co)
@@ -131,16 +133,18 @@ if __name__ == "__main__":
             state = state_co
             direct_gen = direct_gen_co
 
-        with helpers.timeit("A - await speculative_gen"):
+        with helpers.timeit("NEW TOTAL - speculative_gen"):
             state_result = await state
-            print(f"Final text:\n{state_result.get_current_text()}")
-            print(
-                f"Average num of accepted draft tokens: "
-                f"{state_result.get_aveage_num_accepted_draft_tokens():.2f}"
-            )
-        with helpers.timeit("B - await direct_gen"):
-            direct_gen_result = await direct_gen
-            print(f"Direct Gen text:\n{direct_gen_result}")
+            print(f"SpecDec result:\n{state_result.get_current_text()}")
+            if args.verbose:
+                print(
+                    f"Average num of accepted draft tokens: "
+                    f"{state_result.get_aveage_num_accepted_draft_tokens():.2f}"
+                )
+        with helpers.timeit("OLD TOTAL - direct_gen"):
+            direct_text, direct_ids = await direct_gen
+            print(f"Direct Gen text:\n{direct_text}\n`")
+            # print("{len(direct_ids)}` tokens.")
 
         helpers.show_timings()
 
@@ -165,4 +169,8 @@ Tokenize for Target model      0.005022  0.000239  21    4181.758724  0.000187  
 Verify+Generate(target_model)  0.339970  0.016189  21      61.770136  0.015723  0.017120
 B - await direct_gen           0.846346  0.846346   1       1.181550  0.846346  0.846346
 Generate(target_model)         0.845856  0.845856   1       1.182234  0.845856  0.845856
+
+
+  "▁L": 393,
+  "▁LO": 6807,
 """

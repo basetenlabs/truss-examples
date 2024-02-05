@@ -13,6 +13,13 @@ model_metadata:
   tokenizer_repository: mistralai/Mistral-7B-v0.1
 python_version: py311
 requirements:
+  - colorama
+  - csv
+  - huggingface_hub
+  - numpy
+  - pandas
+  - pydantic
+  - transformers
   - tritonclient[all]
 resources:
   accelerator: A100

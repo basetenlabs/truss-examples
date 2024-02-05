@@ -11,7 +11,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(yaml_file)
 
     async def main(streaming: bool):
-        model_instance = model.Model(config=config, secrets={})
+        model_instance = model.Model(data_dir="", config=config, secrets={})
         model_instance.load()
 
         request = helpers.GenerationRequest(

@@ -2,7 +2,7 @@ import asyncio
 import functools
 import os
 import time
-from typing import Sequence, Type
+from typing import Sequence
 
 import colorama
 import numpy as np
@@ -54,24 +54,32 @@ class SpeculationState:
         return len(self._current_text)
 
     def update_draft(self, combined_draft: str) -> None:
-        # `combined_draft` == `current_text` + `draft_text`
-        # TODO: explore if existing tokenization from previous iteration can
-        # be reused safely. This is related to whether below check ever fails.
-        with helpers.timeit(f"Tokenize for Target model"):
+        # `combined_draft` = `current_text` + `draft_text`
+        with helpers.timeit(f"Tokenize for Target model", skip=True):
             new_ids = np.squeeze(
                 self._target_tokenizer.encode(combined_draft, return_tensors="np")
             )
         current_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
 
         # Verify that adding anything to `current_text` did not change tokenization.
-        # This could happen if by adding chars, a "merged" token would
-        # represent both old and new chars more compactly.
-        # In that case we would need to track back to the last point where tokens
-        # still agree and continue from there.
+        # This can happen if by adding chars, a "merged" token would
+        # represent both old and new chars more compactly. In that case previously
+        # confirmed chars get mixed together with draft chars.
         if not np.alltrue(self._current_ids == current_ids_reencoded):
-            raise NotImplementedError(
-                f"Dang!!! {self._current_ids} vs.\n {current_ids_reencoded}"
-            )
+            # There are two options to deal with this case:
+            # A: "Demote" the changed token from confirmed to draft status. The problem
+            #    though is, that this would overwrite a previous decision of the target
+            #    model about what exact token should be sampled here.
+            # B: Discard the draft all together (even though it might end up being good)
+            #    and let the target model generate a new token after the original token.
+            if self._debugging:
+                print(
+                    f"Draft  : '{combined_draft}'\nDraft causes token flip "
+                    "of confirmed text! Must sample target model directly to recover."
+                )
+            self._draft_ids = None
+            self._draft_text = None
+            return
 
         self._draft_ids = draft_ids
         self._draft_text = combined_draft[self.text_len :]
@@ -96,6 +104,8 @@ class SpeculationState:
     ) -> None:
         # Both inputs include the whole context.
         if self._debugging:
+            if self._draft_text == None:
+                self._draft_text = ""  # To make the following analysis easier.
             added_text = verified_text[self.text_len :]
             accepted_text = os.path.commonprefix([added_text, self._draft_text])
             if len(accepted_text) < len(self._draft_text):
@@ -104,9 +114,12 @@ class SpeculationState:
                 disagreed_text = ""
             new_text = added_text[len(self._draft_text) :]
 
-            accepted_tokens = os.path.commonprefix(
-                [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
-            )
+            if self._draft_ids is None:
+                accepted_tokens = []
+            else:
+                accepted_tokens = os.path.commonprefix(
+                    [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
+                )
 
             self._num_updates += 1
             self._sum_accepted_tokens += len(accepted_tokens)
@@ -169,7 +182,7 @@ class ModelWrapper:
         sampling_config: helpers.SamplingConfig | None = None,
         bad_word_list: Sequence[str] | None = None,
         stop_words_list: Sequence[str] | None = None,
-    ) -> str:
+    ) -> tuple[str, np.ndarray[int]]:
         with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
             input_ids = np.squeeze(
                 self._tokenizer.encode(input_text, return_tensors="np")
@@ -192,7 +205,7 @@ class ModelWrapper:
             output_ids = helpers.extract_trtllm_outputs(result)
         with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
-        return output_text
+        return output_text, output_ids
 
     async def verify_and_generate(
         self,
@@ -202,7 +215,7 @@ class ModelWrapper:
         sampling_config: helpers.SamplingConfig | None = None,
         bad_word_list: Sequence[str] | None = None,
         stop_words_list: Sequence[str] | None = None,
-    ):
+    ) -> tuple[str, np.ndarray[int]]:
         num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
         # TODO: check len of draft IDs, warn if throw away.
         with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
@@ -240,39 +253,55 @@ async def run_speculative_inference(
     iteration_delay: float = 0.0,
 ) -> SpeculationState:
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
+    max_total_tokens = state.num_tokens + request.max_num_generated_tokens
     while True:
         num_draft_tokens = min(
             max_num_draft_tokens,
-            request.max_num_generated_tokens - state.num_tokens,
+            max_total_tokens - state.num_tokens,
         )
-        state.update_draft(
-            await draft_model.generate(
-                state.get_current_text(),
-                num_draft_tokens,
-                request.request_id,
-                request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
-            )
-        )
-        confirmed_ids, draft_ids = state.get_verification_inputs()
-        if len(draft_ids) > max_num_draft_tokens:
-            # print(draft_ids, state._draft_text)
-            draft_ids = draft_ids[:max_num_draft_tokens]
-
-        verified_text, verfied_ids = await target_model.verify_and_generate(
-            confirmed_ids,
-            draft_ids,
+        combined_draft, _ = await draft_model.generate(
+            state.get_current_text(),
+            num_draft_tokens,
             request.request_id,
             request.sampling_config,
             request.bad_word_list,
             request.stop_words_list,
         )
+        state.update_draft(combined_draft)
+        if iteration_delay:
+            time.sleep(iteration_delay)
+
+        verification_inputs = state.get_verification_inputs()
+        if verification_inputs is None:
+            verified_text, verfied_ids = await target_model.generate(
+                state.get_current_text(),
+                1,
+                request.request_id,
+                request.sampling_config,
+                request.bad_word_list,
+                request.stop_words_list,
+            )
+        else:
+            confirmed_ids, draft_ids = verification_inputs
+            if len(draft_ids) > max_num_draft_tokens:
+                # print(draft_ids, state._draft_text)
+                draft_ids = draft_ids[:max_num_draft_tokens]
+
+            verified_text, verfied_ids = await target_model.verify_and_generate(
+                confirmed_ids,
+                draft_ids,
+                request.request_id,
+                request.sampling_config,
+                request.bad_word_list,
+                request.stop_words_list,
+            )
+
         state.update_verifed_text(verified_text, verfied_ids)
         if result_queue is not None:
             result_queue.put_nowait(state.get_current_text())
 
-        if len(verfied_ids) >= request.max_num_generated_tokens:
+        if len(verfied_ids) >= max_total_tokens:
+            # print(len(verfied_ids))
             break
 
         if iteration_delay:
