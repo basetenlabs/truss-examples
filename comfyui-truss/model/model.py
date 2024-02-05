@@ -1,22 +1,19 @@
-import base64
 import copy
-import io
 import json
 import os
 import time
 import uuid
-from io import BytesIO
 from multiprocessing import Process
 from typing import Dict
 
 import websocket
 from model.helpers import (
+    convert_outputs_to_base64,
     convert_request_file_url_to_path,
     fill_template,
     get_images,
     setup_comfyui,
 )
-from PIL import Image
 
 side_process = None
 original_working_directory = os.getcwd()
@@ -65,12 +62,6 @@ class Model:
 
         print("Truss has successfully connected to the ComfyUI server!")
 
-    def pil_to_b64(self, pil_img):
-        buffered = BytesIO()
-        pil_img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-        return img_str
-
     def predict(self, request: Dict) -> Dict:
         template_values = request.pop("workflow_values")
 
@@ -80,9 +71,10 @@ class Model:
         print(json_workflow)
 
         try:
-            images = get_images(
+            outputs = get_images(
                 self.ws, json_workflow, self.client_id, self.server_address
             )
+
         except Exception as e:
             print("Error occurred while running Comfy workflow: ", e)
 
@@ -91,10 +83,13 @@ class Model:
 
         result = []
 
-        for node_id in images:
-            for image_data in images[node_id]:
-                image = Image.open(io.BytesIO(image_data))
-                b64_img = self.pil_to_b64(image)
-                result.append({"node_id": node_id, "image": b64_img})
+        for node_id in outputs:
+            for item in outputs[node_id]:
+                file_name = item.get("filename")
+                file_data = item.get("data")
+                output = convert_outputs_to_base64(
+                    node_id=node_id, file_name=file_name, file_data=file_data
+                )
+                result.append(output)
 
         return {"result": result}

@@ -36,11 +36,11 @@ For your ComfyUI workflow, you probably used one or more models. Those models ne
 [
     {
         "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
-        "path": "checkpoints/sd_xl_base_1.0.safetensors"
+        "path": "models/checkpoints/sd_xl_base_1.0.safetensors"
     },
     {
         "url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/main/diffusion_pytorch_model.fp16.safetensors",
-        "path": "controlnet/diffusers_xl_canny_full.safetensors"
+        "path": "models/controlnet/diffusers_xl_canny_full.safetensors"
     }
 ]
 ```
@@ -127,7 +127,7 @@ If your workflow uses custom nodes you add it to the `data/model.json`. Let's ta
 ]
 ```
 
-The `url` must point to a github url and the `path` must be "custom_nodes".
+The `url` must point to a github url and the `path` must be "custom_nodes". Custom nodes must be placed above any checkpoints, vae, lora, etc. in the `model.json` file.
 
 Once you have both the `data/comfy_ui_workflow.json` and `data/model.json` set up correctly we can begin deployment.
 
@@ -344,13 +344,38 @@ Here is the output of the request above:
 [
     {
         "node_id": "18",
-        "image": "base64-image-string"
+        "data": "base64-image-string",
+        "format": "png"
     },
     {
         "node_id": "15",
-        "image": "base64-image-string"
+        "data": "base64-image-string",
+        "format": "png"
     }
 ]
 ```
 
 The output of the model is a list of JSON objects containing the ID of the output node along with the generated image as a base64 string.
+
+You can also send input images as base64 strings. In the above example simply change the `values` python dictionary to look like this:
+
+```python
+from PIL import Image
+from io import BytesIO
+import base64
+
+def pil_to_b64(pil_img):
+    buffered = BytesIO()
+    pil_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
+
+new_values = {
+  "positive_prompt": "A top down view of a river through the woods",
+  "negative_prompt": "blurry, text, low quality",
+  "controlnet_image": {"type": "image", "data": pil_to_b64(Image.open("my-image.jpeg"))},
+  "seed": random.randint(1, 1000000)
+}
+```
+
+When using base64 as input you need to specify the `type` so that the model can convert it to the correct data.

@@ -9,9 +9,12 @@ base_image:
 requirements:
   - websocket-client==1.6.4
   - accelerate==0.23.0
+  - opencv-python
 resources:
   cpu: "3"
   memory: 14Gi
   use_gpu: true
-  accelerator: T4
-system_packages: []
+  accelerator: A10G
+system_packages:
+- ffmpeg
+- libgl1-mesa-glx
