@@ -75,10 +75,13 @@ class SpeculationState:
         self._draft_text = combined_draft[self.text_len :]
 
         if self._debugging:
-            print(
+            debug_str = (
                 f"Draft  : '{self._current_text}"
                 f"{colorama.Fore.BLUE + colorama.Style.BRIGHT}{self._draft_text}'"
-            )
+            ).replace(
+                "\n", "\\n"
+            )  # Colorama does not mix well with newline.
+            print(debug_str)
 
     def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
         if self._draft_ids is None:
@@ -107,14 +110,17 @@ class SpeculationState:
             self._sum_accepted_tokens += len(accepted_tokens)
 
             style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
-            print(
+            debug_str = (
                 f"Verfied: '{self._current_text}"
                 f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
                 f"{colorama.Back.RED + style}{disagreed_text}"
                 f"{colorama.Style.RESET_ALL + style}{new_text}"
                 f"{colorama.Style.RESET_ALL}' -> Accepted `{len(accepted_tokens)}` "
                 f"tokens <=> {len(accepted_text)}` chars."
-            )
+            ).replace(
+                "\n", "\\n"
+            )  # Colorama does not mix well with newline.
+            print(debug_str)
 
         self._current_text = verified_text
         self._current_ids = verified_ids
@@ -142,15 +148,16 @@ class ModelWrapper:
         self._model_name = model_name
         self._tokenizer = tokenizer
 
-    @functools.lru_cache(maxsize=128)
+    # @functools.lru_cache(maxsize=128)  # Needs tuple not list for hashing.
     def _tokenize_word_list(
         self, word_list: Sequence[str] | None
     ) -> np.ndarray[int] | None:
-        if word_list is None:
-            return None
-        # return runtime.to_word_list_format(
-        #     word_list, self._tokenizer, add_special_tokens=False
-        # )
+        if word_list:
+            # Implementation is batched, so add and remove batch dimension.
+            return helpers.to_word_list_format(
+                [word_list], self._tokenizer, add_special_tokens=False
+            )
+        return None
 
     async def generate(
         self,
@@ -208,15 +215,13 @@ class ModelWrapper:
                 self._tokenize_word_list(stop_words_list),
             )
         with helpers.timeit(f"Verify+Generate({self._model_name})"):
-            # for inp in inputs:
-            #     print(inp.name(), print(inp._input), inp._raw_content)
             result = await self._client.infer(
                 self._model_name, inputs, request_id=request_id
             )
             output_ids = helpers.extract_trtllm_outputs(result)
 
-        # with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
-        output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
+        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
+            output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
 
@@ -226,9 +231,8 @@ async def run_speculative_inference(
     request: helpers.GenerationRequest,
     max_num_draft_tokens,
     verbose,
-) -> AsyncGenerator[str, None]:
-    # ) -> SpeculationState:
-
+    # ) -> AsyncGenerator[str, None]:
+) -> SpeculationState:
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
     while True:
         num_draft_tokens = min(
@@ -258,11 +262,11 @@ async def run_speculative_inference(
             request.bad_word_list,
             request.stop_words_list,
         )
-        yield verified_text
+        # yield verified_text
 
         state.update_verifed_text(verified_text, verfied_ids)
 
         if len(verfied_ids) >= request.max_num_generated_tokens:
             break
 
-    # return state
+    return state

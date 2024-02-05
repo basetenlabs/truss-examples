@@ -103,16 +103,17 @@ class Model:
                 "max_num_draft_tokens"
             ],
         )
-        return asyncio.ensure_future(
-            spec_dec.run_speculative_inference(
-                self._target_model,
-                self._draft_model,
-                request,
-                max_num_draft_tokens=max_num_draft_tokens,
-                verbose=False,
-            )
-        )
+        stream = model_input.get("streaming", True)
 
+        inference_gen = spec_dec.run_speculative_inference(
+            self._target_model,
+            self._draft_model,
+            request,
+            max_num_draft_tokens=max_num_draft_tokens,
+            verbose=False,
+        )
+        # async_gen = asyncio.ensure_future(inference_gen)
+        return inference_gen
         # TODO: make async/stream.
 
     # def __del__(self) -> None:

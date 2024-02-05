@@ -1,5 +1,7 @@
+import argparse
 import asyncio
 import os
+from typing import Optional
 
 import colorama
 import huggingface_hub
@@ -16,8 +18,45 @@ TARGET_MODEL_ENGINE_HF = "baseten/specdec-target-mistral-7B"
 TARGET_MODEL_TOKENIZER_HF = "mistralai/Mistral-7B-v0.1"
 TARGET_MODEL_KEY = "target_model"
 
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--prompt", type=str, default="Once upon a time")
+    parser.add_argument("--max_num_generated_tokens", type=int, default=60)
+
+    parser.add_argument("--temperature", type=float, default=None)
+    parser.add_argument("--runtime_top_k", type=int, default=None)
+    parser.add_argument("--random_seed", type=int, default=None)
+
+    parser.add_argument("--bad_word_list", type=str, default=None)
+    parser.add_argument("--stop_words_list", type=str, default=None)
+
+    parser.add_argument("--concurrent", type=bool, default=False)
+    args = parser.parse_args()
+
+    if args.bad_word_list:
+        args.bad_word_list = args.bad_word_list.split(",")
+    if args.stop_words_list:
+        args.stop_words_list = args.stop_words_list.split(",")
+
+    print(args)
+    return args
+
+
 if __name__ == "__main__":
     colorama.init(autoreset=True)
+    args = parse_arguments()
+
+    request = helpers.GenerationRequest(
+        prompt=args.prompt,
+        max_num_generated_tokens=args.max_num_generated_tokens,
+        request_id="123",
+        bad_word_list=args.bad_word_list,
+        top_words_list=args.stop_words_list,
+    )
+    request.sampling_config.temperature = args.temperature
+    request.sampling_config.runtime_top_k = args.runtime_top_k
+    request.sampling_config.random_seed = args.random_seed
 
     huggingface_hub.snapshot_download(
         DRAFT_MODEL_ENGINE_HF,
@@ -53,15 +92,6 @@ if __name__ == "__main__":
             transformers.AutoTokenizer.from_pretrained(DRAFT_MODEL_TOKENIZER_HF),
         )
 
-        request = helpers.GenerationRequest(
-            # prompt="Once upon a time there was",
-            prompt="Once upon",
-            max_num_generated_tokens=60,
-            request_id="123",
-        )
-        request.sampling_config.random_seed = 123412
-        request.sampling_config.temperature = 3.0
-
         # Warmup models with unrelated string.
         await target_model.generate(
             "What is a computer?", 4, "111", request.sampling_config
@@ -72,42 +102,64 @@ if __name__ == "__main__":
 
         helpers.enable_timing()
 
-        # request.prompt = "The purpose of man is to"
         with helpers.timeit("A - speculative_gen"):
-            # `ensure_future` is needed to start the coroutine in parallel.
-            state = asyncio.ensure_future(
-                spec_dec.run_speculative_inference(
-                    target_model,
-                    draft_model,
-                    request,
-                    max_num_draft_tokens=4,
-                    verbose=True,
-                )
+            state_co = spec_dec.run_speculative_inference(
+                target_model,
+                draft_model,
+                request,
+                max_num_draft_tokens=4,
+                verbose=True,
             )
 
         with helpers.timeit("B - direct_gen"):
-            direct_gen = asyncio.ensure_future(
-                target_model.generate(
-                    request.prompt,
-                    request.max_num_generated_tokens,
-                    request.request_id + "123",
-                    request.sampling_config,
-                    request.bad_word_list,
-                    request.stop_words_list,
-                )
+            direct_gen_co = target_model.generate(
+                request.prompt,
+                request.max_num_generated_tokens,
+                request.request_id + "123",
+                request.sampling_config,
+                request.bad_word_list,
+                request.stop_words_list,
             )
 
-        with helpers.timeit("A - await speculative_gen"):
-            state = await state
-        with helpers.timeit("B - await direct_gen"):
-            await direct_gen
+        if args.concurrent:
+            state = asyncio.ensure_future(state_co)
+            direct_gen = asyncio.ensure_future(direct_gen_co)
+        else:
+            state = state_co
+            direct_gen = direct_gen_co
 
-        print(f"Final text:\n{state.get_current_text()}")
-        print(
-            f"Average num of accepted draft tokens: "
-            f"{state.get_aveage_num_accepted_draft_tokens():.2f}"
-        )
+        with helpers.timeit("A - await speculative_gen"):
+            state_result = await state
+            print(f"Final text:\n{state_result.get_current_text()}")
+            print(
+                f"Average num of accepted draft tokens: "
+                f"{state_result.get_aveage_num_accepted_draft_tokens():.2f}"
+            )
+        with helpers.timeit("B - await direct_gen"):
+            direct_gen_result = await direct_gen
+            print(f"Direct Gen text:\n{direct_gen_result}")
 
         helpers.show_timings()
 
     state = asyncio.run(main())
+
+"""
+Concurrent:
+A - speculative_gen            0.000006  0.000006   1  174762.666667  0.000006  0.000006
+B - direct_gen                 0.000007  0.000007   1  144631.172414  0.000007  0.000007
+A - await speculative_gen      1.046489  1.046489   1       0.955577  1.046489  1.046489
+Generate(draft_model)          0.424932  0.020235  21      49.419699  0.006953  0.027036
+Generate(target_model)         0.901044  0.901044   1       1.109824  0.901044  0.901044
+Tokenize for Target model      0.005091  0.000242  21    4124.772127  0.000167  0.000302
+Verify+Generate(target_model)  0.598043  0.028478  21      35.114506  0.015787  0.035304
+B - await direct_gen           0.000018  0.000018   1   56679.783784  0.000018  0.000018
+
+A - speculative_gen            0.000007  0.000007   1  149796.571429  0.000007  0.000007
+B - direct_gen                 0.000008  0.000008   1  131072.000000  0.000008  0.000008
+A - await speculative_gen      0.516541  0.516541   1       1.935953  0.516541  0.516541
+Generate(draft_model)          0.152776  0.007275  21     137.456357  0.006834  0.007958
+Tokenize for Target model      0.005022  0.000239  21    4181.758724  0.000187  0.000292
+Verify+Generate(target_model)  0.339970  0.016189  21      61.770136  0.015723  0.017120
+B - await direct_gen           0.846346  0.846346   1       1.181550  0.846346  0.846346
+Generate(target_model)         0.845856  0.845856   1       1.182234  0.845856  0.845856
+"""
