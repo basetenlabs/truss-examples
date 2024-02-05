@@ -88,15 +88,15 @@ class _TimingManager(object):
     def reset(self):
         self._timings.clear()
         self._order.clear()
-        self._total()
+        self._total = None
 
 
 _global_metrics = _TimingManager()
 
 
 @contextlib.contextmanager
-def timeit(name: str):
-    if _global_metrics.enabled:
+def timeit(name: str, skip: bool = False):
+    if _global_metrics.enabled and not skip:
         try:
             _global_metrics.start_time(name)
             yield

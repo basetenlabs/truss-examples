@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import colorama
@@ -5,7 +6,7 @@ import helpers
 import huggingface_hub
 import spec_dec
 import transformers
-import tritonclient.grpc as triton_grpc
+import tritonclient.grpc.aio as triton_grpc
 
 if __name__ == "__main__":
     colorama.init(autoreset=True)
@@ -38,60 +39,76 @@ if __name__ == "__main__":
         )
         triton_server.load_server_and_model({})
 
-    client = triton_grpc.InferenceServerClient("0.0.0.0:8001")
+    async def main():
+        client = triton_grpc.InferenceServerClient("0.0.0.0:8001")
 
-    target_model = spec_dec.ModelWrapper(
-        client,
-        TARGET_MODEL_KEY,
-        transformers.AutoTokenizer.from_pretrained(TARGET_MODEL_TOKENIZER_HF),
-    )
-
-    draft_model = spec_dec.ModelWrapper(
-        client,
-        DRAFT_MODEL_KEY,
-        transformers.AutoTokenizer.from_pretrained(DRAFT_MODEL_TOKENIZER_HF),
-    )
-
-    request = helpers.GenerationRequest(
-        # prompt="Once upon a time there was",
-        prompt="Once upon",
-        max_num_generated_tokens=60,
-        request_id="123",
-    )
-    request.sampling_config.random_seed = 123412
-    request.sampling_config.temperature = 3.0
-
-    # Warmup models with unrelated string.
-    target_model.generate("What is a computer?", 4, "111", request.sampling_config)
-    draft_model.generate("What is a computer?", 4, "111", request.sampling_config)
-
-    helpers.enable_timing()
-
-    # request.prompt = "The purpose of man is to"
-    with helpers.timeit("A - speculative_gen"):
-        state = spec_dec.run_speculative_inference(
-            target_model,
-            draft_model,
-            request,
-            max_num_draft_tokens=4,
-            verbose=True,
+        target_model = spec_dec.ModelWrapper(
+            client,
+            TARGET_MODEL_KEY,
+            transformers.AutoTokenizer.from_pretrained(TARGET_MODEL_TOKENIZER_HF),
         )
-    print(f"Final text:\n{state.get_current_text()}")
-    print(
-        f"Average num of accepted draft tokens: "
-        f"{state.get_aveage_num_accepted_draft_tokens():.2f}"
-    )
 
-    with helpers.timeit("B - direct_gen"):
-        print(
-            target_model.generate(
-                request.prompt,
-                request.max_num_generated_tokens,
-                request.request_id,
-                request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
+        draft_model = spec_dec.ModelWrapper(
+            client,
+            DRAFT_MODEL_KEY,
+            transformers.AutoTokenizer.from_pretrained(DRAFT_MODEL_TOKENIZER_HF),
+        )
+
+        request = helpers.GenerationRequest(
+            # prompt="Once upon a time there was",
+            prompt="Once upon",
+            max_num_generated_tokens=60,
+            request_id="123",
+        )
+        request.sampling_config.random_seed = 123412
+        request.sampling_config.temperature = 3.0
+
+        # Warmup models with unrelated string.
+        await target_model.generate(
+            "What is a computer?", 4, "111", request.sampling_config
+        )
+        await draft_model.generate(
+            "What is a computer?", 4, "111", request.sampling_config
+        )
+
+        helpers.enable_timing()
+
+        # request.prompt = "The purpose of man is to"
+        with helpers.timeit("A - speculative_gen"):
+            # `ensure_future` is needed to start the coroutine in parallel.
+            state = asyncio.ensure_future(
+                spec_dec.run_speculative_inference(
+                    target_model,
+                    draft_model,
+                    request,
+                    max_num_draft_tokens=4,
+                    verbose=True,
+                )
             )
+
+        with helpers.timeit("B - direct_gen"):
+            direct_gen = asyncio.ensure_future(
+                target_model.generate(
+                    request.prompt,
+                    request.max_num_generated_tokens,
+                    request.request_id + "123",
+                    request.sampling_config,
+                    request.bad_word_list,
+                    request.stop_words_list,
+                )
+            )
+
+        with helpers.timeit("A - await speculative_gen"):
+            state = await state
+        with helpers.timeit("B - await direct_gen"):
+            await direct_gen
+
+        print(f"Final text:\n{state.get_current_text()}")
+        print(
+            f"Average num of accepted draft tokens: "
+            f"{state.get_aveage_num_accepted_draft_tokens():.2f}"
         )
 
-    helpers.show_timings()
+        helpers.show_timings()
+
+    state = asyncio.run(main())

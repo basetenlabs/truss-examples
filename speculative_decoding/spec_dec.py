@@ -6,7 +6,7 @@ import colorama
 import helpers
 import numpy as np
 import transformers
-import tritonclient.grpc as triton_grpc
+import tritonclient.grpc.aio as triton_grpc
 
 
 class SpeculationState:
@@ -151,7 +151,7 @@ class ModelWrapper:
         #     word_list, self._tokenizer, add_special_tokens=False
         # )
 
-    def generate(
+    async def generate(
         self,
         input_text: str,
         max_num_gen_tokens: str,
@@ -160,11 +160,11 @@ class ModelWrapper:
         bad_word_list: Sequence[str] | None = None,
         stop_words_list: Sequence[str] | None = None,
     ) -> str:
-        with helpers.timeit(f"Generate({self._model_name}) - tokenize"):
+        with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
             input_ids = np.squeeze(
                 self._tokenizer.encode(input_text, return_tensors="np")
             )
-        with helpers.timeit(f"Generate({self._model_name}) - input prep"):
+        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
             inputs = helpers.make_trtllm_inputs(
                 input_ids,
                 max_num_gen_tokens,
@@ -176,13 +176,15 @@ class ModelWrapper:
                 self._tokenize_word_list(stop_words_list),
             )
         with helpers.timeit(f"Generate({self._model_name})"):
-            result = self._client.infer(self._model_name, inputs, request_id=request_id)
+            result = await self._client.infer(
+                self._model_name, inputs, request_id=request_id
+            )
             output_ids = helpers.extract_trtllm_outputs(result)
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
+        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text
 
-    def verify_and_generate(
+    async def verify_and_generate(
         self,
         confirmed_ids: np.ndarray[int],
         draft_ids: np.ndarray[int],
@@ -193,7 +195,7 @@ class ModelWrapper:
     ):
         num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
         # TODO: check len of draft IDs, warn if throw away.
-        with helpers.timeit(f"Generate({self._model_name}) - input prep"):
+        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
             inputs = helpers.make_trtllm_inputs(
                 confirmed_ids,
                 num_gen_tokens,
@@ -207,15 +209,17 @@ class ModelWrapper:
         with helpers.timeit(f"Verify+Generate({self._model_name})"):
             # for inp in inputs:
             #     print(inp.name(), print(inp._input), inp._raw_content)
-            result = self._client.infer(self._model_name, inputs, request_id=request_id)
+            result = await self._client.infer(
+                self._model_name, inputs, request_id=request_id
+            )
             output_ids = helpers.extract_trtllm_outputs(result)
 
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
-            output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
+        # with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
+        output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
 
-def run_speculative_inference(
+async def run_speculative_inference(
     target_model: ModelWrapper,
     draft_model: ModelWrapper,
     request: helpers.GenerationRequest,
@@ -229,7 +233,7 @@ def run_speculative_inference(
             request.max_num_generated_tokens - state.num_tokens,
         )
         state.update_draft(
-            draft_model.generate(
+            await draft_model.generate(
                 state.get_current_text(),
                 num_draft_tokens,
                 request.request_id,
@@ -243,7 +247,7 @@ def run_speculative_inference(
             # print(draft_ids, state._draft_text)
             draft_ids = draft_ids[:max_num_draft_tokens]
 
-        verified_text, verfied_ids = target_model.verify_and_generate(
+        verified_text, verfied_ids = await target_model.verify_and_generate(
             confirmed_ids,
             draft_ids,
             request.request_id,
