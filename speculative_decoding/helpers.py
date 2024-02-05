@@ -1,10 +1,12 @@
 import collections
 import contextlib
 import time
+import uuid
 from typing import NamedTuple, Union
 
 import numpy as np
 import pandas as pd
+import pydantic
 import tritonclient.grpc as triton_grpc
 import tritonclient.utils as triton_utils
 
@@ -126,8 +128,50 @@ def show_timings():
     print(_global_metrics.to_pd())
 
 
-def append_tensor(name: str, input_data, dtype: np.dtype, mutable_inputs: list) -> None:
+########################################################################################
+
+
+class SamplingConfig(pydantic.BaseModel):
+    # Field order follows
+    # https://github.com/NVIDIA/TensorRT-LLM/blob/main/docs/source/inference_request.md
+    beam_width: int | None = None
+    temperature: float | None = None
+    runtime_top_k: int | None = None
+    runtime_top_p: float | None = None
+    len_penalty: float | None = None
+    repetition_penalty: float | None = None
+    min_len: int | None = None
+    presence_penalty: float | None = None
+    frequency_penalty: float | None = None
+    random_seed: int | None = None
+
+
+class GenerationConfig(pydantic.BaseModel):
+    end_id: int | None = None
+    pad_id: int | None = None
+    bad_word_list: list[str] | None = None
+    stop_words_list: list[str] | None = None
+
+
+class GenerationRequest(pydantic.BaseModel):
+    # TODO: embedding_bias, prompt_embedding_table, prompt_vocab_size, lora
+    prompt: str
+    max_num_generated_tokens: int
+    request_id: str
+    streaming: bool = False
+    generation_config: GenerationConfig = GenerationConfig()
+    sampling_config: SamplingConfig = SamplingConfig()
+
+
+def fill_inputs(
+    name: str, input_data, dtype: np.dtype, mutable_inputs: list, make_2d: bool = True
+) -> None:
+    if input_data is None:
+        return
+
     array_input = np.asarray(input_data, dtype=dtype)
+    if make_2d:
+        array_input = np.atleast_2d(array_input)
     t = triton_grpc.InferInput(
         name, array_input.shape, triton_utils.np_to_triton_dtype(dtype)
     )
