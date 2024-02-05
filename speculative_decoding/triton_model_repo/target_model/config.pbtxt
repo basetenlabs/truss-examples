@@ -220,7 +220,7 @@ parameters: {
   key: "gpt_model_path"
   value: {
     # string_value: "/root/workbench/mistral-7B_engine/"
-    string_value:  "/packages/triton_model_repo/target_model/1/"
+    string_value:  "/triton_model_repo/target_model/1/"
   }
 }
 parameters: {
