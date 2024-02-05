@@ -8,7 +8,6 @@ import transformers
 import tritonclient.grpc as triton_grpc
 
 if __name__ == "__main__":
-
     colorama.init(autoreset=True)
 
     TRITON_DIR = os.path.join("/", "triton_model_repo")
@@ -68,6 +67,7 @@ if __name__ == "__main__":
 
     helpers.enable_timing()
 
+    # request.prompt = "The purpose of man is to"
     with helpers.timeit("A - speculative_gen"):
         state = spec_dec.run_speculative_inference(
             target_model,
@@ -76,7 +76,6 @@ if __name__ == "__main__":
             max_num_draft_tokens=4,
             verbose=True,
         )
-
     print(f"Final text:\n{state.get_current_text()}")
     print(
         f"Average num of accepted draft tokens: "

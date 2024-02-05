@@ -75,10 +75,9 @@ class SpeculationState:
 
         if self._debugging:
             print(
-                f"Draft  : `{self._current_text}"
-                f"{colorama.Fore.BLUE + colorama.Style.BRIGHT}{self._draft_text}`"
+                f"Draft  : '{self._current_text}"
+                f"{colorama.Fore.BLUE + colorama.Style.BRIGHT}{self._draft_text}'"
             )
-            pass
 
     def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
         if self._draft_ids is None:
@@ -108,11 +107,11 @@ class SpeculationState:
 
             style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
             print(
-                f"Verfied: `{self._current_text}"
+                f"Verfied: '{self._current_text}"
                 f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
                 f"{colorama.Back.RED + style}{disagreed_text}"
                 f"{colorama.Style.RESET_ALL + style}{new_text}"
-                f"{colorama.Style.RESET_ALL}` -> Accepted `{len(accepted_tokens)}` "
+                f"{colorama.Style.RESET_ALL}' -> Accepted `{len(accepted_tokens)}` "
                 f"tokens <=> {len(accepted_text)}` chars."
             )
 
