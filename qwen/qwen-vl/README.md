@@ -48,9 +48,19 @@ The predict route is the primary method for generating text completions based on
 
 ```python
 import requests
+import base64
+from PIL import Image
+from io import BytesIO
+
+def pil_to_b64(pil_img):
+    buffered = BytesIO()
+    pil_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
+
 
 data = {
-  "image": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg",
+  "image": pil_to_b64(Image.open("/path/to/image/dog.jpg")),
   "prompt": "Generate the caption in English with grounding"
 }
 
