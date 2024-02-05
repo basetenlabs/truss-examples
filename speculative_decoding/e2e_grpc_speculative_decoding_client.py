@@ -1,6 +1,3 @@
-import queue
-import time
-
 import numpy as np
 import tritonclient.grpc as grpcclient
 from tritonclient.utils import InferenceServerException, np_to_triton_dtype
@@ -10,20 +7,6 @@ def prepare_tensor(name, input):
     t = grpcclient.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
     t.set_data_from_numpy(input)
     return t
-
-
-class UserData:
-    def __init__(self):
-        self._completed_requests = queue.Queue()
-
-
-def callback(user_data, result, error):
-    if error:
-        user_data._completed_requests.put(error)
-    else:
-        user_data._completed_requests.put(result)
-        output = result.as_numpy("text_output")
-        print(output, flush=True)
 
 
 def get_preprocessor_inputs(prompt, output_len, bad_words, stop_words, end_id, pad_id):
@@ -144,6 +127,8 @@ def extract_trtllm_outputs(result):
     sequence_length = sequence_length_data[0, 0]
     cum_log_probs = result.as_numpy("cum_log_probs").astype(np.float32)
     output_log_probs = result.as_numpy("output_log_probs").astype(np.float32)
+    print(output_log_probs)
+    # pdb.set_trace()
     # context_logits = result.as_numpy("context_logits").astype(np.float32)
     # generation_logits = result.as_numpy("generation_logits").astype(np.float32)
     return (
@@ -228,6 +213,7 @@ def run_speculative_inference(
     draft_output_ids = None
 
     while True:
+        print("=======================")
         num_draft_tokens = min(
             in_num_draft_tokens, len(prompt_input_ids) + output_len - len(input_ids) - 1
         )
@@ -353,7 +339,7 @@ def run_speculative_inference(
         cum_log_probs,
         output_log_probs,
         # context_logits,
-        # generation_logits
+        # generation_logits,
     )
     postprocessor_result = client_target.infer(
         postprocessor_model_name, postprocessor_inputs, request_id=request_id
@@ -365,13 +351,13 @@ def run_speculative_inference(
 
 if __name__ == "__main__":
     client_target = grpcclient.InferenceServerClient("0.0.0.0:8001")
-    client_draft = grpcclient.InferenceServerClient("0.0.0.0:8001")
+    client_draft = client_target
 
     output_text = run_speculative_inference(
         client_draft,
         client_target,
-        prompt="How is your day going?",
-        output_len=100,
+        prompt="Once upon a time there was",
+        output_len=25,
         in_num_draft_tokens=3,
         request_id="1",
         repetition_penalty=None,
@@ -384,8 +370,9 @@ if __name__ == "__main__":
         pad_id=None,
         beam_width=1,
         preprocessor_model_name="preprocessing",
-        draft_tensorrt_llm_model_name="tensorrt_llm",
-        target_tensorrt_llm_model_name="tensorrt_llm",
+        draft_tensorrt_llm_model_name="draft_model",
+        target_tensorrt_llm_model_name="draft_model",
+        # target_tensorrt_llm_model_name="target_model",
         postprocessor_model_name="postprocessing",
         verbose=True,
     )

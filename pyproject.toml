@@ -10,6 +10,9 @@ readme = "README.md"
 python = ">=3.9,<3.12"
 truss = { git = "https://github.com/basetenlabs/truss.git" }
 pyyaml = "^6.0.1"
+tritonclient = {extras = ["all", "cuda"], version = "^2.41.1"}
+torch = "^2.1.2"
+transformers = "^4.37.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
