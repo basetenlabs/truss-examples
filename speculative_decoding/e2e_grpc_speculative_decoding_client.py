@@ -1,9 +1,27 @@
+import collections
 import time
+from typing import MutableMapping, NamedTuple
 
 import numpy as np
 import transformers
 import tritonclient.grpc as grpcclient
 from tritonclient.utils import np_to_triton_dtype
+
+
+class SectionTiming(NamedTuple):
+    name: str
+    count: str = 0
+    total_time: float = 0
+
+
+_SECTION_TIMINGS: MutableMapping[str, SectionTiming] = collections.defaultdict(
+    SectionTiming
+)
+
+
+def _show_timings():
+    for section, timing in _SECTION_TIMINGS.items():
+        print(f"{section}: {timing.count:02} x total {timing.total_time} sec.")
 
 
 class _TimerContextManager:
@@ -17,20 +35,26 @@ class _TimerContextManager:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         end_time = time.time()
         elapsed_time = end_time - self.start_time
-        print(f"Run `{self._section_name}` in `{elapsed_time}` seconds.")
+        timing = _SECTION_TIMINGS[self._section_name]
+        timing.name = self._section_name
+        timing.count += 1
+        timing.total_time += elapsed_time
+        # print(f"Run `{self._section_name}` in `{elapsed_time}` seconds.")
 
 
 def timeit(section_name: str) -> _TimerContextManager:
     return _TimerContextManager(section_name)
 
 
-def prepare_tensor(name, input):
-    t = grpcclient.InferInput(name, input.shape, np_to_triton_dtype(input.dtype))
-    t.set_data_from_numpy(input)
-    return t
+def _append_tensor(name: str, input, dtype: np.dtype, mutable_inputs: list) -> None:
+    if input is not None:
+        array_input = np.asarray(input, dtype=dtype)
+        t = grpcclient.InferInput(name, array_input.shape, np_to_triton_dtype(dtype))
+        t.set_data_from_numpy(array_input)
+        mutable_inputs.append(t)
 
 
-def get_trtllm_inputs(
+def _make_trtllm_inputs(
     input_ids,
     input_length,
     num_gen_tokens,
@@ -45,78 +69,40 @@ def get_trtllm_inputs(
     end_id,
     pad_id,
 ):
-    # input_ids is expected to have shape [input_length]
-    # Add batch dimension of 1
-    input_ids_data = np.expand_dims(input_ids, axis=0)
-    inputs = [
-        prepare_tensor("input_ids", input_ids_data.astype(np.int32)),
-        prepare_tensor("input_lengths", np.array([[input_length]], dtype=np.int32)),
-        prepare_tensor(
-            "request_output_len", np.array([[num_gen_tokens]], dtype=np.uint32)
-        ),
-        prepare_tensor("return_log_probs", np.array([[True]], dtype=bool)),
-        # The return_X_logits tensor names were only added in
-        # https://github.com/NVIDIA/TensorRT-LLM/pull/846.
-        # prepare_tensor("return_context_logits", np.array([[True]], dtype=bool)),
-        # prepare_tensor("return_generation_logits", np.array([[True]], dtype=bool)),
-        # prepare_tensor("bad_words_list", bad_words_ids),
-        # prepare_tensor("stop_words_list", stop_words_ids),
-        prepare_tensor("beam_width", np.array([[beam_width]], dtype=np.uint32)),
-        prepare_tensor("temperature", np.array([[temperature]], dtype=np.float32)),
-    ]
-
-    if draft_tokens is not None:
-        draft_tokens_data = np.array([draft_tokens], dtype=np.int32)
-        inputs.append(prepare_tensor("draft_input_ids", draft_tokens_data))
-
-    if repetition_penalty is not None:
-        repetition_penalty_data = np.array([[repetition_penalty]], dtype=np.float32)
-        inputs.append(prepare_tensor("repetition_penalty", repetition_penalty_data))
-
-    if presence_penalty is not None:
-        presence_penalty_data = np.array([[presence_penalty]], dtype=np.float32)
-        inputs.append(prepare_tensor("presence_penalty", presence_penalty_data))
-
-    if frequency_penalty is not None:
-        frequency_penalty_data = np.array([[frequency_penalty]], dtype=np.float32)
-        inputs.append(prepare_tensor("frequency_penalty", frequency_penalty_data))
-
-    if end_id is not None:
-        end_id_data = np.array([[end_id]], dtype=np.uint32)
-        inputs.append(prepare_tensor("end_id", end_id_data))
-
-    if pad_id is not None:
-        pad_id_data = np.array([[pad_id]], dtype=np.uint32)
-        inputs.append(prepare_tensor("pad_id", pad_id_data))
-
+    inputs = []
+    # Add batch dimension.
+    _append_tensor("input_ids", np.expand_dims(input_ids, axis=0), np.int32, inputs)
+    _append_tensor("input_lengths", [[input_length]], np.int32, inputs)
+    _append_tensor("request_output_len", [[num_gen_tokens]], np.uint32, inputs)
+    _append_tensor("draft_input_ids", [draft_tokens], np.int32, inputs)
+    # Optional inputs
+    _append_tensor("return_log_probs", [[True]], bool, inputs)
+    _append_tensor("beam_width", [[beam_width]], np.uint32, inputs)
+    _append_tensor("temperature", [[temperature]], np.float32, inputs)
+    # The return_X_logits tensor names were only added in
+    # https://github.com/NVIDIA/TensorRT-LLM/pull/846.
+    # prepare_tensor("return_context_logits", np.array([[True]], dtype=bool)),
+    # prepare_tensor("return_generation_logits", np.array([[True]], dtype=bool)),
+    # prepare_tensor("bad_words_list", bad_words_ids),
+    # prepare_tensor("stop_words_list", stop_words_ids),
+    _append_tensor("repetition_penalty", [[repetition_penalty]], np.float32, inputs)
+    _append_tensor("presence_penalty", [[presence_penalty]], np.float32, inputs)
+    _append_tensor("frequency_penalty", [[frequency_penalty]], np.float32, inputs)
+    _append_tensor("end_id", [[end_id]], np.uint32, inputs)
+    _append_tensor("pad_id", [[pad_id]], np.uint32, inputs)
     return inputs
 
 
-def extract_trtllm_outputs(result):
+def _extract_trtllm_outputs(result):
+    # TODO: Get context_logits, generation_logits and find out why output_log_probs is
+    #  always zero.
     # Get batch 0, beam 0 output_ids
     output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
-    sequence_length_data = result.as_numpy("sequence_length").astype(np.int32)
-    assert sequence_length_data.shape[0] == 1
-    assert sequence_length_data.shape[1] == 1
-    sequence_length = sequence_length_data[0, 0]
+    sequence_length = int(
+        np.squeeze(result.as_numpy("sequence_length").astype(np.int32), axis=(0, 1))
+    )
     assert sequence_length == len(output_ids)
-    cum_log_probs = result.as_numpy("cum_log_probs").astype(np.float32)
-    output_log_probs = result.as_numpy("output_log_probs").astype(np.float32)
-    # print(cum_log_probs)
-    # Log probs are always 0, even when `return_log_probs=True` in request.
-    # print(output_log_probs)
-    # pdb.set_trace()
-    # context_logits = result.as_numpy("context_logits").astype(np.float32)
-    # generation_logits = result.as_numpy("generation_logits").astype(np.float32)
-    # print(generation_logits)
     return output_ids
-
-
-def encountered_stop_words(input_ids, stop_words_ids):
-    for stop_word_ids in stop_words_ids:
-        if np.array_equal(input_ids[-len(stop_word_ids) :], stop_word_ids):
-            return True
-    return False
 
 
 def run_speculative_inference(
@@ -131,8 +117,6 @@ def run_speculative_inference(
     temperature,
     stop_words,
     bad_words,
-    end_id,
-    pad_id,
     beam_width,
     draft_model_name,
     target_model_name,
@@ -164,7 +148,7 @@ def run_speculative_inference(
                 f"\n\t{input_ids}\n\t`{input_text}`"
             )
 
-        inputs = get_trtllm_inputs(
+        inputs = _make_trtllm_inputs(
             input_ids,
             len(input_ids),
             num_draft_tokens,
@@ -180,7 +164,7 @@ def run_speculative_inference(
             draft_tokenizer.pad_token_id,
         )
         result = client.infer(draft_model_name, inputs, request_id=request_id)
-        output_ids = extract_trtllm_outputs(result)
+        output_ids = _extract_trtllm_outputs(result)
 
         clear_text_full = draft_tokenizer.decode(output_ids)
         if verbose:
@@ -216,7 +200,7 @@ def run_speculative_inference(
             )
 
         num_gen_tokens = len(draft_ids) + 1 if draft_ids else 1
-        inputs = get_trtllm_inputs(
+        inputs = _make_trtllm_inputs(
             confirmed_ids_re_encoded,
             len(confirmed_ids_re_encoded),
             num_gen_tokens,
@@ -232,7 +216,7 @@ def run_speculative_inference(
             target_tokenizer.pad_token_id,
         )
         result = client.infer(target_model_name, inputs, request_id=request_id)
-        output_ids = extract_trtllm_outputs(result)
+        output_ids = _extract_trtllm_outputs(result)
 
         clear_text_full = target_tokenizer.decode(output_ids, skip_special_tokens=True)
         if verbose:
@@ -244,7 +228,7 @@ def run_speculative_inference(
 
     def generate_target_model(input_text: str, num_gen_tokens: str) -> str:
         input_ids = target_tokenizer.encode(input_text)
-        inputs = get_trtllm_inputs(
+        inputs = _make_trtllm_inputs(
             input_ids,
             len(input_ids),
             num_gen_tokens - len(input_ids),
@@ -260,7 +244,7 @@ def run_speculative_inference(
             target_tokenizer.pad_token_id,
         )
         result = client.infer(target_model_name, inputs, request_id=request_id)
-        output_ids = extract_trtllm_outputs(result)
+        output_ids = _extract_trtllm_outputs(result)
         clear_text_full = target_tokenizer.decode(output_ids, skip_special_tokens=True)
         if verbose:
             print(
@@ -297,6 +281,8 @@ def run_speculative_inference(
     with timeit("direct_gen"):
         print(generate_target_model(prompt, request_output_len))
 
+    _show_timings
+
     return current_text
 
 
@@ -315,8 +301,6 @@ if __name__ == "__main__":
         temperature=1.0,
         stop_words=[],
         bad_words=[],
-        end_id=None,
-        pad_id=None,
         beam_width=1,
         draft_model_name="draft_model",
         target_model_name="target_model",
