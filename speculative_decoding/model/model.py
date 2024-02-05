@@ -9,31 +9,39 @@ TODO:
 * Create an abstract base class for models.
 """
 
-
 import asyncio
+import itertools
 import os
-from itertools import count
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator, Iterator, Optional
 
+import helpers  # From packages.
 import huggingface_hub
+import spec_dec  # From packages.
 import transformers
 import tritonclient.grpc.aio as triton_grpc
 
-from . import helpers, spec_dec
-
-TRITON_DIR = os.path.join("/", "triton_model_repo")
+TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 TARGET_MODEL_KEY = "target_model"
 DRAFT_MODEL_KEY = "draft_model"
 
 
 class Model:
+    _data_dir: Any
+    _secrets: Any  # SecretsResolver
+    _request_id_counter: Iterator[int]
+    _triton_server: Optional[helpers.TritonServer]
+    _target_model: Optional[spec_dec.ModelWrapper]
+    _draft_model: Optional[spec_dec.ModelWrapper]
+
     def __init__(self, **kwargs):
         self._data_dir = kwargs["data_dir"]
         self._config = kwargs["config"]
         self._secrets = kwargs["secrets"]
-        self._request_id_counter = count(start=1)
+        self._request_id_counter = itertools.count(start=1)
         self._triton_server = None
-        self._triton_client = None
+        self._target_model = None
+        self._draft_model = None
+
         if "openai-compatible" in self._config["model_metadata"]["tags"]:
             raise NotImplementedError("openai-compatible")
 
@@ -78,26 +86,33 @@ class Model:
             )
             self._triton_server.load_server_and_model(env)
 
-        client = triton_grpc.InferenceServerClient("0.0.0.0:8001")
-        self._target_model = spec_dec.ModelWrapper(
-            client,
-            TARGET_MODEL_KEY,
-            transformers.AutoTokenizer.from_pretrained(
-                self._config["model_metadata"]["tokenizer_repository"]
-            ),
-        )
+        # When Truss server loads model, it does not have an event loop - need to defer.
+        def make_async_models():
+            client = triton_grpc.InferenceServerClient("localhost:8001")
+            self._target_model = spec_dec.ModelWrapper(
+                client,
+                TARGET_MODEL_KEY,
+                transformers.AutoTokenizer.from_pretrained(
+                    self._config["model_metadata"]["tokenizer_repository"]
+                ),
+            )
 
-        self._draft_model = spec_dec.ModelWrapper(
-            client,
-            DRAFT_MODEL_KEY,
-            transformers.AutoTokenizer.from_pretrained(
-                self._config["model_metadata"]["speculative_decoding"][
-                    "draft_tokenizer_repository"
-                ]
-            ),
-        )
+            self._draft_model = spec_dec.ModelWrapper(
+                client,
+                DRAFT_MODEL_KEY,
+                transformers.AutoTokenizer.from_pretrained(
+                    self._config["model_metadata"]["speculative_decoding"][
+                        "draft_tokenizer_repository"
+                    ]
+                ),
+            )
+
+        self._make_async_models = make_async_models
 
     async def predict(self, model_input) -> str | AsyncGenerator[str, None]:
+        if self._draft_model is None:
+            self._make_async_models()
+
         request_id = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
         max_num_draft_tokens: int = self._config["model_metadata"][
@@ -140,3 +155,7 @@ class Model:
                 return (await inference_gen).get_verified_text()
 
             return await get_result()
+
+    def shutdown(self) -> None:
+        if self._triton_server:
+            self._triton_server.shutdown()

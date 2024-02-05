@@ -1,6 +1,8 @@
 base_image:
-  image: nvcr.io/nvidia/tritonserver:23.10-trtllm-python-py3
+  image: nvcr.io/nvidia/tritonserver:24.01-trtllm-python-py3
   python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   engine_repository: baseten/specdec-target-mistral-7B
   speculative_decoding:
@@ -8,21 +10,25 @@ model_metadata:
     draft_tokenizer_repository: gpt2
     max_num_draft_tokens: 4
   tags:
-    - text-generation
+  - text-generation
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mistral-7B-v0.1
+model_name: specdec
 python_version: py311
 requirements:
-  - colorama
-  - csv
-  - huggingface_hub
-  - numpy
-  - pandas
-  - pydantic
-  - transformers
-  - tritonclient[all]
+- colorama
+- huggingface_hub
+- numpy
+- pandas
+- pydantic
+- transformers
+- tritonclient[all]
 resources:
   accelerator: A100
+  cpu: '1'
+  memory: 2Gi
   use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: [python3.10-venv]

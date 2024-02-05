@@ -25,11 +25,10 @@ import time
 from typing import Sequence
 
 import colorama
+import helpers  # From packages.
 import numpy as np
 import transformers
 import tritonclient.grpc.aio as triton_grpc
-
-from . import helpers
 
 
 class SpeculationState:
@@ -309,6 +308,7 @@ async def run_speculative_inference(
     """
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
     max_total_tokens = state.num_tokens + request.max_num_generated_tokens
+    num_chars_generated = 0
     while True:
         num_draft_tokens = min(
             max_num_draft_tokens,
@@ -352,7 +352,11 @@ async def run_speculative_inference(
 
         state.update_verifed_text(verified_text, verfied_ids)
         if result_queue is not None:
-            result_queue.put_nowait(state.get_verified_text())
+            complete_text = state.get_verified_text()
+            # TODO: refactor to directly work on incremental text only.
+            incremental_text = complete_text[num_chars_generated:]
+            result_queue.put_nowait(incremental_text)
+            num_chars_generated = state.text_len
 
         if len(verfied_ids) >= max_total_tokens:
             break

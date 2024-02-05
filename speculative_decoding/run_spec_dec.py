@@ -1,15 +1,16 @@
 import argparse
 import asyncio
 import os
+import shutil
 from typing import Optional
 
 import colorama
 import huggingface_hub
 import transformers
 import tritonclient.grpc.aio as triton_grpc
-from model import helpers, spec_dec
+from packages import helpers, spec_dec
 
-TRITON_DIR = os.path.join("/", "triton_model_repo")
+TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 
 DRAFT_MODEL_ENGINE_HF = "baseten/specdec-draft-gpt2"
 DRAFT_MODEL_TOKENIZER_HF = "gpt2"
@@ -51,7 +52,12 @@ def parse_arguments():
 if __name__ == "__main__":
     colorama.init(autoreset=True)
     args = parse_arguments()
-
+    wdir = os.path.dirname(os.path.abspath(__file__))
+    shutil.copytree(
+        src=os.path.join(wdir, "packages", "triton_model_repo"),
+        dst=os.path.join("/", "packages", "triton_model_repo"),
+        dirs_exist_ok=True,
+    )
     request = helpers.GenerationRequest(
         prompt=args.prompt,
         max_num_generated_tokens=args.max_num_generated_tokens,
@@ -76,13 +82,11 @@ if __name__ == "__main__":
     )
 
     if not helpers.is_triton_server_alive():
-        triton_server = helpers.TritonServer(
-            "/root/workbench/truss-examples/speculative_decoding/triton_model_repo"
-        )
+        triton_server = helpers.TritonServer("/packages/triton_model_repo")
         triton_server.load_server_and_model({})
 
     async def main():
-        client = triton_grpc.InferenceServerClient("0.0.0.0:8001")
+        client = triton_grpc.InferenceServerClient("localhost:8001")
 
         target_model = spec_dec.ModelWrapper(
             client,
