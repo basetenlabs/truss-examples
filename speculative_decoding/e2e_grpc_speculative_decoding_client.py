@@ -1,6 +1,27 @@
+import time
+
 import numpy as np
+import transformers
 import tritonclient.grpc as grpcclient
-from tritonclient.utils import InferenceServerException, np_to_triton_dtype
+from tritonclient.utils import np_to_triton_dtype
+
+
+class _TimerContextManager:
+    def __init__(self, section_name: str) -> None:
+        self._section_name = section_name
+
+    def __enter__(self):
+        self.start_time = time.time()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        end_time = time.time()
+        elapsed_time = end_time - self.start_time
+        print(f"Run `{self._section_name}` in `{elapsed_time}` seconds.")
+
+
+def timeit(section_name: str) -> _TimerContextManager:
+    return _TimerContextManager(section_name)
 
 
 def prepare_tensor(name, input):
@@ -9,64 +30,18 @@ def prepare_tensor(name, input):
     return t
 
 
-def get_preprocessor_inputs(prompt, output_len, bad_words, stop_words, end_id, pad_id):
-    input0 = [[prompt]]
-    input0_data = np.array(input0).astype(object)
-    output0_len = np.ones_like(input0).astype(np.uint32) * output_len
-
-    preprocessor_inputs = [
-        prepare_tensor("QUERY", input0_data),
-        prepare_tensor("REQUEST_OUTPUT_LEN", output0_len),
-    ]
-
-    if bad_words:
-        bad_words_list = np.array([bad_words], dtype=object)
-        preprocessor_inputs += [prepare_tensor("BAD_WORDS_DICT", bad_words_list)]
-
-    if stop_words:
-        stop_words_list = np.array([stop_words], dtype=object)
-        preprocessor_inputs += [prepare_tensor("STOP_WORDS_DICT", stop_words_list)]
-
-    if end_id:
-        end_id_data = np.array([[end_id]], dtype=np.int32)
-        preprocessor_inputs += [prepare_tensor("END_ID", end_id_data)]
-
-    if pad_id:
-        pad_id_data = np.array([[pad_id]], dtype=np.int32)
-        preprocessor_inputs += [prepare_tensor("PAD_ID", pad_id_data)]
-
-    return preprocessor_inputs
-
-
-def extract_preprocessor_outputs(result):
-    input_ids = np.squeeze(result.as_numpy("INPUT_ID").astype(np.int32), axis=0)
-    bad_words_ids = result.as_numpy("BAD_WORDS_IDS").astype(np.int32)
-    stop_words_ids = result.as_numpy("STOP_WORDS_IDS").astype(np.int32)
-    if (out_end_id := result.as_numpy("OUT_END_ID")) is not None:
-        end_id = out_end_id.astype(np.int32)[0][0]
-    else:
-        end_id = None
-
-    if (out_pad_id := result.as_numpy("OUT_PAD_ID")) is not None:
-        pad_id = out_pad_id.astype(np.int32)[0][0]
-    else:
-        pad_id = None
-
-    return input_ids, bad_words_ids, stop_words_ids, end_id, pad_id
-
-
 def get_trtllm_inputs(
     input_ids,
     input_length,
-    request_output_len,
+    num_gen_tokens,
     draft_tokens,
     beam_width,
     temperature,
     repetition_penalty,
     presence_penalty,
     frequency_penalty,
-    bad_words_ids,
-    stop_words_ids,
+    # bad_words_ids,
+    # stop_words_ids,
     end_id,
     pad_id,
 ):
@@ -74,10 +49,10 @@ def get_trtllm_inputs(
     # Add batch dimension of 1
     input_ids_data = np.expand_dims(input_ids, axis=0)
     inputs = [
-        prepare_tensor("input_ids", input_ids_data),
+        prepare_tensor("input_ids", input_ids_data.astype(np.int32)),
         prepare_tensor("input_lengths", np.array([[input_length]], dtype=np.int32)),
         prepare_tensor(
-            "request_output_len", np.array([[request_output_len]], dtype=np.uint32)
+            "request_output_len", np.array([[num_gen_tokens]], dtype=np.uint32)
         ),
         prepare_tensor("return_log_probs", np.array([[True]], dtype=bool)),
         # The return_X_logits tensor names were only added in
@@ -106,21 +81,15 @@ def get_trtllm_inputs(
         frequency_penalty_data = np.array([[frequency_penalty]], dtype=np.float32)
         inputs.append(prepare_tensor("frequency_penalty", frequency_penalty_data))
 
-    print(f"end_id before trtllm: {end_id}")
     if end_id is not None:
-        end_id_data = np.array([[end_id]], dtype=np.int32)
+        end_id_data = np.array([[end_id]], dtype=np.uint32)
         inputs.append(prepare_tensor("end_id", end_id_data))
 
     if pad_id is not None:
-        pad_id_data = np.array([[pad_id]], dtype=np.int32)
+        pad_id_data = np.array([[pad_id]], dtype=np.uint32)
         inputs.append(prepare_tensor("pad_id", pad_id_data))
 
     return inputs
-
-
-def check_result(result, model_name):
-    if type(result) == InferenceServerException:
-        print(f"Received an error from server while calling {model_name}: {result}")
 
 
 def extract_trtllm_outputs(result):
@@ -130,45 +99,17 @@ def extract_trtllm_outputs(result):
     assert sequence_length_data.shape[0] == 1
     assert sequence_length_data.shape[1] == 1
     sequence_length = sequence_length_data[0, 0]
+    assert sequence_length == len(output_ids)
     cum_log_probs = result.as_numpy("cum_log_probs").astype(np.float32)
     output_log_probs = result.as_numpy("output_log_probs").astype(np.float32)
     # print(cum_log_probs)
     # Log probs are always 0, even when `return_log_probs=True` in request.
-    print(output_log_probs)
+    # print(output_log_probs)
     # pdb.set_trace()
     # context_logits = result.as_numpy("context_logits").astype(np.float32)
     # generation_logits = result.as_numpy("generation_logits").astype(np.float32)
     # print(generation_logits)
-    return (
-        output_ids,
-        sequence_length,
-        cum_log_probs,
-        output_log_probs,
-        # context_logits,
-        # generation_logits,
-    )
-
-
-def get_postprocessor_inputs(
-    output_ids,
-    cum_log_probs,
-    output_log_probs,
-    # context_logits,
-    # generation_logits
-):
-    output_ids_data = np.expand_dims(output_ids, axis=(0, 1))
-    inputs = [
-        prepare_tensor("TOKENS_BATCH", output_ids_data),
-        # prepare_tensor(
-        #     "SEQUENCE_LENGTH", np.array([[len(output_ids)]], dtype=np.int32)
-        # ),
-        # prepare_tensor("CUM_LOG_PROBS", cum_log_probs),
-        # prepare_tensor("OUTPUT_LOG_PROBS", output_log_probs),
-        # prepare_tensor("CONTEXT_LOGITS", context_logits),
-        # prepare_tensor("GENERATION_LOGITS", generation_logits),
-    ]
-
-    return inputs
+    return output_ids
 
 
 def encountered_stop_words(input_ids, stop_words_ids):
@@ -179,11 +120,10 @@ def encountered_stop_words(input_ids, stop_words_ids):
 
 
 def run_speculative_inference(
-    client_draft,
-    client_target,
+    client,
     prompt,
-    output_len,
-    in_num_draft_tokens,
+    request_output_len,
+    max_num_draft_tokens,
     request_id,
     repetition_penalty,
     presence_penalty,
@@ -194,193 +134,192 @@ def run_speculative_inference(
     end_id,
     pad_id,
     beam_width,
-    preprocessor_model_name,
-    draft_tensorrt_llm_model_name,
-    target_tensorrt_llm_model_name,
-    postprocessor_model_name,
+    draft_model_name,
+    target_model_name,
     verbose,
 ):
-    # Call the preprocessor
-    preprocessor_inputs = get_preprocessor_inputs(
-        prompt, output_len, bad_words, stop_words, end_id, pad_id
+    draft_tokenizer = transformers.AutoTokenizer.from_pretrained("gpt2")
+    # TODO: check representation of word lists as tokens.
+    # draft_bad_words_ids = draft_tokenizer.encode(bad_words)
+    # draft_stop_words_ids = draft_tokenizer.encode(stop_words)
+    target_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        "mistralai/Mistral-7B-v0.1"
     )
-    preprocessor_result = client_draft.infer(
-        preprocessor_model_name, preprocessor_inputs, request_id=request_id
-    )
-    check_result(preprocessor_result, preprocessor_model_name)
-    (
-        prompt_input_ids,
-        bad_words_ids,
-        stop_words_ids,
-        end_id,
-        pad_id,
-    ) = extract_preprocessor_outputs(preprocessor_result)
 
-    input_ids = prompt_input_ids
-    last_input_ids = None
-    draft_output_ids = None
-
-    while True:
-        print("=======================")
+    def call_draft_model(input_text: str) -> str:
+        input_ids = draft_tokenizer.encode(input_text)
         num_draft_tokens = min(
-            in_num_draft_tokens, len(prompt_input_ids) + output_len - len(input_ids) - 1
+            max_num_draft_tokens, request_output_len - len(input_ids)
         )
 
-        if num_draft_tokens > 0:
-            if verbose:
-                print("Draft model input ids:")
-                print(input_ids.tolist())
-
-            # Generate up to num_draft_tokens with draft model
-            draft_inputs = get_trtllm_inputs(
-                input_ids,
-                len(input_ids),
-                num_draft_tokens,
-                None,
-                beam_width,
-                temperature,
-                repetition_penalty,
-                presence_penalty,
-                frequency_penalty,
-                bad_words_ids,
-                stop_words_ids,
-                end_id,
-                pad_id,
-            )
-
-            draft_result = client_draft.infer(
-                draft_tensorrt_llm_model_name, draft_inputs, request_id=request_id
-            )
-            check_result(draft_result, draft_tensorrt_llm_model_name)
-            (
-                draft_output_ids,
-                draft_seq_len,
-                cum_log_probs,
-                output_log_probs,
-                # context_logits,
-                # generation_logits,
-            ) = extract_trtllm_outputs(draft_result)
-
-            # Set the draft token and call the target model to generate up to num_draft_tokens + 1
-            draft_tokens = draft_output_ids[len(input_ids) : draft_seq_len]
-            if verbose:
-                # print("Draft model output ids:")
-                # print(draft_output_ids.tolist())
-                # print("draft_sequence_length")
-                # print(draft_seq_len)
-                print("draft_tokens")
-                print(draft_tokens.tolist())
+        if not num_draft_tokens:
+            print("No more drafts to generate")
+            return ""
 
         if verbose:
-            print("Target model input ids")
-            print(input_ids.tolist())
+            clear_text = draft_tokenizer.decode(input_ids)
+            assert clear_text == input_text, f"{clear_text} vs. {input_text}"
+            print(
+                f"Call DRAFT model to generate `{num_draft_tokens}` for:"
+                f"\n\t{input_ids}\n\t`{input_text}`"
+            )
 
-        # Generate up to len(draft_tokens) + 1 with target model
-        target_inputs = get_trtllm_inputs(
+        inputs = get_trtllm_inputs(
             input_ids,
             len(input_ids),
-            len(draft_tokens) + 1 if num_draft_tokens > 0 else 1,
-            draft_tokens if num_draft_tokens > 0 else None,
+            num_draft_tokens,
+            None,  # draft_tokens.
             beam_width,
             temperature,
             repetition_penalty,
             presence_penalty,
             frequency_penalty,
-            bad_words_ids,
-            stop_words_ids,
-            end_id,
-            pad_id,
+            # draft_bad_words_ids,
+            # draft_stop_words_ids,
+            draft_tokenizer.eos_token_id,
+            draft_tokenizer.pad_token_id,
         )
+        result = client.infer(draft_model_name, inputs, request_id=request_id)
+        output_ids = extract_trtllm_outputs(result)
 
-        target_result = client_target.infer(
-            target_tensorrt_llm_model_name, target_inputs, request_id=request_id
-        )
-        check_result(target_result, target_tensorrt_llm_model_name)
-        (
-            target_output_ids,
-            seq_length,
-            cum_log_probs,
-            output_log_probs,
-            # context_logits,
-            # generation_logits,
-        ) = extract_trtllm_outputs(target_result)
+        clear_text_full = draft_tokenizer.decode(output_ids)
+        if verbose:
+            draft_ids = output_ids[len(input_ids) :]
+            draft_text = clear_text_full[len(input_text) :]
+            print(
+                f"  Result DRAFT model:\n\t{draft_ids}\n"
+                f"\tDraft: `{draft_text}`\n\tAll  : `{clear_text_full}`"
+            )
+        return clear_text_full
+
+    def call_target_model(input_text: str, confirmed_ids: str) -> tuple[str, list[int]]:
+        input_ids = target_tokenizer.encode(input_text)
+        draft_ids = input_ids[
+            len(confirmed_ids) : len(confirmed_ids) + max_num_draft_tokens
+        ]
+        confirmed_ids_re_encoded = input_ids[: len(confirmed_ids)]
+        if not np.allclose(confirmed_ids, confirmed_ids_re_encoded):
+            print(confirmed_ids)
+            print(confirmed_ids_re_encoded)
+            # import pdb
+            # pdb.set_trace()
 
         if verbose:
-            print("Target genertion")
-            print(target_output_ids[len(input_ids) :])
-            # print("Target model output_ids")
-            # print(target_output_ids.tolist())
-            # print("target seq_length")
-            # print(seq_length)
+            clear_text = target_tokenizer.decode(
+                confirmed_ids_re_encoded, skip_special_tokens=True
+            )
+            clear_draft = target_tokenizer.decode(draft_ids, skip_special_tokens=True)
+            print(
+                f"Call TARGET model with context:"
+                f"\n\t{input_ids}\n\t`{clear_text}`\n\tand draft:"
+                f"\n\t{draft_ids}\n\t`{clear_draft}`"
+            )
 
-        # Store the last iteration input_ids to check if EOS was encountered
-        last_input_ids = input_ids
-        # Update the input ids with new output_ids
-        input_ids = target_output_ids
-
-        # Evaluate criteria to stop generation loop.
-        # If we've hit or exceeded the max output length, should stop
-        length_stop = len(input_ids) >= len(prompt_input_ids) + output_len
-        # If draft and target have same outputs, should stop. Normally target should return 1 more token.
-        # If they are the same length, they should differ at the last token
-        target_draft_equal = draft_output_ids is not None and np.array_equal(
-            draft_output_ids, target_output_ids
+        num_gen_tokens = len(draft_ids) + 1 if draft_ids else 1
+        inputs = get_trtllm_inputs(
+            confirmed_ids_re_encoded,
+            len(confirmed_ids_re_encoded),
+            num_gen_tokens,
+            draft_ids or None,
+            beam_width,
+            temperature,
+            repetition_penalty,
+            presence_penalty,
+            frequency_penalty,
+            # target_bad_words_ids,
+            # target_stop_words_ids,
+            target_tokenizer.eos_token_id,
+            target_tokenizer.pad_token_id,
         )
-        # If tokens no longer change, should stop, means we have hit early stopping
-        last_current_equal = np.array_equal(last_input_ids, input_ids)
-        # Need to check if stop words was encountered
-        hit_stop_words = encountered_stop_words(input_ids, stop_words_ids[0])
+        result = client.infer(target_model_name, inputs, request_id=request_id)
+        output_ids = extract_trtllm_outputs(result)
 
+        clear_text_full = target_tokenizer.decode(output_ids, skip_special_tokens=True)
         if verbose:
-            print("length_stop:", length_stop)
-            print("target_draft_equal:", target_draft_equal)
-            print("last_current_equal:", last_current_equal)
-            print("hit_stop_words:", hit_stop_words)
+            print(
+                f"  Result TARGET model:\n\t{output_ids}\n"
+                f"\tResult: `{clear_text_full}`"
+            )
+        return clear_text_full, output_ids
 
-        if length_stop or target_draft_equal or last_current_equal or hit_stop_words:
-            break
+    def generate_target_model(input_text: str, num_gen_tokens: str) -> str:
+        input_ids = target_tokenizer.encode(input_text)
+        inputs = get_trtllm_inputs(
+            input_ids,
+            len(input_ids),
+            num_gen_tokens - len(input_ids),
+            None,
+            beam_width,
+            temperature,
+            repetition_penalty,
+            presence_penalty,
+            frequency_penalty,
+            # target_bad_words_ids,
+            # target_stop_words_ids,
+            target_tokenizer.eos_token_id,
+            target_tokenizer.pad_token_id,
+        )
+        result = client.infer(target_model_name, inputs, request_id=request_id)
+        output_ids = extract_trtllm_outputs(result)
+        clear_text_full = target_tokenizer.decode(output_ids, skip_special_tokens=True)
+        if verbose:
+            print(
+                f"  Result TARGET model:\n\t{output_ids}\n"
+                f"\tResult: `{clear_text_full}`"
+            )
+        return clear_text_full
 
-    # Call the postprocessor
-    postprocessor_inputs = get_postprocessor_inputs(
-        input_ids,
-        cum_log_probs,
-        output_log_probs,
-        # context_logits,
-        # generation_logits,
-    )
-    postprocessor_result = client_target.infer(
-        postprocessor_model_name, postprocessor_inputs, request_id=request_id
-    )
-    check_result(postprocessor_result, postprocessor_model_name)
-    output = postprocessor_result.as_numpy("OUTPUT")
-    return output[0].decode("utf8")
+    # Warmup model with unrelated string.
+    generate_target_model("What is a computer", request_output_len)
+    call_draft_model("What is a computer")
+
+    # Run `direct_gen` in `0.26770877838134766` seconds.
+    # with timeit("direct_gen"):
+    #     generate_target_model(prompt, request_output_len)
+
+    # Run `speculative_gen` in `0.1786513328552246` seconds.
+    with timeit("speculative_gen"):
+        confirmed_target_ids = target_tokenizer.encode(prompt)
+        current_text = prompt
+        while True:
+            with timeit("draft"):
+                current_text = call_draft_model(current_text)
+            with timeit("target"):
+                current_text, confirmed_target_ids = call_target_model(
+                    current_text, confirmed_target_ids
+                )
+
+            print("=======================")
+            print(f"Target token len {len(confirmed_target_ids)}")
+            if len(confirmed_target_ids) == request_output_len:
+                break
+
+    with timeit("direct_gen"):
+        print(generate_target_model(prompt, request_output_len))
+
+    return current_text
 
 
 if __name__ == "__main__":
-    client_target = grpcclient.InferenceServerClient("0.0.0.0:8001")
-    client_draft = client_target
+    client_ = grpcclient.InferenceServerClient("0.0.0.0:8001")
 
     output_text = run_speculative_inference(
-        client_draft,
-        client_target,
+        client_,
         prompt="Once upon a time there was",
-        output_len=25,
-        in_num_draft_tokens=3,
+        request_output_len=25,
+        max_num_draft_tokens=4,
         request_id="1",
         repetition_penalty=None,
         presence_penalty=None,
         frequency_penalty=None,
         temperature=1.0,
-        stop_words=["stop"],
-        bad_words=["fuck"],
+        stop_words=[],
+        bad_words=[],
         end_id=None,
         pad_id=None,
         beam_width=1,
-        preprocessor_model_name="preprocessing",
-        draft_tensorrt_llm_model_name="draft_model",
-        # target_tensorrt_llm_model_name="draft_model",
-        target_tensorrt_llm_model_name="target_model",
-        postprocessor_model_name="postprocessing",
+        draft_model_name="draft_model",
+        target_model_name="target_model",
         verbose=True,
     )
 
