@@ -1,3 +1,4 @@
+"""This file should be converted into a library in the futuretruss/modelling package."""
 import collections
 import contextlib
 import csv
@@ -60,7 +61,7 @@ class _Timing(object):
 
 
 class _TimingManager(object):
-    """Object to manage collection of `_Timing`s."""
+    """Object to manage collection of `_Timing` objects."""
 
     def __init__(self):
         self._timings = collections.defaultdict(_Timing)
@@ -139,10 +140,9 @@ class SamplingConfig(pydantic.BaseModel):
 
 
 class GenerationRequest(pydantic.BaseModel):
-    # TODO: embedding_bias, prompt_embedding_table, prompt_vocab_size, lora
+    # TODO: Missing: embedding_bias, prompt_embedding_table, prompt_vocab_size, loras.
     prompt: str
     max_num_generated_tokens: int
-    request_id: str
     streaming: bool = False
     bad_word_list: Sequence[str] | None = None
     stop_words_list: Sequence[str] | None = None
@@ -197,16 +197,12 @@ def make_trtllm_inputs(
     bad_words_ids: np.ndarray[int] | None = None,
     stop_words_ids: np.ndarray[int] | None = None,
 ) -> list[triton_grpc.InferInput]:
-    input_length = len(input_ids)
     inputs = []
-    # Add batch dimension.
     _fill_inputs("input_ids", input_ids, np.int32, inputs)
-    _fill_inputs("input_lengths", input_length, np.int32, inputs)
+    _fill_inputs("input_lengths", len(input_ids), np.int32, inputs)
     _fill_inputs("request_output_len", max_num_generated_tokens, np.uint32, inputs)
-
     # All below are optional inputs.
     _fill_inputs("draft_input_ids", draft_tokens, np.int32, inputs)
-    # Generation.
     _fill_inputs("end_id", end_id, np.uint32, inputs)
     _fill_inputs("pad_id", pad_id, np.uint32, inputs)
     _fill_inputs("bad_words_list", bad_words_ids, np.int32, inputs)
@@ -233,14 +229,15 @@ def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int
     return output_ids
 
 
-# Taken from
-# https://github.com/NVIDIA/TensorRT-LLM/blob/main/tensorrt_llm/runtime/generation.py
-
-
 def to_word_list_format(
     word_dict: list[list[str]], tokenizer=None, add_special_tokens=False
 ):
     """
+    Taken from
+    https://github.com/NVIDIA/TensorRT-LLM/blob/main/tensorrt_llm/runtime/generation.py
+
+    - do not edit / maintain.
+
     format of word_dict
         len(word_dict) should be same to batch_size
         word_dict[i] means the words for batch i
@@ -327,13 +324,11 @@ class TritonServer:
             try:
                 is_server_up = http_client.is_server_live()
             except ConnectionRefusedError:
-                time.sleep(2)
+                time.sleep(0.2)
                 continue
 
-        http_client.is_server_ready
-
-        while not http_client.is_model_ready(model_name="target_model"):
-            time.sleep(2)
+        while not http_client.is_server_ready():
+            time.sleep(0.2)
             continue
 
     def build_server_start_command(self, mpi: int = 1, env: dict = {}) -> list:
@@ -346,7 +341,6 @@ class TritonServer:
             "--http-port",
             str(HTTP_SERVICE_PORT),
         ]
-
         if mpi == 1:
             return base_command
 
@@ -363,16 +357,15 @@ class TritonServer:
             ]
             mpi_commands.append(" ".join(mpi_command))
 
-        # Join the individual mpi commands with ' : ' as required by mpirun syntax for multiple commands
+        # Join the individual mpi commands with ' : ' as required by mpirun
+        # syntax for multiple commands.
         combined_mpi_commands = " : ".join(mpi_commands)
-
         return mpirun_command + [combined_mpi_commands]
 
     def _start_server(self, mpi: int = 1, env: dict = {}) -> subprocess.Popen:
         """Triton Inference Server has different startup commands depending on
         whether it is running in a TP=1 or TP>1 configuration. This function
         starts the server with the appropriate command."""
-
         command = self.build_server_start_command(mpi, env)
         return subprocess.Popen(command, env={**os.environ, **env})
 

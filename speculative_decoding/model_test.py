@@ -15,10 +15,8 @@ if __name__ == "__main__":
         model_instance.load()
 
         request = helpers.GenerationRequest(
-            # prompt="Once upon a time there was",
             prompt="Once upon",
             max_num_generated_tokens=60,
-            request_id="123",
             streaming=streaming,
         )
 

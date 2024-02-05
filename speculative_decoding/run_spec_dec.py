@@ -55,7 +55,6 @@ if __name__ == "__main__":
     request = helpers.GenerationRequest(
         prompt=args.prompt,
         max_num_generated_tokens=args.max_num_generated_tokens,
-        request_id="123",
         bad_word_list=args.bad_word_list,
         top_words_list=args.stop_words_list,
     )
@@ -112,6 +111,7 @@ if __name__ == "__main__":
             draft_model,
             request,
             max_num_draft_tokens=4,
+            request_id="666",
             result_queue=asyncio.Queue(),
             verbose=args.verbose,
             iteration_delay=args.iteration_delay,
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         direct_gen_co = target_model.generate(
             request.prompt,
             request.max_num_generated_tokens,
-            request.request_id + "123",
+            "123",
             request.sampling_config,
             request.bad_word_list,
             request.stop_words_list,
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
         with helpers.timeit("NEW TOTAL - speculative_gen"):
             state_result = await state
-            print(f"SpecDec result:\n{state_result.get_current_text()}")
+            print(f"SpecDec result:\n{state_result.get_verified_text()}")
             if args.verbose:
                 print(
                     f"Average num of accepted draft tokens: "
@@ -149,28 +149,3 @@ if __name__ == "__main__":
         helpers.show_timings()
 
     state = asyncio.run(main())
-
-"""
-Concurrent:
-A - speculative_gen            0.000006  0.000006   1  174762.666667  0.000006  0.000006
-B - direct_gen                 0.000007  0.000007   1  144631.172414  0.000007  0.000007
-A - await speculative_gen      1.046489  1.046489   1       0.955577  1.046489  1.046489
-Generate(draft_model)          0.424932  0.020235  21      49.419699  0.006953  0.027036
-Generate(target_model)         0.901044  0.901044   1       1.109824  0.901044  0.901044
-Tokenize for Target model      0.005091  0.000242  21    4124.772127  0.000167  0.000302
-Verify+Generate(target_model)  0.598043  0.028478  21      35.114506  0.015787  0.035304
-B - await direct_gen           0.000018  0.000018   1   56679.783784  0.000018  0.000018
-
-A - speculative_gen            0.000007  0.000007   1  149796.571429  0.000007  0.000007
-B - direct_gen                 0.000008  0.000008   1  131072.000000  0.000008  0.000008
-A - await speculative_gen      0.516541  0.516541   1       1.935953  0.516541  0.516541
-Generate(draft_model)          0.152776  0.007275  21     137.456357  0.006834  0.007958
-Tokenize for Target model      0.005022  0.000239  21    4181.758724  0.000187  0.000292
-Verify+Generate(target_model)  0.339970  0.016189  21      61.770136  0.015723  0.017120
-B - await direct_gen           0.846346  0.846346   1       1.181550  0.846346  0.846346
-Generate(target_model)         0.845856  0.845856   1       1.182234  0.845856  0.845856
-
-
-  "▁L": 393,
-  "▁LO": 6807,
-"""

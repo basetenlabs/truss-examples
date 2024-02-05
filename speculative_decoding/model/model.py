@@ -1,3 +1,15 @@
+"""
+This model downloads a target and draft model engine, gets their corresponding
+tokenizers from HF and starts a tritonserver
+
+TODO:
+* Supporting openai compatibility.
+* Use a pydantic schema for specifying the speculative decoding setup.
+* Generate the triton repo and config from the truss config.
+* Create an abstract base class for models.
+"""
+
+
 import asyncio
 import os
 from itertools import count
@@ -46,11 +58,7 @@ class Model:
             local_dir=os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
             local_dir_use_symlinks=False,
             max_workers=4,
-            **(
-                {"use_auth_token": hf_access_token}
-                if hf_access_token is not None
-                else {}
-            )
+            use_auth_token=hf_access_token,
         )
         # Draft model.
         huggingface_hub.snapshot_download(
@@ -60,11 +68,7 @@ class Model:
             local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
             local_dir_use_symlinks=False,
             max_workers=4,
-            **(
-                {"use_auth_token": hf_access_token}
-                if hf_access_token is not None
-                else {}
-            )
+            use_auth_token=hf_access_token,
         )
 
         if not helpers.is_triton_server_alive():
@@ -96,22 +100,24 @@ class Model:
     async def predict(self, model_input) -> str | AsyncGenerator[str, None]:
         request_id = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
-        if not request.request_id:
-            request.request_id = request_id
+        max_num_draft_tokens: int = self._config["model_metadata"][
+            "speculative_decoding"
+        ]["max_num_draft_tokens"]
+        streaming: bool = model_input.get("streaming", True)
 
-        max_num_draft_tokens = self._config["model_metadata"]["speculative_decoding"][
-            "max_num_draft_tokens"
-        ]
-        streaming = model_input.get("streaming", True)
-
-        maybe_queue = asyncio.Queue() if streaming else None
-
-        inference_gen = asyncio.ensure_future(
+        maybe_queue: asyncio.Queue[str | spec_dec.QUEUE_SENTINEL] = (
+            asyncio.Queue() if streaming else None
+        )
+        # `ensure_future` makes sure the loop immediately runs until completion and
+        # fills up the result queue as fast as possible (only limited by the inference
+        # requests latency) and doesn't wait for the consumption of the results.
+        inference_gen: asyncio.Task[spec_dec.SpeculationState] = asyncio.ensure_future(
             spec_dec.run_speculative_inference(
                 self._target_model,
                 self._draft_model,
                 request,
                 max_num_draft_tokens=max_num_draft_tokens,
+                request_id=request_id,
                 result_queue=maybe_queue,
                 verbose=False,
             )
@@ -119,22 +125,18 @@ class Model:
 
         if streaming:
 
-            async def generate_result():
+            async def generate_result() -> AsyncGenerator[str, None]:
                 while True:
-                    item = await maybe_queue.get()
-                    if item == spec_dec.QUEUE_SENTINEL:
+                    text_or_sentinel = await maybe_queue.get()
+                    if text_or_sentinel == spec_dec.QUEUE_SENTINEL:
                         break
-                    yield item
+                    yield text_or_sentinel
 
             return generate_result()
 
         else:
 
-            async def get_result():
-                return (await inference_gen).get_current_text()
+            async def get_result() -> str:
+                return (await inference_gen).get_verified_text()
 
             return await get_result()
-
-    # def __del__(self) -> None:
-    #     self._triton_server.shutdown()
-    #     del self
