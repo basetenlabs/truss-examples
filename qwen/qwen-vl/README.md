@@ -68,3 +68,4 @@ print(res.json())
 ```json
 {"output": "Picture 1: <img>/tmp/tmpw6m_zmbk.png</img>\nGenerate the caption in English with grounding<ref> A maltese dog</ref><box>(385,361),(783,934)</box> in a flower garden<|endoftext|>"}
 ```
+![galu2](https://github.com/basetenlabs/truss-examples/assets/15642666/459d5a5a-37b0-49aa-830c-d933840c40a2)
