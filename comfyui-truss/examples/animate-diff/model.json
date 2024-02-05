@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://github.com/Kosinkadink/ComfyUI-AnimateDiff-Evolved",
+    "path": "custom_nodes"
+  },
+  {
+    "url": "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite",
+    "path": "custom_nodes"
+  },
+  {
+    "url": "https://github.com/ArtVentureX/comfyui-animatediff",
+    "path": "custom_nodes"
+  },
+  {
+      "url": "https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1e_sd15_tile.pth",
+      "path": "models/controlnet/control_v11f1e_sd15_tile.pth"
+  },
+  {
+      "url": "https://huggingface.co/emmajoanne/models/resolve/main/darkSushiMixMix_colorful.safetensors",
+      "path": "models/checkpoints/darkSushiMixMix_colorful.safetensors"
+  },
+  {
+    "url": "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.ckpt",
+    "path": "models/vae/vae-ft-mse-840000-ema-pruned.ckpt"
+  },
+  {
+    "url": "https://huggingface.co/guoyww/animatediff/resolve/main/mm_sd_v15_v2.ckpt",
+    "path": "custom_nodes/ComfyUI-AnimateDiff-Evolved/models/mm_sd_v15_v2.ckpt"
+  }
+]
