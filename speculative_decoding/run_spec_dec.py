@@ -39,6 +39,9 @@ class _SpeculationState:
         self._draft_text = None
         self._draft_ids = None
 
+        self._num_updates = 0
+        self._sum_accepted_tokens = 0
+
         self._debugging = debugging
 
     def get_current_text(self) -> str:
@@ -101,19 +104,36 @@ class _SpeculationState:
                 disagreed_text = ""
             new_text = added_text[len(self._draft_text) :]
 
+            accepted_tokens = os.path.commonprefix(
+                [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
+            )
+
+            self._num_updates += 1
+            self._sum_accepted_tokens += len(accepted_tokens)
+
             style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
             print(
                 f"Verfied: {self._current_text}"
                 f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
                 f"{colorama.Back.RED + style}{disagreed_text}"
                 f"{colorama.Style.RESET_ALL + style}{new_text}"
-                f"{colorama.Style.RESET_ALL} -> Accepted `{len(accepted_text)}` chars."
+                f"{colorama.Style.RESET_ALL} -> Accepted `{len(accepted_tokens)}` "
+                f"tokens <=> {len(accepted_text)}` chars."
             )
 
         self._current_text = verified_text
         self._current_ids = verified_ids
         self._draft_ids = None
         self._draft_text = None
+
+    def get_aveage_num_accepted_draft_tokens(self) -> float:
+        if not self._debugging and self._num_updates == 0:
+            raise ValueError(
+                "You must turn on `debugging` and run at "
+                "least one update to calculate the rate"
+            )
+
+        return self._sum_accepted_tokens / self._num_updates
 
 
 class _ModelWrapper:
@@ -191,6 +211,9 @@ class _ModelWrapper:
                 self._tokenize_word_list(stop_words_list),
             )
         with helpers.timeit(f"Verify+Generate({self._model_name})"):
+            # for inp in inputs:
+            #     print(inp.name(), print(inp._input), inp._raw_content)
+
             result = self._client.infer(self._model_name, inputs, request_id=request_id)
             output_ids = helpers.extract_trtllm_outputs(result)
 
@@ -259,72 +282,76 @@ def run_speculative_inference(
         )
 
     helpers.show_timings()
-    print("Final text:\n", verified_text)
+    print(f"Final text:\n{verified_text}")
+    print(
+        f"Average num of accepted draft tokens: "
+        f"{state.get_aveage_num_accepted_draft_tokens():.2f}"
+    )
     return verified_text
 
 
-def profile(
-    client,
-    model_name,
-    prompt_lens: Sequence[int],
-    generate_lens: Sequence[int],
-    n_samples: int = 20,
-):
-    measurements = []
-    for prompt_len, generate_len, i in itertools.product(
-        prompt_lens, generate_lens, range(n_samples)
-    ):
-        prompt_ids = np.random.randint(0, 32000, prompt_len)
-        inputs = helpers.make_trtllm_inputs(prompt_ids, generate_len)
+# def profile(
+#     client,
+#     model_name,
+#     prompt_lens: Sequence[int],
+#     generate_lens: Sequence[int],
+#     n_samples: int = 20,
+# ):
+#     measurements = []
+#     for prompt_len, generate_len, i in itertools.product(
+#         prompt_lens, generate_lens, range(n_samples)
+#     ):
+#         prompt_ids = np.random.randint(0, 32000, prompt_len)
+#         inputs = helpers.make_trtllm_inputs(prompt_ids, generate_len)
 
-        t0 = time.time()
-        result = client.infer(model_name, inputs, request_id="123")
-        elapsed = time.time() - t0
-        row = {
-            "model_name": model_name,
-            "prompt_len": prompt_len,
-            "generate_len": generate_len,
-            "time": elapsed,
-        }
-        # print(row)
-        measurements.append(row)
+#         t0 = time.time()
+#         result = client.infer(model_name, inputs, request_id="123")
+#         elapsed = time.time() - t0
+#         row = {
+#             "model_name": model_name,
+#             "prompt_len": prompt_len,
+#             "generate_len": generate_len,
+#             "time": elapsed,
+#         }
+#         # print(row)
+#         measurements.append(row)
 
-    df = pd.DataFrame(measurements)
-    print(df.to_json())
-    return df
+#     df = pd.DataFrame(measurements)
+#     print(df.to_json())
+#     return df
 
 
-def profile_verification(
-    client,
-    model_name,
-    prompt_lens: Sequence[int],
-    draft_lens: Sequence[int],
-    n_samples: int = 20,
-):
-    measurements = []
-    for prompt_len, draft_len, i in itertools.product(
-        prompt_lens, draft_lens, range(n_samples)
-    ):
-        prompt_ids = np.random.randint(0, 32000, prompt_len)
-        inputs = helpers.make_trtllm_inputs(
-            prompt_ids[:-draft_len], 1, prompt_ids[-draft_len:]
-        )
+# def profile_verification(
+#     client,
+#     model_name,
+#     prompt_lens: Sequence[int],
+#     draft_lens: Sequence[int],
+#     n_samples: int = 20,
+# ):
+#     measurements = []
+#     for prompt_len, draft_len, i in itertools.product(
+#         prompt_lens, draft_lens, range(n_samples)
+#     ):
+#         prompt_ids = np.random.randint(0, 32000, prompt_len)
+#         inputs = helpers.make_trtllm_inputs(
+#             prompt_ids[:-draft_len], 1, prompt_ids[-draft_len:]
+#         )
 
-        t0 = time.time()
-        result = client.infer(model_name, inputs, request_id="123")
-        elapsed = time.time() - t0
-        row = {
-            "model_name": model_name,
-            "prompt_len": prompt_len,
-            "draft_len": draft_len,
-            "time": elapsed,
-        }
-        # print(row)
-        measurements.append(row)
+#         t0 = time.time()
+#         result = client.infer(model_name, inputs, request_id="123")
+#         elapsed = time.time() - t0
+#         row = {
+#             "model_name": model_name,
+#             "prompt_len": prompt_len,
+#             "draft_len": draft_len,
+#             "time": elapsed,
+#         }
+#         # print(row)
+#         measurements.append(row)
 
-    df = pd.DataFrame(measurements)
-    print(df.to_json())
-    return df
+#     df = pd.DataFrame(measurements)
+#     print(df.to_json())
+#     return df
 
 
 def run_dummy_request(client):
@@ -334,8 +361,70 @@ def run_dummy_request(client):
 
 
 if __name__ == "__main__":
+    import huggingface_hub
+
     colorama.init(autoreset=True)
+
+    DOWNLOAD_ENGINES = False
+    TRITON_DIR = os.path.join("/packages", "triton_model_repo")
+
+    DRAFT_MODEL_ENGINE_HF = "baseten/specdec-draft-gpt2"
+    DRAFT_MODEL_TOKENIZER_HF = "gpt2"
+    DRAFT_MODEL_KEY = "draft_model"
+    TARGET_MODEL_ENGINE_HF = "baseten/specdec-target-mistral-7B"
+    TARGET_MODEL_TOKENIZER_HF = "mistralai/Mistral-7B-v0.1"
+    TARGET_MODEL_KEY = "target_model"
+
+    if DOWNLOAD_ENGINES:
+        huggingface_hub.snapshot_download(
+            DRAFT_MODEL_ENGINE_HF,
+            local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
+            local_dir_use_symlinks=False,
+            max_workers=4,
+        )
+        huggingface_hub.snapshot_download(
+            TARGET_MODEL_ENGINE_HF,
+            local_dir=os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
+            local_dir_use_symlinks=False,
+            max_workers=4,
+        )
+
+    # Start triton server *outside* project's poetry env:
+    # tritonserver --model-repository \
+    # /root/workbench/truss-examples/speculative_decoding/triton_model_repo \
+    # --grpc-port 8001 \
+    # --http-port 8003
+
     client_ = triton_grpc.InferenceServerClient("0.0.0.0:8001")
+
+    target_model_ = _ModelWrapper(
+        client_,
+        TARGET_MODEL_KEY,
+        transformers.AutoTokenizer.from_pretrained(TARGET_MODEL_TOKENIZER_HF),
+    )
+
+    draft_model_ = _ModelWrapper(
+        client_,
+        DRAFT_MODEL_KEY,
+        transformers.AutoTokenizer.from_pretrained(DRAFT_MODEL_TOKENIZER_HF),
+    )
+
+    request_ = helpers.GenerationRequest(
+        # prompt="Once upon a time there was",
+        prompt="Once upon",
+        max_num_generated_tokens=60,
+        request_id="123",
+    )
+    request_.sampling_config.random_seed = 123412
+    request_.sampling_config.temperature = 3.0
+
+    output_text = run_speculative_inference(
+        target_model_,
+        draft_model_,
+        request_,
+        max_num_draft_tokens=4,
+        verbose=True,
+    )
 
     # target_gen_profile = profile(
     #     client_,
@@ -360,30 +449,3 @@ if __name__ == "__main__":
     #     draft_lens=[1, 2, 3, 4],
     #     n_samples=30,
     # )
-
-    target_model_ = _ModelWrapper(
-        client_,
-        "target_model",
-        transformers.AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1"),
-    )
-
-    draft_model_ = _ModelWrapper(
-        client_, "draft_model", transformers.AutoTokenizer.from_pretrained("gpt2")
-    )
-
-    request_ = helpers.GenerationRequest(
-        # prompt="Once upon a time there was",
-        prompt="Once upon",
-        max_num_generated_tokens=60,
-        request_id="123",
-    )
-    request_.sampling_config.random_seed = 123412
-    request_.sampling_config.temperature = 3.0
-
-    output_text = run_speculative_inference(
-        target_model_,
-        draft_model_,
-        request_,
-        max_num_draft_tokens=4,
-        verbose=False,
-    )

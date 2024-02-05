@@ -18,36 +18,15 @@ input [
     dims: [ 1 ]
     reshape: { shape: [ ] }
   },
-    {
-    name: "draft_input_ids"
-    data_type: TYPE_INT32
-    dims: [ -1 ]
-    optional: true
-  },
   {
     name: "request_output_len"
     data_type: TYPE_UINT32
     dims: [ 1 ]
   },
   {
-    name: "return_log_probs"
-    data_type: TYPE_BOOL
-    dims: [ 1 ]
-    reshape: { shape: [ ] }
-    optional: true
-  },
-  {
-    name: "return_context_logits"
-    data_type: TYPE_BOOL
-    dims: [ 1 ]
-    reshape: { shape: [ ] }
-    optional: true
-  },
-  {
-    name: "return_generation_logits"
-    data_type: TYPE_BOOL
-    dims: [ 1 ]
-    reshape: { shape: [ ] }
+    name: "draft_input_ids"
+    data_type: TYPE_INT32
+    dims: [ -1 ]
     optional: true
   },
   {
@@ -62,6 +41,18 @@ input [
     data_type: TYPE_UINT32
     dims: [ 1 ]
     reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "stop_words_list"
+    data_type: TYPE_INT32
+    dims: [ 2, -1 ]
+    optional: true
+  },
+  {
+    name: "bad_words_list"
+    data_type: TYPE_INT32
+    dims: [ 2, -1 ]
     optional: true
   },
   {
@@ -121,8 +112,36 @@ input [
     optional: true
   },
   {
+    name: "frequency_penalty"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
     name: "random_seed"
     data_type: TYPE_UINT64
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_log_probs"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_context_logits"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_generation_logits"
+    data_type: TYPE_BOOL
     dims: [ 1 ]
     reshape: { shape: [ ] }
     optional: true
@@ -200,8 +219,8 @@ parameters: {
 parameters: {
   key: "gpt_model_path"
   value: {
-    string_value: "/root/workbench/mistral-7B_engine/"
-    # string_value: "/root/workbench/gpt-xl_engine/"
+    # string_value: "/root/workbench/mistral-7B_engine/"
+    string_value:  "/packages/triton_model_repo/target_model/1/"
   }
 }
 parameters: {
