@@ -65,8 +65,6 @@ print(res.json())
 
 ## Example Output
 
+```json
+{"output": "Picture 1: <img>/tmp/tmpw6m_zmbk.png</img>\nGenerate the caption in English with grounding<ref> A maltese dog</ref><box>(385,361),(783,934)</box> in a flower garden<|endoftext|>"}
 ```
-<img>https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg</img>Generate the caption in English with grounding:<ref> Woman</ref><box>(451,379),(731,806)</box> and<ref> her dog</ref><box>(219,424),(576,896)</box> playing on the beach<|endoftext|>
-```
-
-![demo_spotting_caption](https://github.com/basetenlabs/truss-examples/assets/15642666/c5be235f-d24a-4ef6-a2d5-f4b01b1b56ba)
