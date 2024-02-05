@@ -2,23 +2,22 @@ import asyncio
 import os
 
 import colorama
-import helpers
 import huggingface_hub
-import spec_dec
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+from model import helpers, spec_dec
+
+TRITON_DIR = os.path.join("/", "triton_model_repo")
+
+DRAFT_MODEL_ENGINE_HF = "baseten/specdec-draft-gpt2"
+DRAFT_MODEL_TOKENIZER_HF = "gpt2"
+DRAFT_MODEL_KEY = "draft_model"
+TARGET_MODEL_ENGINE_HF = "baseten/specdec-target-mistral-7B"
+TARGET_MODEL_TOKENIZER_HF = "mistralai/Mistral-7B-v0.1"
+TARGET_MODEL_KEY = "target_model"
 
 if __name__ == "__main__":
     colorama.init(autoreset=True)
-
-    TRITON_DIR = os.path.join("/", "triton_model_repo")
-
-    DRAFT_MODEL_ENGINE_HF = "baseten/specdec-draft-gpt2"
-    DRAFT_MODEL_TOKENIZER_HF = "gpt2"
-    DRAFT_MODEL_KEY = "draft_model"
-    TARGET_MODEL_ENGINE_HF = "baseten/specdec-target-mistral-7B"
-    TARGET_MODEL_TOKENIZER_HF = "mistralai/Mistral-7B-v0.1"
-    TARGET_MODEL_KEY = "target_model"
 
     huggingface_hub.snapshot_download(
         DRAFT_MODEL_ENGINE_HF,

@@ -3,10 +3,11 @@ import os
 from typing import Sequence
 
 import colorama
-import helpers
 import numpy as np
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+
+from . import helpers
 
 
 class SpeculationState:

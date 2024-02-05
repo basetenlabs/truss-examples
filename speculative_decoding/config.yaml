@@ -3,17 +3,19 @@ base_image:
   python_executable_path: /usr/bin/python3
 model_metadata:
   engine_repository: baseten/specdec-target-mistral-7B
-  tokenizer_repository: mistralai/Mistral-7B-v0.1
-  tensor_parallelism: 1
   speculative_decoding:
     draft_engine_repository: baseten/specdec-draft-gpt2
     draft_tokenizer_repository: gpt2
     max_num_draft_tokens: 4
+  tags:
+    - text-generation
+  tensor_parallelism: 1
+  tokenizer_repository: mistralai/Mistral-7B-v0.1
 python_version: py311
 requirements:
   - tritonclient[all]
 resources:
-  use_gpu: true
   accelerator: A100
+  use_gpu: true
 runtime:
   predict_concurrency: 256

@@ -256,14 +256,17 @@ def is_triton_server_alive() -> bool:
 
 
 class TritonServer:
+    _process: subprocess.Popen
+
     def __init__(self, model_repository_dir: Path, parallel_count=1):
         self._model_repository_dir: Path = model_repository_dir
         self._parallel_count = parallel_count
+        self._process = None
 
     def load_server_and_model(self, env: dict) -> None:
         """Loads the Triton server and the model."""
         if not is_triton_server_alive():
-            self._start_server(mpi=self._parallel_count, env=env)
+            self._process = self._start_server(mpi=self._parallel_count, env=env)
 
         http_client = triton_http.InferenceServerClient(
             url=f"localhost:{HTTP_SERVICE_PORT}", verbose=False
@@ -322,3 +325,7 @@ class TritonServer:
 
         command = self.build_server_start_command(mpi, env)
         return subprocess.Popen(command, env={**os.environ, **env})
+
+    def shutdown(self) -> None:
+        if not self._process:
+            self._process.terminate()

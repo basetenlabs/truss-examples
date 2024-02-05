@@ -1,16 +1,20 @@
 import os
 from itertools import count
 
-import helpers
 import huggingface_hub
+import transformers
+import tritonclient.grpc.aio as triton_grpc
+
+from . import helpers, spec_dec
 
 TRITON_DIR = os.path.join("/", "triton_model_repo")
+TARGET_MODEL_KEY = "target_model"
 DRAFT_MODEL_KEY = "draft_model"
 
 
 class Model:
     def __init__(self, **kwargs):
-        self._data_dir = kwargs["data_dir"]
+        # self._data_dir = kwargs["data_dir"]
         self._config = kwargs["config"]
         self._secrets = kwargs["secrets"]
         self._request_id_counter = count(start=1)
@@ -28,17 +32,19 @@ class Model:
         )
 
         env = {}
-        if "hf_access_token" in self._secrets._base_secrets.keys():
-            hf_access_token = self._secrets["hf_access_token"]
-            env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
-        else:
-            hf_access_token = None
+        # if "hf_access_token" in self._secrets._base_secrets.keys():
+        #     hf_access_token = self._secrets["hf_access_token"]
+        #     env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
+        # else:
+        #     hf_access_token = None
+
+        hf_access_token = None  # TODO: dbg
 
         # Target model.
         huggingface_hub.snapshot_download(
             self._config["model_metadata"]["engine_repository"],
-            local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
-            local_dir_use_symlinks=False,
+            local_dir=os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
+            local_dir_use_symlinks=True,  # TODO: dbg
             max_workers=4,
             **(
                 {"use_auth_token": hf_access_token}
@@ -48,9 +54,11 @@ class Model:
         )
         # Draft model.
         huggingface_hub.snapshot_download(
-            self._config["model_metadata"]["speculative_decoding"]["engine_repository"],
+            self._config["model_metadata"]["speculative_decoding"][
+                "draft_engine_repository"
+            ],
             local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
-            local_dir_use_symlinks=False,
+            local_dir_use_symlinks=True,  # TODO: dbg
             max_workers=4,
             **(
                 {"use_auth_token": hf_access_token}
@@ -61,21 +69,46 @@ class Model:
 
         if not helpers.is_triton_server_alive():
             self._triton_server = helpers.TritonServer(
-                "/root/workbench/truss-examples/speculative_decoding/triton_model_repo",
+                TRITON_DIR,
                 parallel_count=tensor_parallel_count * pipeline_parallel_count,
             )
             self._triton_server.load_server_and_model(env)
 
-    async def predict(self, model_input):
-        stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
-        prompt = model_input.get("prompt")
+        client = triton_grpc.InferenceServerClient("0.0.0.0:8001")
+        self._target_model = spec_dec.ModelWrapper(
+            client,
+            TARGET_MODEL_KEY,
+            transformers.AutoTokenizer.from_pretrained(
+                self._config["model_metadata"]["tokenizer_repository"]
+            ),
+        )
 
-        max_tokens = model_input.get("max_tokens", 50)
-        beam_width = model_input.get("beam_width", 1)
-        bad_words_list = model_input.get("bad_words_list", [""])
-        stop_words_list = model_input.get("stop_words_list", [""])
-        repetition_penalty = model_input.get("repetition_penalty", 1.0)
-        ignore_eos = model_input.get("ignore_eos", False)
-        stream = model_input.get("stream", True)
+        self._draft_model = spec_dec.ModelWrapper(
+            client,
+            DRAFT_MODEL_KEY,
+            transformers.AutoTokenizer.from_pretrained(
+                self._config["model_metadata"]["speculative_decoding"][
+                    "draft_tokenizer_repository"
+                ]
+            ),
+        )
+
+    async def predict(self, model_input):
+        # stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
+        request = helpers.GenerationRequest.parse_obj(model_input)
+
+        return await spec_dec.run_speculative_inference(
+            self._target_model,
+            self._draft_model,
+            request,
+            max_num_draft_tokens=self._config["model_metadata"]["speculative_decoding"][
+                "max_num_draft_tokens"
+            ],
+            verbose=True,
+        )
 
         # TODO: make async/stream.
+
+    # def __del__(self) -> None:
+    #     self._triton_server.shutdown()
+    #     del self
