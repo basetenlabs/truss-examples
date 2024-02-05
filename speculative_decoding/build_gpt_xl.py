@@ -47,10 +47,11 @@ command = [
     "--use_inflight_batching",
     "--use_gemm_plugin=float16",
     "--multi_block_mode",
-    "--max_input_len=2048",
+    "--max_batch_size=16",
+    "--max_input_len=512",
     "--use_paged_context_fmha",
     "--gather_all_token_logits",
-    f"--max_draft_len={MAX_DRAFT_LEN}",  # Not really needed for draft only model.
+    f"--max_draft_len={MAX_DRAFT_LEN}",
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))

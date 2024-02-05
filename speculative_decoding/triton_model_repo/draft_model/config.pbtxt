@@ -1,6 +1,6 @@
 name: "draft_model"
 backend: "tensorrtllm"
-max_batch_size: 2048
+max_batch_size: 512
 
 model_transaction_policy {
   decoupled: False
@@ -28,6 +28,12 @@ input [
     name: "request_output_len"
     data_type: TYPE_UINT32
     dims: [ 1 ]
+  },
+    {
+    name: "return_log_probs"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
   },
   {
     name: "end_id"
@@ -173,7 +179,8 @@ parameters: {
 parameters: {
   key: "gpt_model_type"
   value: {
-    string_value: "inflight_fused_batching"
+    # string_value: "inflight_fused_batching"
+    string_value: "V1"
   }
 }
 parameters: {
@@ -185,7 +192,8 @@ parameters: {
 parameters: {
   key: "batch_scheduler_policy"
   value: {
-    string_value: "max_utilization"
+    # string_value: "max_utilization"
+    string_value: "guaranteed_no_eviction"
   }
 }
 parameters: {

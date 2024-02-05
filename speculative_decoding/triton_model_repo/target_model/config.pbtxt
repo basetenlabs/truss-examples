@@ -1,6 +1,6 @@
 name: "target_model"
 backend: "tensorrtllm"
-max_batch_size: 2048
+max_batch_size: 512
 # version_policy { specific {versions: 2 }}  # Doesn't fit on 40GB (maybe due to option --gather_all_token_logits)
 
 model_transaction_policy {
@@ -29,6 +29,12 @@ input [
     name: "request_output_len"
     data_type: TYPE_UINT32
     dims: [ 1 ]
+  },
+  {
+    name: "return_log_probs"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
   },
   {
     name: "end_id"
@@ -180,7 +186,8 @@ parameters: {
 parameters: {
   key: "gpt_model_path"
   value: {
-    string_value: "/root/workbench/gpt2_engine/"
+    string_value: "/root/workbench/mistral-7B_engine/"
+    # string_value: "/root/workbench/gpt-xl_engine/"
   }
 }
 parameters: {

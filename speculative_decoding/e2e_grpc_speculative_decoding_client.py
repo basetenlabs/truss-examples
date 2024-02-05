@@ -127,10 +127,11 @@ def extract_trtllm_outputs(result):
     sequence_length = sequence_length_data[0, 0]
     cum_log_probs = result.as_numpy("cum_log_probs").astype(np.float32)
     output_log_probs = result.as_numpy("output_log_probs").astype(np.float32)
-    print(output_log_probs)
+    # print(output_log_probs)
     # pdb.set_trace()
     # context_logits = result.as_numpy("context_logits").astype(np.float32)
     # generation_logits = result.as_numpy("generation_logits").astype(np.float32)
+    # print(generation_logits)
     return (
         output_ids,
         sequence_length,
@@ -253,16 +254,13 @@ def run_speculative_inference(
                 # generation_logits,
             ) = extract_trtllm_outputs(draft_result)
 
-            if verbose:
-                print("Draft model output ids:")
-                print(draft_output_ids.tolist())
-                print("draft_sequence_length")
-                print(draft_seq_len)
-
             # Set the draft token and call the target model to generate up to num_draft_tokens + 1
             draft_tokens = draft_output_ids[len(input_ids) : draft_seq_len]
-
             if verbose:
+                # print("Draft model output ids:")
+                # print(draft_output_ids.tolist())
+                # print("draft_sequence_length")
+                # print(draft_seq_len)
                 print("draft_tokens")
                 print(draft_tokens.tolist())
 
@@ -301,10 +299,12 @@ def run_speculative_inference(
         ) = extract_trtllm_outputs(target_result)
 
         if verbose:
-            print("Target model output_ids")
-            print(target_output_ids.tolist())
-            print("target seq_length")
-            print(seq_length)
+            print("Target genertion")
+            print(target_output_ids[len(input_ids) :])
+            # print("Target model output_ids")
+            # print(target_output_ids.tolist())
+            # print("target seq_length")
+            # print(seq_length)
 
         # Store the last iteration input_ids to check if EOS was encountered
         last_input_ids = input_ids
@@ -371,8 +371,8 @@ if __name__ == "__main__":
         beam_width=1,
         preprocessor_model_name="preprocessing",
         draft_tensorrt_llm_model_name="draft_model",
-        target_tensorrt_llm_model_name="draft_model",
-        # target_tensorrt_llm_model_name="target_model",
+        # target_tensorrt_llm_model_name="draft_model",
+        target_tensorrt_llm_model_name="target_model",
         postprocessor_model_name="postprocessing",
         verbose=True,
     )

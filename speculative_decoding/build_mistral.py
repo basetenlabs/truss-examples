@@ -1,7 +1,12 @@
+import subprocess
+
 from huggingface_hub import snapshot_download
 
-MODEL_NAME = "mistral-7B"
-MODEL_HF_ID = "mistralai/Mistral-7B-v0.1"
+# MODEL_NAME = "mistral-7B"
+# MODEL_HF_ID = "mistralai/Mistral-7B-v0.1"
+# Mixtral gets killed...
+MODEL_NAME = "mixtral-7B"
+MODEL_HF_ID = "mistralai/Mixtral-8x7B-v0.1"
 
 TRT_LLM_BUILD_SCRIPT = "/app/tensorrt_llm/examples/llama/build.py"
 BUILD_PYTOHON_BIN = "/usr/bin/python"
@@ -33,9 +38,10 @@ command = [
     "--use_inflight_batching",
     "--use_gemm_plugin=float16",
     "--multi_block_mode",
-    "--max_input_len=2048",
+    "--max_batch_size=16",
+    "--max_input_len=512",
     "--use_paged_context_fmha",
-    "--gather_all_token_logits",
+    # "--gather_all_token_logits",
     f"--max_draft_len={MAX_DRAFT_LEN}",
     f"--output_dir={ENGINE_DIR}",
 ]
