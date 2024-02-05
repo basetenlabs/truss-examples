@@ -1,20 +1,13 @@
 import collections
 import contextlib
 import time
-import uuid
-from typing import NamedTuple, Union
+from typing import Sequence, Union
 
 import numpy as np
 import pandas as pd
 import pydantic
 import tritonclient.grpc as triton_grpc
 import tritonclient.utils as triton_utils
-
-
-class SectionTiming(NamedTuple):
-    name: str
-    count: str = 0
-    total_time: float = 0
 
 
 class _Timing(object):
@@ -146,25 +139,23 @@ class SamplingConfig(pydantic.BaseModel):
     random_seed: int | None = None
 
 
-class GenerationConfig(pydantic.BaseModel):
-    end_id: int | None = None
-    pad_id: int | None = None
-    bad_word_list: list[str] | None = None
-    stop_words_list: list[str] | None = None
-
-
 class GenerationRequest(pydantic.BaseModel):
     # TODO: embedding_bias, prompt_embedding_table, prompt_vocab_size, lora
     prompt: str
     max_num_generated_tokens: int
     request_id: str
     streaming: bool = False
-    generation_config: GenerationConfig = GenerationConfig()
+    bad_word_list: Sequence[str] | None = None
+    stop_words_list: Sequence[str] | None = None
     sampling_config: SamplingConfig = SamplingConfig()
 
 
-def fill_inputs(
-    name: str, input_data, dtype: np.dtype, mutable_inputs: list, make_2d: bool = True
+def _fill_inputs(
+    name: str,
+    input_data,
+    dtype: np.dtype,
+    mutable_inputs: list[triton_grpc.InferInput],
+    make_2d: bool = True,
 ) -> None:
     if input_data is None:
         return
@@ -177,3 +168,63 @@ def fill_inputs(
     )
     t.set_data_from_numpy(array_input)
     mutable_inputs.append(t)
+
+
+_SAMPLIG_CONFIG_DTYPES = {
+    "beam_width": np.uint32,
+    "temperature": np.float32,
+    "runtime_top_k": np.uint32,
+    "runtime_top_p": np.float32,
+    "len_penalty": np.float32,
+    "repetition_penalty": np.float32,
+    "min_len": np.float32,
+    "presence_penalty": np.float32,
+    "frequency_penalty": np.float32,
+    "random_seed": np.uint64,
+}
+
+
+def make_trtllm_inputs(
+    input_ids: Sequence[int],
+    max_num_generated_tokens: int,
+    sampling_config: SamplingConfig | None,
+    draft_tokens: Sequence[int] | None = None,
+    end_id: int | None = None,
+    pad_id: int | None = None,
+    bad_words_ids: np.ndarray[int] | None = None,
+    stop_words_ids: np.ndarray[int] | None = None,
+) -> list[triton_grpc.InferInput]:
+    input_length = len(input_ids)
+    inputs = []
+    # Add batch dimension.
+    _fill_inputs("input_ids", input_ids, np.int32, inputs)
+    _fill_inputs("input_lengths", input_length, np.int32, inputs)
+    _fill_inputs("request_output_len", max_num_generated_tokens, np.uint32, inputs)
+
+    # All below are optional inputs.
+    _fill_inputs("draft_input_ids", draft_tokens, np.int32, inputs)
+    # Generation.
+    _fill_inputs("end_id", end_id, np.uint32, inputs)
+    _fill_inputs("pad_id", pad_id, np.uint32, inputs)
+    _fill_inputs("bad_words_list", bad_words_ids, np.int32, inputs)
+    _fill_inputs("stop_words_list", stop_words_ids, np.int32, inputs)
+    if sampling_config:
+        for key, dtype in _SAMPLIG_CONFIG_DTYPES.items():
+            _fill_inputs(key, getattr(sampling_config, key), dtype, inputs)
+    # _fill_inputs("return_log_probs", True, bool, inputs)
+    # The return_X_logits tensor names were only added in
+    # https://github.com/NVIDIA/TensorRT-LLM/pull/846.
+    # "return_context_logits", "return_generation_logits"
+    return inputs
+
+
+def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int32]:
+    # TODO: Get context_logits, generation_logits and find out why output_log_probs is
+    #  always zero.
+    # Get batch 0, beam 0 output_ids
+    output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
+    sequence_len = int(
+        np.squeeze(result.as_numpy("sequence_length").astype(np.int32), axis=(0, 1))
+    )
+    assert sequence_len == len(output_ids), f"{sequence_len} vs. {len(output_ids)}"
+    return output_ids

@@ -1,255 +1,266 @@
+import functools
+import os
 import time
 from typing import Sequence
 
+import colorama
 import helpers  # TODO: this dep is relative and not portable
 import numpy as np
 import pandas as pd
 import transformers
 import tritonclient.grpc as triton_grpc
+
+# from tensorrt_llm import runtime
 from tqdm.contrib import itertools
 
 
-def _make_trtllm_inputs(
-    input_ids: Sequence[int],
-    max_num_generated_tokens: int,
-    sampling_config: helpers.SamplingConfig | None,
-    draft_tokens: Sequence[int] | None = None,
-    end_id: int | None = None,
-    pad_id: int | None = None,
-    bad_words_ids: np.ndarray | None = None,
-    stop_words_ids: np.ndarray | None = None,
-):
-    input_length = len(input_ids)
-    inputs = []
-    # Add batch dimension.
-    helpers.fill_inputs("input_ids", input_ids, np.int32, inputs)
-    helpers.fill_inputs("input_lengths", input_length, np.int32, inputs)
-    helpers.fill_inputs(
-        "request_output_len", max_num_generated_tokens, np.uint32, inputs
-    )
-    # All below are optional inputs.
-    helpers.fill_inputs("draft_input_ids", draft_tokens, np.int32, inputs)
-    # Generation.
-    helpers.fill_inputs("end_id", end_id, np.uint32, inputs)
-    helpers.fill_inputs("pad_id", pad_id, np.uint32, inputs)
-    helpers.fill_inputs("bad_words_list", bad_words_ids, np.int32, inputs)
-    helpers.fill_inputs("stop_words_list", stop_words_ids, np.int32, inputs)
-    if sampling_config:
-        helpers.fill_inputs("beam_width", sampling_config.beam_width, np.uint32, inputs)
-        helpers.fill_inputs(
-            "temperature", sampling_config.temperature, np.float32, inputs
+class _SpeculationState:
+    """This class takes the perspective of the target model in terms of tokenization."""
+
+    _target_tokenizer: transformers.AutoTokenizer
+    _current_text: str
+    _current_ids: np.ndarray[int]
+    _draft_text: str | None
+    _draft_ids: np.ndarray[int] | None
+    _debugging: bool
+
+    def __init__(
+        self,
+        prompt: str,
+        target_tokenizer: transformers.AutoTokenizer,
+        debugging: bool = True,
+    ):
+        self._target_tokenizer = target_tokenizer
+
+        self._current_text = prompt  # This text is confirmed by target (or prompt).
+        self._current_ids = np.squeeze(
+            target_tokenizer.encode(prompt, return_tensors="np")
         )
-        helpers.fill_inputs(
-            "runtime_top_k", sampling_config.runtime_top_p, np.uint32, inputs
-        )
-        helpers.fill_inputs(
-            "runtime_top_p", sampling_config.runtime_top_p, np.float32, inputs
-        )
-        helpers.fill_inputs(
-            "len_penalty", sampling_config.len_penalty, np.float32, inputs
-        )
-        helpers.fill_inputs(
-            "repetition_penalty", sampling_config.repetition_penalty, np.float32, inputs
-        )
-        helpers.fill_inputs("min_len", sampling_config.min_len, np.float32, inputs)
-        helpers.fill_inputs(
-            "presence_penalty", sampling_config.presence_penalty, np.float32, inputs
-        )
-        helpers.fill_inputs(
-            "frequency_penalty", sampling_config.frequency_penalty, np.float32, inputs
-        )
-        helpers.fill_inputs(
-            "random_seed", sampling_config.random_seed, np.uint64, inputs
-        )
-    # helpers.fill_inputs("return_log_probs", True, bool, inputs)
-    # The return_X_logits tensor names were only added in
-    # https://github.com/NVIDIA/TensorRT-LLM/pull/846.
-    # "return_context_logits", "return_generation_logits"
-    return inputs
+        self._draft_text = None
+        self._draft_ids = None
+
+        self._debugging = debugging
+
+    def get_current_text(self) -> str:
+        return self._current_text
+
+    @property
+    def num_tokens(self) -> int:
+        return len(self._current_ids)
+
+    @property
+    def text_len(self) -> int:
+        return len(self._current_text)
+
+    def update_draft(self, combined_draft: str) -> None:
+        # `combined_draft` == `current_text` + `draft_text`
+        # TODO: explore if existing tokenization from previous iteration can
+        # be reused safely. This is related to whether below check ever fails.
+        with helpers.timeit(f"Tokenize for Target model"):
+            new_ids = np.squeeze(
+                self._target_tokenizer.encode(combined_draft, return_tensors="np")
+            )
+        current_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
+
+        # Verify that adding anything to `current_text` did not change tokenization.
+        # This could happen if by adding chars, a "merged" token would
+        # represent both old and new chars more compactly.
+        # In that case we would need to track back to the last point where tokens
+        # still agree and continue from there.
+        if not np.alltrue(self._current_ids == current_ids_reencoded):
+            raise NotImplementedError(
+                f"Dang!!! {self._current_ids} vs.\n {current_ids_reencoded}"
+            )
+
+        self._draft_ids = draft_ids
+        self._draft_text = combined_draft[self.text_len :]
+
+        if self._debugging:
+            print(
+                f"Draft  : {self._current_text}"
+                f"{colorama.Fore.BLUE + colorama.Style.BRIGHT}{self._draft_text}"
+            )
+            pass
+
+    def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
+        if self._draft_ids is None:
+            # Nothing to verify.
+            return None
+        return self._current_ids, self._draft_ids
+
+    def update_verifed_text(
+        self, verified_text: str, verified_ids: np.ndarray[int]
+    ) -> None:
+        # Both inputs include the whole context.
+        if self._debugging:
+            added_text = verified_text[self.text_len :]
+            accepted_text = os.path.commonprefix([added_text, self._draft_text])
+            if len(accepted_text) < len(self._draft_text):
+                disagreed_text = added_text[len(accepted_text) : len(self._draft_text)]
+            else:
+                disagreed_text = ""
+            new_text = added_text[len(self._draft_text) :]
+
+            style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
+            print(
+                f"Verfied: {self._current_text}"
+                f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
+                f"{colorama.Back.RED + style}{disagreed_text}"
+                f"{colorama.Style.RESET_ALL + style}{new_text}"
+                f"{colorama.Style.RESET_ALL} -> Accepted `{len(accepted_text)}` chars."
+            )
+
+        self._current_text = verified_text
+        self._current_ids = verified_ids
+        self._draft_ids = None
+        self._draft_text = None
 
 
-def _extract_trtllm_outputs(result):
-    # TODO: Get context_logits, generation_logits and find out why output_log_probs is
-    #  always zero.
-    # Get batch 0, beam 0 output_ids
-    output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
-    sequence_length = int(
-        np.squeeze(result.as_numpy("sequence_length").astype(np.int32), axis=(0, 1))
-    )
-    assert sequence_length == len(output_ids)
-    return output_ids
+class _ModelWrapper:
+    def __init__(
+        self,
+        client: triton_grpc.InferenceServerClient,
+        model_name: str,
+        tokenizer: transformers.AutoTokenizer,
+    ):
+        self._client = client
+        self._model_name = model_name
+        self._tokenizer = tokenizer
+
+    @functools.lru_cache(maxsize=128)
+    def _tokenize_word_list(
+        self, word_list: Sequence[str] | None
+    ) -> np.ndarray[int] | None:
+        if word_list is None:
+            return None
+        # return runtime.to_word_list_format(
+        #     word_list, self._tokenizer, add_special_tokens=False
+        # )
+
+    def generate(
+        self,
+        input_text: str,
+        max_num_gen_tokens: str,
+        request_id: str,
+        sampling_config: helpers.SamplingConfig | None = None,
+        bad_word_list: Sequence[str] | None = None,
+        stop_words_list: Sequence[str] | None = None,
+    ) -> str:
+        with helpers.timeit(f"Generate({self._model_name}) - tokenize"):
+            input_ids = np.squeeze(
+                self._tokenizer.encode(input_text, return_tensors="np")
+            )
+        with helpers.timeit(f"Generate({self._model_name}) - input prep"):
+            inputs = helpers.make_trtllm_inputs(
+                input_ids,
+                max_num_gen_tokens,
+                sampling_config,
+                None,  # draft_tokens
+                self._tokenizer.eos_token_id,
+                self._tokenizer.pad_token_id,
+                self._tokenize_word_list(bad_word_list),
+                self._tokenize_word_list(stop_words_list),
+            )
+        with helpers.timeit(f"Generate({self._model_name})"):
+            result = self._client.infer(self._model_name, inputs, request_id=request_id)
+            output_ids = helpers.extract_trtllm_outputs(result)
+        with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
+            output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
+        return output_text
+
+    def verify_and_generate(
+        self,
+        confirmed_ids: np.ndarray[int],
+        draft_ids: np.ndarray[int],
+        request_id: str,
+        sampling_config: helpers.SamplingConfig | None = None,
+        bad_word_list: Sequence[str] | None = None,
+        stop_words_list: Sequence[str] | None = None,
+    ):
+        num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
+        # TODO: check len of draft IDs, warn if throw away.
+        with helpers.timeit(f"Generate({self._model_name}) - input prep"):
+            inputs = helpers.make_trtllm_inputs(
+                confirmed_ids,
+                num_gen_tokens,
+                sampling_config,
+                draft_ids,
+                self._tokenizer.eos_token_id,
+                self._tokenizer.pad_token_id,
+                self._tokenize_word_list(bad_word_list),
+                self._tokenize_word_list(stop_words_list),
+            )
+        with helpers.timeit(f"Verify+Generate({self._model_name})"):
+            result = self._client.infer(self._model_name, inputs, request_id=request_id)
+            output_ids = helpers.extract_trtllm_outputs(result)
+
+        with helpers.timeit(f"Generate({self._model_name}) - detokenize"):
+            output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
+        return output_text, output_ids
 
 
 def run_speculative_inference(
-    client,
+    target_model: _ModelWrapper,
+    draft_model: _ModelWrapper,
     request: helpers.GenerationRequest,
     max_num_draft_tokens,
-    draft_model_name,
-    draft_tokenizer,
-    target_model_name,
-    target_tokenizer,
     verbose,
 ):
-    # TODO: check representation of word lists as tokens.
-    # draft_bad_words_ids = draft_tokenizer.encode(bad_words)
-    # draft_stop_words_ids = draft_tokenizer.encode(stop_words)
-
-    def call_draft_model(input_text: str) -> str:
-        with helpers.timeit("draft_encode"):
-            input_ids = draft_tokenizer.encode(input_text)
-
-        num_draft_tokens = min(
-            max_num_draft_tokens, request.max_num_generated_tokens - len(input_ids)
-        )
-
-        if not num_draft_tokens:
-            print("No more drafts to generate")
-            return ""
-
-        if verbose:
-            clear_text = draft_tokenizer.decode(input_ids)
-            assert clear_text == input_text, f"{clear_text} vs. {input_text}"
-            print(
-                f"Call DRAFT model to generate `{num_draft_tokens}` for:"
-                f"\n\t{input_ids}\n\t`{input_text}`"
-            )
-
-        with helpers.timeit("draft_input_prep"):
-            inputs = _make_trtllm_inputs(
-                input_ids,
-                num_draft_tokens,
-                request.sampling_config,
-                None,  # draft_tokens.
-                draft_tokenizer.eos_token_id,
-                draft_tokenizer.pad_token_id,
-            )
-        with helpers.timeit("draft_generate"):
-            result = client.infer(
-                draft_model_name, inputs, request_id=request.request_id
-            )
-
-        output_ids = _extract_trtllm_outputs(result)
-
-        with helpers.timeit("draft_decode"):
-            clear_text_full = draft_tokenizer.decode(output_ids)
-
-        if verbose:
-            draft_ids = output_ids[len(input_ids) :]
-            draft_text = clear_text_full[len(input_text) :]
-            print(
-                f"  Result DRAFT model:\n\t{draft_ids}\n"
-                f"\tDraft: `{draft_text}`\n\tAll  : `{clear_text_full}`"
-            )
-        return clear_text_full
-
-    def call_target_model(input_text: str, confirmed_ids: str) -> tuple[str, list[int]]:
-        with helpers.timeit("target_encode"):
-            input_ids = target_tokenizer.encode(input_text)
-        draft_ids = input_ids[
-            len(confirmed_ids) : len(confirmed_ids) + max_num_draft_tokens
-        ]
-        confirmed_ids_re_encoded = input_ids[: len(confirmed_ids)]
-        if not np.allclose(confirmed_ids, confirmed_ids_re_encoded):
-            print(confirmed_ids)
-            print(confirmed_ids_re_encoded)
-            # import pdb
-            # pdb.set_trace()
-
-        if verbose:
-            clear_text = target_tokenizer.decode(
-                confirmed_ids_re_encoded, skip_special_tokens=True
-            )
-            clear_draft = target_tokenizer.decode(draft_ids, skip_special_tokens=True)
-            print(
-                f"Call TARGET model with context:"
-                f"\n\t{input_ids}\n\t`{clear_text}`\n\tand draft:"
-                f"\n\t{draft_ids}\n\t`{clear_draft}`"
-            )
-
-        num_gen_tokens = len(draft_ids) + 1 if draft_ids else 1
-        with helpers.timeit("target_input_prep"):
-            inputs = _make_trtllm_inputs(
-                confirmed_ids_re_encoded,
-                num_gen_tokens,
-                request.sampling_config,
-                draft_ids or None,
-                target_tokenizer.eos_token_id,
-                target_tokenizer.pad_token_id,
-            )
-        with helpers.timeit("target_verify"):
-            result = client.infer(
-                target_model_name, inputs, request_id=request.request_id
-            )
-
-        output_ids = _extract_trtllm_outputs(result)
-        with helpers.timeit("target_decode"):
-            clear_text_full = target_tokenizer.decode(
-                output_ids, skip_special_tokens=True
-            )
-        if verbose:
-            print(
-                f"  Result TARGET model:\n\t{output_ids}\n"
-                f"\tResult: `{clear_text_full}`"
-            )
-        return clear_text_full, output_ids
-
-    def generate_target_model(input_text: str, num_gen_tokens: str) -> str:
-        input_ids = target_tokenizer.encode(input_text)
-        inputs = _make_trtllm_inputs(
-            input_ids,
-            num_gen_tokens - len(input_ids),
-            request.sampling_config,
-            None,  # draft_tokens
-            target_tokenizer.eos_token_id,
-            target_tokenizer.pad_token_id,
-        )
-        with helpers.timeit("target_generate"):
-            result = client.infer(
-                target_model_name, inputs, request_id=request.request_id
-            )
-
-        output_ids = _extract_trtllm_outputs(result)
-        clear_text_full = target_tokenizer.decode(output_ids, skip_special_tokens=True)
-        if verbose:
-            print(
-                f"  Result TARGET model:\n\t{output_ids}\n"
-                f"\tResult: `{clear_text_full}`"
-            )
-        return clear_text_full
-
-    ####################################################################################
-
     # Warmup models with unrelated string.
-    generate_target_model("What is a computer?", request.max_num_generated_tokens)
-    call_draft_model("What is a computer?")
+    target_model.generate("What is a computer?", 4, "111", request.sampling_config)
+    draft_model.generate("What is a computer?", 4, "111", request.sampling_config)
 
-    # Run `direct_gen` in `0.26770877838134766` seconds.
-    # with helpers.timeit("direct_gen"):
-    #     generate_target_model(prompt, request_output_len)
-
-    # Run `speculative_gen` in `0.1786513328552246` seconds.
-    with helpers.timeit("speculative_gen"):
-        confirmed_target_ids = target_tokenizer.encode(request.prompt)
-        current_text = request.prompt
+    with helpers.timeit("A - speculative_gen"):
+        state = _SpeculationState(
+            request.prompt, target_model._tokenizer, debugging=verbose
+        )
         while True:
-            with helpers.timeit("draft_total"):
-                current_text = call_draft_model(current_text)
-            with helpers.timeit("target_total"):
-                current_text, confirmed_target_ids = call_target_model(
-                    current_text, confirmed_target_ids
+            num_draft_tokens = min(
+                max_num_draft_tokens,
+                request.max_num_generated_tokens - state.num_tokens,
+            )
+            state.update_draft(
+                draft_model.generate(
+                    state.get_current_text(),
+                    num_draft_tokens,
+                    request.request_id,
+                    request.sampling_config,
+                    request.bad_word_list,
+                    request.stop_words_list,
                 )
+            )
+            confirmed_ids, draft_ids = state.get_verification_inputs()
+            if len(draft_ids) > max_num_draft_tokens:
+                # print(draft_ids, state._draft_text)
+                draft_ids = draft_ids[:max_num_draft_tokens]
 
-            print("=======================")
-            print(f"Target token len {len(confirmed_target_ids)}")
-            if len(confirmed_target_ids) == request.max_num_generated_tokens:
+            verified_text, verfied_ids = target_model.verify_and_generate(
+                confirmed_ids,
+                draft_ids,
+                request.request_id,
+                request.sampling_config,
+                request.bad_word_list,
+                request.stop_words_list,
+            )
+            state.update_verifed_text(verified_text, verfied_ids)
+            if len(verfied_ids) >= request.max_num_generated_tokens:
                 break
 
-    with helpers.timeit("direct_gen"):
-        print(generate_target_model(request.prompt, request.max_num_generated_tokens))
+    with helpers.timeit("B - direct_gen"):
+        print(
+            target_model.generate(
+                request.prompt,
+                request.max_num_generated_tokens,
+                request.request_id,
+                request.sampling_config,
+                request.bad_word_list,
+                request.stop_words_list,
+            )
+        )
 
     helpers.show_timings()
-    print("Final text:\n", current_text)
-    return current_text
+    print("Final text:\n", verified_text)
+    return verified_text
 
 
 def profile(
@@ -264,7 +275,7 @@ def profile(
         prompt_lens, generate_lens, range(n_samples)
     ):
         prompt_ids = np.random.randint(0, 32000, prompt_len)
-        inputs = _make_trtllm_inputs(prompt_ids, generate_len, [])
+        inputs = helpers.make_trtllm_inputs(prompt_ids, generate_len)
 
         t0 = time.time()
         result = client.infer(model_name, inputs, request_id="123")
@@ -295,8 +306,7 @@ def profile_verification(
         prompt_lens, draft_lens, range(n_samples)
     ):
         prompt_ids = np.random.randint(0, 32000, prompt_len)
-
-        inputs = _make_trtllm_inputs(
+        inputs = helpers.make_trtllm_inputs(
             prompt_ids[:-draft_len], 1, prompt_ids[-draft_len:]
         )
 
@@ -324,6 +334,7 @@ def run_dummy_request(client):
 
 
 if __name__ == "__main__":
+    colorama.init(autoreset=True)
     client_ = triton_grpc.InferenceServerClient("0.0.0.0:8001")
 
     # target_gen_profile = profile(
@@ -350,24 +361,29 @@ if __name__ == "__main__":
     #     n_samples=30,
     # )
 
-    draft_tokenizer_ = transformers.AutoTokenizer.from_pretrained("gpt2")
-    target_tokenizer_ = transformers.AutoTokenizer.from_pretrained(
-        "mistralai/Mistral-7B-v0.1"
+    target_model_ = _ModelWrapper(
+        client_,
+        "target_model",
+        transformers.AutoTokenizer.from_pretrained("mistralai/Mistral-7B-v0.1"),
     )
 
-    request = helpers.GenerationRequest(
-        prompt="Once upon a time there was",
-        max_num_generated_tokens=40,
+    draft_model_ = _ModelWrapper(
+        client_, "draft_model", transformers.AutoTokenizer.from_pretrained("gpt2")
+    )
+
+    request_ = helpers.GenerationRequest(
+        # prompt="Once upon a time there was",
+        prompt="Once upon",
+        max_num_generated_tokens=60,
         request_id="123",
     )
+    request_.sampling_config.random_seed = 123412
+    request_.sampling_config.temperature = 3.0
 
     output_text = run_speculative_inference(
-        client_,
-        request,
+        target_model_,
+        draft_model_,
+        request_,
         max_num_draft_tokens=4,
-        draft_model_name="draft_model",
-        draft_tokenizer=draft_tokenizer_,
-        target_model_name="target_model",
-        target_tokenizer=target_tokenizer_,
-        verbose=True,
+        verbose=False,
     )
