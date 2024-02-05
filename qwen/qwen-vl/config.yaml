@@ -10,7 +10,14 @@ requirements:
   - matplotlib==3.8.2
   - tiktoken==0.5.2
   - transformers_stream_generator==0.0.4
+model_cache:
+- repo_id: Qwen/Qwen-VL
+  allow_patterns:
+    - "*.json"
+    - "*.fp16.safetensors"
+    - "*.bin"
+    - "*.tiktoken"
+    - "*.py"
 resources:
   accelerator: A10G
-  memory: 2Gi
   use_gpu: true
