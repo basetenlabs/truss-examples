@@ -93,6 +93,7 @@ class Model:
 
     def predict(self, request: dict):
         prompt = request["prompt"]
+        is_streaming = request.get("streaming", True)
         input_ids = torch.tensor(self._tokenizer.encode(prompt), dtype=torch.int32).to(
             "cuda"
         )
@@ -105,30 +106,38 @@ class Model:
             max_batch_size=1,
             max_input_len=len(input_ids),
             medusa_choices=MEDUSA_CHOICES,
-            streaming=True,
+            streaming=is_streaming,
             return_dict=True,
             output_sequence_lengths=True,
         )
         torch.cuda.synchronize()
-        prev_decoded = None
-        for output, last in _with_last_flag(outputs):
-            output_ids = output["output_ids"]
-            seq_lens = output["sequence_lengths"]
-            # HACK(pankaj) There's a bug in TensorRT-LLM python runtime where
-            # sequence lengths are not returned correctly for medusa. This is
-            # a temporary workaround. The workaround is pretty painful, as we
-            # need to substract len(MEDUSA_CHOICES) for everything but the last
-            # iteration.
-            slen = seq_lens[0][0]
-            if not last:
-                slen = slen - len(MEDUSA_CHOICES)
-            decoded = self._tokenizer.decode(output_ids[0][0][len(input_ids) : slen])
-            if prev_decoded is None:
-                ret = decoded
-            else:
-                ret = decoded[len(prev_decoded) :]
-            prev_decoded = decoded
-            yield ret
+        if is_streaming:
+            prev_decoded = None
+            for output, last in _with_last_flag(outputs):
+                output_ids = output["output_ids"]
+                seq_lens = output["sequence_lengths"]
+                # HACK(pankaj) There's a bug in TensorRT-LLM python runtime where
+                # sequence lengths are not returned correctly for medusa. This is
+                # a temporary workaround. The workaround is pretty painful, as we
+                # need to substract len(MEDUSA_CHOICES) for everything but the last
+                # iteration.
+                slen = seq_lens[0][0]
+                if not last:
+                    slen = slen - len(MEDUSA_CHOICES)
+                decoded = self._tokenizer.decode(
+                    output_ids[0][0][len(input_ids) : slen]
+                )
+                if prev_decoded is None:
+                    ret = decoded
+                else:
+                    ret = decoded[len(prev_decoded) :]
+                prev_decoded = decoded
+                yield ret
+        else:
+            output_ids = outputs["output_ids"][0][0]
+            seq_len = outputs["sequence_lengths"][0][0]
+            decoded = self._tokenizer.decode(output_ids[len(input_ids) : seq_len])
+            return decoded
 
 
 def _with_last_flag(generator):
