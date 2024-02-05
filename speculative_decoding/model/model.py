@@ -1,6 +1,7 @@
 import asyncio
 import os
 from itertools import count
+from typing import AsyncGenerator
 
 import huggingface_hub
 import transformers
@@ -94,27 +95,45 @@ class Model:
             ),
         )
 
-    async def predict(self, model_input):
+    async def predict(self, model_input) -> str | AsyncGenerator[str, None]:
         # stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
 
-        max_num_draft_tokens = (
-            self._config["model_metadata"]["speculative_decoding"][
-                "max_num_draft_tokens"
-            ],
-        )
-        stream = model_input.get("streaming", True)
+        max_num_draft_tokens = self._config["model_metadata"]["speculative_decoding"][
+            "max_num_draft_tokens"
+        ]
+        streaming = model_input.get("streaming", True)
 
-        inference_gen = spec_dec.run_speculative_inference(
-            self._target_model,
-            self._draft_model,
-            request,
-            max_num_draft_tokens=max_num_draft_tokens,
-            verbose=False,
+        queue = asyncio.Queue() if streaming else None
+
+        inference_gen = asyncio.ensure_future(
+            spec_dec.run_speculative_inference(
+                self._target_model,
+                self._draft_model,
+                request,
+                max_num_draft_tokens=max_num_draft_tokens,
+                result_queue=queue,
+                verbose=False,
+            )
         )
-        # async_gen = asyncio.ensure_future(inference_gen)
-        return inference_gen
-        # TODO: make async/stream.
+
+        if streaming:
+
+            async def generate_result():
+                while True:
+                    item = await queue.get()
+                    if item == spec_dec.QUEUE_SENTINEL:
+                        break
+                    yield item
+
+            return generate_result()
+
+        else:
+
+            async def get_result():
+                return (await inference_gen).get_current_text()
+
+            return await get_result()
 
     # def __del__(self) -> None:
     #     self._triton_server.shutdown()

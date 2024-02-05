@@ -1,6 +1,8 @@
+import asyncio
 import functools
 import os
-from typing import AsyncGenerator, Sequence
+import time
+from typing import Sequence, Type
 
 import colorama
 import numpy as np
@@ -225,13 +227,17 @@ class ModelWrapper:
         return output_text, output_ids
 
 
+QUEUE_SENTINEL = None
+
+
 async def run_speculative_inference(
     target_model: ModelWrapper,
     draft_model: ModelWrapper,
     request: helpers.GenerationRequest,
-    max_num_draft_tokens,
-    verbose,
-    # ) -> AsyncGenerator[str, None]:
+    max_num_draft_tokens: int,
+    result_queue: asyncio.Queue[str | QUEUE_SENTINEL] | None = None,
+    verbose: bool = False,
+    iteration_delay: float = 0.0,
 ) -> SpeculationState:
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
     while True:
@@ -262,11 +268,16 @@ async def run_speculative_inference(
             request.bad_word_list,
             request.stop_words_list,
         )
-        # yield verified_text
-
         state.update_verifed_text(verified_text, verfied_ids)
+        if result_queue is not None:
+            result_queue.put_nowait(state.get_current_text())
 
         if len(verfied_ids) >= request.max_num_generated_tokens:
             break
 
+        if iteration_delay:
+            time.sleep(iteration_delay)
+
+    if result_queue is not None:
+        result_queue.put_nowait(QUEUE_SENTINEL)
     return state

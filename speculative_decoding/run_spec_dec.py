@@ -32,6 +32,8 @@ def parse_arguments():
     parser.add_argument("--stop_words_list", type=str, default=None)
 
     parser.add_argument("--concurrent", type=bool, default=False)
+    parser.add_argument("--verbose", type=bool, default=True)
+    parser.add_argument("--iteration_delay", type=float, default=0.0)
     args = parser.parse_args()
 
     if args.bad_word_list:
@@ -39,7 +41,6 @@ def parse_arguments():
     if args.stop_words_list:
         args.stop_words_list = args.stop_words_list.split(",")
 
-    print(args)
     return args
 
 
@@ -108,7 +109,9 @@ if __name__ == "__main__":
                 draft_model,
                 request,
                 max_num_draft_tokens=4,
-                verbose=True,
+                result_queue=asyncio.Queue(),
+                verbose=args.verbose,
+                iteration_delay=args.iteration_delay,
             )
 
         with helpers.timeit("B - direct_gen"):
