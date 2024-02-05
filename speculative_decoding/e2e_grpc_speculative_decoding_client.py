@@ -79,6 +79,11 @@ def get_trtllm_inputs(
         prepare_tensor(
             "request_output_len", np.array([[request_output_len]], dtype=np.uint32)
         ),
+        prepare_tensor("return_log_probs", np.array([[True]], dtype=bool)),
+        # The return_X_logits tensor names were only added in
+        # https://github.com/NVIDIA/TensorRT-LLM/pull/846.
+        # prepare_tensor("return_context_logits", np.array([[True]], dtype=bool)),
+        # prepare_tensor("return_generation_logits", np.array([[True]], dtype=bool)),
         # prepare_tensor("bad_words_list", bad_words_ids),
         # prepare_tensor("stop_words_list", stop_words_ids),
         prepare_tensor("beam_width", np.array([[beam_width]], dtype=np.uint32)),
@@ -127,7 +132,9 @@ def extract_trtllm_outputs(result):
     sequence_length = sequence_length_data[0, 0]
     cum_log_probs = result.as_numpy("cum_log_probs").astype(np.float32)
     output_log_probs = result.as_numpy("output_log_probs").astype(np.float32)
-    # print(output_log_probs)
+    # print(cum_log_probs)
+    # Log probs are always 0, even when `return_log_probs=True` in request.
+    print(output_log_probs)
     # pdb.set_trace()
     # context_logits = result.as_numpy("context_logits").astype(np.float32)
     # generation_logits = result.as_numpy("generation_logits").astype(np.float32)

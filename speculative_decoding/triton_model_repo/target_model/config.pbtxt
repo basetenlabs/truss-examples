@@ -1,7 +1,6 @@
 name: "target_model"
 backend: "tensorrtllm"
 max_batch_size: 512
-# version_policy { specific {versions: 2 }}  # Doesn't fit on 40GB (maybe due to option --gather_all_token_logits)
 
 model_transaction_policy {
   decoupled: False
@@ -34,6 +33,21 @@ input [
     name: "return_log_probs"
     data_type: TYPE_BOOL
     dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_context_logits"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_generation_logits"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
     optional: true
   },
   {
@@ -216,6 +230,12 @@ parameters: {
 }
 parameters: {
   key: "enable_kv_cache_reuse"
+  value: {
+    string_value: "True"
+  }
+}
+parameters: {
+  key: "normalize_log_probs"
   value: {
     string_value: "True"
   }

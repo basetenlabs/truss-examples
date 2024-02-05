@@ -29,10 +29,25 @@ input [
     data_type: TYPE_UINT32
     dims: [ 1 ]
   },
-    {
+  {
     name: "return_log_probs"
     data_type: TYPE_BOOL
     dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_context_logits"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
+    optional: true
+  },
+  {
+    name: "return_generation_logits"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    reshape: { shape: [ ] }
     optional: true
   },
   {
@@ -216,6 +231,12 @@ parameters: {
 }
 parameters: {
   key: "enable_kv_cache_reuse"
+  value: {
+    string_value: "True"
+  }
+}
+parameters: {
+  key: "normalize_log_probs"
   value: {
     string_value: "True"
   }
