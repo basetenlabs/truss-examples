@@ -1,24 +1,29 @@
+import time
+from typing import Sequence
+
 import helpers  # TODO: this dep is relative and not portable
 import numpy as np
+import pandas as pd
 import transformers
 import tritonclient.grpc as triton_grpc
+from tqdm.contrib import itertools
 
 
 def _make_trtllm_inputs(
     input_ids,
-    input_length,
     num_gen_tokens,
     draft_tokens,
-    beam_width,
-    temperature,
-    repetition_penalty,
-    presence_penalty,
-    frequency_penalty,
-    # bad_words_ids,
-    # stop_words_ids,
-    end_id,
-    pad_id,
+    beam_width=1,
+    temperature=0.0,
+    repetition_penalty=None,
+    presence_penalty=None,
+    frequency_penalty=None,
+    end_id=None,
+    pad_id=None,
+    bad_words_ids=None,
+    stop_words_ids=None,
 ):
+    input_length = len(input_ids)
     inputs = []
     # Add batch dimension.
     helpers.append_tensor(
@@ -26,8 +31,11 @@ def _make_trtllm_inputs(
     )
     helpers.append_tensor("input_lengths", [[input_length]], np.int32, inputs)
     helpers.append_tensor("request_output_len", [[num_gen_tokens]], np.uint32, inputs)
-    helpers.append_tensor("draft_input_ids", [draft_tokens], np.int32, inputs)
+
     # Optional inputs
+    if draft_tokens is not None:
+        helpers.append_tensor("draft_input_ids", [draft_tokens], np.int32, inputs)
+
     helpers.append_tensor("return_log_probs", [[True]], bool, inputs)
     if beam_width is not None:
         helpers.append_tensor("beam_width", [[beam_width]], np.uint32, inputs)
@@ -116,16 +124,13 @@ def run_speculative_inference(
         with helpers.timeit("draft_input_prep"):
             inputs = _make_trtllm_inputs(
                 input_ids,
-                len(input_ids),
                 num_draft_tokens,
-                [],  # draft_tokens.
+                None,  # draft_tokens.
                 beam_width,
                 temperature,
                 repetition_penalty,
                 presence_penalty,
                 frequency_penalty,
-                # draft_bad_words_ids,
-                # draft_stop_words_ids,
                 draft_tokenizer.eos_token_id,
                 draft_tokenizer.pad_token_id,
             )
@@ -174,7 +179,6 @@ def run_speculative_inference(
         with helpers.timeit("target_input_prep"):
             inputs = _make_trtllm_inputs(
                 confirmed_ids_re_encoded,
-                len(confirmed_ids_re_encoded),
                 num_gen_tokens,
                 draft_ids or None,
                 beam_width,
@@ -182,8 +186,6 @@ def run_speculative_inference(
                 repetition_penalty,
                 presence_penalty,
                 frequency_penalty,
-                # target_bad_words_ids,
-                # target_stop_words_ids,
                 target_tokenizer.eos_token_id,
                 target_tokenizer.pad_token_id,
             )
@@ -206,16 +208,13 @@ def run_speculative_inference(
         input_ids = target_tokenizer.encode(input_text)
         inputs = _make_trtllm_inputs(
             input_ids,
-            len(input_ids),
             num_gen_tokens - len(input_ids),
-            [],
+            None,  # draft_tokens
             beam_width,
             temperature,
             repetition_penalty,
             presence_penalty,
             frequency_penalty,
-            # target_bad_words_ids,
-            # target_stop_words_ids,
             target_tokenizer.eos_token_id,
             target_tokenizer.pad_token_id,
         )
@@ -262,36 +261,128 @@ def run_speculative_inference(
         print(generate_target_model(prompt, request_output_len))
 
     helpers.show_timings()
-
+    print("Final text:\n", current_text)
     return current_text
+
+
+def profile(
+    client,
+    model_name,
+    prompt_lens: Sequence[int],
+    generate_lens: Sequence[int],
+    n_samples: int = 20,
+):
+    measurements = []
+    for prompt_len, generate_len, i in itertools.product(
+        prompt_lens, generate_lens, range(n_samples)
+    ):
+        prompt_ids = np.random.randint(0, 32000, prompt_len)
+        inputs = _make_trtllm_inputs(prompt_ids, generate_len, [])
+
+        t0 = time.time()
+        result = client.infer(model_name, inputs, request_id="123")
+        elapsed = time.time() - t0
+        row = {
+            "model_name": model_name,
+            "prompt_len": prompt_len,
+            "generate_len": generate_len,
+            "time": elapsed,
+        }
+        # print(row)
+        measurements.append(row)
+
+    df = pd.DataFrame(measurements)
+    print(df.to_json())
+    return df
+
+
+def profile_verification(
+    client,
+    model_name,
+    prompt_lens: Sequence[int],
+    draft_lens: Sequence[int],
+    n_samples: int = 20,
+):
+    measurements = []
+    for prompt_len, draft_len, i in itertools.product(
+        prompt_lens, draft_lens, range(n_samples)
+    ):
+        prompt_ids = np.random.randint(0, 32000, prompt_len)
+
+        inputs = _make_trtllm_inputs(
+            prompt_ids[:-draft_len], 1, prompt_ids[-draft_len:]
+        )
+
+        t0 = time.time()
+        result = client.infer(model_name, inputs, request_id="123")
+        elapsed = time.time() - t0
+        row = {
+            "model_name": model_name,
+            "prompt_len": prompt_len,
+            "draft_len": draft_len,
+            "time": elapsed,
+        }
+        # print(row)
+        measurements.append(row)
+
+    df = pd.DataFrame(measurements)
+    print(df.to_json())
+    return df
+
+
+def run_dummy_request(client):
+    inputs = []
+    helpers.append_tensor("input", [[1, 4]], np.int32, inputs)
+    response = client.infer("dummy_model", inputs, request_id="blah")
 
 
 if __name__ == "__main__":
     client_ = triton_grpc.InferenceServerClient("0.0.0.0:8001")
-    draft_tokenizer_ = transformers.AutoTokenizer.from_pretrained("gpt2")
-    target_tokenizer_ = transformers.AutoTokenizer.from_pretrained(
-        "mistralai/Mistral-7B-v0.1"
-    )
 
-    output_text = run_speculative_inference(
+    # target_gen_profile = profile(
+    #     client_,
+    #     model_name="target_model",
+    #     prompt_lens=[1, 20, 50, 200, 400],
+    #     generate_lens=[1, 2, 3, 4, 10, 20],
+    #     n_samples=30,
+    # )
+
+    # target_gen_profile = profile(
+    #     client_,
+    #     model_name="draft_model",
+    #     prompt_lens=[1, 20, 50, 200, 400],
+    #     generate_lens=[1, 2, 3, 4, 10, 20],
+    #     n_samples=30,
+    # )
+
+    target_gen_profile = profile_verification(
         client_,
-        prompt="Once upon a time there was",
-        request_output_len=80,
-        max_num_draft_tokens=4,
-        request_id="1",
-        repetition_penalty=None,
-        presence_penalty=None,
-        frequency_penalty=None,
-        temperature=1.0,
-        stop_words=[],
-        bad_words=[],
-        beam_width=1,
-        draft_model_name="draft_model",
-        draft_tokenizer=draft_tokenizer_,
-        target_model_name="target_model",
-        target_tokenizer=target_tokenizer_,
-        verbose=True,
+        model_name="target_model",
+        prompt_lens=[20, 50, 200, 400],
+        draft_lens=[1, 2, 3, 4],
+        n_samples=30,
     )
 
-    # Print the final text
-    print("Final text:\n", output_text)
+    # draft_tokenizer_ = transformers.AutoTokenizer.from_pretrained("gpt2")
+    # target_tokenizer_ = transformers.AutoTokenizer.from_pretrained(
+    #     "mistralai/Mistral-7B-v0.1"
+    # )
+    # output_text = run_speculative_inference(
+    #     client_,
+    #     prompt="Once upon a time there was",
+    #     request_output_len=40,
+    #     max_num_draft_tokens=4,
+    #     request_id="1",
+    #     repetition_penalty=None,
+    #     presence_penalty=None,
+    #     frequency_penalty=None,
+    #     temperature=1.0,
+    #     stop_words=[],
+    #     bad_words=[],
+    #     beam_width=1,
+    #     draft_model_name="draft_model",
+    #     draft_tokenizer=draft_tokenizer_,
+    #     target_model_name="target_model",
+    #     target_tokenizer=target_tokenizer_,
+    #     verbose=True,
+    # )
