@@ -1,3 +1,4 @@
+import asyncio
 import os
 from itertools import count
 
@@ -97,14 +98,19 @@ class Model:
         # stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
 
-        return await spec_dec.run_speculative_inference(
-            self._target_model,
-            self._draft_model,
-            request,
-            max_num_draft_tokens=self._config["model_metadata"]["speculative_decoding"][
+        max_num_draft_tokens = (
+            self._config["model_metadata"]["speculative_decoding"][
                 "max_num_draft_tokens"
             ],
-            verbose=True,
+        )
+        return asyncio.ensure_future(
+            spec_dec.run_speculative_inference(
+                self._target_model,
+                self._draft_model,
+                request,
+                max_num_draft_tokens=max_num_draft_tokens,
+                verbose=False,
+            )
         )
 
         # TODO: make async/stream.

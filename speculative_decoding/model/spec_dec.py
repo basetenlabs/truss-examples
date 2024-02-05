@@ -1,6 +1,6 @@
 import functools
 import os
-from typing import Sequence
+from typing import AsyncGenerator, Sequence
 
 import colorama
 import numpy as np
@@ -226,7 +226,9 @@ async def run_speculative_inference(
     request: helpers.GenerationRequest,
     max_num_draft_tokens,
     verbose,
-) -> SpeculationState:
+) -> AsyncGenerator[str, None]:
+    # ) -> SpeculationState:
+
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
     while True:
         num_draft_tokens = min(
@@ -256,9 +258,11 @@ async def run_speculative_inference(
             request.bad_word_list,
             request.stop_words_list,
         )
+        yield verified_text
+
         state.update_verifed_text(verified_text, verfied_ids)
 
         if len(verfied_ids) >= request.max_num_generated_tokens:
             break
 
-    return state
+    # return state
