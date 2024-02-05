@@ -16,9 +16,10 @@ from typing import Any, AsyncGenerator, Iterator, Optional
 
 import helpers  # From packages.
 import huggingface_hub
-import spec_dec  # From packages.
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+
+import speculative_decoding  # From packages.
 
 TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 TARGET_MODEL_KEY = "target_model"
@@ -30,8 +31,8 @@ class Model:
     _secrets: Any  # SecretsResolver
     _request_id_counter: Iterator[int]
     _triton_server: Optional[helpers.TritonServer]
-    _target_model: Optional[spec_dec.ModelWrapper]
-    _draft_model: Optional[spec_dec.ModelWrapper]
+    _target_model: Optional[speculative_decoding.ModelWrapper]
+    _draft_model: Optional[speculative_decoding.ModelWrapper]
 
     def __init__(self, **kwargs):
         self._data_dir = kwargs["data_dir"]
@@ -89,7 +90,7 @@ class Model:
         # When Truss server loads model, it does not have an event loop - need to defer.
         def make_async_models():
             client = triton_grpc.InferenceServerClient("localhost:8001")
-            self._target_model = spec_dec.ModelWrapper(
+            self._target_model = speculative_decoding.ModelWrapper(
                 client,
                 TARGET_MODEL_KEY,
                 transformers.AutoTokenizer.from_pretrained(
@@ -97,7 +98,7 @@ class Model:
                 ),
             )
 
-            self._draft_model = spec_dec.ModelWrapper(
+            self._draft_model = speculative_decoding.ModelWrapper(
                 client,
                 DRAFT_MODEL_KEY,
                 transformers.AutoTokenizer.from_pretrained(
@@ -120,14 +121,16 @@ class Model:
         ]["max_num_draft_tokens"]
         streaming: bool = model_input.get("streaming", True)
 
-        maybe_queue: asyncio.Queue[str | spec_dec.QUEUE_SENTINEL] = (
+        maybe_queue: asyncio.Queue[str | speculative_decoding.QUEUE_SENTINEL] = (
             asyncio.Queue() if streaming else None
         )
         # `ensure_future` makes sure the loop immediately runs until completion and
         # fills up the result queue as fast as possible (only limited by the inference
         # requests latency) and doesn't wait for the consumption of the results.
-        inference_gen: asyncio.Task[spec_dec.SpeculationState] = asyncio.ensure_future(
-            spec_dec.run_speculative_inference(
+        inference_gen: asyncio.Task[
+            speculative_decoding.SpeculationState
+        ] = asyncio.ensure_future(
+            speculative_decoding.run_speculative_inference(
                 self._target_model,
                 self._draft_model,
                 request,
@@ -143,7 +146,7 @@ class Model:
             async def generate_result() -> AsyncGenerator[str, None]:
                 while True:
                     text_or_sentinel = await maybe_queue.get()
-                    if text_or_sentinel == spec_dec.QUEUE_SENTINEL:
+                    if text_or_sentinel == speculative_decoding.QUEUE_SENTINEL:
                         break
                     yield text_or_sentinel
 

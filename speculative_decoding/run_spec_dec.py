@@ -2,13 +2,12 @@ import argparse
 import asyncio
 import os
 import shutil
-from typing import Optional
 
 import colorama
 import huggingface_hub
 import transformers
 import tritonclient.grpc.aio as triton_grpc
-from packages import helpers, spec_dec
+from packages import helpers, speculative_decoding
 
 TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 
@@ -88,13 +87,13 @@ if __name__ == "__main__":
     async def main():
         client = triton_grpc.InferenceServerClient("localhost:8001")
 
-        target_model = spec_dec.ModelWrapper(
+        target_model = speculative_decoding.ModelWrapper(
             client,
             TARGET_MODEL_KEY,
             transformers.AutoTokenizer.from_pretrained(TARGET_MODEL_TOKENIZER_HF),
         )
 
-        draft_model = spec_dec.ModelWrapper(
+        draft_model = speculative_decoding.ModelWrapper(
             client,
             DRAFT_MODEL_KEY,
             transformers.AutoTokenizer.from_pretrained(DRAFT_MODEL_TOKENIZER_HF),
@@ -110,7 +109,7 @@ if __name__ == "__main__":
 
         helpers.enable_timing()
 
-        state_co = spec_dec.run_speculative_inference(
+        state_co = speculative_decoding.run_speculative_inference(
             target_model,
             draft_model,
             request,

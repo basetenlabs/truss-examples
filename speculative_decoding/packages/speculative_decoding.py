@@ -16,10 +16,10 @@ TODO:
 * Take another look at stop/break criteria for the generation loop.
 * Maybe clean up debug/timing leftovers.
 * Add caching for word lists.
+* Add unittests.
 """
 
 import asyncio
-import functools
 import os
 import time
 from typing import Sequence
@@ -32,6 +32,26 @@ import tritonclient.grpc.aio as triton_grpc
 
 
 class SpeculationState:
+    """Keeps track of verified and draft text and provides safte getters/setters.
+
+    This version of speculative decoding supports different tokenizers for draft and
+    target model, therefore it is neccessary to convert to clear text and back between
+    making inference reuqests to the respective models.
+
+    The draft model is treated like a black-box with a text prompt as input and
+    generated text as output.
+
+    For making inference with the target model we need to separate the verfied ouput
+    and draft output on a *tokenized representation*. Therefore this helper class
+    provides a getter method to aceess these tokens (`get_verification_inputs`).
+
+    In some cases using different tokenizers can lead to changes of previously
+    verified tokens which requires careful handling (see docstring of `update_draft`).
+
+    This class also contains debug functionality to track the draft token acceptance
+    rate and print colored visualizations of the draft, accepted and corrected outputs.
+    """
+
     _target_tokenizer: transformers.AutoTokenizer
     _verified_text: str
     _verified_ids: np.ndarray[int]
@@ -123,7 +143,13 @@ class SpeculationState:
 
     def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
         """Returns verified and draft IDs as separate sequences and `None` if there is
-        no draft."""
+        no draft.
+
+        No draft tokens might happen when re-tonkenizing `verified_text` + `draft_text`
+        would lead to flipped tokens in the previously verified text. In that case
+        a direct sample from the target model must be taken (see docstring of
+        `update_draft`) .
+        """
         if self._draft_ids is None:
             return None
         return self._verified_ids, self._draft_ids
@@ -296,14 +322,14 @@ async def run_speculative_inference(
     """Runs the speculative decoding control flow loop betweeen draft and target model
 
     * Model invocations are async inference requests to the triton server.
-    * For streaming, intermediate results are published in an optiona `result_queue`,
+    * For streaming, intermediate results are published in an optional `result_queue`,
        note that currently each result includes the context prefix, not just generated
        text.
-    * For the loop to advance, it is necessary to await the results all inferernce
+    * For the loop to advance, it is necessary to await the results of all inferernce
       requests. But if this coroutine function is scheduled as a task, e.g.
       by `asyncio.ensure_future`, one python server can run multiple inferences
-      concurrently. The inference requests coming from those might can be collated to
-      batches by the tritonserver if batching is configured which can increase total
+      concurrently. The inference requests coming from those can be collated to
+      batches by the tritonserver if batching is configured, which can increase total
       throughput.
     """
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
@@ -328,6 +354,9 @@ async def run_speculative_inference(
 
         verification_inputs = state.get_verification_inputs()
         if verification_inputs is None:
+            # There are no drafts to verify when appending the draft leads to a
+            # tokenization inconsistent with the previously confirmed text.
+            # See docstring of `SpeculationState.update_draft`.
             verified_text, verfied_ids = await target_model.generate(
                 state.get_verified_text(),
                 1,

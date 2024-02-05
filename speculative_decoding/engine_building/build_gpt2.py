@@ -14,15 +14,15 @@ ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine"
 
 MAX_DRAFT_LEN = 4
 
-# snapshot_download(
-#     MODEL_HF_ID,
-#     local_dir=HF_DIR,
-#     local_dir_use_symlinks=False,
-#     max_workers=4,
-# )
+snapshot_download(
+    MODEL_HF_ID,
+    local_dir=HF_DIR,
+    local_dir_use_symlinks=False,
+    max_workers=4,
+)
 
 
-# Convert weights.
+# Convert weights command.
 command = [
     BUILD_PYTOHON_BIN,
     TRT_LLM_CONVERT_SCRIPT,
@@ -34,7 +34,7 @@ command = [
 print(" ".join(command))
 
 
-# Build engine.
+# Build engine command.
 command = [
     BUILD_PYTOHON_BIN,
     TRT_LLM_BUILD_SCRIPT,
@@ -51,7 +51,6 @@ command = [
     "--max_input_len=512",
     "--use_paged_context_fmha",
     "--gather_all_token_logits",
-    # f"--max_draft_len={MAX_DRAFT_LEN}",  # Not really needed for draft only model.
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))

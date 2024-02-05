@@ -1,12 +1,7 @@
-import subprocess
-
 from huggingface_hub import snapshot_download
 
-# MODEL_NAME = "mistral-7B"
-# MODEL_HF_ID = "mistralai/Mistral-7B-v0.1"
-# Mixtral gets killed...
-MODEL_NAME = "mixtral-7B"
-MODEL_HF_ID = "mistralai/Mixtral-8x7B-v0.1"
+MODEL_NAME = "mistral-7B"
+MODEL_HF_ID = "mistralai/Mistral-7B-v0.1"
 
 TRT_LLM_BUILD_SCRIPT = "/app/tensorrt_llm/examples/llama/build.py"
 BUILD_PYTOHON_BIN = "/usr/bin/python"
@@ -17,6 +12,7 @@ ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine"
 
 MAX_DRAFT_LEN = 4
 
+
 snapshot_download(
     MODEL_HF_ID,
     local_dir=HF_DIR,
@@ -25,7 +21,7 @@ snapshot_download(
     resume_download=True,
 )
 
-
+# Build engine command.
 command = [
     BUILD_PYTOHON_BIN,
     TRT_LLM_BUILD_SCRIPT,

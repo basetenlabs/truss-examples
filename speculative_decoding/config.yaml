@@ -1,8 +1,6 @@
 base_image:
   image: nvcr.io/nvidia/tritonserver:24.01-trtllm-python-py3
   python_executable_path: /usr/bin/python3
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   engine_repository: baseten/specdec-target-mistral-7B
   speculative_decoding:
@@ -25,10 +23,7 @@ requirements:
 - tritonclient[all]
 resources:
   accelerator: A100
-  cpu: '1'
-  memory: 2Gi
   use_gpu: true
 runtime:
   predict_concurrency: 256
-secrets: {}
 system_packages: [python3.10-venv]
