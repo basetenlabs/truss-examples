@@ -1,16 +1,16 @@
-# Stable Diffusion XL TensorRT Truss
+# Playground V2 TensorRT Truss
 
-Stable Diffusion XL 1.0 is the largest, most capable open-source image generation model of its kind. This README covers deploying and invoking this model.
+Playground V2 is a highly capable open-source image generation model released by [Playground](https://playground.com/). This README covers deploying and invoking this model.
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
-## Deploy Stable Diffusion XL TensorRT
+## Deploy Playground V2 TensorRT
 
 First, clone this repository:
 
 ```
 git clone https://github.com/basetenlabs/truss-examples/
-cd stable-diffusion/stable-diffusion-xl-1.0-trt
+cd stable-diffusion/playground-v2-trt
 ```
 
 Before deployment:
@@ -18,7 +18,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `stable-diffusion-xl-1.0-trt` as your working directory, you can deploy the model with:
+With `playground-v2-trt` as your working directory, you can deploy the model with:
 
 ```
 truss push
@@ -34,9 +34,9 @@ Once your Truss is deployed, you can start using SDXL through the Baseten platfo
 
 Running inference on an A100 cuts invocation time to ~3.5 seconds.
 
-## Invoking Stable Diffusion XL TensorRT
+## Invoking Playground V2 TensorRT
 
-Stable Diffusion XL TensorRT returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
+Playground V2 TensorRT returns an image in Base 64, which is not super useful as a string in your terminal. So we included a helpful utility script to show and save the image. Pipe the model results into the script.
 
 ```sh
 truss predict -d '{"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}' | python show.py
