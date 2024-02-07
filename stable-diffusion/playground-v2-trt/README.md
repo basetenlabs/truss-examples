@@ -1,6 +1,6 @@
 # Playground v2 TensorRT Truss
 
-Playgroun is a diffusion-based text-to-image generative model. This README covers deploying and invoking this model.
+Playground is a diffusion-based text-to-image generative model. This README covers deploying and invoking this model.
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
