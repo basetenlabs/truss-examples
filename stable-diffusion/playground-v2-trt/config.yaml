@@ -7,12 +7,10 @@ environment_variables:
 external_package_dirs: []
 model_metadata:
   example_model_input: {"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}
-  pretty_name: Stable Diffusion XL - TensorRT
-  avatar_url: https://cdn.baseten.co/production/static/stability.png
-  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  pretty_name: Playground v2 - TensorRT
   tags:
   - image-generation
-model_name: Stable Diffusion XL - TensorRT
+model_name: Playground v2 - TensorRT
 model_framework: custom
 model_type: custom
 model_cache:
