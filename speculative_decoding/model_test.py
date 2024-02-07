@@ -1,4 +1,5 @@
 """Script for local testing of model.py."""
+
 import asyncio
 import os
 import shutil
@@ -22,10 +23,7 @@ if __name__ == "__main__":
         dirs_exist_ok=True,
     )
 
-    async def main(streaming: bool):
-        model_instance = model.Model(data_dir="", config=config, secrets={})
-        model_instance.load()
-
+    async def predict(model_instance: model.Model, streaming: bool):
         request = helpers.GenerationRequest(
             prompt="Once upon",
             max_num_generated_tokens=60,
@@ -33,16 +31,27 @@ if __name__ == "__main__":
         )
 
         if streaming:
+            print("Streaming results:")
             async for part in await model_instance.predict(request.dict()):
-                print(part)
+                print(part, end="")
+            print("\n")
         else:
+            print("Non-Streaming results:")
             print(await model_instance.predict(request.dict()))
 
-        model_instance.shutdown()
         return
 
-    asyncio.run(main(streaming=False))
-    asyncio.run(main(streaming=True))
+    async def main():
+        print("Loading model.")
+        model_instance = model.Model(data_dir="", config=config, secrets={})
+        model_instance.load()
+        print("Model loaded.")
 
-    time.sleep(2)
-    print("Done")
+        await predict(model_instance, streaming=False)
+        await predict(model_instance, streaming=True)
+
+        print("Shutting down.")
+        model_instance.shutdown()
+        print("Done.")
+
+    asyncio.run(main())

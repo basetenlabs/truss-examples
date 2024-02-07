@@ -129,6 +129,9 @@ class SpeculationState:
                 )
             return
 
+        self._draft_ids = draft_ids
+        self._draft_text = combined_draft[self.text_len :]
+
         if self._debugging:
             debug_str = (
                 f"Draft  : '{self._verified_text}"
@@ -137,9 +140,6 @@ class SpeculationState:
                 "\n", "\\n"
             )  # Colorama does not mix well with newline.
             print(debug_str)
-
-        self._draft_ids = draft_ids
-        self._draft_text = combined_draft[self.text_len :]
 
     def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
         """Returns verified and draft IDs as separate sequences and `None` if there is
@@ -333,6 +333,10 @@ async def run_speculative_inference(
       throughput.
     """
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
+
+    # Use sampling defaults i.e. greedy sampling for draft model.
+    draft_sampling_conifg = helpers.SamplingConfig()
+
     max_total_tokens = state.num_tokens + request.max_num_generated_tokens
     num_chars_generated = 0
     while True:
@@ -344,7 +348,7 @@ async def run_speculative_inference(
             state.get_verified_text(),
             num_draft_tokens,
             request_id,
-            request.sampling_config,
+            draft_sampling_conifg,
             request.bad_word_list,
             request.stop_words_list,
         )
