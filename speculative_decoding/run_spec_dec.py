@@ -2,11 +2,14 @@ import argparse
 import asyncio
 import os
 import shutil
+import sys
 
 import colorama
 import huggingface_hub
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "packages"))
 from packages import helpers, speculative_decoding
 
 TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
@@ -27,7 +30,7 @@ def parse_arguments():
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--runtime_top_k", type=int, default=None)
     parser.add_argument("--random_seed", type=int, default=None)
-
+    parser.add_argument("--repetition_penalty", type=float, default=None)
     parser.add_argument("--bad_word_list", type=str, default=None)
     parser.add_argument("--stop_words_list", type=str, default=None)
 
@@ -66,6 +69,7 @@ if __name__ == "__main__":
     request.sampling_config.temperature = args.temperature
     request.sampling_config.runtime_top_k = args.runtime_top_k
     request.sampling_config.random_seed = args.random_seed
+    request.sampling_config.repetition_penalty = args.repetition_penalty
 
     huggingface_hub.snapshot_download(
         DRAFT_MODEL_ENGINE_HF,
@@ -147,7 +151,6 @@ if __name__ == "__main__":
         with helpers.timeit("OLD TOTAL - direct_gen"):
             direct_text, direct_ids = await direct_gen
             print(f"Direct Gen text:\n{direct_text}\n`")
-            # print("{len(direct_ids)}` tokens.")
 
         helpers.show_timings()
 
