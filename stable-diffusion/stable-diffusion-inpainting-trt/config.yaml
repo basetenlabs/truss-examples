@@ -3,23 +3,7 @@ external_package_dirs: []
 model_metadata: {}
 model_name: Stable Diffusion Inpainting TRT
 python_version: py310
-requirements:
-  - accelerate
-  - colored
-  - cuda-python
-  - diffusers==0.14.0
-  - ftfy
-  - matplotlib
-  - nvtx
-  - onnx==1.13.1
-  - onnxruntime==1.14.1
-  - --extra-index-url https://pypi.ngc.nvidia.com
-  - onnx-graphsurgeon==0.3.26
-  - polygraphy==0.47.1
-  - scipy
-  - torch
-  - tensorrt==8.6.1.post1
-  - transformers==4.26.1
+requirements_file: requirements.txt
 resources:
   accelerator: A10G
   use_gpu: true
