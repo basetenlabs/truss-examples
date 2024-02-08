@@ -59,7 +59,7 @@ mistral/mistral-7b-instruct-chat-trt-llm-h100:
     - jinja2==3.1.3
     runtime:
       predict_concurrency: 256
-      # Drop num_workers once  basetenlabs/truss#801 lands
+      # Drop num_workers once basetenlabs/truss#801 lands
       num_workers: 2
     resources:
       accelerator: H100
@@ -96,7 +96,7 @@ mistral/mistral-7b-instruct-chat-trt-llm-weights-only-quant-h100:
     - jinja2==3.1.3
     runtime:
       predict_concurrency: 256
-      # Drop num_workers once  basetenlabs/truss#801 lands
+      # Drop num_workers once basetenlabs/truss#801 lands
       num_workers: 2
     resources:
       accelerator: H100
@@ -203,6 +203,44 @@ mistral/mixtral-8x7b-instruct-trt-llm-weights-only-quant:
     - README.md
   template:
     max_batch_size: 8
+mistral/mixtral-8x7b-instruct-trt-llm-weights-only-quant-h100:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.7.1
+    model_metadata:
+      example_model_input: {
+        "messages": [
+          {"role": "user", "content": "What is your favourite condiment?"},
+          {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+          {"role": "user", "content": "Do you have mayonnaise recipes?"}
+        ],
+        "max_tokens": 512
+      }
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mixtral-weights-only-quantized-h100-0.7.1"
+      tokenizer_repository: "mistralai/Mixtral-8x7B-v0.1"
+      tags:
+      - text-generation
+      - openai-compatible
+    description: Mixtral 8x7B Instruct, with INT8 weights only quantization, optimized with TRT-LLM! Compatible with OpenAI Client
+    model_name: Mixtral 8x7B Instruct TRT-LLM Weights Only Quantized for H100
+    environment_variables:
+      HF_HUB_ENABLE_HF_TRANSFER: 1
+    requirements:
+    - tritonclient[all]
+    - transformers==4.36.0
+    - jinja2==3.1.3
+    - hf_transfer==0.1.5
+    runtime:
+      predict_concurrency: 256
+    resources:
+      accelerator: H100
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 16
 mistral/mixtral-8x7b-instruct-trt-llm:
   based_on: trt-llm
   config:
@@ -239,6 +277,45 @@ mistral/mixtral-8x7b-instruct-trt-llm:
     - README.md
   template:
     max_batch_size: 8
+mistral/mixtral-8x7b-instruct-trt-llm-h100:
+  based_on: trt-llm
+  config:
+    base_image:
+      image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.7.1
+    model_metadata:
+      example_model_input: {
+        "messages": [
+          {"role": "user", "content": "What is your favourite condiment?"},
+          {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"},
+          {"role": "user", "content": "Do you have mayonnaise recipes?"}
+        ],
+        "max_tokens": 512
+      }
+      avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+      cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+      engine_repository: "baseten/mixtral-h100-0.7.1"
+      tokenizer_repository: "mistralai/Mixtral-8x7B-v0.1"
+      tensor_parallelism: 2
+      tags:
+      - text-generation
+      - openai-compatible
+    description: Mixtral 8x7B Instruct optimized with TRT-LLM! Compatible with OpenAI Client
+    model_name: Mixtral 8x7B Instruct TRT-LLM for H100
+    environment_variables:
+      HF_HUB_ENABLE_HF_TRANSFER: 1
+    requirements:
+    - tritonclient[all]
+    - transformers==4.36.0
+    - jinja2==3.1.3
+    - hf_transfer==0.1.5
+    runtime:
+      predict_concurrency: 256
+    resources:
+      accelerator: H100:2
+  ignore:
+    - README.md
+  template:
+    max_batch_size: 16
 llama/llama-2-7b-trt-llm:
   based_on: trt-llm
   config:
