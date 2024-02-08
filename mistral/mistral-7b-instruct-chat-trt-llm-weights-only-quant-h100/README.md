@@ -2,7 +2,7 @@
 
 This is a [Truss](https://truss.baseten.co/) for Mistral 7B Instruct. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Mistral 7B Instruct.
 
-**Warning: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
+**Warning: This example is only intended for usage on a single H100, changing your resource type for this deployment will result in unsupported behavior**
 
 ## Truss
 
