@@ -21,7 +21,8 @@ class Model:
 
     def load(self):
         snapshot_download(
-            repo_id="baseten/sdxl-1.0-trt-8.6.1.post1-engine-H100", local_dir="/app/data"
+            repo_id="baseten/sdxl-1.0-trt-8.6.1.post1-engine-H100",
+            local_dir="/app/data",
         )
         vae = AutoencoderKL.from_pretrained(
             "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16

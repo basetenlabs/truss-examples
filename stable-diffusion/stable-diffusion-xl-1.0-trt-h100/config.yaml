@@ -31,7 +31,6 @@ model_cache:
       - "*.json"
       - "*.fp16.safetensors"
       - sd_xl_refiner_1.0.safetensors
-python_version: py39
 system_packages:
 - python3.10-venv
 - ffmpeg
