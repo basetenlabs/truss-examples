@@ -1,0 +1,7 @@
+model_name: llava-v1.6-34b
+python_version: py311
+requirements:
+- git+https://github.com/haotian-liu/LLaVA.git
+resources:
+  accelerator: A100
+  use_gpu: true
