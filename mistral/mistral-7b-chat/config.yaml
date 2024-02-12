@@ -16,6 +16,12 @@ requirements:
 - transformers==4.34.0
 - torch==2.0.1
 - hf_transfer==0.1.4
+model_cache:
+- repo_id: mistralai/Mistral-7B-Instruct-v0.1
+  allow_patterns:
+    - "*.json"
+    - "*.safetensors"
+    - "*.model"
 resources:
   accelerator: A10G
   memory: 25Gi
