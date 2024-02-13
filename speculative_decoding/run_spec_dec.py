@@ -10,12 +10,12 @@ python run_spec_dec.py --prompt="Once upon" --iteration_delay=1.5 --max_num_gene
 python run_spec_dec.py --prompt="How does a car work?" --temperature=0.2 --runtime_top_k=10 --random_seed=123
 ```
 """
-
 import argparse
 import asyncio
 import os
 import shutil
 import sys
+from pathlib import Path
 
 import colorama
 import huggingface_hub
@@ -23,7 +23,9 @@ import transformers
 import tritonclient.grpc.aio as triton_grpc
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "packages"))
-from packages import helpers, speculative_decoding
+import helpers  # From packages.
+
+import speculative_decoding  # From packages.
 
 TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 
@@ -99,7 +101,7 @@ if __name__ == "__main__":
     )
 
     if not helpers.is_triton_server_alive():
-        triton_server = helpers.TritonServer("/packages/triton_model_repo")
+        triton_server = helpers.TritonServer(Path("/packages/triton_model_repo"))
         triton_server.load_server_and_model({})
 
     async def main():

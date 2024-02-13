@@ -1,10 +1,8 @@
 """Script for local testing of model.py."""
-
 import asyncio
 import os
 import shutil
 import sys
-import time
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "packages"))
 
@@ -32,14 +30,16 @@ if __name__ == "__main__":
         if not use_draft:
             request.num_draft_tokens = 0
 
-        if streaming:
+        result = await model_instance.predict(request.dict())
+
+        if isinstance(result, str):
+            print("Non-Streaming results:")
+            print(result)
+        else:
             print("Streaming results:")
-            async for part in await model_instance.predict(request.dict()):
+            async for part in result:
                 print(part, end="")
             print("\n")
-        else:
-            print("Non-Streaming results:")
-            print(await model_instance.predict(request.dict()))
 
         return
 

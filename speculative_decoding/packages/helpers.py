@@ -15,6 +15,7 @@ import pydantic
 import tritonclient.grpc as triton_grpc
 import tritonclient.http as triton_http
 import tritonclient.utils as triton_utils
+from numpy.typing import DTypeLike, NDArray
 
 # Timing.
 ########################################################################################
@@ -158,7 +159,7 @@ class GenerationRequest(pydantic.BaseModel):
 def _fill_inputs(
     name: str,
     input_data,
-    dtype: np.dtype,
+    dtype: DTypeLike,
     mutable_inputs: list[triton_grpc.InferInput],
     make_2d: bool = True,
 ) -> None:
@@ -196,10 +197,10 @@ def make_trtllm_inputs(
     draft_tokens: Sequence[int] | None = None,
     end_id: int | None = None,
     pad_id: int | None = None,
-    bad_words_ids: np.ndarray[int] | None = None,
-    stop_words_ids: np.ndarray[int] | None = None,
+    bad_words_ids: NDArray[np.int32] | None = None,
+    stop_words_ids: NDArray[np.int32] | None = None,
 ) -> list[triton_grpc.InferInput]:
-    inputs = []
+    inputs: list[triton_grpc.InferInput] = []
     _fill_inputs("input_ids", input_ids, np.int32, inputs)
     _fill_inputs("input_lengths", len(input_ids), np.int32, inputs)
     _fill_inputs("request_output_len", max_num_generated_tokens, np.uint32, inputs)
@@ -219,7 +220,7 @@ def make_trtllm_inputs(
     return inputs
 
 
-def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int32]:
+def extract_trtllm_outputs(result: triton_grpc.InferResult) -> NDArray[np.int32]:
     # Get batch 0, beam 0 output_ids
     output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
     sequence_len = int(
@@ -231,7 +232,7 @@ def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int
 
 def to_word_list_format(
     word_dict: list[list[str]], tokenizer=None, add_special_tokens=False
-):
+) -> NDArray[np.int32]:
     """
     Taken from
     https://github.com/NVIDIA/TensorRT-LLM/blob/main/tensorrt_llm/runtime/generation.py
@@ -303,7 +304,7 @@ def is_triton_server_alive() -> bool:
 
 
 class TritonServer:
-    _process: subprocess.Popen
+    _process: subprocess.Popen | None
 
     def __init__(self, model_repository_dir: Path, parallel_count=1):
         self._model_repository_dir: Path = model_repository_dir
@@ -370,5 +371,5 @@ class TritonServer:
         return subprocess.Popen(command, env={**os.environ, **env})
 
     def shutdown(self) -> None:
-        if not self._process:
+        if self._process:
             self._process.terminate()

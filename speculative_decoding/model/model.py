@@ -132,7 +132,7 @@ class Model:
 
         streaming: bool = model_input.get("streaming", True)
 
-        maybe_queue: asyncio.Queue[str | speculative_decoding.QUEUE_SENTINEL] = (
+        maybe_queue: asyncio.Queue[str | None] | None = (
             asyncio.Queue() if streaming else None
         )
         if max_num_draft_tokens > 0:
@@ -160,7 +160,7 @@ class Model:
             speculative_decoding.SpeculationState
         ] = asyncio.ensure_future(infer_co)
 
-        if streaming:
+        if maybe_queue is not None:
 
             async def generate_result() -> AsyncGenerator[str, None]:
                 while True:

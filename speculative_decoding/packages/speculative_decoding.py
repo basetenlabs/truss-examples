@@ -27,6 +27,7 @@ import helpers  # From packages.
 import numpy as np
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+from numpy.typing import NDArray
 
 
 class SpeculationState:
@@ -52,9 +53,9 @@ class SpeculationState:
 
     _target_tokenizer: transformers.AutoTokenizer
     _verified_text: str
-    _verified_ids: np.ndarray[int]
+    _verified_ids: NDArray[np.int32]
     _draft_text: str | None
-    _draft_ids: np.ndarray[int] | None
+    _draft_ids: NDArray[np.int32] | None
     _num_updates: int
     _sum_accepted_tokens: int
     _debugging: bool
@@ -139,11 +140,11 @@ class SpeculationState:
             )  # Colorama does not mix well with newline.
             print(debug_str)
 
-    def get_verified_ids(self) -> np.ndarray[int]:
+    def get_verified_ids(self) -> NDArray[np.int32]:
         """Returns verified IDs."""
         return self._verified_ids
 
-    def get_draft_ids(self) -> np.ndarray[int] | None:
+    def get_draft_ids(self) -> NDArray[np.int32] | None:
         """Returns draft IDs or `None` if there is no draft.
 
         No draft tokens might happen when re-tonkenizing `verified_text` + `draft_text`
@@ -154,22 +155,21 @@ class SpeculationState:
         return self._draft_ids
 
     def update_verifed_text(
-        self, verified_text: str, verified_ids: np.ndarray[int]
+        self, verified_text: str, verified_ids: NDArray[np.int32]
     ) -> None:
         """Note: both inputs must be the full sequence, not just newly generated."""
         if self._debugging:
-            if self._draft_text == None:
-                self._draft_text = ""  # To make the following analysis easier.
+            draft_text = self._draft_text or ""
             added_text = verified_text[self.text_len :]
-            accepted_text = os.path.commonprefix([added_text, self._draft_text])
-            if len(accepted_text) < len(self._draft_text):
-                disagreed_text = added_text[len(accepted_text) : len(self._draft_text)]
+            accepted_text = os.path.commonprefix([added_text, draft_text])
+            if len(accepted_text) < len(draft_text):
+                disagreed_text = added_text[len(accepted_text) : len(draft_text)]
             else:
                 disagreed_text = ""
-            new_text = added_text[len(self._draft_text) :]
+            new_text = added_text[len(draft_text) :]
 
             if self._draft_ids is None:
-                accepted_tokens = []
+                accepted_tokens: list[int] = []
             else:
                 accepted_tokens = os.path.commonprefix(
                     [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
@@ -224,7 +224,7 @@ class ModelWrapper:
     @functools.lru_cache(maxsize=128)
     def _tokenize_word_list(
         self, word_list: tuple[str, ...] | None
-    ) -> np.ndarray[int] | None:
+    ) -> NDArray[np.int32] | None:
         if word_list:
             # Implementation is batched, so add and remove batch dimension.
             return helpers.to_word_list_format(
@@ -235,12 +235,12 @@ class ModelWrapper:
     async def generate(
         self,
         input_text: str,
-        max_num_gen_tokens: str,
+        max_num_gen_tokens: int,
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
         bad_word_list: tuple[str, ...] | None = None,
         stop_words_list: tuple[str, ...] | None = None,
-    ) -> tuple[str, np.ndarray[int]]:
+    ) -> tuple[str, NDArray[np.int32]]:
         """Generates and appends text/tokens with classic loop without draft tokens."""
         with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
             input_ids = np.squeeze(
@@ -268,13 +268,13 @@ class ModelWrapper:
 
     async def verify_and_generate(
         self,
-        confirmed_ids: np.ndarray[int],
-        draft_ids: np.ndarray[int],
+        confirmed_ids: NDArray[np.int32],
+        draft_ids: NDArray[np.int32],
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
         bad_word_list: tuple[str, ...] | None = None,
         stop_words_list: tuple[str, ...] | None = None,
-    ) -> tuple[str, np.ndarray[int]]:
+    ) -> tuple[str, NDArray[np.int32]]:
         """Accepts/rejects draft tokens and generates `1` new token.
 
         If all draft tokens are accepted, the new token extends the the sequence.
@@ -313,7 +313,7 @@ async def run_speculative_inference(
     request: helpers.GenerationRequest,
     max_num_draft_tokens: int,
     request_id: str,
-    result_queue: asyncio.Queue[str | QUEUE_SENTINEL] | None = None,
+    result_queue: asyncio.Queue[str | None] | None = None,
     verbose: bool = False,
     iteration_delay: float = 0.0,
 ) -> SpeculationState:
@@ -412,7 +412,7 @@ async def run_conventional_inference(
     target_model: ModelWrapper,
     request: helpers.GenerationRequest,
     request_id: str,
-    result_queue: asyncio.Queue[str | QUEUE_SENTINEL] | None = None,
+    result_queue: asyncio.Queue[str | None] | None = None,
 ) -> SpeculationState:
     """Fallback implementation of conventional generation."""
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=False)
