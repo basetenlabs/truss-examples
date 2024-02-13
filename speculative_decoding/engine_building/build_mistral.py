@@ -1,16 +1,16 @@
 from huggingface_hub import snapshot_download
 
-MODEL_NAME = "mistral-7B"
-MODEL_HF_ID = "mistralai/Mistral-7B-v0.1"
+MODEL_NAME = "mistral-7B-Instruct"
+MODEL_HF_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
 TRT_LLM_BUILD_SCRIPT = "/app/tensorrt_llm/examples/llama/build.py"
 BUILD_PYTOHON_BIN = "/usr/bin/python"
 
 
-HF_DIR = f"/root/workbench/{MODEL_NAME}_hf"
-ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine"
+MAX_DRAFT_LEN = 5
 
-MAX_DRAFT_LEN = 4
+HF_DIR = f"/root/workbench/{MODEL_NAME}_hf"
+ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine_draft_{MAX_DRAFT_LEN}"
 
 
 snapshot_download(
@@ -34,11 +34,11 @@ command = [
     "--use_inflight_batching",
     "--use_gemm_plugin=float16",
     "--multi_block_mode",
-    "--max_batch_size=16",
-    "--max_input_len=512",
+    "--max_batch_size=32",
+    "--max_input_len=1024",
+    "--max_output_len=2048",
     "--use_paged_context_fmha",
-    # "--gather_all_token_logits",
-    f"--max_draft_len={MAX_DRAFT_LEN}",
+    f"--max_draft_len={MAX_DRAFT_LEN}" if MAX_DRAFT_LEN else "",
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))

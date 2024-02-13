@@ -1,6 +1,6 @@
 name: "target_model"
 backend: "tensorrtllm"
-max_batch_size: 512
+max_batch_size: 32
 
 model_transaction_policy {
   decoupled: False
@@ -219,7 +219,7 @@ parameters: {
 parameters: {
   key: "batch_scheduler_policy"
   value: {
-    string_value: "max_utilization"
+    string_value: "guaranteed_no_evict"
   }
 }
 parameters: {
@@ -237,18 +237,12 @@ parameters: {
 parameters: {
   key: "enable_trt_overlap"
   value: {
-    string_value: "False"
+    string_value: "false"
   }
 }
 parameters: {
   key: "enable_kv_cache_reuse"
   value: {
-    string_value: "True"
-  }
-}
-parameters: {
-  key: "normalize_log_probs"
-  value: {
-    string_value: "True"
+    string_value: "true"
   }
 }

@@ -1,4 +1,5 @@
-"""This file should be converted into a library in the futuretruss/modelling package."""
+"""This file should be converted into a library in a truss/modelling package."""
+
 import collections
 import contextlib
 import csv
@@ -7,7 +8,7 @@ import socket
 import subprocess
 import time
 from pathlib import Path
-from typing import Sequence, Union
+from typing import MutableMapping, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,7 @@ import pydantic
 import tritonclient.grpc as triton_grpc
 import tritonclient.http as triton_http
 import tritonclient.utils as triton_utils
+from numpy.typing import DTypeLike, NDArray
 
 # Timing.
 ########################################################################################
@@ -23,11 +25,16 @@ import tritonclient.utils as triton_utils
 class _Timing(object):
     """Oject to collect code section timing statistics."""
 
+    _values: collections.deque
+    _count: int
+    _sum: int
+    _t0: float
+
     def __init__(self):
         self._values = collections.deque(maxlen=50)
         self._count = 0
         self._sum = 0
-        self._t0 = 0
+        self._t0 = 0.0
 
     def update(self, value: Union[float, int]):
         self._values.append(value)
@@ -38,13 +45,17 @@ class _Timing(object):
         self.__init__()
 
     def start_time(self):
-        assert self._t0 == 0
+        if self._t0 > 0.0:
+            raise RuntimeError(
+                "Section timeing for must be completed with `record_time` "
+                "before a new timing can be started."
+            )
         self._t0 = time.time()
 
     def record_time(self):
         t = time.time() - self._t0
         self.update(t)
-        self._t0 = 0
+        self._t0 = 0.0
 
     def to_dict(self) -> dict[str, float | int | str]:
         vals = np.array(self._values)
@@ -63,19 +74,36 @@ class _Timing(object):
 class _TimingManager(object):
     """Object to manage collection of `_Timing` objects."""
 
+    _timings: MutableMapping[str, _Timing]
+    _order: list[str]
+    _total_section_name: Optional[str]
+    _enabled: bool
+
     def __init__(self):
         self._timings = collections.defaultdict(_Timing)
         self._order = []
-        self._total = None
-        self.enabled = False
+        self._total_section_name = None
+        self._enabled = False
 
-    def start_time(self, name: str):
-        if name not in self._timings:
-            self._order.append(name)
-        self._timings[name].start_time()
+    def start_time(self, section_name: str):
+        if section_name not in self._timings:
+            self._order.append(section_name)
+        self._timings[section_name].start_time()
 
-    def record_time(self, name: str):
-        self._timings[name].record_time()
+    def record_time(self, section_name: str):
+        self._timings[section_name].record_time()
+
+    def set_total_section_name(self, section_name: str):
+        self._total_section_name = section_name
+
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    def enable(self) -> None:
+        self._enabled = True
+
+    def disable(self) -> None:
+        self._enabled = False
 
     def to_pd(self) -> pd.DataFrame:
         rows = []
@@ -85,35 +113,51 @@ class _TimingManager(object):
             t_dict = self._timings[n].to_dict()
             t_dict[section_key] = n
             rows.append(t_dict)
+
+        if self._total_section_name:
+            columns.append("%")
+            total = self._timings[self._total_section_name]
+            for i, n in enumerate(self._order):
+                rows[i]["%"] = self._timings[n].to_dict()["Σ"] / total.to_dict()["Σ"]
+
         return pd.DataFrame(data=rows, columns=columns).set_index(section_key)
 
     def reset(self):
         self._timings.clear()
         self._order.clear()
-        self._total = None
+        self._total_section_name = None
 
 
 _global_metrics = _TimingManager()
 
 
 @contextlib.contextmanager
-def timeit(name: str, skip: bool = False):
-    if _global_metrics.enabled and not skip:
+def timeit(section_name: str, skip: bool = False):
+    if _global_metrics.is_enabled() and not skip:
         try:
-            _global_metrics.start_time(name)
+            _global_metrics.start_time(section_name)
             yield
         finally:
-            _global_metrics.record_time(name)
+            _global_metrics.record_time(section_name)
     else:
         yield
 
 
 def enable_timing() -> None:
-    _global_metrics.enabled = True
+    _global_metrics.enable()
 
 
 def disable_timing() -> None:
-    _global_metrics.enabled = False
+    _global_metrics.disable()
+
+
+def set_total_timing_section(section_name: str) -> None:
+    """Designates a section as total E2E, other sections are shown with percentages."""
+    _global_metrics.set_total_section_name(section_name)
+
+
+def reset_timings():
+    _global_metrics.reset()
 
 
 def show_timings():
@@ -140,13 +184,15 @@ class SamplingConfig(pydantic.BaseModel):
 
 
 class GenerationRequest(pydantic.BaseModel):
-    # TODO: Missing: embedding_bias, prompt_embedding_table, prompt_vocab_size, loras.
+    # Note: embedding_bias, prompt_embedding_table, prompt_vocab_size, loras are not
+    # integrated yet due to lack of precedent usage.
     prompt: str
     max_num_generated_tokens: int
-    streaming: bool = False
+    streaming: bool = True
     bad_word_list: Sequence[str] | None = None
     stop_words_list: Sequence[str] | None = None
     sampling_config: SamplingConfig = SamplingConfig()
+    num_draft_tokens: int | None = None
 
 
 # Triton inference client helpers.
@@ -156,7 +202,7 @@ class GenerationRequest(pydantic.BaseModel):
 def _fill_inputs(
     name: str,
     input_data,
-    dtype: np.dtype,
+    dtype: DTypeLike,
     mutable_inputs: list[triton_grpc.InferInput],
     make_2d: bool = True,
 ) -> None:
@@ -194,10 +240,10 @@ def make_trtllm_inputs(
     draft_tokens: Sequence[int] | None = None,
     end_id: int | None = None,
     pad_id: int | None = None,
-    bad_words_ids: np.ndarray[int] | None = None,
-    stop_words_ids: np.ndarray[int] | None = None,
+    bad_words_ids: NDArray[np.int32] | None = None,
+    stop_words_ids: NDArray[np.int32] | None = None,
 ) -> list[triton_grpc.InferInput]:
-    inputs = []
+    inputs: list[triton_grpc.InferInput] = []
     _fill_inputs("input_ids", input_ids, np.int32, inputs)
     _fill_inputs("input_lengths", len(input_ids), np.int32, inputs)
     _fill_inputs("request_output_len", max_num_generated_tokens, np.uint32, inputs)
@@ -217,9 +263,7 @@ def make_trtllm_inputs(
     return inputs
 
 
-def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int32]:
-    # TODO: Get context_logits, generation_logits and find out why output_log_probs is
-    #  always zero.
+def extract_trtllm_outputs(result: triton_grpc.InferResult) -> NDArray[np.int32]:
     # Get batch 0, beam 0 output_ids
     output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
     sequence_len = int(
@@ -231,7 +275,7 @@ def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int
 
 def to_word_list_format(
     word_dict: list[list[str]], tokenizer=None, add_special_tokens=False
-):
+) -> NDArray[np.int32]:
     """
     Taken from
     https://github.com/NVIDIA/TensorRT-LLM/blob/main/tensorrt_llm/runtime/generation.py
@@ -303,7 +347,7 @@ def is_triton_server_alive() -> bool:
 
 
 class TritonServer:
-    _process: subprocess.Popen
+    _process: subprocess.Popen | None
 
     def __init__(self, model_repository_dir: Path, parallel_count=1):
         self._model_repository_dir: Path = model_repository_dir
@@ -370,5 +414,5 @@ class TritonServer:
         return subprocess.Popen(command, env={**os.environ, **env})
 
     def shutdown(self) -> None:
-        if not self._process:
+        if self._process:
             self._process.terminate()

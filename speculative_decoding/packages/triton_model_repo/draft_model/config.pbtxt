@@ -1,6 +1,6 @@
 name: "draft_model"
 backend: "tensorrtllm"
-max_batch_size: 512
+max_batch_size: 32
 
 model_transaction_policy {
   decoupled: False
@@ -201,8 +201,7 @@ parameters: {
 parameters: {
   key: "gpt_model_type"
   value: {
-    # string_value: "inflight_fused_batching"
-    string_value: "V1"
+    string_value: "inflight_fused_batching"
   }
 }
 parameters: {
@@ -214,14 +213,13 @@ parameters: {
 parameters: {
   key: "batch_scheduler_policy"
   value: {
-    # string_value: "max_utilization"
-    string_value: "guaranteed_no_eviction"
+    string_value: "guaranteed_no_evict"
   }
 }
 parameters: {
   key: "kv_cache_free_gpu_mem_fraction"
   value: {
-    string_value: "0.4"
+    string_value: "0.2"
   }
 }
 parameters: {
@@ -233,18 +231,12 @@ parameters: {
 parameters: {
   key: "enable_trt_overlap"
   value: {
-    string_value: "False"
+    string_value: "false"
   }
 }
 parameters: {
   key: "enable_kv_cache_reuse"
   value: {
-    string_value: "True"
-  }
-}
-parameters: {
-  key: "normalize_log_probs"
-  value: {
-    string_value: "True"
+    string_value: "true"
   }
 }
