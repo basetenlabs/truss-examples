@@ -1,8 +1,19 @@
-# LLaMA2-13B-Chat Truss
+# Mythomax 13b Truss
 
-This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of LLaMA2-13B-Chat. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA2-13B-Chat.
+Based on https://huggingface.co/Gryphe/MythoMax-L2-13b
 
-**Warning: This example is only intended for usage on a single A100, changing your resource type for this deployment will result in unsupported behavior**
+int8 quantized using smoothquant using `https://huggingface.co/datasets/royallab/PIPPA-cleaned` dataset
+smoothquant alpha value used: 0.5
+
+TensorRT-LLM engine is here: https://huggingface.co/baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_2ff724
+
+Max input tokens: 3000
+Max output tokens: 2000
+Max batch size: 128
+
+Built for H100
+
+**Warning: This example is only intended for usage on a single H100, changing your resource type for this deployment will result in unsupported behavior**
 
 ## Truss
 
@@ -14,7 +25,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd llama/llama-2-13b-trt-llm
+cd llama/mythomax-13b-trt-sq
 ```
 
 Before deployment:
@@ -22,7 +33,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `llama-2-13b-trt-llm` as your working directory, you can deploy the model with:
+With `mythomax-13b-trt-sq` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
