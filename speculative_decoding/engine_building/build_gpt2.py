@@ -12,7 +12,6 @@ HF_DIR = f"/root/workbench/{MODEL_NAME}_hf"
 FT_DIR = f"/root/workbench/{MODEL_NAME}_ft"
 ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine"
 
-MAX_DRAFT_LEN = 4
 
 snapshot_download(
     MODEL_HF_ID,
@@ -47,10 +46,11 @@ command = [
     "--use_inflight_batching",
     "--use_gemm_plugin=float16",
     "--multi_block_mode",
-    "--max_batch_size=16",
-    "--max_input_len=512",
+    "--max_batch_size=32",
+    "--max_input_len=1024",
+    "--max_output_len=2048",
     "--use_paged_context_fmha",
-    "--gather_all_token_logits",
+    # "--gather_all_token_logits",
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))
