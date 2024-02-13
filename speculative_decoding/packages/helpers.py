@@ -147,6 +147,7 @@ class GenerationRequest(pydantic.BaseModel):
     bad_word_list: Sequence[str] | None = None
     stop_words_list: Sequence[str] | None = None
     sampling_config: SamplingConfig = SamplingConfig()
+    num_draft_tokens: int | None = None
 
 
 # Triton inference client helpers.

@@ -1,6 +1,6 @@
 name: "target_model"
 backend: "tensorrtllm"
-max_batch_size: 512
+max_batch_size: 32
 
 model_transaction_policy {
   decoupled: False
@@ -219,7 +219,7 @@ parameters: {
 parameters: {
   key: "batch_scheduler_policy"
   value: {
-    string_value: "max_utilization"
+    string_value: "guaranteed_no_eviction"
   }
 }
 parameters: {

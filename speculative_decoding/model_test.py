@@ -23,12 +23,14 @@ if __name__ == "__main__":
         dirs_exist_ok=True,
     )
 
-    async def predict(model_instance: model.Model, streaming: bool):
+    async def predict(model_instance: model.Model, streaming: bool, use_draft: bool):
         request = helpers.GenerationRequest(
             prompt="Once upon",
             max_num_generated_tokens=60,
             streaming=streaming,
         )
+        if not use_draft:
+            request.num_draft_tokens = 0
 
         if streaming:
             print("Streaming results:")
@@ -47,8 +49,9 @@ if __name__ == "__main__":
         model_instance.load()
         print("Model loaded.")
 
-        await predict(model_instance, streaming=False)
-        await predict(model_instance, streaming=True)
+        await predict(model_instance, streaming=False, use_draft=True)
+        await predict(model_instance, streaming=True, use_draft=True)
+        await predict(model_instance, streaming=True, use_draft=False)
 
         print("Shutting down.")
         model_instance.shutdown()

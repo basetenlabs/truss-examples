@@ -7,10 +7,10 @@ TRT_LLM_BUILD_SCRIPT = "/app/tensorrt_llm/examples/llama/build.py"
 BUILD_PYTOHON_BIN = "/usr/bin/python"
 
 
-HF_DIR = f"/root/workbench/{MODEL_NAME}_hf"
-ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine"
-
 MAX_DRAFT_LEN = 5
+
+HF_DIR = f"/root/workbench/{MODEL_NAME}_hf"
+ENGINE_DIR = f"/root/workbench/{MODEL_NAME}_engine_draft_{MAX_DRAFT_LEN}"
 
 
 snapshot_download(
@@ -36,10 +36,10 @@ command = [
     "--multi_block_mode",
     "--max_batch_size=32",
     "--max_input_len=1024",
-    "--max_output_len=2048"
+    "--max_output_len=2048",
     "--use_paged_context_fmha",
     # "--gather_all_token_logits",
-    f"--max_draft_len={MAX_DRAFT_LEN}",
+    f"--max_draft_len={MAX_DRAFT_LEN}" if MAX_DRAFT_LEN else "",
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))

@@ -116,21 +116,24 @@ class Model:
 
         request_id = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
-        max_num_draft_tokens: int = self._config["model_metadata"][
+        model_max_num_draft_tokens: int = self._config["model_metadata"][
             "speculative_decoding"
         ]["max_num_draft_tokens"]
+
+        if request.num_draft_tokens is not None:
+            max_num_draft_tokens = min(
+                model_max_num_draft_tokens, request.num_draft_tokens
+            )
+        else:
+            max_num_draft_tokens = model_max_num_draft_tokens
+
         streaming: bool = model_input.get("streaming", True)
 
         maybe_queue: asyncio.Queue[str | speculative_decoding.QUEUE_SENTINEL] = (
             asyncio.Queue() if streaming else None
         )
-        # `ensure_future` makes sure the loop immediately runs until completion and
-        # fills up the result queue as fast as possible (only limited by the inference
-        # requests latency) and doesn't wait for the consumption of the results.
-        inference_gen: asyncio.Task[
-            speculative_decoding.SpeculationState
-        ] = asyncio.ensure_future(
-            speculative_decoding.run_speculative_inference(
+        if max_num_draft_tokens > 0:
+            infer_co = speculative_decoding.run_speculative_inference(
                 self._target_model,
                 self._draft_model,
                 request,
@@ -139,7 +142,20 @@ class Model:
                 result_queue=maybe_queue,
                 verbose=False,
             )
-        )
+        else:
+            infer_co = speculative_decoding.run_conventional_inference(
+                self._target_model,
+                request,
+                request_id=request_id,
+                result_queue=maybe_queue,
+            )
+
+        # `ensure_future` makes sure the loop immediately runs until completion and
+        # fills up the result queue as fast as possible (only limited by the inference
+        # requests latency) and doesn't wait for the consumption of the results.
+        inference_gen: asyncio.Task[
+            speculative_decoding.SpeculationState
+        ] = asyncio.ensure_future(infer_co)
 
         if streaming:
 
@@ -155,7 +171,7 @@ class Model:
         else:
 
             async def get_result() -> str:
-                return (await inference_gen).get_verified_text()
+                return (await inference_gen).get_verified_text()[len(request.prompt) :]
 
             return await get_result()
 

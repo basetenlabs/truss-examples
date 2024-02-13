@@ -26,6 +26,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--prompt", type=str, default="Once upon a time")
     parser.add_argument("--max_num_generated_tokens", type=int, default=30)
+    parser.add_argument("--num_draft_tokens", type=int, default=4)
 
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--runtime_top_k", type=int, default=None)
@@ -117,7 +118,7 @@ if __name__ == "__main__":
             target_model,
             draft_model,
             request,
-            max_num_draft_tokens=4,
+            max_num_draft_tokens=args.num_draft_tokens,
             request_id="666",
             result_queue=asyncio.Queue(),
             verbose=args.verbose,

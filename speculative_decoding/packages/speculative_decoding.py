@@ -338,7 +338,7 @@ async def run_speculative_inference(
     draft_sampling_conifg = helpers.SamplingConfig()
 
     max_total_tokens = state.num_tokens + request.max_num_generated_tokens
-    num_chars_generated = 0
+    num_chars_generated = len(request.prompt)
     while True:
         num_draft_tokens = min(
             max_num_draft_tokens,
@@ -398,5 +398,29 @@ async def run_speculative_inference(
             time.sleep(iteration_delay)
 
     if result_queue is not None:
+        result_queue.put_nowait(QUEUE_SENTINEL)
+    return state
+
+
+async def run_conventional_inference(
+    target_model: ModelWrapper,
+    request: helpers.GenerationRequest,
+    request_id: str,
+    result_queue: asyncio.Queue[str | QUEUE_SENTINEL] | None = None,
+) -> SpeculationState:
+    """Fallback implementation of conventional generation."""
+    state = SpeculationState(request.prompt, target_model._tokenizer, debugging=False)
+    verified_text, verfied_ids = await target_model.generate(
+        request.prompt,
+        request.max_num_generated_tokens,
+        request_id,
+        request.sampling_config,
+        request.bad_word_list,
+        request.stop_words_list,
+    )
+
+    state.update_verifed_text(verified_text, verfied_ids)
+    if result_queue is not None:
+        result_queue.put_nowait(state.get_verified_text()[len(request.prompt) :])
         result_queue.put_nowait(QUEUE_SENTINEL)
     return state
