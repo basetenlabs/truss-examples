@@ -32,6 +32,12 @@ requirements:
 - sentencepiece==0.1.99
 - torch==2.0.1
 - transformers==4.32.1
+model_cache:
+- repo_id: meta-llama/Llama-2-7b-chat-hf
+  allow_patterns:
+    - "*.json"
+    - "*.safetensors"
+    - "*.model"
 resources:
   cpu: "2"
   memory: 10Gi
