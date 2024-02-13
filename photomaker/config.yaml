@@ -1,0 +1,32 @@
+# PhotoMakerStableDiffusionXLPipeline Configuration
+python_version: 3.10
+dependencies:
+  - pytorch: 2.0.0
+  - huggingface_hub
+  - diffusers
+  - numpy
+  - Pillow
+  - requests
+  - safetensors
+  - tqdm
+  - regex
+  - filelock
+  - importlib_metadata
+
+# Additional libraries from requirements.txt
+additional_libraries:
+  - scipy
+  - transformers
+  - gradio
+
+# Hugging Face model caching
+hf_model_cache:
+  function: hf_hub_download
+  parameters:
+    repo_id: "TencentARC/PhotoMaker"
+    filename: "photomaker-v1.bin"
+
+# GPU Configuration
+gpu_requirements:
+  memory_min_gb: 11
+  data_type_for_non_bfloat16_gpus: "torch.float16"
