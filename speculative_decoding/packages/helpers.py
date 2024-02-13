@@ -1,4 +1,4 @@
-"""This file should be converted into a library in the futuretruss/modelling package."""
+"""This file should be converted into a library in a truss/modelling package."""
 import collections
 import contextlib
 import csv
@@ -140,7 +140,8 @@ class SamplingConfig(pydantic.BaseModel):
 
 
 class GenerationRequest(pydantic.BaseModel):
-    # TODO: Missing: embedding_bias, prompt_embedding_table, prompt_vocab_size, loras.
+    # Note: embedding_bias, prompt_embedding_table, prompt_vocab_size, loras are not
+    # integrated yet due to lack of precedent usage.
     prompt: str
     max_num_generated_tokens: int
     streaming: bool = False
@@ -219,8 +220,6 @@ def make_trtllm_inputs(
 
 
 def extract_trtllm_outputs(result: triton_grpc.InferResult) -> np.ndarray[np.int32]:
-    # TODO: Get context_logits, generation_logits and find out why output_log_probs is
-    #  always zero.
     # Get batch 0, beam 0 output_ids
     output_ids = np.squeeze(result.as_numpy("output_ids").astype(np.int32), axis=(0, 1))
     sequence_len = int(

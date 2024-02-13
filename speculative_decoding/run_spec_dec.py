@@ -1,3 +1,16 @@
+"""Self contained demo script to run speculative inference.
+
+Must be run on host with deps (see truss yaml) and tritonserver installed.
+The used engines require at least A100 40GB GPU.
+
+Examples:
+
+```
+python run_spec_dec.py --prompt="Once upon" --iteration_delay=1.5 --max_num_generated_tokens=20
+python run_spec_dec.py --prompt="How does a car work?" --temperature=0.2 --runtime_top_k=10 --random_seed=123
+```
+"""
+
 import argparse
 import asyncio
 import os
@@ -125,13 +138,10 @@ if __name__ == "__main__":
             iteration_delay=args.iteration_delay,
         )
 
-        direct_gen_co = target_model.generate(
-            request.prompt,
-            request.max_num_generated_tokens,
-            "123",
-            request.sampling_config,
-            request.bad_word_list,
-            request.stop_words_list,
+        direct_gen_co = speculative_decoding.run_conventional_inference(
+            target_model,
+            request,
+            request_id="123",
         )
 
         if args.concurrent:
@@ -150,7 +160,7 @@ if __name__ == "__main__":
                     f"{state_result.get_aveage_num_accepted_draft_tokens():.2f}"
                 )
         with helpers.timeit("OLD TOTAL - direct_gen"):
-            direct_text, direct_ids = await direct_gen
+            direct_text = await direct_gen
             print(f"Direct Gen text:\n{direct_text}\n`")
 
         helpers.show_timings()

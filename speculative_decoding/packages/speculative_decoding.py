@@ -11,18 +11,16 @@ Notes:
   "hard" draft tokens and not draft probabilities and might be improved in the future.
 
 
-TODO:
-* Change from returning context+generated text to only returning generated.
-* Take another look at stop/break criteria for the generation loop.
-* Maybe clean up debug/timing leftovers.
-* Add caching for word lists.
+TODOs:
 * Add unittests.
+* Optional: remove debug/timing branches.
+* Optional: refactor such that inference results only contain generation and no context.
 """
 
 import asyncio
+import functools
 import os
 import time
-from typing import Sequence
 
 import colorama
 import helpers  # From packages.
@@ -43,7 +41,7 @@ class SpeculationState:
 
     For making inference with the target model we need to separate the verfied ouput
     and draft output on a *tokenized representation*. Therefore this helper class
-    provides a getter method to aceess these tokens (`get_verification_inputs`).
+    provides a getter method to aceess these tokens (`get_draft_ids`).
 
     In some cases using different tokenizers can lead to changes of previously
     verified tokens which requires careful handling (see docstring of `update_draft`).
@@ -141,18 +139,19 @@ class SpeculationState:
             )  # Colorama does not mix well with newline.
             print(debug_str)
 
-    def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
-        """Returns verified and draft IDs as separate sequences and `None` if there is
-        no draft.
+    def get_verified_ids(self) -> np.ndarray[int]:
+        """Returns verified IDs."""
+        return self._verified_ids
+
+    def get_draft_ids(self) -> np.ndarray[int] | None:
+        """Returns draft IDs or `None` if there is no draft.
 
         No draft tokens might happen when re-tonkenizing `verified_text` + `draft_text`
         would lead to flipped tokens in the previously verified text. In that case
         a direct sample from the target model must be taken (see docstring of
         `update_draft`) .
         """
-        if self._draft_ids is None:
-            return None
-        return self._verified_ids, self._draft_ids
+        return self._draft_ids
 
     def update_verifed_text(
         self, verified_text: str, verified_ids: np.ndarray[int]
@@ -222,9 +221,9 @@ class ModelWrapper:
         self._model_name = model_name
         self._tokenizer = tokenizer
 
-    # @functools.lru_cache(maxsize=128)  # Needs tuple not list for hashing.
+    @functools.lru_cache(maxsize=128)
     def _tokenize_word_list(
-        self, word_list: Sequence[str] | None
+        self, word_list: tuple[str, ...] | None
     ) -> np.ndarray[int] | None:
         if word_list:
             # Implementation is batched, so add and remove batch dimension.
@@ -239,8 +238,8 @@ class ModelWrapper:
         max_num_gen_tokens: str,
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
-        bad_word_list: Sequence[str] | None = None,
-        stop_words_list: Sequence[str] | None = None,
+        bad_word_list: tuple[str, ...] | None = None,
+        stop_words_list: tuple[str, ...] | None = None,
     ) -> tuple[str, np.ndarray[int]]:
         """Generates and appends text/tokens with classic loop without draft tokens."""
         with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
@@ -273,8 +272,8 @@ class ModelWrapper:
         draft_ids: np.ndarray[int],
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
-        bad_word_list: Sequence[str] | None = None,
-        stop_words_list: Sequence[str] | None = None,
+        bad_word_list: tuple[str, ...] | None = None,
+        stop_words_list: tuple[str, ...] | None = None,
     ) -> tuple[str, np.ndarray[int]]:
         """Accepts/rejects draft tokens and generates `1` new token.
 
@@ -283,7 +282,6 @@ class ModelWrapper:
         the first rejected draft token.
         """
         num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
-        # TODO: check len of draft IDs, warn if throw away.
         with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
             inputs = helpers.make_trtllm_inputs(
                 confirmed_ids,
@@ -334,11 +332,15 @@ async def run_speculative_inference(
     """
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
 
-    # Use sampling defaults i.e. greedy sampling for draft model.
+    # Use sampling defaults (i.e. greedy sampling) for draft model.
     draft_sampling_conifg = helpers.SamplingConfig()
 
     max_total_tokens = state.num_tokens + request.max_num_generated_tokens
     num_chars_generated = len(request.prompt)
+
+    bad_words = tuple(request.bad_word_list) if request.bad_word_list else None
+    stop_words = tuple(request.stop_words_list) if request.stop_words_list else None
+
     while True:
         num_draft_tokens = min(
             max_num_draft_tokens,
@@ -349,16 +351,29 @@ async def run_speculative_inference(
             num_draft_tokens,
             request_id,
             draft_sampling_conifg,
-            request.bad_word_list,
-            request.stop_words_list,
+            bad_words,
+            stop_words,
         )
         state.update_draft(combined_draft)
         if iteration_delay:
             time.sleep(iteration_delay)
 
-        verification_inputs = state.get_verification_inputs()
-        if verification_inputs is None:
-            # There are no drafts to verify when appending the draft leads to a
+        previously_verified_ids = state.get_verified_ids()
+        draft_ids = state.get_draft_ids()
+        if draft_ids is not None:
+            if len(draft_ids) > max_num_draft_tokens:
+                draft_ids = draft_ids[:max_num_draft_tokens]
+
+            verified_text, verfied_ids = await target_model.verify_and_generate(
+                previously_verified_ids,
+                draft_ids,
+                request_id,
+                request.sampling_config,
+                bad_words,
+                stop_words,
+            )
+        else:
+            # There are no drafts to verify if appending the draft leads to a
             # tokenization inconsistent with the previously confirmed text.
             # See docstring of `SpeculationState.update_draft`.
             verified_text, verfied_ids = await target_model.generate(
@@ -366,27 +381,18 @@ async def run_speculative_inference(
                 1,
                 request_id,
                 request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
+                bad_words,
+                stop_words,
             )
-        else:
-            confirmed_ids, draft_ids = verification_inputs
-            if len(draft_ids) > max_num_draft_tokens:
-                draft_ids = draft_ids[:max_num_draft_tokens]
 
-            verified_text, verfied_ids = await target_model.verify_and_generate(
-                confirmed_ids,
-                draft_ids,
-                request_id,
-                request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
-            )
+        # Check if EOS or stop words were encountered: in that case the target model
+        # does not generate any new tokens and the output is identical to the input.
+        if np.array_equal(previously_verified_ids, verfied_ids):
+            break
 
         state.update_verifed_text(verified_text, verfied_ids)
         if result_queue is not None:
             complete_text = state.get_verified_text()
-            # TODO: refactor to directly work on incremental text only.
             incremental_text = complete_text[num_chars_generated:]
             result_queue.put_nowait(incremental_text)
             num_chars_generated = state.text_len
@@ -410,13 +416,15 @@ async def run_conventional_inference(
 ) -> SpeculationState:
     """Fallback implementation of conventional generation."""
     state = SpeculationState(request.prompt, target_model._tokenizer, debugging=False)
+    bad_words = tuple(request.bad_word_list) if request.bad_word_list else None
+    stop_words = tuple(request.stop_words_list) if request.stop_words_list else None
     verified_text, verfied_ids = await target_model.generate(
         request.prompt,
         request.max_num_generated_tokens,
         request_id,
         request.sampling_config,
-        request.bad_word_list,
-        request.stop_words_list,
+        bad_words,
+        stop_words,
     )
 
     state.update_verifed_text(verified_text, verfied_ids)
