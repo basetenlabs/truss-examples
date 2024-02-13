@@ -11,24 +11,23 @@ Notes:
   "hard" draft tokens and not draft probabilities and might be improved in the future.
 
 
-TODO:
-* Change from returning context+generated text to only returning generated.
-* Take another look at stop/break criteria for the generation loop.
-* Maybe clean up debug/timing leftovers.
-* Add caching for word lists.
+TODOs:
 * Add unittests.
+* Optional: remove debug/timing branches.
+* Optional: refactor such that inference results only contain generation and no context.
 """
 
 import asyncio
+import functools
 import os
 import time
-from typing import Sequence
 
 import colorama
 import helpers  # From packages.
 import numpy as np
 import transformers
 import tritonclient.grpc.aio as triton_grpc
+from numpy.typing import NDArray
 
 
 class SpeculationState:
@@ -43,7 +42,7 @@ class SpeculationState:
 
     For making inference with the target model we need to separate the verfied ouput
     and draft output on a *tokenized representation*. Therefore this helper class
-    provides a getter method to aceess these tokens (`get_verification_inputs`).
+    provides a getter method to aceess these tokens (`get_draft_ids`).
 
     In some cases using different tokenizers can lead to changes of previously
     verified tokens which requires careful handling (see docstring of `update_draft`).
@@ -54,9 +53,9 @@ class SpeculationState:
 
     _target_tokenizer: transformers.AutoTokenizer
     _verified_text: str
-    _verified_ids: np.ndarray[int]
+    _verified_ids: NDArray[np.int32]
     _draft_text: str | None
-    _draft_ids: np.ndarray[int] | None
+    _draft_ids: NDArray[np.int32] | None
     _num_updates: int
     _sum_accepted_tokens: int
     _debugging: bool
@@ -113,24 +112,25 @@ class SpeculationState:
 
         In this implementation the second option, discarding the draft, is chosen.
         """
-        with helpers.timeit(f"Tokenize for Target model", skip=True):
+        with helpers.timeit(f"target_model: Tokenize", skip=False):
             new_ids = np.squeeze(
                 self._target_tokenizer.encode(combined_draft, return_tensors="np")
             )
-        verified_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
+            verified_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
 
-        if not np.alltrue(self._verified_ids == verified_ids_reencoded):
-            self._draft_ids = None
-            self._draft_text = None
-            if self._debugging:
-                print(
-                    f"Draft  : '{combined_draft}'\nDraft causes token flip "
-                    "of confirmed text! Must sample target model directly to recover."
-                )
-            return
+        with helpers.timeit(f"Update Draft", skip=False):
+            if not np.alltrue(self._verified_ids == verified_ids_reencoded):
+                self._draft_ids = None
+                self._draft_text = None
+                if self._debugging:
+                    print(
+                        f"Draft  : '{combined_draft}'\nDraft causes token flip "
+                        "of confirmed text! Must sample target model directly to recover."
+                    )
+                return
 
-        self._draft_ids = draft_ids
-        self._draft_text = combined_draft[self.text_len :]
+            self._draft_ids = draft_ids
+            self._draft_text = combined_draft[self.text_len :]
 
         if self._debugging:
             debug_str = (
@@ -141,43 +141,46 @@ class SpeculationState:
             )  # Colorama does not mix well with newline.
             print(debug_str)
 
-    def get_verification_inputs(self) -> tuple[np.ndarray[int], np.ndarray[int]] | None:
-        """Returns verified and draft IDs as separate sequences and `None` if there is
-        no draft.
+    def get_verified_ids(self) -> NDArray[np.int32]:
+        """Returns verified IDs."""
+        return self._verified_ids
+
+    def get_draft_ids(self) -> NDArray[np.int32] | None:
+        """Returns draft IDs or `None` if there is no draft.
 
         No draft tokens might happen when re-tonkenizing `verified_text` + `draft_text`
         would lead to flipped tokens in the previously verified text. In that case
         a direct sample from the target model must be taken (see docstring of
         `update_draft`) .
         """
-        if self._draft_ids is None:
-            return None
-        return self._verified_ids, self._draft_ids
+        return self._draft_ids
 
     def update_verifed_text(
-        self, verified_text: str, verified_ids: np.ndarray[int]
+        self, verified_text: str, verified_ids: NDArray[np.int32]
     ) -> None:
         """Note: both inputs must be the full sequence, not just newly generated."""
-        if self._debugging:
-            if self._draft_text == None:
-                self._draft_text = ""  # To make the following analysis easier.
-            added_text = verified_text[self.text_len :]
-            accepted_text = os.path.commonprefix([added_text, self._draft_text])
-            if len(accepted_text) < len(self._draft_text):
-                disagreed_text = added_text[len(accepted_text) : len(self._draft_text)]
-            else:
-                disagreed_text = ""
-            new_text = added_text[len(self._draft_text) :]
-
+        with helpers.timeit(f"Update Verified - stats", skip=False):
             if self._draft_ids is None:
-                accepted_tokens = []
+                num_accepted_tokens = 0
             else:
-                accepted_tokens = os.path.commonprefix(
-                    [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
+                num_accepted_tokens = len(
+                    os.path.commonprefix(
+                        [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
+                    )
                 )
 
             self._num_updates += 1
-            self._sum_accepted_tokens += len(accepted_tokens)
+            self._sum_accepted_tokens += num_accepted_tokens
+
+        if self._debugging:
+            draft_text = self._draft_text or ""
+            added_text = verified_text[self.text_len :]
+            accepted_text = os.path.commonprefix([added_text, draft_text])
+            if len(accepted_text) < len(draft_text):
+                disagreed_text = added_text[len(accepted_text) : len(draft_text)]
+            else:
+                disagreed_text = ""
+            new_text = added_text[len(draft_text) :]
 
             style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
             debug_str = (
@@ -185,7 +188,7 @@ class SpeculationState:
                 f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
                 f"{colorama.Back.RED + style}{disagreed_text}"
                 f"{colorama.Style.RESET_ALL + style}{new_text}"
-                f"{colorama.Style.RESET_ALL}' -> Accepted `{len(accepted_tokens)}` "
+                f"{colorama.Style.RESET_ALL}' -> Accepted `{num_accepted_tokens}` "
                 f"tokens <=> {len(accepted_text)}` chars."
             ).replace(
                 "\n", "\\n"
@@ -198,11 +201,8 @@ class SpeculationState:
         self._draft_text = None
 
     def get_aveage_num_accepted_draft_tokens(self) -> float:
-        if not self._debugging and self._num_updates == 0:
-            raise ValueError(
-                "You must set `debugging` to `True` and run at "
-                "least one update to calculate the rate."
-            )
+        if self._num_updates == 0:
+            raise ValueError("You must run at least one update to calculate the rate.")
 
         return self._sum_accepted_tokens / self._num_updates
 
@@ -222,10 +222,10 @@ class ModelWrapper:
         self._model_name = model_name
         self._tokenizer = tokenizer
 
-    # @functools.lru_cache(maxsize=128)  # Needs tuple not list for hashing.
+    @functools.lru_cache(maxsize=128)
     def _tokenize_word_list(
-        self, word_list: Sequence[str] | None
-    ) -> np.ndarray[int] | None:
+        self, word_list: tuple[str, ...] | None
+    ) -> NDArray[np.int32] | None:
         if word_list:
             # Implementation is batched, so add and remove batch dimension.
             return helpers.to_word_list_format(
@@ -236,18 +236,18 @@ class ModelWrapper:
     async def generate(
         self,
         input_text: str,
-        max_num_gen_tokens: str,
+        max_num_gen_tokens: int,
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
-        bad_word_list: Sequence[str] | None = None,
-        stop_words_list: Sequence[str] | None = None,
-    ) -> tuple[str, np.ndarray[int]]:
+        bad_word_list: tuple[str, ...] | None = None,
+        stop_words_list: tuple[str, ...] | None = None,
+    ) -> tuple[str, NDArray[np.int32]]:
         """Generates and appends text/tokens with classic loop without draft tokens."""
-        with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: Tokenize", skip=False):
             input_ids = np.squeeze(
                 self._tokenizer.encode(input_text, return_tensors="np")
             )
-        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
+        with helpers.timeit(f"{self._model_name}: Input Prep", skip=False):
             inputs = helpers.make_trtllm_inputs(
                 input_ids,
                 max_num_gen_tokens,
@@ -258,24 +258,24 @@ class ModelWrapper:
                 self._tokenize_word_list(bad_word_list),
                 self._tokenize_word_list(stop_words_list),
             )
-        with helpers.timeit(f"Generate({self._model_name})"):
+        with helpers.timeit(f"{self._model_name}: Generate"):
             result = await self._client.infer(
                 self._model_name, inputs, request_id=request_id
             )
             output_ids = helpers.extract_trtllm_outputs(result)
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: De-Tokenize", skip=False):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
     async def verify_and_generate(
         self,
-        confirmed_ids: np.ndarray[int],
-        draft_ids: np.ndarray[int],
+        confirmed_ids: NDArray[np.int32],
+        draft_ids: NDArray[np.int32],
         request_id: str,
         sampling_config: helpers.SamplingConfig | None = None,
-        bad_word_list: Sequence[str] | None = None,
-        stop_words_list: Sequence[str] | None = None,
-    ) -> tuple[str, np.ndarray[int]]:
+        bad_word_list: tuple[str, ...] | None = None,
+        stop_words_list: tuple[str, ...] | None = None,
+    ) -> tuple[str, NDArray[np.int32]]:
         """Accepts/rejects draft tokens and generates `1` new token.
 
         If all draft tokens are accepted, the new token extends the the sequence.
@@ -283,8 +283,7 @@ class ModelWrapper:
         the first rejected draft token.
         """
         num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
-        # TODO: check len of draft IDs, warn if throw away.
-        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
+        with helpers.timeit(f"{self._model_name}: Verificaion Input Prep", skip=False):
             inputs = helpers.make_trtllm_inputs(
                 confirmed_ids,
                 num_gen_tokens,
@@ -295,13 +294,13 @@ class ModelWrapper:
                 self._tokenize_word_list(bad_word_list),
                 self._tokenize_word_list(stop_words_list),
             )
-        with helpers.timeit(f"Verify+Generate({self._model_name})"):
+        with helpers.timeit(f"{self._model_name}: Verify+Generate"):
             result = await self._client.infer(
                 self._model_name, inputs, request_id=request_id
             )
             output_ids = helpers.extract_trtllm_outputs(result)
 
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: De-Tokenize", skip=False):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
@@ -315,8 +314,8 @@ async def run_speculative_inference(
     request: helpers.GenerationRequest,
     max_num_draft_tokens: int,
     request_id: str,
-    result_queue: asyncio.Queue[str | QUEUE_SENTINEL] | None = None,
-    verbose: bool = False,
+    result_queue: asyncio.Queue[str | None] | None = None,
+    debugging: bool = False,
     iteration_delay: float = 0.0,
 ) -> SpeculationState:
     """Runs the speculative decoding control flow loop betweeen draft and target model
@@ -332,13 +331,19 @@ async def run_speculative_inference(
       batches by the tritonserver if batching is configured, which can increase total
       throughput.
     """
-    state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
+    state = SpeculationState(
+        request.prompt, target_model._tokenizer, debugging=debugging
+    )
 
-    # Use sampling defaults i.e. greedy sampling for draft model.
+    # Use sampling defaults (i.e. greedy sampling) for draft model.
     draft_sampling_conifg = helpers.SamplingConfig()
 
     max_total_tokens = state.num_tokens + request.max_num_generated_tokens
-    num_chars_generated = 0
+    num_chars_generated = len(request.prompt)
+
+    bad_words = tuple(request.bad_word_list) if request.bad_word_list else None
+    stop_words = tuple(request.stop_words_list) if request.stop_words_list else None
+
     while True:
         num_draft_tokens = min(
             max_num_draft_tokens,
@@ -349,16 +354,29 @@ async def run_speculative_inference(
             num_draft_tokens,
             request_id,
             draft_sampling_conifg,
-            request.bad_word_list,
-            request.stop_words_list,
+            bad_words,
+            stop_words,
         )
         state.update_draft(combined_draft)
         if iteration_delay:
             time.sleep(iteration_delay)
 
-        verification_inputs = state.get_verification_inputs()
-        if verification_inputs is None:
-            # There are no drafts to verify when appending the draft leads to a
+        previously_verified_ids = state.get_verified_ids()
+        draft_ids = state.get_draft_ids()
+        if draft_ids is not None:
+            if len(draft_ids) > max_num_draft_tokens:
+                draft_ids = draft_ids[:max_num_draft_tokens]
+
+            verified_text, verfied_ids = await target_model.verify_and_generate(
+                previously_verified_ids,
+                draft_ids,
+                request_id,
+                request.sampling_config,
+                bad_words,
+                stop_words,
+            )
+        else:
+            # There are no drafts to verify if appending the draft leads to a
             # tokenization inconsistent with the previously confirmed text.
             # See docstring of `SpeculationState.update_draft`.
             verified_text, verfied_ids = await target_model.generate(
@@ -366,30 +384,22 @@ async def run_speculative_inference(
                 1,
                 request_id,
                 request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
+                bad_words,
+                stop_words,
             )
-        else:
-            confirmed_ids, draft_ids = verification_inputs
-            if len(draft_ids) > max_num_draft_tokens:
-                draft_ids = draft_ids[:max_num_draft_tokens]
 
-            verified_text, verfied_ids = await target_model.verify_and_generate(
-                confirmed_ids,
-                draft_ids,
-                request_id,
-                request.sampling_config,
-                request.bad_word_list,
-                request.stop_words_list,
-            )
+        # Check if EOS or stop words were encountered: in that case the target model
+        # does not generate any new tokens and the output is identical to the input.
+        if np.array_equal(previously_verified_ids, verfied_ids):
+            break
 
         state.update_verifed_text(verified_text, verfied_ids)
         if result_queue is not None:
-            complete_text = state.get_verified_text()
-            # TODO: refactor to directly work on incremental text only.
-            incremental_text = complete_text[num_chars_generated:]
-            result_queue.put_nowait(incremental_text)
-            num_chars_generated = state.text_len
+            with helpers.timeit(f"Stream results", skip=False):
+                complete_text = state.get_verified_text()
+                incremental_text = complete_text[num_chars_generated:]
+                result_queue.put_nowait(incremental_text)
+                num_chars_generated = state.text_len
 
         if len(verfied_ids) >= max_total_tokens:
             break
@@ -398,5 +408,31 @@ async def run_speculative_inference(
             time.sleep(iteration_delay)
 
     if result_queue is not None:
+        result_queue.put_nowait(QUEUE_SENTINEL)
+    return state
+
+
+async def run_conventional_inference(
+    target_model: ModelWrapper,
+    request: helpers.GenerationRequest,
+    request_id: str,
+    result_queue: asyncio.Queue[str | None] | None = None,
+) -> SpeculationState:
+    """Fallback implementation of conventional generation."""
+    state = SpeculationState(request.prompt, target_model._tokenizer, debugging=False)
+    bad_words = tuple(request.bad_word_list) if request.bad_word_list else None
+    stop_words = tuple(request.stop_words_list) if request.stop_words_list else None
+    verified_text, verfied_ids = await target_model.generate(
+        request.prompt,
+        request.max_num_generated_tokens,
+        request_id,
+        request.sampling_config,
+        bad_words,
+        stop_words,
+    )
+
+    state.update_verifed_text(verified_text, verfied_ids)
+    if result_queue is not None:
+        result_queue.put_nowait(state.get_verified_text()[len(request.prompt) :])
         result_queue.put_nowait(QUEUE_SENTINEL)
     return state

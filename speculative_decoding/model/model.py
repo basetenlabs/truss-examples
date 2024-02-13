@@ -1,12 +1,13 @@
 """
-This model downloads a target and draft model engine, gets their corresponding
-tokenizers from HF and starts a tritonserver
+This truss model downloads a target and draft model engine, gets their corresponding
+tokenizers from HF and starts a tritonserver.
 
 TODO:
-* Supporting openai compatibility.
-* Use a pydantic schema for specifying the speculative decoding setup.
-* Generate the triton repo and config from the truss config.
-* Create an abstract base class for models.
+* Optional: Supporting openai compatibility.
+* Optional: introduce a pydantic schema for specifying the speculative decoding config
+  in the truss config yaml.
+* Optional: generate the complete triton repo and config dynamically from the truss
+ config.
 """
 
 import asyncio
@@ -24,6 +25,16 @@ import speculative_decoding  # From packages.
 TRITON_DIR = os.path.join("/", "packages", "triton_model_repo")
 TARGET_MODEL_KEY = "target_model"
 DRAFT_MODEL_KEY = "draft_model"
+
+
+def _hf_download(repo_id: str, local_dir: str, hf_access_token: Optional[str]) -> None:
+    huggingface_hub.snapshot_download(
+        repo_id,
+        local_dir=local_dir,
+        local_dir_use_symlinks=False,
+        max_workers=4,
+        use_auth_token=hf_access_token,
+    )
 
 
 class Model:
@@ -46,44 +57,45 @@ class Model:
         if "openai-compatible" in self._config["model_metadata"]["tags"]:
             raise NotImplementedError("openai-compatible")
 
+    def _get_hf_access_token(self) -> Optional[str]:
+        # Secrets does not implement __contains__ protocol, need to try/except.
+        try:
+            return self._secrets["hf_access_token"]
+        # Specific exception `SecretNotFound` from truss template cannot be referenced.
+        except Exception:
+            return None
+
     def load(self):
-        tensor_parallel_count = self._config["model_metadata"].get(
-            "tensor_parallelism", 1
-        )
-        pipeline_parallel_count = self._config["model_metadata"].get(
-            "pipeline_parallelism", 1
-        )
-
-        env = {}
-        try:  # Secrets does not have __contains__.
-            hf_access_token = self._secrets["hf_access_token"]
-            env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
-        except Exception:  # `SecretNotFound` from truss template cannot be referenced.
-            hf_access_token = None
-
-        # Target model.
-        huggingface_hub.snapshot_download(
-            self._config["model_metadata"]["engine_repository"],
-            local_dir=os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
-            local_dir_use_symlinks=False,
-            max_workers=4,
-            use_auth_token=hf_access_token,
-        )
-        # Draft model.
-        huggingface_hub.snapshot_download(
-            self._config["model_metadata"]["speculative_decoding"][
-                "draft_engine_repository"
-            ],
-            local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
-            local_dir_use_symlinks=False,
-            max_workers=4,
-            use_auth_token=hf_access_token,
-        )
-
         if not helpers.is_triton_server_alive():
+            tensor_parallelism = self._config["model_metadata"].get(
+                "tensor_parallelism", 1
+            )
+            pipeline_parallelism = self._config["model_metadata"].get(
+                "pipeline_parallelism", 1
+            )
+            hf_access_token = self._get_hf_access_token()
+            env = {}
+            if hf_access_token:
+                env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
+
+            # Target model.
+            _hf_download(
+                self._config["model_metadata"]["engine_repository"],
+                os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
+                hf_access_token,
+            )
+            # Draft model.
+            _hf_download(
+                self._config["model_metadata"]["speculative_decoding"][
+                    "draft_engine_repository"
+                ],
+                os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
+                hf_access_token,
+            )
+
             self._triton_server = helpers.TritonServer(
                 TRITON_DIR,
-                parallel_count=tensor_parallel_count * pipeline_parallel_count,
+                parallel_count=tensor_parallelism * pipeline_parallelism,
             )
             self._triton_server.load_server_and_model(env)
 
@@ -116,32 +128,48 @@ class Model:
 
         request_id = str(os.getpid()) + str(next(self._request_id_counter))
         request = helpers.GenerationRequest.parse_obj(model_input)
-        max_num_draft_tokens: int = self._config["model_metadata"][
+        model_max_num_draft_tokens: int = self._config["model_metadata"][
             "speculative_decoding"
         ]["max_num_draft_tokens"]
+
+        if request.num_draft_tokens is not None:
+            max_num_draft_tokens = min(
+                model_max_num_draft_tokens, request.num_draft_tokens
+            )
+        else:
+            max_num_draft_tokens = model_max_num_draft_tokens
+
         streaming: bool = model_input.get("streaming", True)
 
-        maybe_queue: asyncio.Queue[str | speculative_decoding.QUEUE_SENTINEL] = (
+        maybe_queue: asyncio.Queue[str | None] | None = (
             asyncio.Queue() if streaming else None
         )
-        # `ensure_future` makes sure the loop immediately runs until completion and
-        # fills up the result queue as fast as possible (only limited by the inference
-        # requests latency) and doesn't wait for the consumption of the results.
-        inference_gen: asyncio.Task[
-            speculative_decoding.SpeculationState
-        ] = asyncio.ensure_future(
-            speculative_decoding.run_speculative_inference(
+        if max_num_draft_tokens > 0:
+            infer_co = speculative_decoding.run_speculative_inference(
                 self._target_model,
                 self._draft_model,
                 request,
                 max_num_draft_tokens=max_num_draft_tokens,
                 request_id=request_id,
                 result_queue=maybe_queue,
-                verbose=False,
+                debugging=False,
             )
-        )
+        else:
+            infer_co = speculative_decoding.run_conventional_inference(
+                self._target_model,
+                request,
+                request_id=request_id,
+                result_queue=maybe_queue,
+            )
 
-        if streaming:
+        # `ensure_future` makes sure the loop immediately runs until completion and
+        # fills up the result queue as fast as possible (only limited by the inference
+        # requests latency) and doesn't wait for the consumption of the results.
+        inference_gen: asyncio.Task[
+            speculative_decoding.SpeculationState
+        ] = asyncio.ensure_future(infer_co)
+
+        if maybe_queue is not None:
 
             async def generate_result() -> AsyncGenerator[str, None]:
                 while True:
@@ -155,7 +183,7 @@ class Model:
         else:
 
             async def get_result() -> str:
-                return (await inference_gen).get_verified_text()
+                return (await inference_gen).get_verified_text()[len(request.prompt) :]
 
             return await get_result()
 
