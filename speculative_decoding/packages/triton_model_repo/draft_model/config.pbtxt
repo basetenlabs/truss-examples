@@ -213,13 +213,13 @@ parameters: {
 parameters: {
   key: "batch_scheduler_policy"
   value: {
-    string_value: "guaranteed_no_eviction"
+    string_value: "guaranteed_no_evict"
   }
 }
 parameters: {
   key: "kv_cache_free_gpu_mem_fraction"
   value: {
-    string_value: "0.4"
+    string_value: "0.2"
   }
 }
 parameters: {
@@ -231,18 +231,12 @@ parameters: {
 parameters: {
   key: "enable_trt_overlap"
   value: {
-    string_value: "False"
+    string_value: "false"
   }
 }
 parameters: {
   key: "enable_kv_cache_reuse"
   value: {
-    string_value: "True"
-  }
-}
-parameters: {
-  key: "normalize_log_probs"
-  value: {
-    string_value: "True"
+    string_value: "true"
   }
 }

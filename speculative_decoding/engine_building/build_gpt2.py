@@ -50,7 +50,6 @@ command = [
     "--max_input_len=1024",
     "--max_output_len=2048",
     "--use_paged_context_fmha",
-    # "--gather_all_token_logits",
     f"--output_dir={ENGINE_DIR}",
 ]
 print(" ".join(command))

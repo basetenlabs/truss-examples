@@ -27,6 +27,16 @@ TARGET_MODEL_KEY = "target_model"
 DRAFT_MODEL_KEY = "draft_model"
 
 
+def _hf_download(repo_id: str, local_dir: str, hf_access_token: Optional[str]) -> None:
+    huggingface_hub.snapshot_download(
+        repo_id,
+        local_dir=local_dir,
+        local_dir_use_symlinks=False,
+        max_workers=4,
+        use_auth_token=hf_access_token,
+    )
+
+
 class Model:
     _data_dir: Any
     _secrets: Any  # SecretsResolver
@@ -47,46 +57,45 @@ class Model:
         if "openai-compatible" in self._config["model_metadata"]["tags"]:
             raise NotImplementedError("openai-compatible")
 
+    def _get_hf_access_token(self) -> Optional[str]:
+        # Secrets does not implement __contains__ protocol, need to try/except.
+        try:
+            return self._secrets["hf_access_token"]
+        # Specific exception `SecretNotFound` from truss template cannot be referenced.
+        except Exception:
+            return None
+
     def load(self):
         if not helpers.is_triton_server_alive():
-            tensor_parallel_count = self._config["model_metadata"].get(
+            tensor_parallelism = self._config["model_metadata"].get(
                 "tensor_parallelism", 1
             )
-            pipeline_parallel_count = self._config["model_metadata"].get(
+            pipeline_parallelism = self._config["model_metadata"].get(
                 "pipeline_parallelism", 1
             )
-
+            hf_access_token = self._get_hf_access_token()
             env = {}
-            try:  # Secrets does not have __contains__.
-                hf_access_token = self._secrets["hf_access_token"]
+            if hf_access_token:
                 env["HUGGING_FACE_HUB_TOKEN"] = hf_access_token
-            except (
-                Exception
-            ):  # `SecretNotFound` from truss template cannot be referenced.
-                hf_access_token = None
 
             # Target model.
-            huggingface_hub.snapshot_download(
+            _hf_download(
                 self._config["model_metadata"]["engine_repository"],
-                local_dir=os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
-                local_dir_use_symlinks=False,
-                max_workers=4,
-                use_auth_token=hf_access_token,
+                os.path.join(TRITON_DIR, TARGET_MODEL_KEY, "1"),
+                hf_access_token,
             )
             # Draft model.
-            huggingface_hub.snapshot_download(
+            _hf_download(
                 self._config["model_metadata"]["speculative_decoding"][
                     "draft_engine_repository"
                 ],
-                local_dir=os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
-                local_dir_use_symlinks=False,
-                max_workers=4,
-                use_auth_token=hf_access_token,
+                os.path.join(TRITON_DIR, DRAFT_MODEL_KEY, "1"),
+                hf_access_token,
             )
 
             self._triton_server = helpers.TritonServer(
                 TRITON_DIR,
-                parallel_count=tensor_parallel_count * pipeline_parallel_count,
+                parallel_count=tensor_parallelism * pipeline_parallelism,
             )
             self._triton_server.load_server_and_model(env)
 
@@ -143,7 +152,7 @@ class Model:
                 max_num_draft_tokens=max_num_draft_tokens,
                 request_id=request_id,
                 result_queue=maybe_queue,
-                verbose=False,
+                debugging=False,
             )
         else:
             infer_co = speculative_decoding.run_conventional_inference(

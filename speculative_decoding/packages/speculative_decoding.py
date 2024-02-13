@@ -112,24 +112,25 @@ class SpeculationState:
 
         In this implementation the second option, discarding the draft, is chosen.
         """
-        with helpers.timeit(f"Tokenize for Target model", skip=True):
+        with helpers.timeit(f"target_model: Tokenize", skip=False):
             new_ids = np.squeeze(
                 self._target_tokenizer.encode(combined_draft, return_tensors="np")
             )
-        verified_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
+            verified_ids_reencoded, draft_ids = np.split(new_ids, [self.num_tokens])
 
-        if not np.alltrue(self._verified_ids == verified_ids_reencoded):
-            self._draft_ids = None
-            self._draft_text = None
-            if self._debugging:
-                print(
-                    f"Draft  : '{combined_draft}'\nDraft causes token flip "
-                    "of confirmed text! Must sample target model directly to recover."
-                )
-            return
+        with helpers.timeit(f"Update Draft", skip=False):
+            if not np.alltrue(self._verified_ids == verified_ids_reencoded):
+                self._draft_ids = None
+                self._draft_text = None
+                if self._debugging:
+                    print(
+                        f"Draft  : '{combined_draft}'\nDraft causes token flip "
+                        "of confirmed text! Must sample target model directly to recover."
+                    )
+                return
 
-        self._draft_ids = draft_ids
-        self._draft_text = combined_draft[self.text_len :]
+            self._draft_ids = draft_ids
+            self._draft_text = combined_draft[self.text_len :]
 
         if self._debugging:
             debug_str = (
@@ -158,6 +159,19 @@ class SpeculationState:
         self, verified_text: str, verified_ids: NDArray[np.int32]
     ) -> None:
         """Note: both inputs must be the full sequence, not just newly generated."""
+        with helpers.timeit(f"Update Verified - stats", skip=False):
+            if self._draft_ids is None:
+                num_accepted_tokens = 0
+            else:
+                num_accepted_tokens = len(
+                    os.path.commonprefix(
+                        [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
+                    )
+                )
+
+            self._num_updates += 1
+            self._sum_accepted_tokens += num_accepted_tokens
+
         if self._debugging:
             draft_text = self._draft_text or ""
             added_text = verified_text[self.text_len :]
@@ -168,23 +182,13 @@ class SpeculationState:
                 disagreed_text = ""
             new_text = added_text[len(draft_text) :]
 
-            if self._draft_ids is None:
-                accepted_tokens: list[int] = []
-            else:
-                accepted_tokens = os.path.commonprefix(
-                    [list(self._draft_ids), list(verified_ids[self.num_tokens :])]
-                )
-
-            self._num_updates += 1
-            self._sum_accepted_tokens += len(accepted_tokens)
-
             style = colorama.Fore.YELLOW + colorama.Style.BRIGHT
             debug_str = (
                 f"Verfied: '{self._verified_text}"
                 f"{colorama.Fore.GREEN + colorama.Back.BLUE}{accepted_text}"
                 f"{colorama.Back.RED + style}{disagreed_text}"
                 f"{colorama.Style.RESET_ALL + style}{new_text}"
-                f"{colorama.Style.RESET_ALL}' -> Accepted `{len(accepted_tokens)}` "
+                f"{colorama.Style.RESET_ALL}' -> Accepted `{num_accepted_tokens}` "
                 f"tokens <=> {len(accepted_text)}` chars."
             ).replace(
                 "\n", "\\n"
@@ -197,11 +201,8 @@ class SpeculationState:
         self._draft_text = None
 
     def get_aveage_num_accepted_draft_tokens(self) -> float:
-        if not self._debugging and self._num_updates == 0:
-            raise ValueError(
-                "You must set `debugging` to `True` and run at "
-                "least one update to calculate the rate."
-            )
+        if self._num_updates == 0:
+            raise ValueError("You must run at least one update to calculate the rate.")
 
         return self._sum_accepted_tokens / self._num_updates
 
@@ -242,11 +243,11 @@ class ModelWrapper:
         stop_words_list: tuple[str, ...] | None = None,
     ) -> tuple[str, NDArray[np.int32]]:
         """Generates and appends text/tokens with classic loop without draft tokens."""
-        with helpers.timeit(f"Generate({self._model_name}) - tokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: Tokenize", skip=False):
             input_ids = np.squeeze(
                 self._tokenizer.encode(input_text, return_tensors="np")
             )
-        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
+        with helpers.timeit(f"{self._model_name}: Input Prep", skip=False):
             inputs = helpers.make_trtllm_inputs(
                 input_ids,
                 max_num_gen_tokens,
@@ -257,12 +258,12 @@ class ModelWrapper:
                 self._tokenize_word_list(bad_word_list),
                 self._tokenize_word_list(stop_words_list),
             )
-        with helpers.timeit(f"Generate({self._model_name})"):
+        with helpers.timeit(f"{self._model_name}: Generate"):
             result = await self._client.infer(
                 self._model_name, inputs, request_id=request_id
             )
             output_ids = helpers.extract_trtllm_outputs(result)
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: De-Tokenize", skip=False):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
@@ -282,7 +283,7 @@ class ModelWrapper:
         the first rejected draft token.
         """
         num_gen_tokens = len(draft_ids) + 1 if draft_ids is not None else 1
-        with helpers.timeit(f"Generate({self._model_name}) - input prep", skip=True):
+        with helpers.timeit(f"{self._model_name}: Verificaion Input Prep", skip=False):
             inputs = helpers.make_trtllm_inputs(
                 confirmed_ids,
                 num_gen_tokens,
@@ -293,13 +294,13 @@ class ModelWrapper:
                 self._tokenize_word_list(bad_word_list),
                 self._tokenize_word_list(stop_words_list),
             )
-        with helpers.timeit(f"Verify+Generate({self._model_name})"):
+        with helpers.timeit(f"{self._model_name}: Verify+Generate"):
             result = await self._client.infer(
                 self._model_name, inputs, request_id=request_id
             )
             output_ids = helpers.extract_trtllm_outputs(result)
 
-        with helpers.timeit(f"Generate({self._model_name}) - detokenize", skip=True):
+        with helpers.timeit(f"{self._model_name}: De-Tokenize", skip=False):
             output_text = self._tokenizer.decode(output_ids, skip_special_tokens=True)
         return output_text, output_ids
 
@@ -314,7 +315,7 @@ async def run_speculative_inference(
     max_num_draft_tokens: int,
     request_id: str,
     result_queue: asyncio.Queue[str | None] | None = None,
-    verbose: bool = False,
+    debugging: bool = False,
     iteration_delay: float = 0.0,
 ) -> SpeculationState:
     """Runs the speculative decoding control flow loop betweeen draft and target model
@@ -330,7 +331,9 @@ async def run_speculative_inference(
       batches by the tritonserver if batching is configured, which can increase total
       throughput.
     """
-    state = SpeculationState(request.prompt, target_model._tokenizer, debugging=verbose)
+    state = SpeculationState(
+        request.prompt, target_model._tokenizer, debugging=debugging
+    )
 
     # Use sampling defaults (i.e. greedy sampling) for draft model.
     draft_sampling_conifg = helpers.SamplingConfig()
@@ -392,10 +395,11 @@ async def run_speculative_inference(
 
         state.update_verifed_text(verified_text, verfied_ids)
         if result_queue is not None:
-            complete_text = state.get_verified_text()
-            incremental_text = complete_text[num_chars_generated:]
-            result_queue.put_nowait(incremental_text)
-            num_chars_generated = state.text_len
+            with helpers.timeit(f"Stream results", skip=False):
+                complete_text = state.get_verified_text()
+                incremental_text = complete_text[num_chars_generated:]
+                result_queue.put_nowait(incremental_text)
+                num_chars_generated = state.text_len
 
         if len(verfied_ids) >= max_total_tokens:
             break
