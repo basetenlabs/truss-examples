@@ -69,7 +69,7 @@ for content in res.iter_content():
 ```
 
 Sample Input:
-
+![mountain](https://github.com/basetenlabs/truss-examples/assets/15642666/5eb63370-0296-40ab-9387-428bf5e3cd53)
 
 Sample output:
 ```
