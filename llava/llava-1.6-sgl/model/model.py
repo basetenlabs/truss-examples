@@ -13,11 +13,6 @@ BASE64_PREAMBLE = "data:image/png;base64,"
 class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
-        self.runtime = sgl.Runtime(
-            model_path="dillonlaird/hf-llava-v1.6-34b",
-            tokenizer_path="dillonlaird/hf-llava-v1.6-34b",
-        )
-        sgl.set_default_backend(self.runtime)
 
     def b64_to_pil(self, b64_str):
         return Image.open(
@@ -25,7 +20,11 @@ class Model:
         )
 
     def load(self):
-        pass
+        self.runtime = sgl.Runtime(
+            model_path="dillonlaird/hf-llava-v1.6-34b",
+            tokenizer_path="dillonlaird/hf-llava-v1.6-34b",
+        )
+        sgl.set_default_backend(self.runtime)
 
     async def add_request(
         self,
