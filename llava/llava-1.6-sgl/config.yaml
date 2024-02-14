@@ -1,0 +1,13 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: llava 1.6 SGL
+python_version: py310
+requirements_file: ./requirements.txt
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets: {}
+system_packages: []
