@@ -21,7 +21,7 @@ class Model:
 
     def load(self):
         snapshot_download(
-            repo_id="baseten/sdxl-1.0-trt-8.6.1.post1-engine", local_dir="/app/data"
+            repo_id="baseten/sdxl-1.0-trt-9.3.0.post12-dev1-engine", local_dir="/app/data"
         )
         vae = AutoencoderKL.from_pretrained(
             "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
@@ -77,6 +77,8 @@ class Model:
 
     def predict(self, model_input: Any) -> Any:
         prompt = model_input.pop("prompt")
+        height = model_input.pop("height")
+        width = model_input.pop("width")
         negative_prompt = model_input.pop("negative_prompt", None)
         use_refiner = model_input.pop("use_refiner", True)
         num_inference_steps = model_input.pop("num_inference_steps", 30)
@@ -118,6 +120,8 @@ class Model:
         start_time = time.time()
         image = self.pipe(
             prompt=prompt,
+            height=height,
+            width=width,
             negative_prompt=negative_prompt,
             generator=generator,
             end_cfg=end_cfg_frac,

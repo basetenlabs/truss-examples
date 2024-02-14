@@ -16,7 +16,7 @@ model_name: Stable Diffusion XL - TensorRT
 model_framework: custom
 model_type: custom
 model_cache:
-  - repo_id: "baseten/sdxl-1.0-trt-8.6.1.post1-engine"
+  - repo_id: "baseten/sdxl-1.0-trt-9.3.0.post12-dev1-engine"
   - repo_id: madebyollin/sdxl-vae-fp16-fix
     allow_patterns:
       - config.json
@@ -56,7 +56,7 @@ requirements:
 - --extra-index-url https://pypi.ngc.nvidia.com
 - polygraphy
 - --extra-index-url https://pypi.nvidia.com
-- tensorrt==8.6.1.post1
+- tensorrt==9.3.0.post12.dev1
 resources:
   accelerator: A100
   use_gpu: true
