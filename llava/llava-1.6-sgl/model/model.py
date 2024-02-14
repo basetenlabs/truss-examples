@@ -13,6 +13,7 @@ BASE64_PREAMBLE = "data:image/png;base64,"
 class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
+        self.runtime = None
 
     def b64_to_pil(self, b64_str):
         return Image.open(
