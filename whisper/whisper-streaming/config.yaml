@@ -7,15 +7,9 @@ model_metadata:
   whisper_model: medium
 model_name: Whisper Streaming
 python_version: py310
-requirements:
-  - torch==2.1.0
-  - faster-whisper==0.10.0
-  - librosa==0.10.1
-  - opus-fast-mosestokenizer==0.0.8.5
+requirements_file: ./requirements.txt
 resources:
   accelerator: T4
-  cpu: "2"
-  memory: 512Mi
   use_gpu: true
 system_packages:
   - ffmpeg
