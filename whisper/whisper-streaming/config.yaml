@@ -1,0 +1,21 @@
+base_image:
+  image: baseten/truss-server-base:3.10-gpu-v0.4.9
+  python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  whisper_model: medium
+model_name: Whisper Streaming
+python_version: py310
+requirements:
+  - torch==2.1.0
+  - faster-whisper==0.10.0
+  - librosa==0.10.1
+  - opus-fast-mosestokenizer==0.0.8.5
+resources:
+  accelerator: T4
+  cpu: "2"
+  memory: 512Mi
+  use_gpu: true
+system_packages:
+  - ffmpeg
