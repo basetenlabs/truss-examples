@@ -1,9 +1,9 @@
-# Metavoice 1B Truss
+# MetaVoice 1B Truss
 [MetaVoice-1B](https://github.com/metavoiceio/metavoice-src) is an Apache-licensed, 1.2B parameter base model trained on 100K hours of speech for TTS (text-to-speech).
 
 This model is packaged using [Truss](https://trussml.com), the simplest way to serve AI/ML models in production.
 
-## Deploy Metavoice 1B
+## Deploy MetaVoice 1B
 First, clone this repository:
 
 ```
@@ -26,19 +26,19 @@ Paste your Baseten API key if prompted.
 
 For more information, see [Truss documentation](https://truss.baseten.co).
 
-Once your Truss is deployed, you can start using Metavoice through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
+Once your Truss is deployed, you can start using MetaVoice through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
 
-## Invoking Metavoice
+## Invoking MetaVoice
 
-To use Metavoice 1B, follow this command pattern, keeping in mind the 220-character limit for input text:
+To use MetaVoice 1B, follow this command pattern, keeping in mind the 220-character limit for input text:
 
 ```sh
 truss predict -d '{"text": "Your input text here"}' | python process.py
 ```
 
 ### Understanding process.py
-The process.py script is essential for handling the output from Metavoice 1B. It reads the base64 encoded audio from the standard input, decodes it, and saves it as a WAV file. Here's a brief overview of how it works:
+The process.py script is essential for handling the output from MetaVoice 1B. It reads the base64 encoded audio from the standard input, decodes it, and saves it as a WAV file. Here's a brief overview of how it works:
 
 ```python
 import base64
