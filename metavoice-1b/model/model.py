@@ -24,13 +24,13 @@ HF_MODEL_ID = "metavoiceio/metavoice-1B-v0.1"
 
 @dataclass
 class ServingConfig:
-    max_new_tokens: int = 864 * 2 # VS: Seems like inference
+    max_new_tokens: int = 864 * 2
     """Maximum number of new tokens to generate from the first stage model."""
 
-    temperature: float = 1.0 # VS: Seems like inference
+    temperature: float = 1.0
     """Temperature for sampling applied to both models."""
 
-    top_k: int = 200 # VS: Seems like inference
+    top_k: int = 200
     """Top k for sampling applied to both models."""
 
     seed: int = 1337
