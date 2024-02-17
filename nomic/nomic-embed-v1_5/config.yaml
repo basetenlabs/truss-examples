@@ -3,6 +3,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input: {"text": ["I want to eat pasta", "I want to eat pizza"], "dimensions": 768}
+  avatar_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
   tags:
   - text-embeddings
 model_framework: custom
