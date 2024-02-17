@@ -1,7 +1,9 @@
+model_name: MetaVoice 1B
+description: MetaVoice is a transformer-based model for TTS
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: MetaVoice 1B
+model_metadata:
+  example_model_input: '"text to speech models are cool"'
 python_version: py311
 data_dir: data
 requirements:
