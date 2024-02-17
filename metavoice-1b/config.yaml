@@ -6,6 +6,17 @@ model_metadata:
   example_model_input: '"text to speech models are cool"'
 python_version: py311
 data_dir: data
+model_cache:
+  - repo_id: metavoiceio/metavoice-1B-v0.1
+    allow_patterns:
+      - "*.pt"
+  - repo_id: facebook/multiband-diffusion
+    allow_patterns:
+      - mbd_comp_8.pt
+  - repo_id: facebook/encodec_24khz
+    allow_patterns:
+      - "*.safetensors"
+
 requirements:
 - torch>=2.1.0
 - transformers

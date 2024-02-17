@@ -79,7 +79,7 @@ class Model:
             output_dir=tempfile.mkdtemp(),
         )
 
-        # Download the models from HF
+        # Get models (from the cache, via config.yml)
         model_dir = snapshot_download(repo_id=HF_MODEL_ID)
 
         config1 = InferenceConfig(
