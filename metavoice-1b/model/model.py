@@ -108,6 +108,10 @@ class Model:
 
         tts_req = TTSRequest(**model_input)
 
+        # Support recommended Truss input format
+        if model_input.get("prompt"):
+            tts_req.text = model_input["prompt"]
+
         if tts_req.speaker_ref_path is None:
             tts_req.speaker_ref_path = os.path.join(self._data_dir, 'bria.mp3')
 
