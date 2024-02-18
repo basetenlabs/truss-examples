@@ -57,5 +57,4 @@ wav_file.write(decode_string)
 
 ## To Dos
 - Add support for passing additional reference voices to use
-- Cache weights
 - Get model to run on A10
