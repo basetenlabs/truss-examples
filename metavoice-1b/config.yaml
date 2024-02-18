@@ -17,25 +17,7 @@ model_cache:
     allow_patterns:
       - "*.safetensors"
 
-requirements:
-- torch>=2.1.0
-- transformers
-- librosa
-- tqdm
-- tiktoken==0.5.1
-- audiocraft
-- numpy<1.25
-- ninja
-- https://github.com/Dao-AILab/flash-attention/releases/download/v2.5.3/flash_attn-2.5.3+cu122torch2.1cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
-- fastapi
-- uvicorn
-- tyro
-- deepfilternet
-- pydub
-- soundfile
-- huggingface_hub
-- scipy
-- git+https://github.com/metavoiceio/metavoice-src.git@11550bb4e8a1ad032cc1556cc924f7a4e767cbfa
+requirements_file: ./requirements.txt
 resources:
   accelerator: "A100"
   cpu: '2'
