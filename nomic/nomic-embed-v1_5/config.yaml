@@ -2,7 +2,7 @@ description: "A text embedding model with a adjustable dimensionality"
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"text": ["I want to eat pasta", "I want to eat pizza"], "dimensions": 768}
+  example_model_input: {"texts": ["I want to eat pasta", "I want to eat pizza"], "dimensionality": 768}
   avatar_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
   tags:
