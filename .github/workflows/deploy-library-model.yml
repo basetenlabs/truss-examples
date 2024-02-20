@@ -1,0 +1,58 @@
+name: Deploy Library Model
+
+on:
+  schedule:
+    # Runs daily at 6am UTC
+    - cron:  '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      diff:
+        type: string
+
+jobs:
+  detect_changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.4'
+      - name: Install dependencies (if any)
+        run: |
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/basetenlabs/truss.git requests tenacity --upgrade
+      - name: Run the detect changes script
+        run: |
+          LIBRARY_MODELS_TO_DEPLOY=python ./bin/detect_library_changes.py
+          echo "library_models_to_deploy=$LIBRARY_MODELS_TO_DEPLOY" >> $GITHUB_ENV
+          echo "library_models_to_deploy=$LIBRARY_MODELS_TO_DEPLOY" >> $GITHUB_OUTPUT
+
+        env:
+          DIFF: ${{ github.event.inputs.diff  || 'default_value' }}
+
+  deploy:
+    needs: detect_changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        library_model_to_deploy: ${{ fromJSON(needs.detect_changes.outputs.library_models_to_deploy) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.4'
+      - name: Install dependencies (if any)
+        run: |
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/basetenlabs/truss.git requests pyyaml tenacity --upgrade
+      - name: Test => (${{ matrix.library_model_to_deploy }}
+        run: |
+          python ./bin/test_example.py ${{secrets.BASETEN_API_KEY}} ${{matrix.library_model_to_deploy}}
+      - name: Deploy => (${{ matrix.library_model_to_deploy }} to staging
+        run: |
+          echo "Deploying ${{ matrix.library_model_to_deploy}} to staging"
+          python ./bin/upsert_library_model.py ${{secrets.UPSERT_LIBRARY_MODELS_STAGING_API_KEY}} ${{matrix.library_model_to_deploy}} $GITHUB_SHA https://app.staging.baseten.co
