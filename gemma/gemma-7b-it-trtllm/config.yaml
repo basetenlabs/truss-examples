@@ -1,0 +1,22 @@
+base_image:
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+description: Generate text from a prompt with this seven billion parameter language model.
+model_metadata:
+  engine_repository: baseten/gemma-7b-it-trtllm-3k-1k-64bs
+  tags:
+  - text-generation
+  tensor_parallelism: 1
+  tokenizer_repository: google/gemma-7b-it
+model_name: Gemma 7B Instruct Tuned TRT-LLM
+python_version: py311
+environment:
+  HF_HUB_ENABLE_HF_TRANSFER: true
+requirements:
+- tritonclient[all]
+- hf_transfer
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
