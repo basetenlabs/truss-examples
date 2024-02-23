@@ -19,8 +19,6 @@ requirements:
   - xformers==0.0.22
   - accelerate==0.24.1
 resources:
-  cpu: "3"
-  memory: 20Gi
   use_gpu: true
-  accelerator: A100:1
+  accelerator: A100
 system_packages: []
