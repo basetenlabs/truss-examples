@@ -1,6 +1,3 @@
-base_image:
-  image: baseten/truss-server-base:3.10-gpu-v0.4.9
-  python_executable_path: /usr/bin/python3
 description: Faster Whisper v3
 model_cache:
 - repo_id: Systran/faster-whisper-large-v3
@@ -14,7 +11,8 @@ model_metadata:
   - speech-recognition
 model_name: Faster Whisper v3
 requirements:
-- faster-whisper==0.10.0
+  - torch==2.1.0
+  - faster-whisper==0.10.0
 resources:
   accelerator: T4
   cpu: 500m
