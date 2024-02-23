@@ -23,7 +23,7 @@ from fam.llm.sample import (
 HF_MODEL_ID = "metavoiceio/metavoice-1B-v0.1"
 
 @dataclass
-class ServingConfig:
+class DefaultInferenceParams:
     max_new_tokens: int = 864 * 2
     """Maximum number of new tokens to generate from the first stage model."""
 
@@ -61,7 +61,8 @@ class ModelState:
 class Model:
     def __init__(self, **kwargs):
         self._secrets = kwargs["secrets"]
-        self.config = ServingConfig()
+        self.config = DefaultInferenceParams
+    ()
         self.model_state = ModelState(None, None, None, None)
         self._data_dir = kwargs["data_dir"]
 

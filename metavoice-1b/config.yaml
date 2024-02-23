@@ -20,8 +20,6 @@ model_cache:
 requirements_file: ./requirements.txt
 resources:
   accelerator: "A100"
-  cpu: '2'
-  memory: 16Gi
   use_gpu: true
 secrets:
   hf_access_token: "ENTER HF ACCESS TOKEN HERE"
