@@ -8,7 +8,6 @@ model_metadata:
   tags:
   - text-generation
   tensor_parallelism: 1
-model_name: null
 python_version: py311
 requirements:
 - tritonclient[all]

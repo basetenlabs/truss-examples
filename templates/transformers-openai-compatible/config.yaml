@@ -4,7 +4,6 @@ model_metadata:
   tags:
   - text-generation
   - openai-compatible
-model_name: null
 python_version: py311
 requirements:
 - sentencepiece
