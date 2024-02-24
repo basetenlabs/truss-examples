@@ -5,7 +5,6 @@ model_cache:
   - '*.json'
   - '*.bin'
   repo_id: NousResearch/Nous-Capybara-34B
-model_metadata: {}
 model_name: Nous Capybara 34B OpenAI
 python_version: py310
 requirements:

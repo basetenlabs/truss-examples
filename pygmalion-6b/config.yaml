@@ -2,7 +2,6 @@ environment_variables: {}
 external_package_dirs: []
 model_cache:
 - repo_id: PygmalionAI/pygmalion-6b
-model_metadata: {}
 model_name: pygmalion6b
 python_version: py39
 requirements:
