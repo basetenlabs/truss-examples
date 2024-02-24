@@ -8,6 +8,7 @@ import io
 import base64
 from scipy.io import wavfile
 from fam.llm.enhancers import get_enhancer
+from fam.llm.utils import check_audio_file, get_default_dtype, get_default_use_kv_cache
 import os
 
 from fam.llm.sample import (
@@ -36,11 +37,15 @@ class DefaultInferenceParams:
     seed: int = 1337
     """Random seed for sampling."""
 
-    dtype: Literal["bfloat16", "float16", "float32", "tfloat32"] = "bfloat16"
+    dtype: Literal["bfloat16", "float16", "float32", "tfloat32"] = get_default_dtype()
     """Data type to use for sampling."""
 
     enhancer: Optional[Literal["df"]] = "df"
     """Enhancer to use for post-processing."""
+
+    use_kv_cache: Optional[Literal["flash_decoding", "vanilla"]] = get_default_use_kv_cache()
+    """Type of kv caching to use for inference: 1) [none] no kv caching, 2) [flash_decoding] use the
+    flash decoding kernel, 3) [vanilla] use torch attention with hand implemented kv-cache."""
 
 @dataclass
 class TTSRequest:
@@ -61,8 +66,7 @@ class ModelState:
 class Model:
     def __init__(self, **kwargs):
         self._secrets = kwargs["secrets"]
-        self.config = DefaultInferenceParams
-    ()
+        self.config = DefaultInferenceParams()
         self.model_state = ModelState(None, None, None, None)
         self._data_dir = kwargs["data_dir"]
 
@@ -94,7 +98,7 @@ class Model:
         )
 
         spkemb, llm_stg1, llm_stg2 = build_models(
-            config1, config2, model_dir=model_dir, device=device, use_kv_cache="flash_decoding"
+            config1, config2, model_dir=model_dir, device=device, use_kv_cache=self.config.use_kv_cache
         )
 
         self.model_state.spkemb_model = spkemb
