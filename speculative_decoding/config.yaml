@@ -1,6 +1,8 @@
 base_image:
   image: nvcr.io/nvidia/tritonserver:24.01-trtllm-python-py3
   python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
 model_cache:
 - repo_id: baseten/specdec-target-mistral-7B-Instruct-draft_5
 - repo_id: baseten/specdec-draft-gpt2
@@ -29,5 +31,6 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 1000
+secrets: {}
 system_packages:
 - python3.10-venv

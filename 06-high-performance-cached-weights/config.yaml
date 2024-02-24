@@ -1,11 +1,12 @@
-# # Setting up the config.yaml
-#
-# The `config.yaml` file is where you need to include the changes to
-# actually cache the weights at build time.
 environment_variables: {}
 external_package_dirs: []
+model_cache:
+- ignore_patterns:
+  - '*.bin'
+  repo_id: NousResearch/Llama-2-7b-chat-hf
 model_metadata:
-  example_model_input: {"prompt": "What is the meaning of life?"}
+  example_model_input:
+    prompt: What is the meaning of life?
 model_name: Llama with Cached Weights
 python_version: py39
 requirements:
@@ -15,41 +16,10 @@ requirements:
 - transformers==4.34.0
 - sentencepiece==0.1.99
 - protobuf==4.24.4
-# # Configuring the model_cache
-#
-# To cache model weights, set the `model_cache` key.
-# The `repo_id` field allows you to specify a Huggingface
-# repo to pull down and cache at build-time, and the `ignore_patterns`
-# field allows you to specify files to ignore. If this is specified, then
-# this repo won't have to be pulled during runtime.
-#
-# Check out the [guide](https://truss.baseten.co/guides/model-cache) for more info.
-model_cache:
-- repo_id: "NousResearch/Llama-2-7b-chat-hf"
-  ignore_patterns:
-  - "*.bin"
-
-# The remaining config options are again, similar to what you would
-# configure for the model without the weight caching.
 resources:
-  cpu: "4"
-  memory: 30Gi
-  use_gpu: True
   accelerator: A10G
+  cpu: '4'
+  memory: 30Gi
+  use_gpu: true
 secrets: {}
-# # Deploy the model
-#
-# Deploy the model like you would other Trusses, with:
-# ```bash
-# $ truss push
-# ```
-#  <Note>
-#  The build step will take  longer than with the normal
-#  Llama Truss, since bundling the model weights is now happening during the build.
-#  The deploy step & scale-ups will happen much faster with this approach.
-#  </Note>
-#
-# You can then invoke the model with:
-# ```bash
-# $ truss predict -d '{"inputs": "What is a large language model?"}'
-# ```
+system_packages: []

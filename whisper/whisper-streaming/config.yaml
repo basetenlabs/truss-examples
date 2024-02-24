@@ -7,9 +7,11 @@ model_metadata:
   whisper_model: medium
 model_name: Whisper Streaming
 python_version: py310
+requirements: []
 requirements_file: ./requirements.txt
 resources:
   accelerator: T4
   use_gpu: true
+secrets: {}
 system_packages:
-  - ffmpeg
+- ffmpeg

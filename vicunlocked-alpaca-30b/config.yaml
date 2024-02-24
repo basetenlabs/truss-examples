@@ -12,9 +12,9 @@ requirements:
 - einops
 - git+https://github.com/huggingface/transformers.git
 resources:
-  cpu: "3"
+  accelerator: A100:1
+  cpu: '3'
   memory: 50Gi
   use_gpu: true
-  accelerator: "A100:1"
 secrets: {}
 system_packages: []

@@ -1,23 +1,24 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "What is the meaning of life?"}
+  example_model_input:
+    prompt: What is the meaning of life?
 model_name: qwen-7b-chat
 python_version: py310
 requirements:
-  - accelerate==0.23.0
-  - tiktoken==0.5.1
-  - einops==0.6.1
-  - scipy==1.11.3
-  - transformers_stream_generator==0.0.4
-  - peft==0.5.0
-  - deepspeed==0.11.1
-  - torch==2.0.1
-  - transformers==4.32.0
+- accelerate==0.23.0
+- tiktoken==0.5.1
+- einops==0.6.1
+- scipy==1.11.3
+- transformers_stream_generator==0.0.4
+- peft==0.5.0
+- deepspeed==0.11.1
+- torch==2.0.1
+- transformers==4.32.0
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
 system_packages: []

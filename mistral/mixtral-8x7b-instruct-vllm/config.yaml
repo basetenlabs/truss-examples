@@ -1,10 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
 model_metadata: {}
 model_name: Mixtral 8x7B
 python_version: py310
 requirements:
 - vllm==0.2.5
-runtime:
-  predict_concurrency: 128
 resources:
   accelerator: A100:2
   use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets: {}
+system_packages: []

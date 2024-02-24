@@ -1,7 +1,13 @@
+environment_variables: {}
+external_data:
+- local_data_path: sam_vit_h_4b8939.pth
+  url: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    image_url: https://as2.ftcdn.net/v2/jpg/00/66/26/87/1000_F_66268784_jccdcfdpf2vmq5X8raYA8JQT0sziZ1H9.jpg
 model_name: Segment Anything
 python_version: py310
-model_metadata:
-  example_model_input: {"image_url": "https://as2.ftcdn.net/v2/jpg/00/66/26/87/1000_F_66268784_jccdcfdpf2vmq5X8raYA8JQT0sziZ1H9.jpg"}
 requirements:
 - git+https://github.com/facebookresearch/segment-anything.git@6fdee8f2727f4506cfbbe553e23b895e27956588
 - opencv-python==4.8.1.78
@@ -13,8 +19,6 @@ resources:
   cpu: 1000m
   memory: 10Gi
   use_gpu: true
+secrets: {}
 system_packages:
 - python3-opencv
-external_data:
-  - url: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
-    local_data_path: sam_vit_h_4b8939.pth

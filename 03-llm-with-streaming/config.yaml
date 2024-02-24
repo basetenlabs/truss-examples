@@ -1,10 +1,10 @@
-# # Setting up the config.yaml
-#
-# Running Falcon 7B requires torch, transformers,
-# and a few other related libraries.
-model_name: "LLM with Streaming"
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
-    example_model_input: {"prompt": "what is the meaning of life"}
+  example_model_input:
+    prompt: what is the meaning of life
+model_name: LLM with Streaming
+python_version: py39
 requirements:
 - torch==2.0.1
 - peft==0.4.0
@@ -14,11 +14,10 @@ requirements:
 - bitsandbytes==0.41.1
 - einops==0.6.1
 - transformers==4.31.0
-# ## Configure resources for Falcon
-#
-# Note that we need an A10G to run this model.
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
+secrets: {}
+system_packages: []

@@ -1,13 +1,25 @@
 base_image:
   image: docker.io/baseten/triton_trt_llm:r23.11-v0.6.1
   python_executable_path: /usr/bin/python3
-description: Mistral 7B Instruct, with INT8 weights only quantization, optimized with TRT-LLM for chat! Compatible with OpenAI
-  Client
+description: Mistral 7B Instruct, with INT8 weights only quantization, optimized with
+  TRT-LLM for chat! Compatible with OpenAI Client
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   engine_repository: baseten/mistral_7b_instruct_v0.2_4096x1024x64_weights_only
-  example_model_input: {"messages": [{"role": "user", "content": "What is your favourite condiment?"}, {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"}, {"role": "user", "content": "Do you have mayonnaise recipes?"}], "max_tokens": 512}
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: What is your favourite condiment?
+      role: user
+    - content: Well, I'm quite partial to a good squeeze of fresh lemon juice. It
+        adds just the right amount of zesty flavour to whatever I'm cooking up in
+        the kitchen!
+      role: assistant
+    - content: Do you have mayonnaise recipes?
+      role: user
   tags:
   - text-generation
   - openai-compatible
@@ -24,3 +36,5 @@ resources:
 runtime:
   num_workers: 2
   predict_concurrency: 256
+secrets: {}
+system_packages: []
