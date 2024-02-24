@@ -16,7 +16,6 @@ model_cache:
   - '*.fp16.safetensors'
   - sd_xl_refiner_1.0.safetensors
   repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
@@ -27,7 +26,6 @@ model_metadata:
   tags:
   - image-generation
 model_name: Stable Diffusion XL
-model_type: custom
 python_version: py39
 requirements:
 - transformers

@@ -6,11 +6,9 @@ model_cache:
   - '*.safetensors'
   - '*.model'
   repo_id: meta-llama/Llama-2-7b-hf
-model_framework: custom
 model_metadata:
   repo_id: meta-llama/Llama-2-7b-hf
 model_name: Falcon 7B
-model_type: custom
 python_version: py39
 requirements:
 - accelerate==0.22.0

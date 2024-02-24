@@ -1,9 +1,7 @@
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata: {}
 model_name: Starcoder
-model_type: custom
 python_version: py39
 requirements:
 - torch

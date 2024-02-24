@@ -6,7 +6,6 @@ external_data:
 - local_data_path: pytorch_model-00002-of-00002.bin
   url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00002-of-00002.bin
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/google.png
   cover_image_url: https://cdn.baseten.co/production/static/flan.png
@@ -14,7 +13,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: Flan-T5 XL
-model_type: custom
 python_version: py39
 requirements:
 - transformers

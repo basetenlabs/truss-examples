@@ -1,7 +1,6 @@
 description: StableLM is an open-source AI language model developed by StabilityAI
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/stable-lm.png
@@ -10,7 +9,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: StableLM
-model_type: custom
 python_version: py38
 requirements:
 - torch==2.0.1

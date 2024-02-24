@@ -8,7 +8,6 @@ model_cache:
   - '*.safetensors'
   - '*.model'
   repo_id: meta-llama/Llama-2-7b-chat-hf
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
@@ -21,7 +20,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: Llama-2-chat 7B
-model_type: custom
 python_version: py38
 requirements:
 - accelerate==0.22.0

@@ -1,7 +1,6 @@
 description: Extract information from images of invoices
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/impira-logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/document-qa.png
@@ -11,7 +10,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: LayoutLM Document QA
-model_type: custom
 python_version: py39
 requirements:
 - Pillow==10.0.0

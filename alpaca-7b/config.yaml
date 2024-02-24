@@ -7,7 +7,6 @@ external_data:
 - local_data_path: pytorch_model-00002-of-00002.bin
   url: https://baseten-public.s3.us-west-2.amazonaws.com/models/alpaca/pytorch_model-00002-of-00002.bin
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/alpaca.png
@@ -19,7 +18,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: Alpaca 7B
-model_type: custom
 python_version: py38
 requirements:
 - torch==2.0.1

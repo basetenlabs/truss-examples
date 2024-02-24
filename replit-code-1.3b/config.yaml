@@ -1,14 +1,12 @@
 description: Replit-1.3b.
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   example_model_input:
     prompt: Write code for fibonacci
   tags:
   - text-generation
 model_name: Replit 1.3B
-model_type: custom
 python_version: py39
 requirements:
 - torch

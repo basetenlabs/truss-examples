@@ -2,7 +2,6 @@ description: Camel-5b is a state-of-the-art instruction-following large language
   from Writer.
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/camel-5b-cover.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/camel-5b-cover.png
@@ -11,7 +10,6 @@ model_metadata:
   tags:
   - text-generation
 model_name: "Camel \U0001F42A 5B"
-model_type: custom
 python_version: py39
 requirements:
 - torch

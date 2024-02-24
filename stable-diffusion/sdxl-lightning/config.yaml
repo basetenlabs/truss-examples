@@ -1,6 +1,5 @@
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
@@ -10,7 +9,6 @@ model_metadata:
   tags:
   - image-generation
 model_name: SDXL Lightning
-model_type: custom
 python_version: py310
 requirements:
 - torch==2.0.1
