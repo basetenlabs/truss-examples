@@ -1,20 +1,21 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"input_image": "<base64 image string>"}
+  example_model_input:
+    input_image: <base64 image string>
 model_name: DIS Segmentation
 python_version: py310
 requirements:
-  - torch==2.1.0
-  - Pillow==9.4.0
-  - numpy==1.23.5
-  - gdown==4.7.3
-  - torchvision==0.16.0
-  - torchaudio==2.1.0
-  - scikit-image==0.19.3
+- torch==2.1.0
+- Pillow==9.4.0
+- numpy==1.23.5
+- gdown==4.7.3
+- torchvision==0.16.0
+- torchaudio==2.1.0
+- scikit-image==0.19.3
 resources:
   accelerator: T4
-  use_gpu: true
   memory: 2Gi
+  use_gpu: true
 secrets: {}
 system_packages: []

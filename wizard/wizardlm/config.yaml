@@ -1,9 +1,11 @@
 description: An instruction-following LLM Using Evol-Instruct.
 environment_variables: {}
+external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "What is the difference between a wizard and a sorcerer?"}
   avatar_url: https://cdn.baseten.co/production/static/explore/wizard.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/wizardlm.png
+  example_model_input:
+    prompt: What is the difference between a wizard and a sorcerer?
   tags:
   - text-generation
 model_name: WizardLM
@@ -17,9 +19,9 @@ requirements:
 - torch==2.0.1
 - transformers==4.30.2
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
 system_packages: []

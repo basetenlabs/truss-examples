@@ -5,47 +5,38 @@ description: Generate original images from text prompts.
 environment_variables:
   HF_HUB_ENABLE_HF_TRANSFER: 1
 external_package_dirs: []
+model_cache:
+- repo_id: baseten/playground-v2-trt-8.6.1.post1-engine-A100
+- allow_patterns:
+  - config.json
+  - diffusion_pytorch_model.safetensors
+  repo_id: madebyollin/sdxl-vae-fp16-fix
+- allow_patterns:
+  - '*.json'
+  - '*.fp16.safetensors'
+  - playground-v2.safetensors
+  repo_id: playgroundai/playground-v2-1024px-aesthetic
 model_metadata:
-  example_model_input: {"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}
+  example_model_input:
+    prompt: Astronaut in a jungle, cold color palette, muted colors, detailed, 8k
   pretty_name: Playground v2 - TensorRT
   tags:
   - image-generation
 model_name: Playground v2 - TensorRT
-model_framework: custom
-model_type: custom
-model_cache:
-  - repo_id: "baseten/playground-v2-trt-8.6.1.post1-engine-A100"
-  - repo_id: madebyollin/sdxl-vae-fp16-fix
-    allow_patterns:
-      - config.json
-      - diffusion_pytorch_model.safetensors
-  - repo_id: playgroundai/playground-v2-1024px-aesthetic
-    allow_patterns:
-      - "*.json"
-      - "*.fp16.safetensors"
-      - playground-v2.safetensors
 python_version: py39
-system_packages:
-- python3.10-venv
-- ffmpeg
-- libsm6
-- libxext6
 requirements:
 - accelerate
 - colored
 - cuda-python
 - ftfy
 - nvtx
-# [Important] This version is necessary
 - opencv-python==4.8.0.74
 - scipy
 - transformers==4.31.0
 - safetensors
 - hf_transfer
-# [Important] trt may not work with all versions, this version is important
 - diffusers==0.23.1
 - invisible-watermark>=0.2.0
-# [Important] Make sure nvidia packages are at the end
 - --extra-index-url https://pypi.ngc.nvidia.com
 - polygraphy
 - --extra-index-url https://pypi.nvidia.com
@@ -53,6 +44,11 @@ requirements:
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
 runtime:
   predict_concurrency: 1
+secrets: {}
+system_packages:
+- python3.10-venv
+- ffmpeg
+- libsm6
+- libxext6

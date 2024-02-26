@@ -1,17 +1,21 @@
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.bin'
+  ignore_patterns:
+  - coreml/*
+  repo_id: tiiuae/falcon-7b
+- allow_patterns:
+  - '*.bin'
+  ignore_patterns:
+  - coreml/*
+  repo_id: tiiuae/falcon-7b-instruct
 model_name: Binoculars
 python_version: py311
 requirements:
 - git+https://github.com/ahans30/Binoculars.git
 resources:
   accelerator: A10G:2
-model_cache:
-  - repo_id: tiiuae/falcon-7b
-    allow_patterns:
-      - "*.bin"
-    ignore_patterns:
-    - "coreml/*"
-  - repo_id: tiiuae/falcon-7b-instruct
-    allow_patterns:
-      - "*.bin"
-    ignore_patterns:
-    - "coreml/*"
+secrets: {}
+system_packages: []

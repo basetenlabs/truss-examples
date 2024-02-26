@@ -1,6 +1,5 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: CogVLM
 python_version: py311
 requirements:

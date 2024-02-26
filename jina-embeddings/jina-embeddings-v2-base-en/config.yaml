@@ -1,14 +1,17 @@
-description: "A text embedding model with an 8k-token context window"
+description: A text embedding model with an 8k-token context window
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"text": ["I want to eat pasta", "I want to eat pizza"], "max_length": 8192}
   avatar_url: https://cdn.baseten.co/production/static/explore/jina-logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/jina-embeddings.png
+  example_model_input:
+    max_length: 8192
+    text:
+    - I want to eat pasta
+    - I want to eat pizza
+  repo_id: jinaai/jina-embeddings-v2-base-en
   tags:
   - text-embeddings
-  repo_id: "jinaai/jina-embeddings-v2-base-en"
-model_framework: custom
 model_name: Jina Embeddings V2 Base EN
 python_version: py39
 requirements:
@@ -20,5 +23,5 @@ resources:
   memory: 16Gi
   use_gpu: false
 secrets:
-  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
+  hf_access_token: ENTER HF ACCESS TOKEN HERE
 system_packages: []

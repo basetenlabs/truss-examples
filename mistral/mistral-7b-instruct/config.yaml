@@ -1,31 +1,30 @@
+description: Generate text with an instruction-tuned version of Mistral 7B.
 environment_variables: {}
 external_package_dirs: []
-description: Generate text with an instruction-tuned version of Mistral 7B.
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.model'
+  repo_id: mistralai/Mistral-7B-Instruct-v0.1
 model_metadata:
-  example_model_input: {"prompt": "What is the Mistral wind?"}
-  pretty_name: Mistral 7B Instruct
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  example_model_input:
+    prompt: What is the Mistral wind?
+  pretty_name: Mistral 7B Instruct
   tags:
   - text-generation
 model_name: Mistral 7B Instruct
-model_framework: custom
-model_type: custom
 python_version: py311
 requirements:
 - sentencepiece
 - accelerate
 - transformers==4.34.0
 - torch==2.0.1
-model_cache:
-- repo_id: mistralai/Mistral-7B-Instruct-v0.1
-  allow_patterns:
-    - "*.json"
-    - "*.safetensors"
-    - "*.model"
 resources:
   accelerator: A10G
-  use_gpu: true
   memory: 10Gi
+  use_gpu: true
 secrets: {}
 system_packages: []

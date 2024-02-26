@@ -1,24 +1,24 @@
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
-model_type: custom
 model_metadata:
-  example_model_input: {"prompt": "A tree in a field under the night sky"}
-  pretty_name: SDXL Lightning
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  example_model_input:
+    prompt: A tree in a field under the night sky
+  pretty_name: SDXL Lightning
   tags:
   - image-generation
 model_name: SDXL Lightning
 python_version: py310
 requirements:
-  - torch==2.0.1
-  - transformers==4.35.2
-  - diffusers==0.23.1
-  - hf_transfer==0.1.4
-  - xformers==0.0.22
-  - accelerate==0.24.1
+- torch==2.0.1
+- transformers==4.35.2
+- diffusers==0.23.1
+- hf_transfer==0.1.4
+- xformers==0.0.22
+- accelerate==0.24.1
 resources:
-  use_gpu: true
   accelerator: A100
+  use_gpu: true
+secrets: {}
 system_packages: []

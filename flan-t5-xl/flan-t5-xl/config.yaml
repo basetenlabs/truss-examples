@@ -1,38 +1,28 @@
-bundled_packages_dir: packages
-data_dir: data
 description: Generate text from a prompt with this instruction-tuned LLM.
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+external_data:
+- local_data_path: pytorch_model-00001-of-00002.bin
+  url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00001-of-00002.bin
+- local_data_path: pytorch_model-00002-of-00002.bin
+  url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00002-of-00002.bin
+external_package_dirs: []
 model_metadata:
-  pretty_name: Flan-T5 XL
   avatar_url: https://cdn.baseten.co/production/static/google.png
   cover_image_url: https://cdn.baseten.co/production/static/flan.png
+  pretty_name: Flan-T5 XL
   tags:
   - text-generation
-model_module_dir: model
 model_name: Flan-T5 XL
-model_type: custom
 python_version: py39
 requirements:
-  - transformers
-  - torch
-  - accelerate
-  - sentencepiece
+- transformers
+- torch
+- accelerate
+- sentencepiece
 resources:
+  accelerator: A10G
   cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-spec_version: '2.0'
 system_packages: []
-live_reload: false
-external_data:
-  - url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00001-of-00002.bin
-    local_data_path: pytorch_model-00001-of-00002.bin
-  - url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00002-of-00002.bin
-    local_data_path: pytorch_model-00002-of-00002.bin

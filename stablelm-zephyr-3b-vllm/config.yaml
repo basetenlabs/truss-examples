@@ -3,11 +3,16 @@ base_image:
   python_executable_path: /usr/bin/python3
 environment_variables:
   PYTHONPATH: /workspace/
-model_name: StableLM Zephyr 3B
+external_package_dirs: []
 model_cache:
 - repo_id: stabilityai/stablelm-zephyr-3b
-runtime:
-  predict_concurrency: 128
+model_name: StableLM Zephyr 3B
+python_version: py39
+requirements: []
 resources:
   accelerator: A10G
   use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets: {}
+system_packages: []

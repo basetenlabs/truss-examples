@@ -1,3 +1,5 @@
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   tags:
   - text-generation
@@ -11,5 +13,7 @@ requirements:
 - hf_transfer==0.1.4
 resources:
   accelerator: A10G
-  use_gpu: true
   memory: 25Gi
+  use_gpu: true
+secrets: {}
+system_packages: []

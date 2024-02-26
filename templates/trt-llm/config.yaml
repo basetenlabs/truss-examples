@@ -1,6 +1,8 @@
 base_image:
   image: nvcr.io/nvidia/tritonserver:23.10-trtllm-python-py3
   python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   example_model_input: {}
   tags:
@@ -10,7 +12,9 @@ python_version: py311
 requirements:
 - tritonclient[all]
 resources:
-  use_gpu: true
   accelerator: A100
+  use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: []

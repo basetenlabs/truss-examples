@@ -1,8 +1,19 @@
 description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.model'
+  repo_id: mistralai/Mistral-7B-Instruct-v0.1
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-  example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
+  example_model_input:
+    messages:
+    - content: What is the mistral wind?
+      role: user
   model: mistralai/Mistral-7B-Instruct-v0.1
   pretty_name: Mistral 7B Chat
   tags:
@@ -16,13 +27,9 @@ requirements:
 - transformers==4.34.0
 - torch==2.0.1
 - hf_transfer==0.1.4
-model_cache:
-- repo_id: mistralai/Mistral-7B-Instruct-v0.1
-  allow_patterns:
-    - "*.json"
-    - "*.safetensors"
-    - "*.model"
 resources:
   accelerator: A10G
   memory: 25Gi
   use_gpu: true
+secrets: {}
+system_packages: []

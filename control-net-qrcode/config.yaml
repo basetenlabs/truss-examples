@@ -1,22 +1,25 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "A cubism painting of the Garden of Eaden with animals walking around, Andreas Rocha, matte painting concept art, a detailed matte painting", "qr_code_content": "https://www.baseten.co"}
+  example_model_input:
+    prompt: A cubism painting of the Garden of Eaden with animals walking around,
+      Andreas Rocha, matte painting concept art, a detailed matte painting
+    qr_code_content: https://www.baseten.co
 model_name: control-net-qrcode
 python_version: py310
 requirements:
-  - diffusers==0.21.1
-  - torch==2.0.1
-  - ftfy==6.1.1
-  - scipy==1.9.3
-  - transformers==4.25.1
-  - accelerate==0.20.3
-  - qrcode==7.4.2
-  - xformers==0.0.21
+- diffusers==0.21.1
+- torch==2.0.1
+- ftfy==6.1.1
+- scipy==1.9.3
+- transformers==4.25.1
+- accelerate==0.20.3
+- qrcode==7.4.2
+- xformers==0.0.21
 resources:
-  cpu: "3"
+  accelerator: T4
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: T4
 secrets: {}
 system_packages: []

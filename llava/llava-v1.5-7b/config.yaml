@@ -1,6 +1,5 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: llava-v1.5-7b
 python_version: py311
 requirements:

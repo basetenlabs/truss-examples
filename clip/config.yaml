@@ -1,28 +1,18 @@
-# # Set up the config.yaml
-#
-# The main section that needs to be filled out
-# to run CLIP is the `requirements` section, where we need
-# to include `transformers`, for the model pipeline, and `pillow`,
-# for image processing.
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    url: https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=1600
 model_name: clip-example
+python_version: py39
 requirements:
 - transformers==4.32.0
 - pillow==10.0.0
 - torch==2.0.1
-model_metadata:
-  example_model_input: {"url": "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=1600"}
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
-# # Deploy the model
-#
-# Deploy the CLIP model like you would other Trusses, with:
-# ```bash
-# $ truss push
-# ```
-# You can then invoke the model with:
-# ```bash
-# $ truss predict -d '{"image_url": "https://source.unsplash.com/gKXKBY-C-Dk/300x300""]}' --published
-# ```
+secrets: {}
+system_packages: []

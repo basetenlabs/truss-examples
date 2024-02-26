@@ -1,23 +1,26 @@
-model_metadata: {}
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.fp16.safetensors'
+  - '*.bin'
+  - '*.tiktoken'
+  - '*.py'
+  repo_id: Qwen/Qwen-VL
 model_name: Qwen VL
 python_version: py310
 requirements:
-  - torch==2.0.1
-  - accelerate==0.24.0
-  - transformers==4.35.0
-  - einops==0.7.0
-  - torchvision==0.15.2
-  - matplotlib==3.8.2
-  - tiktoken==0.5.2
-  - transformers_stream_generator==0.0.4
-model_cache:
-- repo_id: Qwen/Qwen-VL
-  allow_patterns:
-    - "*.json"
-    - "*.fp16.safetensors"
-    - "*.bin"
-    - "*.tiktoken"
-    - "*.py"
+- torch==2.0.1
+- accelerate==0.24.0
+- transformers==4.35.0
+- einops==0.7.0
+- torchvision==0.15.2
+- matplotlib==3.8.2
+- tiktoken==0.5.2
+- transformers_stream_generator==0.0.4
 resources:
   accelerator: A10G
   use_gpu: true
+secrets: {}
+system_packages: []

@@ -1,8 +1,10 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"text": ["I want to eat pasta", "I want to eat pizza"]}
-model_framework: custom
+  example_model_input:
+    text:
+    - I want to eat pasta
+    - I want to eat pizza
 model_name: all-miniLM-L6-v2
 python_version: py39
 requirements:

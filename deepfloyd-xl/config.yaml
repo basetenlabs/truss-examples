@@ -1,20 +1,12 @@
-bundled_packages_dir: packages
-data_dir: data
 description: Generate original images from text prompts.
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/deep-floyd.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/deepfloyd-cover.png
   tags:
   - image-generation
-model_module_dir: model
 model_name: Deepfloyd XL
-model_type: custom
 python_version: py39
 requirements:
 - diffusers
@@ -27,11 +19,11 @@ requirements:
 - sentencepiece
 - huggingface_hub
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets:
-  hf_access_token: "ENTER HF API KEY HERE"
-system_packages: []
+  hf_access_token: ENTER HF API KEY HERE
 spec_version: 2.0
+system_packages: []

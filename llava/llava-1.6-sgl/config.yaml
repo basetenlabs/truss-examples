@@ -1,8 +1,8 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: llava 1.6 SGL
 python_version: py310
+requirements: []
 requirements_file: ./requirements.txt
 resources:
   accelerator: A100

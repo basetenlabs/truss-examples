@@ -1,10 +1,11 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: Stable Diffusion Inpainting TRT
 python_version: py310
+requirements: []
 requirements_file: requirements.txt
 resources:
   accelerator: A10G
   use_gpu: true
+secrets: {}
 system_packages: []

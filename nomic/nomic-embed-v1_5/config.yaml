@@ -1,13 +1,16 @@
-description: "A text embedding model with a adjustable dimensionality"
+description: A text embedding model with a adjustable dimensionality
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"texts": ["I want to eat pasta", "I want to eat pizza"], "dimensionality": 768}
   avatar_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/nomic-logo.png
+  example_model_input:
+    dimensionality: 768
+    texts:
+    - I want to eat pasta
+    - I want to eat pizza
   tags:
   - text-embeddings
-model_framework: custom
 model_name: Nomic Embed v1.5
 python_version: py39
 requirements:
@@ -15,8 +18,9 @@ requirements:
 - sentence_transformers==2.3.1
 - torch==2.0.1
 resources:
-  accelerator: 'T4'
+  accelerator: T4
   cpu: '2'
   memory: 7Gi
   use_gpu: true
+secrets: {}
 system_packages: []

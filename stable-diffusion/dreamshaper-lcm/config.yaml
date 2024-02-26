@@ -1,6 +1,5 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: Dreamshaper Latent Consistency Model
 python_version: py311
 requirements:
