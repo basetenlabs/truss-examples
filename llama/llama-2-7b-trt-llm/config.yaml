@@ -1,18 +1,22 @@
 base_image:
   image: nvcr.io/nvidia/tritonserver:23.10-trtllm-python-py3
   python_executable_path: /usr/bin/python3
+description: Generate text from a prompt with this seven billion parameter language
+  model.
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"text_input": "What's the meaning of life?"}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  engine_repository: baseten/llama_7b_sq0.8_4096ctx_64bs
+  example_model_input:
+    max_tokens: 1024
+    prompt: What's the meaning of life?
+  repo_id: NousResearch/Llama-2-7b-chat-hf
   tags:
   - text-generation
   tensor_parallelism: 1
-  engine_repository: "baseten/llama_7b_sq0.8_4096ctx_64bs"
-  tokenizer_repository: "NousResearch/Llama-2-7b-chat-hf"
-description: Generate text from a prompt with this seven billion parameter language model.
+  tokenizer_repository: NousResearch/Llama-2-7b-chat-hf
 model_name: Llama 7B Chat TRT
 python_version: py311
 requirements:
@@ -20,7 +24,7 @@ requirements:
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
-system_packages: []
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: []

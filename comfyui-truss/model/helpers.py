@@ -1,34 +1,42 @@
+import base64
+import io
 import json
+import logging
 import os
 import subprocess
 import sys
 import tempfile
 import urllib.parse
 import urllib.request
+from io import BytesIO
 
 import requests
+from PIL import Image
+
+COMFYUI_DIR = "/app/ComfyUI"
+BASE64_PREAMBLE = "data:image/png;base64,"
 
 
 def download_model(model_url, destination_path):
-    print(f"Downloading model {model_url} ...")
+    logging.info(f"Downloading model {model_url} ...")
     try:
         response = requests.get(model_url, stream=True)
         response.raise_for_status()
-        print("download response: ", response)
+        logging.debug("download response: ", response)
 
         # Open the destination file and write the content in chunks
-        print("opening: ", destination_path)
+        logging.debug("opening: ", destination_path)
         with open(destination_path, "wb") as file:
-            print("writing chunks...")
+            logging.debug("writing chunks...")
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:  # Filter out keep-alive new chunks
                     file.write(chunk)
 
-            print("done writing chunks!!!!")
+            logging.debug("done writing chunks!")
 
-        print(f"Downloaded file to: {destination_path}")
+        logging.info(f"Downloaded file to: {destination_path}")
     except requests.exceptions.RequestException as e:
-        print(f"Download failed: {e}")
+        logging.error(f"Download failed: {e}")
 
 
 def download_tempfile(file_url, filename):
@@ -40,48 +48,60 @@ def download_tempfile(file_url, filename):
         temp_file.write(response.content)
         return temp_file.name, temp_file
     except Exception as e:
-        print("Error downloading and saving image:", e)
+        logging.error("Error downloading and saving image:", e)
         return None
 
 
+def add_custom_node(git_url: str):
+    repo = git_url.split(".")
+    if repo[-1] == "git":
+        repo_name = repo[-2].split("/")[-1]
+    else:
+        repo_name = repo[1].split("/")[-1]
+
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            git_url,
+            f"{COMFYUI_DIR}/custom_nodes/{repo_name}",
+            "--recursive",
+        ]
+    )
+    print(
+        "all directories in comfy custom nodes: ",
+        os.listdir(f"{COMFYUI_DIR}/custom_nodes"),
+    )
+
+
 def setup_comfyui(original_working_directory, data_dir):
-    git_repo_url = "https://github.com/comfyanonymous/ComfyUI.git"
-    commit_hash = "248aa3e56355d75ac3d8632af769e6c700d9bfac"
-    git_clone_command = ["git", "clone", git_repo_url]
 
     try:
-        # clone the repo
-        subprocess.run(git_clone_command, check=True)
-        print("Git repository cloned successfully!")
-
-        os.chdir(os.path.join(original_working_directory, "ComfyUI"))
-
-        # Pin comfyUI to a specific commit
-        checkout_command = ["git", "checkout", commit_hash]
-        subprocess.run(checkout_command, check=True)
-
         model_json = os.path.join(original_working_directory, data_dir, "model.json")
         with open(model_json, "r") as file:
             data = json.load(file)
 
-        print(f"model json file: {data}")
+        logging.debug(f"model json file: {data}")
 
         if data and len(data) > 0:
             for model in data:
-                download_model(
-                    model_url=model.get("url"),
-                    destination_path=os.path.join(
-                        os.getcwd(), "models", model.get("path")
-                    ),
-                )
+                if model.get("path") == "custom_nodes":
+                    # Install custom nodes
+                    add_custom_node(model.get("url"))
+                else:
+                    # Download checkpoints, loras, vaes, etc.
+                    download_model(
+                        model_url=model.get("url"),
+                        destination_path=os.path.join(COMFYUI_DIR, model.get("path")),
+                    )
 
-        print("Finished downloading models!")
+        logging.debug("Finished downloading models!")
 
         # run the comfy-ui server
-        subprocess.run([sys.executable, "main.py"], check=True)
+        subprocess.run([sys.executable, "main.py"], cwd=COMFYUI_DIR, check=True)
 
     except Exception as e:
-        print(e)
+        logging.error(e)
         raise Exception("Error setting up comfy UI repo")
 
 
@@ -105,11 +125,14 @@ def get_history(prompt_id, server_address):
     with urllib.request.urlopen(
         "http://{}/history/{}".format(server_address, prompt_id)
     ) as response:
-        return json.loads(response.read())
+        output = json.loads(response.read())
+        return output[prompt_id]["outputs"]
+        # return json.loads(response.read())
 
 
 def get_images(ws, prompt, client_id, server_address):
     prompt_id = queue_prompt(prompt, client_id, server_address)["prompt_id"]
+    logging.info(f"prompt id:  {prompt_id}")
     output_images = {}
     while True:
         out = ws.recv()
@@ -122,21 +145,41 @@ def get_images(ws, prompt, client_id, server_address):
         else:
             continue  # previews are binary data
 
-    history = get_history(prompt_id, server_address)[prompt_id]
-    for o in history["outputs"]:
-        for node_id in history["outputs"]:
-            node_output = history["outputs"][node_id]
-            if "images" in node_output:
-                images_output = []
-                for image in node_output["images"]:
+    # history = get_history(prompt_id, server_address)[prompt_id]
+    history = get_history(prompt_id, server_address)
+    for node_id in history:
+        node_output = history[node_id]
+        if "gifs" in node_output:
+            outputs = []
+            for item in node_output["gifs"]:
+                outputs.append({"filename": item.get("filename")})
+            if not output_images.get(node_id):
+                output_images[node_id] = outputs
+            else:
+                output_images[node_id].extend(outputs)
+        if "images" in node_output:
+            outputs = []
+            for image in node_output["images"]:
+                # Image Preview Nodes don't get saved, so this is how to extract the data from previews
+                if image.get("type") == "temp":
                     image_data = get_image(
                         image["filename"],
                         image["subfolder"],
                         image["type"],
                         server_address,
                     )
-                    images_output.append(image_data)
-            output_images[node_id] = images_output
+                    outputs.append(
+                        {"filename": image.get("filename"), "data": image_data}
+                    )
+                else:
+                    print("saved image: ", image)
+                    print("image type: ", image.get("type"))
+                    # When the image gets saved
+                    outputs.append({"filename": image.get("filename")})
+            if not output_images.get(node_id):
+                output_images[node_id] = outputs
+            else:
+                output_images[node_id].extend(outputs)
 
     return output_images
 
@@ -183,4 +226,70 @@ def convert_request_file_url_to_path(template_values):
             tempfiles.append(file_object)
             new_template_values[key] = file_destination_path
 
+        elif isinstance(value, dict):
+            if value.get("type") == "image":
+                data = value.get("data")
+                image = b64_to_pil(data)
+
+                with tempfile.NamedTemporaryFile(
+                    suffix=".png", delete=False
+                ) as temp_file:
+                    file_destination_path = temp_file.name
+                    image.save(file_destination_path)
+
+                    tempfiles.append(temp_file)
+                    new_template_values[key] = file_destination_path
+
     return new_template_values, tempfiles
+
+
+def convert_outputs_to_base64(node_id, file_name, file_data=None):
+    if not file_data:
+        file_type = file_name.split(".")[-1]
+        file_type = file_type.lower()
+        filepath = os.path.join("ComfyUI", "output", file_name)
+        if file_type == "gif":
+            return {
+                "node_id": node_id,
+                "data": gif_to_base64(filepath),
+                "format": file_type,
+            }
+        elif file_type == "mp4":
+            return {
+                "node_id": node_id,
+                "data": mp4_to_base64(filepath),
+                "format": file_type,
+            }
+        elif file_type in {"png", "jpeg", "jpg"}:
+            image = Image.open(filepath)
+            return {"node_id": node_id, "data": pil_to_b64(image), "format": file_type}
+    else:
+        image = Image.open(io.BytesIO(file_data))
+        b64_img = pil_to_b64(image)
+        return {"node_id": node_id, "data": b64_img, "format": "png"}
+
+
+def gif_to_base64(file_path):
+    with open(file_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+        return encoded_string.decode("utf-8")
+
+
+def mp4_to_base64(file_path: str):
+    with open(file_path, "rb") as mp4_file:
+        binary_data = mp4_file.read()
+        base64_data = base64.b64encode(binary_data)
+        base64_string = base64_data.decode("utf-8")
+
+    return base64_string
+
+
+def b64_to_pil(b64_str):
+    return Image.open(BytesIO(base64.b64decode(b64_str.replace(BASE64_PREAMBLE, ""))))
+
+
+def pil_to_b64(pil_img):
+    buffered = BytesIO()
+    pil_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str

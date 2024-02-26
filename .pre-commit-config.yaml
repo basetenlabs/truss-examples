@@ -30,3 +30,10 @@ repos:
         language: system
         types: [python]
         pass_filenames: true
+  - repo: local
+    hooks:
+      - id: validate-ci
+        name: validate-ci-local
+        entry: poetry run python ./bin/validate_ci.py
+        language: system
+        pass_filenames: false

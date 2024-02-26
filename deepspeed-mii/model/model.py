@@ -43,7 +43,7 @@ class Model:
     def predict(self, request: Dict):
         prompt = request.pop("prompt")
         generate_args = {
-            "max_new_tokens": request.pop("max_length", DEFAULT_RESPONSE_MAX_LENGTH),
+            "max_new_tokens": request.pop("max_tokens", DEFAULT_RESPONSE_MAX_LENGTH),
             "ignore_eos": request.pop("ignore_eos", False),
         }
 
@@ -57,7 +57,7 @@ class Model:
             response = client.generate(prompt, **generate_args)
             new_loop.close()
 
-            return {"result": "\n".join(response.response)}
+            return {"text": "\n".join(response.response)}
 
     def stream(self, prompt: str, generate_args: Dict[str, Any]):
         q = queue.Queue()

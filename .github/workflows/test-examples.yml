@@ -28,6 +28,7 @@ jobs:
       - generate_tests
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         test: ${{ fromJSON(needs.generate_tests.outputs.tests) }}
     steps:
@@ -39,7 +40,7 @@ jobs:
       - name: Install dependencies (if any)
         run: |
           python -m pip install --upgrade pip
-          pip install truss requests tenacity --upgrade
+          pip install git+https://github.com/basetenlabs/truss.git requests tenacity --upgrade
       - name: Test => (${{ matrix.test }}
         run: |
           python ./bin/test_example.py ${{secrets.BASETEN_API_KEY}} ${{matrix.test}}

@@ -1,14 +1,13 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: Stable Diffusion XL with LoRA
 python_version: py311
 requirements:
-  - accelerate
-  - transformers
-  - safetensors
-  - opencv-python
-  - diffusers
+- accelerate
+- transformers
+- safetensors
+- opencv-python
+- diffusers
 resources:
   accelerator: A10G
   cpu: 3500m

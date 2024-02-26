@@ -1,34 +1,29 @@
-base_image: null
-bundled_packages_dir: packages
-data_dir: data
-description: AudioGen is a simple and controllable model for audio generation developed by Facebook AI Research.
+description: AudioGen is a simple and controllable model for audio generation developed
+  by Facebook AI Research.
 environment_variables: {}
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/musicgen-cover.png
+  example_model_input:
+    duration: 8
+    prompts:
+    - dog barking
+    - sirene of an emergency vehicle
+    - footsteps in a corridor
   tags:
   - text-to-audio
-  example_model_input: { "prompts": ['dog barking', 'sirene of an emergency vehicle', 'footsteps in a corridor'], "duration": 8 }
-model_module_dir: model
 model_name: AudioGen medium
-model_type: custom
 python_version: py39
 requirements:
 - torch>=2
 - git+https://github.com/facebookresearch/audiocraft.git
 - torchaudio
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-spec_version: '2.0'
 system_packages:
 - ffmpeg

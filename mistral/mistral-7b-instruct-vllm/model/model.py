@@ -8,16 +8,19 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 class Model:
     def __init__(self, **kwargs) -> None:
-        self.model_args = None
-        self.llm_engine = None
+        self.engine_args = kwargs["config"]["model_metadata"]["engine_args"]
+        self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
 
     def load(self) -> None:
-        self.model_args = AsyncEngineArgs(
-            model="mistralai/Mistral-7B-Instruct-v0.1",
+        self.llm_engine = AsyncLLMEngine.from_engine_args(
+            AsyncEngineArgs(**self.engine_args)
         )
-        self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
-    def preprocess(self, request: dict):
+    async def predict(self, request: dict) -> Any:
+        prompt = request.pop("prompt")
+        stream = request.pop("stream", True)
+        formatted_prompt = self.prompt_format.replace("{prompt}", prompt)
+
         generate_args = {
             "n": 1,
             "best_of": 1,
@@ -29,33 +32,26 @@ class Model:
             "presence_penalty": 1.0,
             "use_beam_search": False,
         }
-        if "max_tokens" in request.keys():
-            generate_args["max_tokens"] = request["max_tokens"]
-        if "temperature" in request.keys():
-            generate_args["temperature"] = request["temperature"]
-        if "top_p" in request.keys():
-            generate_args["top_p"] = request["top_p"]
-        if "top_k" in request.keys():
-            generate_args["top_k"] = request["top_k"]
-        if "frequency_penalty" in request.keys():
-            generate_args["frequency_penalty"] = request["frequency_penalty"]
-        if "presence_penalty" in request.keys():
-            generate_args["presence_penalty"] = request["presence_penalty"]
-        if "use_beam_search" in request.keys():
-            generate_args["use_beam_search"] = request["use_beam_search"]
-        request = {**request, **generate_args}
-        return request
+        generate_args.update(request)
 
-    async def predict(self, request: dict) -> Any:
-        prompt = request.pop("prompt")
-        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
-        sampling_params = SamplingParams(**request)
+        sampling_params = SamplingParams(**generate_args)
         idx = str(uuid.uuid4().hex)
-        generator = self.llm_engine.generate(formatted_prompt, sampling_params, idx)
+        vllm_generator = self.llm_engine.generate(
+            formatted_prompt, sampling_params, idx
+        )
 
-        full_text = ""
-        async for output in generator:
-            text = output.outputs[0].text
-            delta = text[len(full_text) :]
-            full_text = text
-            yield delta
+        async def generator():
+            full_text = ""
+            async for output in vllm_generator:
+                text = output.outputs[0].text
+                delta = text[len(full_text) :]
+                full_text = text
+                yield delta
+
+        if stream:
+            return generator()
+        else:
+            full_text = ""
+            async for delta in generator():
+                full_text += delta
+            return {"text": full_text}

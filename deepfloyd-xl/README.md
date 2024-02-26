@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/deepfloyd)
-
 # DeepFloyd XL Truss
 
 This is a [Truss](https://truss.baseten.co/) for DeepFloyd-IF. DeepFloyd-IF is a pixel-based text-to-image triple-cascaded diffusion model that can generate pictures and sets a new state-of-the-art for photorealism and language understanding. The result is a highly efficient model that outperforms current state-of-the-art models, achieving a zero-shot FID-30K score of 6.66 on the COCO dataset.
@@ -50,7 +48,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 This deployment of DeepFloyd takes a dictionary as input, which requires the following key:
 
-* `prompt` - the prompt for image generation
+- `prompt` - the prompt for image generation
 
 It also supports a number of other parameters detailed in [this blog post](https://huggingface.co/blog/if).
 
@@ -58,12 +56,16 @@ It also supports a number of other parameters detailed in [this blog post](https
 
 The result will be a dictionary containing:
 
-* `status` - either `success` or `failed`
-* `data` - list of base 64 encoded images
-* `message` - will contain details in the case of errors
+- `status` - either `success` or `failed`
+- `data` - list of base 64 encoded images
+- `message` - will contain details in the case of errors
 
 ```json
-{"status": "success", "data": ["/9j/4AAQSkZJRgABAQAAAQABAA...."], "message": null}
+{
+  "status": "success",
+  "data": ["/9j/4AAQSkZJRgABAQAAAQABAA...."],
+  "message": null
+}
 ```
 
 ## Example usage

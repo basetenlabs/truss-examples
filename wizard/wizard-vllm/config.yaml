@@ -1,12 +1,13 @@
 description: An instruction-following LLM Using Evol-Instruct.
 environment_variables: {}
+external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "What is the difference between a wizard and a sorcerer?"}
   avatar_url: https://cdn.baseten.co/production/static/explore/wizard.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/wizardlm.png
+  example_model_input:
+    prompt: What is the difference between a wizard and a sorcerer?
   tags:
   - text-generation
-live_reload: false
 model_name: wizard_vllm
 python_version: py311
 requirements:
@@ -15,10 +16,9 @@ requirements:
 - pyarrow==13.0.0
 - pandas>=1.3
 resources:
-  use_gpu: true
-  cpu: "4"
   accelerator: A10G
+  cpu: '4'
   memory: 14Gi
+  use_gpu: true
 secrets: {}
-spec_version: '2.0'
 system_packages: []

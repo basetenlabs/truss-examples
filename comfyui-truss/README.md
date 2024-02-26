@@ -10,15 +10,15 @@ Inside ComfyUI, you can save workflows as a JSON file. However, the regular JSON
 
 First, go to ComfyUI and click on the gear icon for the project
 
-![gear_icon](images/comfyui-screenshot-1.png)
+![gear_icon](../assets/comfyui-screenshot-1.png)
 
 Next, checkmark the box which says `Enable Dev Mode Options`
 
-![enable_dev_mode_options](images/comfyui-screenshot-2.png)
+![enable_dev_mode_options](../assets/comfyui-screenshot-2.png)
 
-Now, if you go back to the project you will see a new option called `Save(API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
+Now, if you go back to the project you will see a new option called `Save (API Format)`. This is the one you want to use to save your workflow. Using this method you can save any ComfyUI workflow as a JSON file in the API format.
 
-![save_api_format](images/comfyui-screenshot-3.png)
+![save_api_format](../assets/comfyui-screenshot-3.png)
 
 
 ## Setting up the project
@@ -36,16 +36,16 @@ For your ComfyUI workflow, you probably used one or more models. Those models ne
 [
     {
         "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
-        "path": "checkpoints/sd_xl_base_1.0.safetensors"
+        "path": "models/checkpoints/sd_xl_base_1.0.safetensors"
     },
     {
         "url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/main/diffusion_pytorch_model.fp16.safetensors",
-        "path": "controlnet/diffusers_xl_canny_full.safetensors"
+        "path": "models/controlnet/diffusers_xl_canny_full.safetensors"
     }
 ]
 ```
 
-In this case, I have 2 models: SDXL and a controlnet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, controlnets should be stored inside `controlnet`, etc.
+In this case, I have 2 models: SDXL and a ControlNet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, ControlNets should be stored inside `controlnet`, etc.
 
 We also need to place the JSON workflow from step 1 inside the data directory. In the data directory create an open a file called `data/comfy_ui_workflow.json`. Copy and paste the entire JSON workflow that we saved in step 1 into this file.
 
@@ -114,6 +114,20 @@ In the JSON workflow file, there might be some inputs such as the positive promp
 ```
 
 This is not the entire JSON workflow file, but the nodes 6, 7, and 11 accept variable inputs. You can do this by using the handlebars format of `{{variable_name_here}}`.
+
+## Custom Nodes
+If your workflow uses custom nodes you add it to the `data/model.json`. Let's take an example. Suppose you want to add the [UltimateSDUpscale](https://github.com/ssitu/ComfyUI_UltimateSDUpscale) custom node. Inside your `data/model.json` you can define it like so:
+
+```json
+[
+    {
+        "url": "https://github.com/ssitu/ComfyUI_UltimateSDUpscale",
+        "path": "custom_nodes"
+    }
+]
+```
+
+The `url` must point to a github url and the `path` must be "custom_nodes". Custom nodes must be placed above any checkpoints, vae, lora, etc. in the `model.json` file.
 
 Once you have both the `data/comfy_ui_workflow.json` and `data/model.json` set up correctly we can begin deployment.
 
@@ -292,19 +306,36 @@ sdxl_controlnet_workflow = {
 
 Here is the actual API request sent to Truss:
 ```python
-headers = {"Authorization": f"Api-Key YOUR-BASETEN-API-KEY-HERE"}
+import os
+import random
+import base64
+import requests
 
+# Set essential values
+model_id = ""
+baseten_api_key = ""
+# Set prompts and controlnet image
 values = {
-  "positive_prompt": "An igloo on a snowy day, 4k, hd",
+  "positive_prompt": "A top down view of a river through the woods",
   "negative_prompt": "blurry, text, low quality",
-  "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png"
+  "controlnet_image": "https://storage.googleapis.com/logos-bucket-01/baseten_logo.png",
+  "seed": random.randint(1, 1000000)
 }
-
-data = {"workflow_values": values}
-res = requests.post("https://model-{MODEL_ID}.api.baseten.co/development/predict", headers=headers, json=data)
+# Call model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/development/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json={"workflow_values": values}
+)
+# Get output image
 res = res.json()
-model_output = res.get("result")
-print(model_output)
+preamble = "data:image/png;base64,"
+output = base64.b64decode(res["result"][1]["image"].replace(preamble, ""))
+# Save image to file
+img_file = open("comfyui.png", 'wb')
+img_file.write(output)
+img_file.close()
+os.system("open comfyui.png")
 ```
 
 Here is the output of the request above:
@@ -313,13 +344,38 @@ Here is the output of the request above:
 [
     {
         "node_id": "18",
-        "image": "base64-image-string"
+        "data": "base64-image-string",
+        "format": "png"
     },
     {
         "node_id": "15",
-        "image": "base64-image-string"
+        "data": "base64-image-string",
+        "format": "png"
     }
 ]
 ```
 
 The output of the model is a list of JSON objects containing the ID of the output node along with the generated image as a base64 string.
+
+You can also send input images as base64 strings. In the above example simply change the `values` python dictionary to look like this:
+
+```python
+from PIL import Image
+from io import BytesIO
+import base64
+
+def pil_to_b64(pil_img):
+    buffered = BytesIO()
+    pil_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
+
+new_values = {
+  "positive_prompt": "A top down view of a river through the woods",
+  "negative_prompt": "blurry, text, low quality",
+  "controlnet_image": {"type": "image", "data": pil_to_b64(Image.open("my-image.jpeg"))},
+  "seed": random.randint(1, 1000000)
+}
+```
+
+When using base64 as input you need to specify the `type` so that the model can convert it to the correct data.

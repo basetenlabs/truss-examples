@@ -1,23 +1,15 @@
-bundled_packages_dir: packages
-data_dir: data
-description: Camel-5b is a state-of-the-art instruction-following large language model from Writer.
+description: Camel-5b is a state-of-the-art instruction-following large language model
+  from Writer.
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
-  example_model_input: {"instruction": "Write a story about camels falling in love"}
   avatar_url: https://cdn.baseten.co/production/static/explore/camel-5b-cover.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/camel-5b-cover.png
+  example_model_input:
+    instruction: Write a story about camels falling in love
   tags:
   - text-generation
-model_module_dir: model
-model_name: Camel 🐪 5B
-model_type: custom
+model_name: "Camel \U0001F42A 5B"
 python_version: py39
 requirements:
 - torch
@@ -25,11 +17,10 @@ requirements:
 - accelerate
 - transformers
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 50Gi
   use_gpu: true
-  accelerator: A10G
 secrets:
-  hf_access_token: "ENTER YOUR HF API KEY HERE"
-spec_version: '2.0'
+  hf_access_token: ENTER YOUR HF API KEY HERE
 system_packages: []

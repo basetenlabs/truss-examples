@@ -1,15 +1,19 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "pixel art, an baby giraffe", "lora": {"repo_id": "nerijs/pixel-art-xl", "weights": "pixel-art-xl.safetensors"}}
+  example_model_input:
+    lora:
+      repo_id: nerijs/pixel-art-xl
+      weights: pixel-art-xl.safetensors
+    prompt: pixel art, an baby giraffe
 model_name: Stable Diffusion XL with LoRA Swapping
 python_version: py311
 requirements:
-  - accelerate==0.23.0
-  - transformers==4.33.2
-  - safetensors==0.3.3
-  - opencv-python==4.8.0.76
-  - diffusers==0.21.2
+- accelerate==0.23.0
+- transformers==4.33.2
+- safetensors==0.3.3
+- opencv-python==4.8.0.76
+- diffusers==0.21.2
 resources:
   accelerator: A100
   cpu: 3500m

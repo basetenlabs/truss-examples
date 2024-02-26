@@ -1,31 +1,31 @@
+description: A chat model with knowledge of coding tasks.
 environment_variables: {}
 external_package_dirs: []
-description: A chat model with knowledge of coding tasks.
 model_metadata:
-  example_model_input: {"prompt": "How do I kill a Docker container?"}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/code-llama.png
+  example_model_input:
+    prompt: How do I kill a Docker container?
   tags:
   - text-generation
-model_framework: custom
 model_name: Code Llama 7B Instruct
 python_version: py38
 requirements:
-  - accelerate==0.23.0
-  - bitsandbytes==0.41.1
-  - einops==0.6.1
-  - faker==19.3.1
-  - peft==0.5.0
-  - protobuf==3.20.3
-  - safetensors==0.3.3
-  - scipy==1.10.1
-  - sentencepiece==0.1.99
-  - torch==2.0.1
-  - transformers==4.33.2
+- accelerate==0.23.0
+- bitsandbytes==0.41.1
+- einops==0.6.1
+- faker==19.3.1
+- peft==0.5.0
+- protobuf==3.20.3
+- safetensors==0.3.3
+- scipy==1.10.1
+- sentencepiece==0.1.99
+- torch==2.0.1
+- transformers==4.33.2
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
 system_packages: []

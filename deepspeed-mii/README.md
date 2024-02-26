@@ -55,12 +55,12 @@ This section provides an overview of the Llama-2-chat 7B API, its parameters, an
 The predict route is the primary method for generating text completions based on a given prompt. It takes several parameters:
 
 - __prompt__: The input text that you want the model to generate a response for.
-- __max_length__ (optional, default=512): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
+- __max_tokens__ (optional, default=512): The maximum number of tokens to return, counting input tokens. Maximum of 4096.
 
 ## Example usage
 
 ```sh
-truss predict -d '{"prompt": "What is the meaning of life?", "max_length": 1024}'
+truss predict -d '{"prompt": "What is the meaning of life?", "max_tokens": 1024}'
 ```
 
 You can also invoke your model via a REST API:
@@ -71,6 +71,6 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
            "prompt": "What's the meaning of life?",
-           "max_length": 1024
+           "max_tokens": 1024
          }'
 ```

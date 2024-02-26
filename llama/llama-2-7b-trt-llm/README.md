@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/llama)
-
 # LLaMA2-7B-Chat Truss
 
 This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of LLaMA2-7B-Chat. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA2-7B-Chat.
@@ -8,7 +6,7 @@ This is a [Truss](https://truss.baseten.co/) for an int8 SmoothQuant version of 
 
 ## Truss
 
-Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
+Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten. Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers and deploy on Baseten.
 
 ## Deploying LLaMA2-7B-Chat
 
@@ -27,7 +25,7 @@ Before deployment:
 With `llama-2-7b-trt-llm` as your working directory, you can deploy the model with:
 
 ```sh
-truss push
+truss push --publish
 ```
 
 Paste your Baseten API key if prompted.
@@ -35,26 +33,26 @@ Paste your Baseten API key if prompted.
 For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## LLaMA2-7B API documentation
-This section provides an overview of the LLaMA2-7B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
+
+This section provides an overview of the LLaMA2-7B API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate text based on the provided instruction.
 
 ### API route: `predict`
 
 We expect requests will the following information:
 
-
-- ```text_input``` (str): The prompt you'd like to complete
-- ```output_len``` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
-- ```beam_width``` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
-- ```bad_words_list``` (list, default:[]): A list of words to not include in generated output.
-- ```stop_words_list``` (list, default:[]): A list of words to stop generation upon encountering.
-- ```repetition_penalty``` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
+- `prompt` (str): The prompt you'd like to complete
+- `max_tokens` (int, default: 50): The max token count. This includes the number of tokens in your prompt so if this value is less than your prompt, you'll just recieve a truncated version of the prompt.
+- `beam_width` (int, default:50): The number of beams to compute. This must be 1 for this version of TRT-LLM. Inflight-batching does not support beams > 1.
+- `bad_words_list` (list, default:[]): A list of words to not include in generated output.
+- `stop_words_list` (list, default:[]): A list of words to stop generation upon encountering.
+- `repetition_penalty` (float, defualt: 1.0): A repetition penalty to incentivize not repeating tokens.
 
 This Truss will stream responses back. Responses will be buffered chunks of text.
 
 ## Example usage
 
 ```sh
-truss predict -d '{"text_input": "What is the meaning of life?"}'
+truss predict -d '{"prompt": "What is the meaning of life?"}'
 ```
 
 You can also invoke your model via a REST API
@@ -64,7 +62,7 @@ curl -X POST " https://app.baseten.co/models/YOUR_MODEL_ID/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
-           "text_input": "What's the meaning of life?",
+           "prompt": "What's the meaning of life?",
          }'
 
 ```

@@ -1,34 +1,28 @@
-data_dir: data
-environment_variables: {}
-examples_filename: examples.yaml
 description: Generate text from a prompt with this language model.
-input_type: Any
-model_class_filename: model.py
+environment_variables: {}
+external_data:
+- local_data_path: saved_model/pytorch_model-00001-of-00002.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gpt-j/saved_model/pytorch_model-00001-of-00002.bin
+- local_data_path: saved_model/pytorch_model-00002-of-00002.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gpt-j/saved_model/pytorch_model-00002-of-00002.bin
+external_package_dirs: []
 model_class_name: GPTJTransformerModel
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/EleutherAI.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/gpt-j.png
   tags:
   - text-generation
-model_module_dir: model
 model_name: GPT-J
-model_type: custom
 python_version: py39
 requirements:
-  - torch
-  - transformers
-  - accelerate
+- torch
+- transformers
+- accelerate
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-system_packages: []
 spec_version: 2.0
-external_data:
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gpt-j/saved_model/pytorch_model-00001-of-00002.bin
-    local_data_path: saved_model/pytorch_model-00001-of-00002.bin
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gpt-j/saved_model/pytorch_model-00002-of-00002.bin
-    local_data_path: saved_model/pytorch_model-00002-of-00002.bin
+system_packages: []

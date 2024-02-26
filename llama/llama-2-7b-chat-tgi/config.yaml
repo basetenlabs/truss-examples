@@ -4,7 +4,8 @@ build:
   model_server: TGI
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_metadata:
+  repo_id: meta-llama/Llama-2-7b-chat-hf
 model_name: Llama 7B Chat TGI
 python_version: py311
 requirements: []

@@ -1,31 +1,32 @@
-environment_variables: {}
-external_package_dirs: []
-model_metadata:
-  example_model_input: {"audio_file": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
-model_name: whisperx-truss
 base_image:
   image: runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel
   python_executable_path: /usr/bin/python
+environment_variables: {}
+external_data:
+- local_data_path: models/pytorch_model.bin
+  url: https://whisperx.s3.eu-west-2.amazonaws.com/model_weights/segmentation/0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea/pytorch_model.bin
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    audio_file: https://cdn.baseten.co/docs/production/Gettysburg.mp3
+model_name: whisperx-truss
 python_version: py310
 requirements:
-  - git+https://github.com/m-bain/whisperx.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
-  - torch==2.0.1 --index-url https://download.pytorch.org/whl/cu118
-  - torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
-  - transformers==4.34.0
-  - ffmpeg-python==0.2.0
-  - faster-whisper==0.9.0
-  - pandas==1.5.3
-  - nltk==3.8.1
-  - setuptools==67.7.2
+- git+https://github.com/m-bain/whisperx.git@051047bb25b740fed2ea93ca737499c37e8dc9d4
+- torch==2.0.1 --index-url https://download.pytorch.org/whl/cu118
+- torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
+- transformers==4.34.0
+- ffmpeg-python==0.2.0
+- faster-whisper==0.9.0
+- pandas==1.5.3
+- nltk==3.8.1
+- setuptools==67.7.2
 resources:
-  cpu: "3"
+  accelerator: T4
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: T4
 secrets:
   hf_access_token: null
 system_packages:
-  - "ffmpeg"
-external_data:
-  - url: https://whisperx.s3.eu-west-2.amazonaws.com/model_weights/segmentation/0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea/pytorch_model.bin
-    local_data_path: models/pytorch_model.bin
+- ffmpeg

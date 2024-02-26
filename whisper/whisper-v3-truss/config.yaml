@@ -1,23 +1,24 @@
+description: Transcribe audio files across multiple languages.
 environment_variables: {}
+external_data:
+- local_data_path: weights/large-v3.pt
+  url: https://openaipublic.azureedge.net/main/whisper/models/e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb/large-v3.pt
 external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png
-  example_model_input: {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
+  example_model_input:
+    url: https://cdn.baseten.co/docs/production/Gettysburg.mp3
 model_name: Whisper V3
 python_version: py310
-description: Transcribe audio files across multiple languages.
 requirements:
-  - torch==2.0.1
-  - openai-whisper==20231106
+- torch==2.0.1
+- openai-whisper==20231106
 resources:
-  cpu: "3"
+  accelerator: T4
+  cpu: '3'
   memory: 16Gi
   use_gpu: true
-  accelerator: T4
 secrets: {}
 system_packages:
-  - ffmpeg
-external_data:
-  - url: https://openaipublic.azureedge.net/main/whisper/models/e5b1a55b89c1367dacf97e3e19bfd829a01529dbfdeefa8caeb59b3f1b81dadb/large-v3.pt
-    local_data_path: weights/large-v3.pt
+- ffmpeg
