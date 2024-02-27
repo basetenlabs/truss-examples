@@ -10,10 +10,6 @@ model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
   engine_repository: baseten/solar10.7
-  example_model_input:
-    max_tokens: 1024
-    prompt: What's the meaning of life?
-  repo_id: NousResearch/Llama-2-13b-chat-hf
   tags:
   - text-generation
   tensor_parallelism: 1
