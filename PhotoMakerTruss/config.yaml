@@ -1,0 +1,15 @@
+model:
+  class_name: Model
+  folder: model
+python_version: ">=3.8"
+pytorch_version: ">=2.0.0"
+requirements:
+  - pip install git+https://github.com/TencentARC/PhotoMaker.git
+system_dependencies:
+  - python>=3.8
+  - pytorch>=2.0.0
+  - torchvision
+  - torchaudio
+  - cuda
+model_cache:
+  photomaker_model_weights: "https://huggingface.co/TencentARC/PhotoMaker/resolve/main/photomaker-v1.bin"
