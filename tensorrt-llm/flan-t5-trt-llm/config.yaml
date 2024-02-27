@@ -1,0 +1,18 @@
+base_image:
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+description: Flan T5 finetuned
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: true
+model_metadata:
+  beam_width: 1
+  engine_repository: baseten/flan-t5-large-trt-engine
+  engine_name: flan-t5-large
+model_name: flan t5 large tensorrt-llm
+requirements:
+- hf_transfer
+resources:
+  accelerator: L4
+  use_gpu: true
+runtime:
+  predict_concurrency: 1
