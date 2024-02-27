@@ -73,7 +73,7 @@ class Model:
     def load(self):
         # kind of re-implement fam/llm/serving.py
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
         common_config = dict(
             num_samples=1,
             seed=self.config.seed,
@@ -136,16 +136,16 @@ class Model:
             top_k=tts_req.top_k,
             top_p=tts_req.top_p,
         )
-        
+
         b64 = wav_to_b64(wav_out_path)
         Path(wav_out_path).unlink(missing_ok=True)
         return b64
 
 def wav_to_b64(wav_in_path: str) -> str:
-    SAMPLE_RATE, audio_array = wavfile.read(wav_in_path)  
+    SAMPLE_RATE, audio_array = wavfile.read(wav_in_path)
 
     with io.BytesIO() as byte_io:
-        wavfile.write(byte_io, SAMPLE_RATE, audio_array)  
+        wavfile.write(byte_io, SAMPLE_RATE, audio_array)
         wav_bytes = byte_io.getvalue()
 
     audio_data = base64.b64encode(wav_bytes).decode("UTF-8")
