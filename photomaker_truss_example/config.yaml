@@ -1,0 +1,25 @@
+# PhotoMaker Truss Example Configuration
+# System Dependencies
+system_dependencies:
+  minimum_gpu_memory: 11G  # Minimum GPU memory requirement
+  torch_dtype_change:
+    unsupported: bfloat16
+    change_to: torch.float16  # Change to torch.float16 if bfloat16 is not supported
+
+# Environment Setup
+environment_setup:
+  conda_environment: photomaker
+  python_version: 3.10
+  commands:
+    - conda create --name photomaker python=3.10
+    - conda activate photomaker
+    - pip install -U pip
+    - pip install -r requirements.txt
+    - pip install git+https://github.com/TencentARC/PhotoMaker.git
+
+# Caching Details for PhotoMaker HuggingFace Model
+caching_details:
+  model_cache:
+    repo_id: "TencentARC/PhotoMaker"
+    ignore_patterns:
+      - "*.bin"
