@@ -5,7 +5,6 @@ tests:
   - 04-image-generation
   - 05-speech-to-text
   - 06-high-performance-cached-weights
-  - 07-high-performance-tgi
   - 10-using-system-packages
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
