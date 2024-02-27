@@ -14,7 +14,7 @@ General style tips:
 
 ## README
 
-The model should have a README that follows the layout of [Stable Diffusion XL](stable-diffusion-xl-1.0).
+The model should have a README that follows the layout of [Stable Diffusion XL](stable-diffusion/stable-diffusion-xl-1.0).
 
 
 ## Config

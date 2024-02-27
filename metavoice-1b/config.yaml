@@ -1,0 +1,27 @@
+model_name: MetaVoice 1B
+description: MetaVoice is a transformer-based model for TTS
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: '"text to speech models are cool"'
+python_version: py311
+data_dir: data
+model_cache:
+  - repo_id: metavoiceio/metavoice-1B-v0.1
+    allow_patterns:
+      - "*.pt"
+  - repo_id: facebook/multiband-diffusion
+    allow_patterns:
+      - mbd_comp_8.pt
+  - repo_id: facebook/encodec_24khz
+    allow_patterns:
+      - "*.safetensors"
+
+requirements_file: ./requirements.txt
+resources:
+  accelerator: "A10G"
+  use_gpu: true
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
+system_packages:
+- ffmpeg
