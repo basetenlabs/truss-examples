@@ -23,6 +23,7 @@ from fam.llm.sample import (
 
 HF_MODEL_ID = "metavoiceio/metavoice-1B-v0.1"
 
+
 @dataclass
 class DefaultInferenceParams:
     max_new_tokens: int = 864 * 2
@@ -43,9 +44,12 @@ class DefaultInferenceParams:
     enhancer: Optional[Literal["df"]] = "df"
     """Enhancer to use for post-processing."""
 
-    use_kv_cache: Optional[Literal["flash_decoding", "vanilla"]] = get_default_use_kv_cache()
+    use_kv_cache: Optional[
+        Literal["flash_decoding", "vanilla"]
+    ] = get_default_use_kv_cache()
     """Type of kv caching to use for inference: 1) [none] no kv caching, 2) [flash_decoding] use the
     flash decoding kernel, 3) [vanilla] use torch attention with hand implemented kv-cache."""
+
 
 @dataclass
 class TTSRequest:
@@ -55,13 +59,16 @@ class TTSRequest:
     speaker_ref_path: Optional[str] = None
     top_k: Optional[int] = None
 
+
 @dataclass
 class ModelState:
     """Data class for holding model state."""
+
     spkemb_model: Optional[torch.nn.Module]
     first_stage_model: Optional[Model]
     second_stage_model: Optional[Model]
     enhancer: Optional[object]
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -98,7 +105,11 @@ class Model:
         )
 
         spkemb, llm_stg1, llm_stg2 = build_models(
-            config1, config2, model_dir=model_dir, device=device, use_kv_cache=self.config.use_kv_cache
+            config1,
+            config2,
+            model_dir=model_dir,
+            device=device,
+            use_kv_cache=self.config.use_kv_cache,
         )
 
         self.model_state.spkemb_model = spkemb
@@ -106,9 +117,8 @@ class Model:
         self.model_state.second_stage_model = llm_stg2
         self.model_state.enhancer = get_enhancer(self.config.enhancer)
 
-
     def predict(self, model_input: Any) -> Any:
-        audiodata = None # optionally, extract reference audio file from model_input
+        audiodata = None  # optionally, extract reference audio file from model_input
         wav_out_path = None
 
         tts_req = TTSRequest(**model_input)
@@ -118,7 +128,7 @@ class Model:
             tts_req.text = model_input["prompt"]
 
         if tts_req.speaker_ref_path is None:
-            tts_req.speaker_ref_path = os.path.join(self._data_dir, 'bria.mp3')
+            tts_req.speaker_ref_path = os.path.join(self._data_dir, "bria.mp3")
 
         wav_path = tts_req.speaker_ref_path
         wav_out_path = sample_utterance(
@@ -140,6 +150,7 @@ class Model:
         b64 = wav_to_b64(wav_out_path)
         Path(wav_out_path).unlink(missing_ok=True)
         return b64
+
 
 def wav_to_b64(wav_in_path: str) -> str:
     SAMPLE_RATE, audio_array = wavfile.read(wav_in_path)
