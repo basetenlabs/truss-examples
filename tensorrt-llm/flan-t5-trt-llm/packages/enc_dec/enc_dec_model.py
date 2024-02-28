@@ -500,7 +500,9 @@ class TRTLLMEncDecModel:
         # TODO(pankaj) Figure out a better way to stop this.
         # Using stopping criteria is expensive, but there couldn't find
         # another way of stopping generation early.
-        def stopping_criteria(step: int, input_ids: torch.Tensor, scores: torch.Tensor) -> bool:
+        def stopping_criteria(
+            step: int, input_ids: torch.Tensor, scores: torch.Tensor
+        ) -> bool:
             # If generated token is eos then stop
             return input_ids[0][step + 1] == eos_token_id
 

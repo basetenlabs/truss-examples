@@ -1,4 +1,5 @@
 import time
+
 import torch
 from enc_dec.enc_dec_model import TRTLLMEncDecModel
 from huggingface_hub import snapshot_download
@@ -21,7 +22,11 @@ class Model:
             self._hf_access_token = None
 
     def load(self):
-        snapshot_download(repo_id=self._engine_repo, local_dir=self._engine_dir, token=self._hf_access_token)
+        snapshot_download(
+            repo_id=self._engine_repo,
+            local_dir=self._engine_dir,
+            token=self._hf_access_token,
+        )
         self._tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_NAME)
         model_config = AutoConfig.from_pretrained(HF_MODEL_NAME)
         self._decoder_start_token_id = model_config.decoder_start_token_id
@@ -63,7 +68,7 @@ class Model:
                     output_ids, skip_special_tokens=True
                 )
                 decoded_output.append(output_text)
-            print(f'Inference time: {(time.time() - start_time)*1000}ms')
+            print(f"Inference time: {(time.time() - start_time)*1000}ms")
             return {"status": "success", "data": decoded_output}
         except Exception as exc:
             return {"status": "error", "data": None, "message": str(exc)}
