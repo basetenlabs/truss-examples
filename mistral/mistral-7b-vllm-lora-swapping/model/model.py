@@ -33,6 +33,7 @@ class Model:
             lora_dir = self.lora_model_cache_dir(lora_model)
             if lora_model not in self.seen_models:
                 snapshot_download(lora_model, local_dir=lora_dir)
+                self.seen_models.add(lora_model)
             
             lora_request = LoRARequest(lora_model, abs(hash(lora_model)), lora_dir)
                 

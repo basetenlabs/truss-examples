@@ -5,9 +5,9 @@ model_metadata:
   engine_args:
     model: mistralai/Mistral-7B-Instruct-v0.1
     enable_lora: true
-    max_loras: 256
+    max_loras: 16
     max_lora_rank: 32
-    max_cpu_loras: 500
+    max_cpu_loras: 0
   example_model_input:
     prompt: What is the Mistral wind?
     lora_model: OpenPipe/sample-lora-pii-redaction
@@ -17,6 +17,11 @@ model_metadata:
   - text-generation
 model_name: Mistral 7B vLLM Lora
 python_version: py311
+model_cache:
+- repo_id: mistralai/Mistral-7B-Instruct-v0.1
+  allow_patterns:
+  - "*.json"
+  - "*.safetensors"
 requirements: 
 - vllm==0.3.1
 resources:
