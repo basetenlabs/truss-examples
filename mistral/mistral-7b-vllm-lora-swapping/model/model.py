@@ -1,12 +1,13 @@
 import uuid
 from typing import Any
 
+from huggingface_hub import snapshot_download
+
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.lora.request import LoRARequest
 
-from huggingface_hub import snapshot_download
 
 class Model:
     def __init__(self, **kwargs) -> None:
@@ -32,6 +33,7 @@ class Model:
         if lora_model is not None:
             lora_dir = self.lora_model_cache_dir(lora_model)
             if lora_model not in self.seen_models:
+                # TODO: scoped down download to only required files and run in parallel
                 snapshot_download(lora_model, local_dir=lora_dir)
                 self.seen_models.add(lora_model)
             

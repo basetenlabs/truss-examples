@@ -25,7 +25,7 @@ model_cache:
 requirements: 
 - vllm==0.3.1
 resources:
-  accelerator: A100
+  accelerator: H100
   memory: 25Gi
 runtime:
-  predict_concurrency: 256
+  predict_concurrency: 16
