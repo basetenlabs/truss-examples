@@ -497,6 +497,13 @@ class TRTLLMEncDecModel:
         )
         torch.cuda.synchronize()
 
+        # TODO(pankaj) Figure out a better way to stop this.
+        # Using stopping criteria is expensive, but there couldn't find
+        # another way of stopping generation early.
+        def stopping_criteria(step: int, input_ids: torch.Tensor, scores: torch.Tensor) -> bool:
+            # If generated token is eos then stop
+            return input_ids[0][step + 1] == eos_token_id
+
         output = self.decoder_session.decode(
             decoder_input_ids,
             decoder_input_lengths,
@@ -505,6 +512,7 @@ class TRTLLMEncDecModel:
             encoder_input_lengths=encoder_input_lengths,
             return_dict=return_dict,
             cross_attention_mask=cross_attention_mask,
+            stopping_criteria=stopping_criteria,
         )
         torch.cuda.synchronize()
 

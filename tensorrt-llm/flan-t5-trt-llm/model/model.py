@@ -4,7 +4,7 @@ from enc_dec.enc_dec_model import TRTLLMEncDecModel
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoTokenizer
 
-HF_MODEL_NAME = "google-t5/t5-large"
+HF_MODEL_NAME = "google/flan-t5-large"
 DEFAULT_MAX_NEW_TOKENS = 20
 
 
