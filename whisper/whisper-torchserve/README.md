@@ -25,6 +25,32 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 The model takes in one input:
 - __audio__: An audio file as a base64 string
 
+## Few thing to note
+Torchserve requires a compiled `.mar` file in order to serve the model. Here is a [README](https://github.com/pytorch/serve/blob/master/model-archiver/README.md) providing a brief explanation for generating this file. Once the `.mar` file is generated it needs to get placed in the `data/model_store` directory. Also in the `data/` directory is a configuration file for torchserve called `config.properties`. That file looks something like this:
+
+```
+inference_address=http://0.0.0.0:8888
+batch_size=4
+ipex_enable=true
+async_logging=true
+
+models={\
+  "whisper_base": {\
+    "1.0": {\
+        "defaultVersion": true,\
+        "marName": "whisper_base.mar",\
+        "minWorkers": 1,\
+        "maxWorkers": 2,\
+        "batchSize": 4,\
+        "maxBatchDelay": 500,\
+        "responseTimeout": 24\
+    }\
+  }\
+}
+```
+
+Here you can specify the `batchSize` as well as the name of your mar file using `marName`. When torchserve starts, it will looks for the mar file inside the `data/model_store` directory with the `marName` defined above.
+
 ## Invoking the model
 
 Here is an example in Python:
