@@ -67,6 +67,25 @@ class Model:
             tokenizer_repository, token=hf_access_token
         )
         self.eos_token_id = self.tokenizer.eos_token_id
+            
+        # Warm-up logic
+        warmup_prompts = ["Hello, world!", "How are you?", "Tell me a joke."]
+        for prompt in warmup_prompts:
+            thread = Thread(target=self._warmup, args=(prompt,))
+            thread.start()
+            thread.join()
+
+    def _warmup(self, prompt):
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        model_input = {
+            "prompt": prompt,
+            "max_tokens": 100
+        }
+        result = loop.run_until_complete(self.predict(model_input))
+        loop.close()
 
     async def predict(self, model_input):
         stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
