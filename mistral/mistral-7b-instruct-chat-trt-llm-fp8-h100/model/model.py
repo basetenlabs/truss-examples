@@ -89,7 +89,15 @@ class Model:
 
     async def predict(self, model_input):
         stream_uuid = str(os.getpid()) + str(next(self._request_id_counter))
-        prompt = model_input.get("prompt")
+        prompt = model_input.get("prompt", None)
+        messages = model_input.get("messages", [])
+        if self.uses_openai_api and not prompt:
+            prompt = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+            )
+        else:
+            prompt = model_input.get("prompt")
 
         max_tokens = model_input.get("max_tokens", 50)
         beam_width = model_input.get("beam_width", 1)
