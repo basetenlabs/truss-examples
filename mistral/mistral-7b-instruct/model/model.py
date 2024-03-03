@@ -16,13 +16,13 @@ class Model:
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            "mistralai/Mistral-7B-Instruct-v0.2",
             torch_dtype=torch.float16,
             device_map="auto",
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "mistralai/Mistral-7B-Instruct-v0.1",
+            "mistralai/Mistral-7B-Instruct-v0.2",
             device_map="auto",
             torch_dtype=torch.float16,
         )
