@@ -22,9 +22,10 @@ model_metadata:
       role: user
   tags:
   - text-generation
+  - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
-model_name: Mistral 7B Instruct FP8
+model_name: Mistral 7B Instruct FP8 OpenAI-Compatible
 python_version: py311
 requirements:
 - tritonclient[all]
