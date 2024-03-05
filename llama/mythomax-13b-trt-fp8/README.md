@@ -4,7 +4,7 @@ Based on https://huggingface.co/Gryphe/MythoMax-L2-13b
 
 fp8 quantized using `https://huggingface.co/datasets/royallab/PIPPA-cleaned` dataset
 
-TensorRT-LLM engine is here: https://huggingface.co/baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_fp8 
+TensorRT-LLM engine is here: https://huggingface.co/baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_fp8
 
 Max input tokens: 3000
 Max output tokens: 2000
