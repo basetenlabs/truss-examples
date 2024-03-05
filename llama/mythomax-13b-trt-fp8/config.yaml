@@ -1,5 +1,5 @@
 base_image:
-  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.7.1
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
   python_executable_path: /usr/bin/python3
 description: Generate text from a prompt with this seven billion parameter language
   model.
@@ -9,7 +9,7 @@ external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
-  engine_repository: baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_2ff724
+  engine_repository: baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_fp8
   example_model_input:
     max_tokens: 1024
     prompt: What's the meaning of life?
