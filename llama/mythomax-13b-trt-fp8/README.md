@@ -2,10 +2,9 @@
 
 Based on https://huggingface.co/Gryphe/MythoMax-L2-13b
 
-int8 quantized using smoothquant using `https://huggingface.co/datasets/royallab/PIPPA-cleaned` dataset
-smoothquant alpha value used: 0.5
+fp8 quantized using `https://huggingface.co/datasets/royallab/PIPPA-cleaned` dataset
 
-TensorRT-LLM engine is here: https://huggingface.co/baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_2ff724
+TensorRT-LLM engine is here: https://huggingface.co/baseten/Gryphe_MythoMax-L2-13b_v0.7.1_H100-80GB-HBM3_fp8 
 
 Max input tokens: 3000
 Max output tokens: 2000
@@ -25,7 +24,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd llama/mythomax-13b-trt-sq
+cd llama/mythomax-13b-trt-fp8
 ```
 
 Before deployment:
@@ -33,7 +32,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `mythomax-13b-trt-sq` as your working directory, you can deploy the model with:
+With `mythomax-13b-trt-fp8` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
