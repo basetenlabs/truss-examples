@@ -16,3 +16,5 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 1
+secrets:
+  hf_access_token: placeholder__bound_at_runtime

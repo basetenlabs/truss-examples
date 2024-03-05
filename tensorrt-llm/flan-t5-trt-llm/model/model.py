@@ -1,9 +1,11 @@
+import time
+
 import torch
 from enc_dec.enc_dec_model import TRTLLMEncDecModel
 from huggingface_hub import snapshot_download
 from transformers import AutoConfig, AutoTokenizer
 
-HF_MODEL_NAME = "google-t5/t5-large"
+HF_MODEL_NAME = "google/flan-t5-large"
 DEFAULT_MAX_NEW_TOKENS = 20
 
 
@@ -14,9 +16,17 @@ class Model:
         self._engine_repo = model_metadata["engine_repository"]
         self._engine_name = model_metadata["engine_name"]
         self._beam_width = model_metadata["beam_width"]
+        self._secrets = kwargs["secrets"]
+        self._hf_access_token = self._secrets["hf_access_token"]
+        if not self._hf_access_token:
+            self._hf_access_token = None
 
     def load(self):
-        snapshot_download(repo_id=self._engine_repo, local_dir=self._engine_dir)
+        snapshot_download(
+            repo_id=self._engine_repo,
+            local_dir=self._engine_dir,
+            token=self._hf_access_token,
+        )
         self._tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_NAME)
         model_config = AutoConfig.from_pretrained(HF_MODEL_NAME)
         self._decoder_start_token_id = model_config.decoder_start_token_id
@@ -25,6 +35,7 @@ class Model:
         )
 
     def predict(self, model_input):
+        start_time = time.time()
         try:
             input_text = model_input.pop("prompt")
             max_new_tokens = model_input.pop("max_new_tokens", DEFAULT_MAX_NEW_TOKENS)
@@ -57,6 +68,7 @@ class Model:
                     output_ids, skip_special_tokens=True
                 )
                 decoded_output.append(output_text)
+            print(f"Inference time: {(time.time() - start_time)*1000}ms")
             return {"status": "success", "data": decoded_output}
         except Exception as exc:
             return {"status": "error", "data": None, "message": str(exc)}
