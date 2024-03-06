@@ -13,6 +13,7 @@ class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
         self.model = None
+        self._config = kwargs["config"]
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
