@@ -1,5 +1,5 @@
 base_image:
-  image: baseten/trtllm-build-server:r23.12_baseten_v0.9.0_20240305
+  image: docker.io/baseten/trtllm-build-server:r23.12_baseten_v0.9.0_20240305
   python_executable_path: /usr/bin/python3
 description: A TRT-LLM builder truss for Llama-based models. This truss is used to
   build and deploy models that are based on the Llama model architecture and use the TensorRT
