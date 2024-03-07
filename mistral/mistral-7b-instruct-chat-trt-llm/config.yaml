@@ -1,5 +1,5 @@
 base_image:
-  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  image: baseten/trtllm-server:r23.12_baseten_v0.7.1
   python_executable_path: /usr/bin/python3
 description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with
   OpenAI Client
@@ -10,7 +10,7 @@ model_cache:
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-  engine_repository: baseten/trtllm_mistral_i2048_o2048_bs128
+  engine_repository: baseten/mistralai_Mistral-7B-Instruct-v0.2_v0.7.1_49bbc5/tree/main
   example_model_input:
     messages:
     - content: What is your favourite condiment?

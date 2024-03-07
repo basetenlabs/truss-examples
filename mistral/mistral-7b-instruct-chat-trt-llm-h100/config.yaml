@@ -1,5 +1,5 @@
 base_image:
-  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.7.1
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
   python_executable_path: /usr/bin/python3
 description: Mistral 7B Instruct, with INT8 weights only quantization, optimized with
   TRT-LLM for chat! Compatible with OpenAI Client
@@ -8,7 +8,7 @@ external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
-  engine_repository: baseten/mistralai_Mistral-7B-Instruct-v0.2_v0.7.1_H100-80GB-HBM3_bb4fa2
+  engine_repository: baseten/trtllm_mistral_i2048_o2048_bs128
   example_model_input:
     max_tokens: 512
     messages:
