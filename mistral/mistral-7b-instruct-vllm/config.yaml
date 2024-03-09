@@ -15,7 +15,7 @@ model_metadata:
 model_name: Mistral 7B Instruct vLLM
 python_version: py311
 requirements:
-- vllm==0.2.1.post1
+- vllm==0.3.3
 resources:
   accelerator: A10G
   memory: 25Gi
