@@ -1,0 +1,27 @@
+base_image:
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
+description: Generate text from a prompt with this seven billion parameter language model.
+model_metadata:
+  tags:
+  - text-generation
+  - openai-compatible
+  engine_repository: baseten/mistral_fp16_tp2_i4096_o4096_bs128-tllm_0.9.0.dev2024022000
+  tensor_parallelism: 2
+  tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
+model_name: Mistral TP2
+python_version: py311
+requirements:
+- tritonclient[all]
+- transformers
+- jinja2
+resources:
+  accelerator: H100:2
+  use_gpu: true
+runtime:
+  num_workers: 1
+  predict_concurrency: 512
+secrets: {}
+system_packages: []
