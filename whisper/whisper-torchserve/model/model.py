@@ -18,7 +18,7 @@ class Model:
         self._model = None
         self.torchserver_ready = False
 
-    def start_tochserver(self):
+    def start_torchserver(self):
         subprocess.run(
             [
                 "torchserve",
@@ -43,7 +43,7 @@ class Model:
         )
         logging.info("⚡️ Weights Downloaded Successfully!")
 
-        process = multiprocessing.Process(target=self.start_tochserver)
+        process = multiprocessing.Process(target=self.start_torchserver)
         process.start()
 
         # Need to wait for the torchserve server to start up
