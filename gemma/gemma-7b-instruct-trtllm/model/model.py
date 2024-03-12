@@ -23,7 +23,7 @@ class Model:
         self.tokenizer = None
         self.uses_openai_api = None
 
-    def load(self): 
+    def load(self):
         build_config = TrussBuildConfig(**self._config["build"]["arguments"])
         self.uses_openai_api = "openai-compatible" in self._config.get(
             "model_metadata", {}
