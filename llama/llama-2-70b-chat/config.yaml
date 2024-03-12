@@ -1,24 +1,25 @@
-bundled_packages_dir: packages
-data_dir: data
-description: Generate text from a prompt with this seventy billion parameter language model.
+description: Generate text from a prompt with this seventy billion parameter language
+  model.
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.model'
+  repo_id: meta-llama/Llama-2-70b-chat-hf
 model_metadata:
-  example_model_input: {"prompt": "What's the meaning of life?", "temperature": 0.1, "top_p": 0.75,"num_beams": 4}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  example_model_input:
+    num_beams: 4
+    prompt: What's the meaning of life?
+    temperature: 0.1
+    top_p: 0.75
   repo_id: meta-llama/Llama-2-70b-chat-hf
   tags:
   - text-generation
-model_module_dir: model
 model_name: LLaMA 2 70B Chat
-model_type: custom
 python_version: py38
 requirements:
 - accelerate==0.22.0
@@ -32,18 +33,11 @@ requirements:
 - sentencepiece==0.1.99
 - torch==2.0.1
 - transformers==4.32.1
-model_cache:
-- repo_id: meta-llama/Llama-2-70b-chat-hf
-  allow_patterns:
-    - "*.json"
-    - "*.safetensors"
-    - "*.model"
 resources:
-  cpu: "3"
+  accelerator: A100:2
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A100:2
 secrets:
-  hf_access_token: "ENTER HF API KEY HERE"
-spec_version: '2.0'
+  hf_access_token: ENTER HF API KEY HERE
 system_packages: []

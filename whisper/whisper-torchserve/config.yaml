@@ -1,0 +1,23 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Whisper Torchserve
+python_version: py310
+requirements:
+  - torch==2.1.0
+  - torchserve==0.9.0
+  - ffmpeg-python==0.2.0
+  - transformers==4.37.2
+  - nvgpu==0.10.0
+  - httpx==0.27.0
+resources:
+  accelerator: T4
+  use_gpu: true
+model_cache:
+  - repo_id: htrivedi99/whisper-torchserve
+secrets: {}
+system_packages:
+  - ffmpeg
+  - openjdk-11-jdk
+runtime:
+  predict_concurrency: 128

@@ -1,23 +1,14 @@
-bundled_packages_dir: packages
-data_dir: data
 description: StableLM is an open-source AI language model developed by StabilityAI
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
-  example_model_input: {"prompt": "<|USER|>What's your mood today?<|ASSISTANT|>"}
   avatar_url: https://cdn.baseten.co/production/static/explore/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/stable-lm.png
+  example_model_input:
+    prompt: <|USER|>What's your mood today?<|ASSISTANT|>
   tags:
   - text-generation
-model_module_dir: model
 model_name: StableLM
-model_type: custom
 python_version: py38
 requirements:
 - torch==2.0.1
@@ -27,10 +18,9 @@ requirements:
 - bitsandbytes==0.39.0
 - git+https://github.com/huggingface/transformers.git
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-spec_version: '2.0'
 system_packages: []

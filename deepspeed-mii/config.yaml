@@ -1,29 +1,30 @@
-spec_version: '2.0'
-model_name: Llama-2-chat 7B DeepSpeed MII
-description: Generate text from a prompt with this seven billion parameter language model.
+description: Generate text from a prompt with this seven billion parameter language
+  model.
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
-  # huggingface repo or folder with model files
-  repo_id: meta-llama/Llama-2-7b-chat-hf
-  # increase `max_length` if you need to support larger inputs/outputs
-  max_length: 4096
-  # increase `tensor_parallel` to use more than one GPU
-  tensor_parallel: 1
-  example_model_input: {"prompt": "What's the meaning of life?", "max_tokens": 1024}
   avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  example_model_input:
+    max_tokens: 1024
+    prompt: What's the meaning of life?
+  max_length: 4096
+  repo_id: meta-llama/Llama-2-7b-chat-hf
   tags:
   - text-generation
+  tensor_parallel: 1
+model_name: Llama-2-chat 7B DeepSpeed MII
 python_version: py311
 requirements:
 - deepspeed-mii==0.1.1
 resources:
-  cpu: "3"
+  accelerator: A100
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A100
+runtime:
+  predict_concurrency: 256
 secrets:
   hf_access_token: null
 system_packages:
 - cuda-toolkit-12-2
-runtime:
-  predict_concurrency: 256

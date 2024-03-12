@@ -1,23 +1,13 @@
-bundled_packages_dir: packages
-data_dir: data
 description: Bark is a transformer-based text-to-audio model created by Suno
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/sunoai.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/bark.png
+  example_model_input: '"text to speech models are cool"'
   tags:
   - text-to-speech
-  example_model_input: '"text to speech models are cool"'
-model_module_dir: model
 model_name: Bark
-model_type: custom
 python_version: py39
 requirements:
 - torch
@@ -27,11 +17,10 @@ requirements:
 - torchaudio
 resources:
   accelerator: A10G
-  cpu: "2"
-  memory: "10Gi"
+  cpu: '2'
+  memory: 10Gi
   use_gpu: true
 secrets: {}
-spec_version: '2.0'
 system_packages: []
 train:
   resources:

@@ -1,13 +1,13 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: Model with multiprocessing pre/post-process
 python_version: py310
 requirements:
-  - torch
+- torch
 resources:
   accelerator: A10G
   cpu: '8'
   memory: 8Gi
   use_gpu: true
 secrets: {}
+system_packages: []

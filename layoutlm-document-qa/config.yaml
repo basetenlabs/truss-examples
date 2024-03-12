@@ -1,24 +1,15 @@
-base_image: null
-bundled_packages_dir: packages
-data_dir: data
 description: Extract information from images of invoices
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
-  example_model_input: {"prompt": "What is the invoice number?", "url": "https://templates.invoicehome.com/invoice-template-us-neat-750px.png"}
   avatar_url: https://cdn.baseten.co/production/static/explore/impira-logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/document-qa.png
+  example_model_input:
+    prompt: What is the invoice number?
+    url: https://templates.invoicehome.com/invoice-template-us-neat-750px.png
   tags:
   - text-generation
-model_module_dir: model
 model_name: LayoutLM Document QA
-model_type: custom
 python_version: py39
 requirements:
 - Pillow==10.0.0
@@ -26,11 +17,10 @@ requirements:
 - torch==2.0.1
 - transformers==4.30.2
 resources:
-  cpu: "4"
+  accelerator: null
+  cpu: '4'
   memory: 16Gi
   use_gpu: false
-  accelerator: null
 secrets: {}
-spec_version: '2.0'
 system_packages:
 - tesseract-ocr

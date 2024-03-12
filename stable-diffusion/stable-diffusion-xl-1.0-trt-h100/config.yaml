@@ -5,53 +5,45 @@ description: Generate original images from text prompts.
 environment_variables:
   HF_HUB_ENABLE_HF_TRANSFER: 1
 external_package_dirs: []
+model_cache:
+- repo_id: baseten/sdxl-1.0-trt-8.6.1.post1-engine-H100
+- allow_patterns:
+  - config.json
+  - diffusion_pytorch_model.safetensors
+  repo_id: madebyollin/sdxl-vae-fp16-fix
+- allow_patterns:
+  - '*.json'
+  - '*.fp16.safetensors'
+  - sd_xl_base_1.0.safetensors
+  repo_id: stabilityai/stable-diffusion-xl-base-1.0
+- allow_patterns:
+  - '*.json'
+  - '*.fp16.safetensors'
+  - sd_xl_refiner_1.0.safetensors
+  repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
 model_metadata:
-  example_model_input: {"prompt": "Astronaut in a jungle, cold color palette, muted colors, detailed, 8k"}
-  pretty_name: Stable Diffusion XL - TensorRT
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  example_model_input:
+    prompt: Astronaut in a jungle, cold color palette, muted colors, detailed, 8k
+  pretty_name: Stable Diffusion XL - TensorRT
   tags:
   - image-generation
 model_name: Stable Diffusion XL - TensorRT
-model_framework: custom
-model_type: custom
-model_cache:
-  - repo_id: "baseten/sdxl-1.0-trt-8.6.1.post1-engine-H100"
-  - repo_id: madebyollin/sdxl-vae-fp16-fix
-    allow_patterns:
-      - config.json
-      - diffusion_pytorch_model.safetensors
-  - repo_id: stabilityai/stable-diffusion-xl-base-1.0
-    allow_patterns:
-      - "*.json"
-      - "*.fp16.safetensors"
-      - sd_xl_base_1.0.safetensors
-  - repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
-    allow_patterns:
-      - "*.json"
-      - "*.fp16.safetensors"
-      - sd_xl_refiner_1.0.safetensors
-system_packages:
-- python3.10-venv
-- ffmpeg
-- libsm6
-- libxext6
+python_version: py39
 requirements:
 - accelerate
 - colored
 - cuda-python
 - ftfy
 - nvtx
-# [Important] This version is necessary
 - opencv-python==4.8.0.74
 - scipy
 - transformers==4.31.0
 - safetensors
 - hf_transfer
-# [Important] trt may not work with all versions, this version is important
 - diffusers==0.23.1
 - invisible-watermark>=0.2.0
-# [Important] Make sure nvidia packages are at the end
 - --extra-index-url https://pypi.ngc.nvidia.com
 - polygraphy
 - --extra-index-url https://pypi.nvidia.com
@@ -59,6 +51,11 @@ requirements:
 resources:
   accelerator: H100
   use_gpu: true
-secrets: {}
 runtime:
   predict_concurrency: 1
+secrets: {}
+system_packages:
+- python3.10-venv
+- ffmpeg
+- libsm6
+- libxext6

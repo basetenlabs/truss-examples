@@ -1,7 +1,10 @@
 base_image:
   image: baseten/trtllm-build-server:r23.12_baseten_v0.7.1_20240111
   python_executable_path: /usr/bin/python3
-description: Generate text from a prompt with this seven billion parameter language model.
+description: Generate text from a prompt with this seven billion parameter language
+  model.
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
@@ -12,7 +15,10 @@ model_metadata:
       max_output_len: 2000
       pp_size: 1
       tp_size: 1
-  example_model_input: {"messages": [{"role": "user", "content": "What is the mistral wind?"}]}
+  example_model_input:
+    messages:
+    - content: What is the mistral wind?
+      role: user
   tags:
   - text-generation
   - openai-compatible
@@ -29,3 +35,5 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: []

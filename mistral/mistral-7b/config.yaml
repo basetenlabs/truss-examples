@@ -1,10 +1,11 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "What is the Mistral wind?"}
-  pretty_name: Mistral 7B
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  example_model_input:
+    prompt: What is the Mistral wind?
+  pretty_name: Mistral 7B
   tags:
   - text-generation
 model_name: mistral-7b
@@ -16,7 +17,7 @@ requirements:
 - torch==2.0.1
 resources:
   accelerator: A10G
-  use_gpu: true
   memory: 25Gi
+  use_gpu: true
 secrets: {}
 system_packages: []

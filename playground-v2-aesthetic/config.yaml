@@ -1,29 +1,31 @@
 description: Generate original images from text prompts.
 environment_variables: {}
 external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.txt'
+  - '*.fp16.safetensors'
+  repo_id: playgroundai/playground-v2-1024px-aesthetic
 model_metadata:
-  example_model_input: {"prompt": "A scenic mountain landscape", "num_inference_steps": 50}
-  pretty_name: Playground V2
   avatar_url: https://cdn.baseten.co/production/static/playground-logo.jpeg
   cover_image_url: https://cdn.baseten.co/production/static/playground-v2.png
+  example_model_input:
+    num_inference_steps: 50
+    prompt: A scenic mountain landscape
+  pretty_name: Playground V2
   tags:
   - image-generation
 model_name: Playground V2 Aesthetic
 python_version: py310
 requirements:
-  - torch==2.1.1
-  - transformers==4.35.2
-  - diffusers==0.24.0
-  - accelerate==0.25.0
-model_cache:
-- repo_id: "playgroundai/playground-v2-1024px-aesthetic"
-  allow_patterns:
-    - "*.json"
-    - "*.txt"
-    - "*.fp16.safetensors"
+- torch==2.1.1
+- transformers==4.35.2
+- diffusers==0.24.0
+- accelerate==0.25.0
 resources:
   accelerator: A10G
-  cpu: "2"
+  cpu: '2'
   memory: 10Gi
   use_gpu: true
 secrets: {}

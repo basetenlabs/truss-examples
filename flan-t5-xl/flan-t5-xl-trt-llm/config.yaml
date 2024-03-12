@@ -6,14 +6,16 @@ external_package_dirs: []
 model_metadata:
   repo_id: baseten/flan-t5-xl-trt-A100-tp1-1024x200
 model_name: Flan T5 XL TRT
+python_version: py39
 requirements:
-  - mpi4py==3.1.5
-  - pynvml==11.5.0
+- mpi4py==3.1.5
+- pynvml==11.5.0
 resources:
   accelerator: A100
   use_gpu: true
 runtime:
   predict_concurrency: 16
+secrets: {}
 system_packages:
 - libopenmpi-dev
 - mpich

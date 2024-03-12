@@ -1,0 +1,28 @@
+base_image:
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+description: Generate text from a prompt with this seven billion parameter language
+  model.
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: true
+external_package_dirs: []
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  engine_repository: baseten/solar10.7
+  tags:
+  - text-generation
+  tensor_parallelism: 1
+  tokenizer_repository: upstage/SOLAR-10.7B-Instruct-v1.0
+model_name: Solar 10.7B
+python_version: py311
+requirements:
+- tritonclient[all]
+- hf_transfer
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
+secrets: {}
+system_packages: []

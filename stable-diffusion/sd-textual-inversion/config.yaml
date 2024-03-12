@@ -1,3 +1,5 @@
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   pretty_name: Stable Diffusion - Textual Inversion
   tags:

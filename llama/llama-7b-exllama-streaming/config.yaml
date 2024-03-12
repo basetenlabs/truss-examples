@@ -3,7 +3,6 @@ base_image:
   python_executable_path: /usr/bin/python
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: exllama-streaming
 python_version: py311
 requirements:

@@ -1,20 +1,14 @@
-base_image: null
-bundled_packages_dir: packages
-data_dir: data
-description: null
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.model'
+  repo_id: meta-llama/Llama-2-13b-hf
 model_metadata:
   repo_id: meta-llama/Llama-2-13b-hf
-model_module_dir: model
 model_name: Llama 13B
-model_type: custom
 python_version: py39
 requirements:
 - accelerate==0.22.0
@@ -28,18 +22,11 @@ requirements:
 - sentencepiece==0.1.99
 - torch==2.0.1
 - transformers==4.32.1
-model_cache:
-- repo_id: meta-llama/Llama-2-13b-hf
-  allow_patterns:
-    - "*.json"
-    - "*.safetensors"
-    - "*.model"
 resources:
-  cpu: "3"
+  accelerator: A100:1
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A100:1
 secrets:
   hf_access_token: null
-spec_version: '2.0'
 system_packages: []

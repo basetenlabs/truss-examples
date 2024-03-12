@@ -1,16 +1,22 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"messages": [{"role": "system", "content": "You are a friendly chatbot who always responds in the style of a pirate"},{"role": "user", "content": "How much gold is too much gold?"}]}
+  example_model_input:
+    messages:
+    - content: You are a friendly chatbot who always responds in the style of a pirate
+      role: system
+    - content: How much gold is too much gold?
+      role: user
 model_name: Solar 10.7B Instruct
 python_version: py310
 requirements:
-  - accelerate==0.25.0
-  - transformers==4.35.2
-  - torch==2.1.0
+- accelerate==0.25.0
+- transformers==4.35.2
+- torch==2.1.0
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
+secrets: {}
 system_packages: []

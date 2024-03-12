@@ -1,12 +1,15 @@
 description: Generate text with an instruction-tuned version of Mistral 7B.
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
-  engine_args:
-    model: mistralai/Mistral-7B-Instruct-v0.1
-  prompt_format: <s>[INST] {prompt} [/INST]
-  example_model_input: {"prompt": "What is the Mistral wind?"}
-  pretty_name: Mistral 7B Instruct
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  engine_args:
+    model: mistralai/Mistral-7B-Instruct-v0.1
+  example_model_input:
+    prompt: What is the Mistral wind?
+  pretty_name: Mistral 7B Instruct
+  prompt_format: <s>[INST] {prompt} [/INST]
   tags:
   - text-generation
 model_name: Mistral 7B Instruct vLLM
@@ -15,7 +18,9 @@ requirements:
 - vllm==0.2.1.post1
 resources:
   accelerator: A10G
-  use_gpu: true
   memory: 25Gi
+  use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: []

@@ -1,5 +1,11 @@
-input_type: Any
 description: Restore photos with this image-to-image model.
+environment_variables: {}
+external_data:
+- local_data_path: RealESRGAN_x2plus.pth
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
+- local_data_path: GFPGANv1.3.pth
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
+external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/tencent.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/gfp-gan.png
@@ -14,16 +20,12 @@ requirements:
 - basicsr==1.4.2
 - torchvision==0.16.2
 resources:
-  cpu: "3"
+  cpu: '3'
   memory: 8Gi
   use_gpu: true
+secrets: {}
+spec_version: 2.0
 system_packages:
 - ffmpeg
 - libsm6
 - libxext6
-spec_version: 2.0
-external_data:
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
-    local_data_path: RealESRGAN_x2plus.pth
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
-    local_data_path: GFPGANv1.3.pth

@@ -1,15 +1,19 @@
 base_image:
   image: baseten/truss-server-base:3.10-gpu-v0.4.9
   python_executable_path: /usr/bin/python3
-model_name: Faster Whisper
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
-  pretty_name: Whisper
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png
-  example_model_input: {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
+  example_model_input:
+    url: https://cdn.baseten.co/docs/production/Gettysburg.mp3
   model_id: large-v2
+  pretty_name: Whisper
   tags:
   - speech-recognition
+model_name: Faster Whisper
+python_version: py39
 requirements:
 - faster-whisper==0.10.0
 resources:
@@ -17,3 +21,5 @@ resources:
   cpu: 500m
   memory: 512Mi
   use_gpu: true
+secrets: {}
+system_packages: []

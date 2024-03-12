@@ -1,20 +1,32 @@
 base_image:
   image: baseten/trtllm-server:r23.12_baseten_v0.7.1
   python_executable_path: /usr/bin/python3
-description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with OpenAI Client
+description: Mistral 7B Instruct, optimized with TRT-LLM for chat! Compatible with
+  OpenAI Client
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+- repo_id: baseten/mistralai_Mistral-7B-Instruct-v0.2_v0.7.1_49bbc5
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   engine_repository: baseten/mistralai_Mistral-7B-Instruct-v0.2_v0.7.1_49bbc5
-  example_model_input: {"messages": [{"role": "user", "content": "What is your favourite condiment?"}, {"role": "assistant", "content": "Well, I'm quite partial to a good squeeze of fresh lemon juice. It adds just the right amount of zesty flavour to whatever I'm cooking up in the kitchen!"}, {"role": "user", "content": "Do you have mayonnaise recipes?"}]}
+  example_model_input:
+    messages:
+    - content: What is your favourite condiment?
+      role: user
+    - content: Well, I'm quite partial to a good squeeze of fresh lemon juice. It
+        adds just the right amount of zesty flavour to whatever I'm cooking up in
+        the kitchen!
+      role: assistant
+    - content: Do you have mayonnaise recipes?
+      role: user
   tags:
   - text-generation
   - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
 model_name: Mistral 7B Instruct Chat TRT-LLM
-model_cache:
-- repo_id: "baseten/mistralai_Mistral-7B-Instruct-v0.2_v0.7.1_49bbc5"
 python_version: py311
 requirements:
 - tritonclient[all]
@@ -25,3 +37,5 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 256
+secrets: {}
+system_packages: []

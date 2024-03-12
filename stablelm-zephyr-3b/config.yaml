@@ -1,15 +1,15 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
 model_name: StableLM Zephyr 3B
 python_version: py310
 requirements:
-  - accelerate==0.25.0
-  - transformers==4.35.2
-  - torch==2.1.0
+- accelerate==0.25.0
+- transformers==4.35.2
+- torch==2.1.0
 resources:
-  cpu: "2"
+  accelerator: A10G
+  cpu: '2'
   memory: 10Gi
   use_gpu: true
-  accelerator: A10G
+secrets: {}
 system_packages: []

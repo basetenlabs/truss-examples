@@ -1,19 +1,17 @@
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
+model_cache:
+- repo_id: PygmalionAI/pygmalion-6b
 model_name: pygmalion6b
 python_version: py39
 requirements:
 - transformers==4.30.2
 - torch==2.0.1
 - accelerate==0.21.0
-model_cache:
-- repo_id: PygmalionAI/pygmalion-6b
 resources:
   accelerator: A10G
-  cpu: "8"
+  cpu: '8'
   memory: 30Gi
   use_gpu: true
 secrets: {}
-spec_version: '2.0'
 system_packages: []

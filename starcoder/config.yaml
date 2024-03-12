@@ -1,28 +1,18 @@
-bundled_packages_dir: packages
-data_dir: data
-description: null
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
-model_metadata: {}
-model_module_dir: model
+external_package_dirs: []
 model_name: Starcoder
-model_type: custom
 python_version: py39
 requirements:
-  - torch
-  - transformers
-  - accelerate
-  - joblib
+- torch
+- transformers
+- accelerate
+- joblib
 resources:
-  cpu: "4"
+  accelerator: A100:1
+  cpu: '4'
   memory: 85Gi
   use_gpu: true
-  accelerator: "A100:1"
 secrets:
   hf_access_token: null
-system_packages: []
 spec_version: 2.0
+system_packages: []

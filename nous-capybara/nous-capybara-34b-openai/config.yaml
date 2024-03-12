@@ -1,22 +1,23 @@
 environment_variables: {}
 external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.bin'
+  repo_id: NousResearch/Nous-Capybara-34B
 model_name: Nous Capybara 34B OpenAI
 python_version: py310
 requirements:
-  - accelerate==0.25.0
-  - transformers==4.35.2
-  - torch==2.1.0
-  - bitsandbytes==0.41.3
-  - scipy==1.11.4
-  - sentencepiece==0.1.99
+- accelerate==0.25.0
+- transformers==4.35.2
+- torch==2.1.0
+- bitsandbytes==0.41.3
+- scipy==1.11.4
+- sentencepiece==0.1.99
 resources:
-  cpu: "3"
+  accelerator: A100
+  cpu: '3'
   memory: 20Gi
   use_gpu: true
-  accelerator: A100
+secrets: {}
 system_packages: []
-model_cache:
-  - repo_id: "NousResearch/Nous-Capybara-34B"
-    allow_patterns:
-      - "*.json"
-      - "*.bin"
