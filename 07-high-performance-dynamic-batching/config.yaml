@@ -1,6 +1,22 @@
-model_name: Dynamic Batching Example
+base_image:
+  image: baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+model_name: Dynamic Batching Example - TRT Whisper
 python_version: py311
 requirements:
 - async-batcher==0.2.0
+- mpi4py==3.1.5
+- pynvml==11.5.0
+- huggingface_hub
+- tiktoken
+- datasets
+- kaldialign
+- openai-whisper
+- soundfile
+system_packages:
+- python3.10-venv
+- ffmpeg
+resources:
+  accelerator: A10G
 runtime:
   predict_concurrency: 256

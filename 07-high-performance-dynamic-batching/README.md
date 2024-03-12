@@ -13,7 +13,7 @@ This repository contains an implementation designed to enable dynamic batching f
 To deploy this as a normal Truss, ensure you have the Truss CLI installed and configured. Then, follow these steps:
 
 1. Clone this repository to your local machine.
-2. Navigate to the repository directory and build the Truss using the command `truss up`.
+2. Navigate to the repository directory and build the Truss using the command `truss push --publish`.
 3. Once the build completes, deploy the Truss to your desired environment.
 
 ## Configuration

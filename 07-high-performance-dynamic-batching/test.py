@@ -1,6 +1,8 @@
 import httpx
 import asyncio
 
+BASETEN_API_KEY = "bsKlILqX...."
+
 
 async def send_post_request(url, data, task_id, headers=None):
     async with httpx.AsyncClient() as client:
@@ -22,5 +24,5 @@ async def send_concurrent_requests(url, data, headers=None):
 asyncio.run(send_concurrent_requests(
         "https://model-2qjdzkpq.api.baseten.co/development/predict",
         {},
-        headers={"Authorization": "Api-Key bsKlILqX.yBB4Zsfcv9JLkEAvZhc7ZsnIEQNyuYIP"},
+        headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"},
     ))
