@@ -1,0 +1,6 @@
+model_name: Dynamic Batching Example
+python_version: py311
+requirements:
+- async-batcher==0.2.0
+runtime:
+  predict_concurrency: 256
