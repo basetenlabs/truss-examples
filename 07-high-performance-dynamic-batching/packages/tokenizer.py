@@ -122,12 +122,11 @@ LANGUAGES = {
 }
 
 
-def get_tokenizer(name: str = "multilingual",
-                  num_languages: int = 99,
-                  tokenizer_dir: str = None):
+def get_tokenizer(
+    name: str = "multilingual", num_languages: int = 99, tokenizer_dir: str = None
+):
     if tokenizer_dir is None:
-        vocab_path = os.path.join(os.path.dirname(__file__),
-                                  f"assets/{name}.tiktoken")
+        vocab_path = os.path.join(os.path.dirname(__file__), f"assets/{name}.tiktoken")
     else:
         vocab_path = os.path.join(tokenizer_dir, f"{name}.tiktoken")
     ranks = {
@@ -157,8 +156,7 @@ def get_tokenizer(name: str = "multilingual",
     return tiktoken.Encoding(
         name=os.path.basename(vocab_path),
         explicit_n_vocab=n_vocab,
-        pat_str=
-        r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""",
+        pat_str=r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""",
         mergeable_ranks=ranks,
         special_tokens=special_tokens,
     )
@@ -172,8 +170,8 @@ if __name__ == "__main__":
     mystr2 = enc.decode([50361, 46284, 50258, 50259, 50359])
     print(encoding, mystr, mystr2)
     print(
-        enc.encode("<|startoftranscript|>",
-                   allowed_special=enc.special_tokens_set)[0])
+        enc.encode("<|startoftranscript|>", allowed_special=enc.special_tokens_set)[0]
+    )
 
     my_zh_str = "好好学习"
     encoding = enc.encode(my_zh_str, allowed_special=enc.special_tokens_set)
