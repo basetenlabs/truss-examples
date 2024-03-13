@@ -1,17 +1,26 @@
 import base64
+import gc
+import os
+import re
 from tempfile import NamedTemporaryFile
+
+import torch
 from async_batcher.batcher import AsyncBatcher
 from huggingface_hub import snapshot_download
 from run import WhisperTRTLLM
-import gc
-import re
-import os
-from whisper_utils import (
-    log_mel_spectrogram,
-)
-
-import torch
 from torch import Tensor
+from whisper_utils import log_mel_spectrogram
+
+TEXT_PREFIX = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
+
+# Num beams is the number of paths the model traverses before transcribing the text
+NUM_BEAMS = 3
+
+# Max queue time is the amount of time in seconds to wait to fill the batch
+MAX_QUEUE_TIME = 0.25
+
+# Maximum size of the batch. This is dictated by the compiled engine.
+MAX_BATCH_SIZE = 8
 
 
 class MlBatcher(AsyncBatcher[list[Tensor], list[str]]):
@@ -20,11 +29,9 @@ class MlBatcher(AsyncBatcher[list[Tensor], list[str]]):
         self.model: WhisperTRTLLM = model
 
     def process_batch(self, batch: list[Tensor]) -> list[float]:
-        text_prefix="<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
-        num_beams=1
         # Need to pad the batch up to the maximum batch size
         features = torch.cat(batch, dim=0).type(torch.float16)
-        return self.model.process_batch(features, text_prefix, num_beams)
+        return self.model.process_batch(features, TEXT_PREFIX, NUM_BEAMS)
 
 
 class Model:
@@ -35,19 +42,18 @@ class Model:
         gc.freeze()
 
     def load(self):
-        # Load model here and assign to self._model.
+        # Download the compiled model from hugging face hub
         snapshot_download(
-            "baseten/trtllm-whisper-a10g-1", local_dir=self._data_dir, max_workers=4
+            "baseten/trtllm-whisper-a10g-large-v2-1",
+            local_dir=self._data_dir,
+            max_workers=4,
         )
-        os.system(
-            "wget --directory-prefix=/packages/assets https://raw.githubusercontent.com/openai/whisper/main/whisper/assets/multilingual.tiktoken"
-        )
-        os.system(
-            "wget --directory-prefix=/packages/assets https://raw.githubusercontent.com/openai/whisper/main/whisper/assets/mel_filters.npz"
-        )
+
         self._model = WhisperTRTLLM(f"{self._data_dir}")
         self._batcher = MlBatcher(
-            model=self._model, max_batch_size=8, max_queue_time=0.5
+            model=self._model,
+            max_batch_size=MAX_BATCH_SIZE,
+            max_queue_time=MAX_QUEUE_TIME,
         )
 
     def base64_to_wav(self, base64_string, output_file_path):
@@ -55,11 +61,10 @@ class Model:
         with open(output_file_path, "wb") as wav_file:
             wav_file.write(binary_data)
         return output_file_path
-    
 
     async def predict(self, model_input: dict):
         # TODO: figure out what the normalizer is for
-        normalizer=None
+        normalizer = None
         with NamedTemporaryFile() as fp:
             self.base64_to_wav(model_input["audio"], fp.name)
             mel, total_duration = log_mel_spectrogram(
@@ -67,16 +72,14 @@ class Model:
                 self._model.n_mels,
                 device="cuda",
                 return_duration=True,
-                mel_filters_dir="/packages/assets",
+                mel_filters_dir=f"{self._data_dir}/assets",
             )
             mel = mel.type(torch.float16)
             mel = mel.unsqueeze(0)
             prediction = await self._batcher.process(item=mel)
-            
+
             # remove all special tokens in the prediction
             prediction = re.sub(r"<\|.*?\|>", "", prediction)
             if normalizer:
                 prediction = normalizer(prediction)
-            results = [(0, [""], prediction.split())]
-            return results, total_duration
-
+            return {"text": prediction.strip(), "duration": total_duration}

@@ -1,18 +1,20 @@
 base_image:
   image: baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
   python_executable_path: /usr/bin/python3
-model_name: Dynamic Batching Example - TRT Whisper
+model_name: TRT Whisper - Dynamic Batching
 python_version: py311
 requirements:
 - async-batcher==0.2.0
 - mpi4py==3.1.5
 - pynvml==11.5.0
-- huggingface_hub
-- tiktoken
-- datasets
-- kaldialign
-- openai-whisper
-- soundfile
+- huggingface_hub==0.20.3
+- tiktoken==0.6.0
+- datasets==2.17.1
+- kaldialign==0.9
+- openai-whisper==20231117
+- soundfile==0.12.1
+model_cache:
+  - repo_id: baseten/trtllm-whisper-a10g-large-v2-1
 system_packages:
 - python3.10-venv
 - ffmpeg
@@ -20,3 +22,8 @@ resources:
   accelerator: A10G
 runtime:
   predict_concurrency: 256
+external_data:
+- local_data_path: assets/multilingual.tiktoken
+  url: https://raw.githubusercontent.com/openai/whisper/main/whisper/assets/multilingual.tiktoken
+- local_data_path: assets/mel_filters.npz
+  url: https://raw.githubusercontent.com/openai/whisper/main/whisper/assets/mel_filters.npz
