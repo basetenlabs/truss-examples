@@ -1,0 +1,20 @@
+model_metadata:
+  engine_args:
+    model: TheBloke/Llama-2-7B-Chat-fp16
+  example_model_input:
+    prompt: Where do Llamas come from?
+  pretty_name: Llama 2 7B
+  prompt_format: <s>[INST] {prompt} [/INST]
+  tags:
+  - text-generation
+model_name: Llama 7B Instruct vLLM
+python_version: py311
+requirements:
+- vllm==0.2.1.post1
+resources:
+  accelerator: A10G
+  memory: 25Gi
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
+system_packages: []
