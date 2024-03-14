@@ -48,18 +48,17 @@ class Model:
 
     # inference code from: https://github.com/haotian-liu/LLaVA/blob/82fc5e0e5f4393a4c26851fa32c69ab37ea3b146/predict.py#L87
     def predict(self, model_input):
-        query = model_input["query"]
-        image = model_input["image"]
-        stream = model_input.pop("stream", False)
+        query = model_input.get("query")
+        image = model_input.get("image")
+        top_p = model_input.get("top_p", 1.0)
+        temperature = model_input.get("temperature", 0.2)
+        max_tokens = model_input.get("max_tokens", 512)
+        stream = model_input.get("stream", True)
 
         if image[:5] == "https":
             image = Image.open(requests.get(image, stream=True).raw).convert("RGB")
         else:
             image = b64_to_pil(image)
-
-        top_p = model_input.get("top_p", 1.0)
-        temperature = model_input.get("temperature", 0.2)
-        max_tokens = model_input.get("max_tokens", 512)
 
         # Run model inference here
         conv_mode = "llava_v1"
@@ -91,45 +90,35 @@ class Model:
             keywords, self.tokenizer, input_ids
         )
 
-        if stream:
+        generate_args = {
+            "inputs": input_ids,
+            "images": image_tensor,
+            "do_sample": True,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_new_tokens": max_tokens,
+            "use_cache": True,
+            "stopping_criteria": [stopping_criteria],
+        }
+
+        def generator():
             streamer = TextIteratorStreamer(
                 self.tokenizer, skip_prompt=True, timeout=20.0
             )
-            with torch.inference_mode():
-                thread = Thread(
-                    target=self.model.generate,
-                    kwargs=dict(
-                        inputs=input_ids,
-                        images=image_tensor,
-                        do_sample=True,
-                        temperature=temperature,
-                        top_p=top_p,
-                        max_new_tokens=max_tokens,
-                        streamer=streamer,
-                        use_cache=True,
-                        stopping_criteria=[stopping_criteria],
-                    ),
-                )
-                thread.start()
-
-                for text in streamer:
-                    yield text
-                thread.join()
-
-        else:
-            with torch.inference_mode():
-                output = self.model.generate(
-                    inputs=input_ids,
-                    images=image_tensor,
-                    do_sample=True,
-                    temperature=temperature,
-                    top_p=top_p,
-                    max_new_tokens=max_tokens,
-                    use_cache=True,
-                    stopping_criteria=[stopping_criteria],
-                )
-
-            output = self.tokenizer.decode(
-                output[0][len(input_ids[0]) :], skip_special_tokens=True
+            thread = Thread(
+                target=self.model.generate,
+                kwargs={**generate_args, "streamer": streamer},
             )
-            return {"result": output}
+            thread.start()
+            for text in streamer:
+                yield text
+            thread.join()
+
+        with torch.inference_mode():
+            if stream:
+                return generator()
+            else:
+                full_text = ""
+                for text in generator():
+                    full_text += text
+                return {"result": full_text}
