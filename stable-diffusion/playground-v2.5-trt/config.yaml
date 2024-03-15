@@ -38,6 +38,7 @@ requirements:
 - --extra-index-url https://pypi.nvidia.com
 - tensorrt==8.6.1.post1
 resources:
+  memory: 20Gi
   accelerator: A10G
   use_gpu: true
 runtime:
