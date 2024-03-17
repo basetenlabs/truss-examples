@@ -1,0 +1,34 @@
+description: PhotoMaker Truss Example for customizing realistic human photos with high fidelity and diverse text controllability.
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+  - allow_patterns:
+      - '*.json'
+      - '*.txt'
+      - '*.fp16.safetensors'
+    repo_id: TencentARC/PhotoMaker
+model_metadata:
+  example_model_input:
+    prompt: "A portrait of a person in a futuristic cityscape, 4k, ultra-realistic"
+  tags:
+    - image-generation
+    - photomaker
+    - realistic-human-photos
+model_name: PhotoMaker Truss Example
+python_version: py310
+requirements:
+  - torch
+  - transformers
+  - diffusers
+  - accelerate
+  - git+https://github.com/TencentARC/PhotoMaker.git
+resources:
+  accelerator: A100
+  cpu: '4'
+  memory: 16Gi
+  use_gpu: true
+  gpu_memory_min: 11G
+secrets: {}
+system_packages:
+  - ffmpeg
+  - libgl1-mesa-glx
