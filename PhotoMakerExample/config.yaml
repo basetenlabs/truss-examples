@@ -1,0 +1,27 @@
+system_dependencies:
+  python: ">=3.8"
+  pytorch: ">=2.0.0"
+conda_environment:
+  name: photomaker
+  create: "conda create --name photomaker python=3.10"
+  activate: "conda activate photomaker"
+  install_dependencies:
+    - "pip install -U pip"
+    - "pip install -r requirements.txt"
+    - "pip install git+https://github.com/TencentARC/PhotoMaker.git"
+model_caching:
+  hugging_face:
+    - repo_id: "TencentARC/PhotoMaker"
+      filename: "photomaker-v1.bin"
+      repo_type: "model"
+      download_instruction: "from huggingface_hub import hf_hub_download; photomaker_path = hf_hub_download(repo_id='TencentARC/PhotoMaker', filename='photomaker-v1.bin', repo_type='model')"
+usage_examples:
+  importing_pipeline: "from photomaker import PhotoMakerStableDiffusionXLPipeline"
+  initializing_pipeline: "pipe = PhotoMakerStableDiffusionXLPipeline()"
+  loading_model: "pipe.load_model(photomaker_path)"
+  running_predictions:
+    - "image = pipe.predict('A happy person walking in the park')"
+    - "image.save('output_image.png')"
+testing_model:
+  local_gradio_demo: "Run a local Gradio demo using the `app.py` file in the `gradio_demo` directory."
+  mac_users: "For MAC users, follow the instructions in `MacGPUEnv.md`."
