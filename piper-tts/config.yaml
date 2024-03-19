@@ -1,20 +1,23 @@
 environment_variables: {}
+external_data:
+- local_data_path: models/model.onnx
+  url: https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+- local_data_path: models/model.onnx.json
+  url: https://huggingface.co/rhasspy/piper-voices/raw/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"text": "I love robots. Robots are cool!"}
+  example_model_input:
+    text: I love robots. Robots are cool!
   tags:
   - text-to-speech
 model_name: Piper TTS
 python_version: py310
 requirements:
-  - piper-tts==1.2.0
+- piper-tts==1.2.0
 resources:
-  cpu: "3"
+  accelerator: T4
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: T4
-external_data:
-  - url: https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx
-    local_data_path: models/model.onnx
-  - url: https://huggingface.co/rhasspy/piper-voices/raw/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
-    local_data_path: models/model.onnx.json
+secrets: {}
+system_packages: []

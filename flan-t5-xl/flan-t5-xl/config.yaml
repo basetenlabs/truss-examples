@@ -1,0 +1,28 @@
+description: Generate text from a prompt with this instruction-tuned LLM.
+environment_variables: {}
+external_data:
+- local_data_path: pytorch_model-00001-of-00002.bin
+  url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00001-of-00002.bin
+- local_data_path: pytorch_model-00002-of-00002.bin
+  url: https://baseten-public-models-test.s3.us-west-2.amazonaws.com/bin/pytorch_model-00002-of-00002.bin
+external_package_dirs: []
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/google.png
+  cover_image_url: https://cdn.baseten.co/production/static/flan.png
+  pretty_name: Flan-T5 XL
+  tags:
+  - text-generation
+model_name: Flan-T5 XL
+python_version: py39
+requirements:
+- transformers
+- torch
+- accelerate
+- sentencepiece
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 14Gi
+  use_gpu: true
+secrets: {}
+system_packages: []

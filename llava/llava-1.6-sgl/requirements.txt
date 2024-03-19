@@ -1,0 +1,17 @@
+sglang==0.1.12
+triton==2.1.0
+tqdm==4.66.2
+aiohttp==3.9.3
+psutil==5.9.4
+rpyc==5.3.1
+torch==2.1.2
+vllm==0.3.0
+zmq==0.0.0
+interegular==0.3.3
+lark==1.1.9
+numba==0.59.0
+referencing
+diskcache==5.6.3
+cloudpickle==3.0.0
+pillow==10.2.0
+outlines==0.0.30

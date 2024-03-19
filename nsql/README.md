@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/nsql)
-
 # NSQL Truss
 
 This is a [Truss](https://truss.baseten.co/) for [Number Station](https://www.numbersstation.ai/)'s 350M parameter NSQL model. NSQL is a text-to-SQL foundation model, enabling users to query their databases using natual language. There are also 2B and 6B NSQL variants available, which you can alternatively deploy by editing the HuggingFace paths in `model/model.py`.
@@ -35,17 +33,20 @@ Paste your Baseten API key if prompted.
 For more information, see [Truss documentation](https://truss.baseten.co).
 
 ## NSQL API documentation
-This section provides an overview of the NSQL API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided instruction.
+
+This section provides an overview of the NSQL API, its parameters, and how to use it. The API consists of a single route named `predict`, which you can invoke to generate text based on the provided instruction.
 
 ### API route: `predict`
+
 The predict route is the primary method for generating text completions based on a given instruction. It takes several parameters:
 
-- __schema__: An SQL schema for the table you want to query. You can provide multiple schemas as a single string.
-- __query__: A natural language query over the provided database schemas.
+- **schema**: An SQL schema for the table you want to query. You can provide multiple schemas as a single string.
+- **query**: A natural language query over the provided database schemas.
 
 ## Example usage
 
 You can use the `baseten` model package to invoke your model from Python
+
 ```
 import baseten
 # You can retrieve your deployed model ID from the UI

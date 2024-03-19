@@ -1,38 +1,39 @@
+description: Stable Video Diffusion can turn any image into a short video.
 environment_variables: {}
+external_data:
+- local_data_path: weights/svd.safetensors
+  url: https://huggingface.co/stabilityai/stable-video-diffusion-img2vid/resolve/main/svd.safetensors
+- local_data_path: weights/ViT-L-14.pt
+  url: https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt
 external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/stable-video-diffusion.png
   tags:
   - image-to-video
-description: Stable Video Diffusion can turn any image into a short video.
 model_name: Stable Video Diffusion
 python_version: py310
 requirements:
-  - einops==0.7.0
-  - fire==0.5.0
-  - omegaconf==2.3.0
-  - git+https://github.com/openai/CLIP.git@2dbac9065bb0b4ffc28ecf0e94758261d1ddfdb0
-  - lightning==2.1.2
-  - kornia==0.7.0
-  - open-clip-torch==2.23.0
-  - invisible-watermark==0.2.0
-  - xformers==0.0.22
-  - opencv-python==4.8.0.76
-  - scipy==1.11.3
-  - transformers==4.35.2
-  - hf_transfer==0.1.4
-  - git+https://github.com/Stability-AI/generative-models.git@059d8e9cd9c55aea1ef2ece39abf605efb8b7cc9
+- einops==0.7.0
+- fire==0.5.0
+- omegaconf==2.3.0
+- git+https://github.com/openai/CLIP.git@2dbac9065bb0b4ffc28ecf0e94758261d1ddfdb0
+- lightning==2.1.2
+- kornia==0.7.0
+- open-clip-torch==2.23.0
+- invisible-watermark==0.2.0
+- xformers==0.0.22
+- opencv-python==4.8.0.76
+- scipy==1.11.3
+- transformers==4.35.2
+- hf_transfer==0.1.4
+- git+https://github.com/Stability-AI/generative-models.git@059d8e9cd9c55aea1ef2ece39abf605efb8b7cc9
 resources:
-  cpu: "4"
+  accelerator: A100
+  cpu: '4'
   memory: 16Gi
   use_gpu: true
-  accelerator: A100
+secrets: {}
 system_packages:
-  - libgl1-mesa-glx
-  - ffmpeg
-external_data:
-  - url: https://huggingface.co/stabilityai/stable-video-diffusion-img2vid/resolve/main/svd.safetensors
-    local_data_path: weights/svd.safetensors
-  - url: https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt
-    local_data_path: weights/ViT-L-14.pt
+- libgl1-mesa-glx
+- ffmpeg

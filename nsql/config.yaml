@@ -1,8 +1,6 @@
+description: NSQL is an open-source text-to-SQL AI model developed by Numbers Station.
 environment_variables: {}
 external_package_dirs: []
-model_framework: custom
-model_type: Model
-description: NSQL is an open-source text-to-SQL AI model developed by Numbers Station.
 model_metadata:
   avatar_url: https://aeiljuispo.cloudimg.io/v7/https://cdn-uploads.huggingface.co/production/uploads/649c7ee8f97bd6fd710a9eb5/nBg1Fyo22RrqRJrkz9IYB.png
   cover_image_url: https://global-uploads.webflow.com/6348b2d49808811e3f7a0fff/640690727b722a05771960ec_graphic-data-p-800.png
@@ -15,7 +13,7 @@ requirements:
 - transformers>=4.29.0
 resources:
   accelerator: A10G
-  cpu: "8"
+  cpu: '8'
   memory: 30Gi
   use_gpu: true
 secrets: {}

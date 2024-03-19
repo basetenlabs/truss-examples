@@ -28,6 +28,7 @@ jobs:
       - generate_tests
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         test: ${{ fromJSON(needs.generate_tests.outputs.tests) }}
     steps:

@@ -32,13 +32,6 @@ repos:
         pass_filenames: true
   - repo: local
     hooks:
-      - id: generate
-        name: generate-local
-        entry: poetry run python ./templates/generate.py --only_check --templates templates --root . --config templates/generate.yaml
-        language: system
-        pass_filenames: false
-  - repo: local
-    hooks:
       - id: validate-ci
         name: validate-ci-local
         entry: poetry run python ./bin/validate_ci.py

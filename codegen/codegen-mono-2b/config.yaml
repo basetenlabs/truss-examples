@@ -1,34 +1,26 @@
-bundled_packages_dir: packages
-data_dir: data
 description: Generate Python code from natural language or code prompts.
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+external_data:
+- local_data_path: saved_model/pytorch_model-00001-of-00002.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/codegen-mono-2b/saved_model/pytorch_model-00001-of-00002.bin
+- local_data_path: saved_model/pytorch_model-00002-of-00002.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/codegen-mono-2b/saved_model/pytorch_model-00002-of-00002.bin
+external_package_dirs: []
 model_metadata:
   pretty_name: CodeGen mono 2B
   tags:
   - text-generation
-model_module_dir: model
 model_name: CodeGen mono 2B
-model_type: custom
 python_version: py39
 requirements:
-  - torch
-  - transformers
-  - accelerate
+- torch
+- transformers
+- accelerate
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-system_packages: []
 spec_version: 2.0
-external_data:
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/codegen-mono-2b/saved_model/pytorch_model-00001-of-00002.bin
-    local_data_path: saved_model/pytorch_model-00001-of-00002.bin
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/codegen-mono-2b/saved_model/pytorch_model-00002-of-00002.bin
-    local_data_path: saved_model/pytorch_model-00002-of-00002.bin
+system_packages: []

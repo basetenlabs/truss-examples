@@ -1,21 +1,20 @@
-bundled_packages_dir: packages
-data_dir: data
 description: Generate original images from text prompts.
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+external_data:
+- local_data_path: unet/diffusion_pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/unet/diffusion_pytorch_model.bin
+- local_data_path: text_encoder/pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/text_encoder/pytorch_model.bin
+- local_data_path: vae/diffusion_pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/vae/diffusion_pytorch_model.bin
+external_package_dirs: []
 model_metadata:
-  pretty_name: Stable Diffusion
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  pretty_name: Stable Diffusion
   tags:
   - image-generation
-model_module_dir: model
 model_name: Stable Diffusion
-model_type: custom
 python_version: py39
 requirements:
 - diffusers
@@ -25,17 +24,10 @@ requirements:
 - accelerate
 - pillow
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 14Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-system_packages: []
 spec_version: 2.0
-external_data:
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/unet/diffusion_pytorch_model.bin
-    local_data_path: unet/diffusion_pytorch_model.bin
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/text_encoder/pytorch_model.bin
-    local_data_path: text_encoder/pytorch_model.bin
-  - url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/vae/diffusion_pytorch_model.bin
-    local_data_path: vae/diffusion_pytorch_model.bin
+system_packages: []

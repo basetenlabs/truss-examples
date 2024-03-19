@@ -1,26 +1,28 @@
 environment_variables: {}
 external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.fp16.safetensors'
+  - '*.txt'
+  repo_id: stabilityai/sdxl-turbo
 model_metadata:
-  example_model_input: {"prompt": "A tree in a field under the night sky"}
-  pretty_name: SD Turbo
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  example_model_input:
+    prompt: A tree in a field under the night sky
+  pretty_name: SD Turbo
   tags:
   - image-generation
 model_name: SD Turbo
 python_version: py311
 requirements:
-  - torch==2.0.1
-  - transformers==4.35.2
-  - diffusers==0.23.1
-  - accelerate==0.24.1
-model_cache:
-- repo_id: stabilityai/sdxl-turbo
-  allow_patterns:
-    - "*.json"
-    - "*.fp16.safetensors"
-    - "*.txt"
+- torch==2.0.1
+- transformers==4.35.2
+- diffusers==0.23.1
+- accelerate==0.24.1
 resources:
-  use_gpu: true
   accelerator: T4
+  use_gpu: true
+secrets: {}
 system_packages: []

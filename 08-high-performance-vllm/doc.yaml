@@ -1,4 +1,0 @@
-title: "High Performance LLM with vLLM"
-description: "Deploy a language model with vLLM"
-files:
-  - config.yaml

@@ -1,32 +1,23 @@
-bundled_packages_dir: packages
-data_dir: data
-description: MPT-7B is an open-source AI language model developed by MosaicML. MPT-7B Instruct is a model for short-form instruction following.
+description: MPT-7B is an open-source AI language model developed by MosaicML. MPT-7B
+  Instruct is a model for short-form instruction following.
 environment_variables: {}
-examples_filename: examples.yaml
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
+external_package_dirs: []
 model_metadata:
   avatar_url: https://avatars.githubusercontent.com/u/75143706
   cover_image_url: https://assets-global.website-files.com/61e6fd1bd5174813bfe40bba/64499b1820d2b969b273c45c_butterfly_c.png
   tags:
   - text-generation
-model_module_dir: model
 model_name: MPT-7B Base
-model_type: custom
 python_version: py39
 requirements:
-  - transformers
-  - torch
-  - einops
-  - sentencepiece
+- transformers
+- torch
+- einops
+- sentencepiece
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 50Gi
   use_gpu: true
-  accelerator: A10G
 secrets: {}
-spec_version: '2.0'
 system_packages: []

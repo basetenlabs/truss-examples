@@ -1,24 +1,16 @@
-base_image: null
-bundled_packages_dir: packages
-data_dir: data
 description: Open source LLM.
 environment_variables: {}
-examples_filename: examples.yaml
 external_package_dirs: []
-input_type: Any
-live_reload: false
-model_class_filename: model.py
-model_class_name: Model
-model_framework: custom
 model_metadata:
-  example_model_input: {"prompt": "Write a movie plot about falcons planning to take over the world", "do_sample": True, "max_new_tokens": 300}
   avatar_url: https://cdn.baseten.co/production/static/explore/wizard.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/wizardlm.png
+  example_model_input:
+    do_sample: true
+    max_new_tokens: 300
+    prompt: Write a movie plot about falcons planning to take over the world
   tags:
   - text-generation
-model_module_dir: model
 model_name: Falcon 40B
-model_type: custom
 python_version: py39
 requirements:
 - torch
@@ -29,10 +21,9 @@ requirements:
 - einops
 - git+https://github.com/huggingface/transformers.git
 resources:
-  cpu: "3"
+  accelerator: A100:2
+  cpu: '3'
   memory: 50Gi
   use_gpu: true
-  accelerator: "A100:2"
 secrets: {}
-spec_version: '2.0'
 system_packages: []

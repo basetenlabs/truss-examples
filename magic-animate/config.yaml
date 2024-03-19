@@ -1,30 +1,36 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"reference_image": <BASE64 IMAGE>, "motion_sequence": <BASE64 MP4 FILE>, "steps": 10, "seed": 1, "guidance_scale": 7.5}
+  example_model_input:
+    guidance_scale: 7.5
+    motion_sequence: <BASE64 MP4 FILE>
+    reference_image: <BASE64 IMAGE>
+    seed: 1
+    steps: 10
 model_name: Magic Animate
 python_version: py310
 requirements:
-  - torch==2.0.1
-  - torchvision==0.15.2
-  - xformers==0.0.22
-  - diffusers==0.21.4
-  - pillow==9.5.0
-  - numpy==1.24.4
-  - omegaconf==2.3.0
-  - transformers==4.32.0
-  - einops==0.6.1
-  - imageio==2.9.0
-  - imageio-ffmpeg==0.4.3
-  - tqdm==4.66.1
-  - websockets==11.0.3
-  - accelerate==0.22.0
-  - huggingface-hub==0.16.4
-  - av==11.0.0
+- torch==2.0.1
+- torchvision==0.15.2
+- xformers==0.0.22
+- diffusers==0.21.4
+- pillow==9.5.0
+- numpy==1.24.4
+- omegaconf==2.3.0
+- transformers==4.32.0
+- einops==0.6.1
+- imageio==2.9.0
+- imageio-ffmpeg==0.4.3
+- tqdm==4.66.1
+- websockets==11.0.3
+- accelerate==0.22.0
+- huggingface-hub==0.16.4
+- av==11.0.0
 resources:
-  cpu: "3"
+  accelerator: A10G
+  cpu: '3'
   memory: 15Gi
   use_gpu: true
-  accelerator: A10G
+secrets: {}
 system_packages:
-  - "ffmpeg"
+- ffmpeg

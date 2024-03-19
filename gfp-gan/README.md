@@ -1,5 +1,3 @@
-[![Deploy to Baseten](https://user-images.githubusercontent.com/2389286/236301770-16f46d4f-4e23-4db5-9462-f578ec31e751.svg)](https://app.baseten.co/explore/gfp_gan)
-
 # GFP-GAN Truss
 
 This is a [Truss](https://truss.baseten.co/) for serving an implementation of TencentARC
@@ -38,15 +36,16 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 ### Input
 
 The input should be a dictionary with the following key:
-* `image` - the image to be restored, encoded as base64.
+
+- `image` - the image to be restored, encoded as base64.
 
 ### Output
 
 The model returns a dictionary containing the base64-encoded restored image:
-* `status` - either `success` or `failed`
-* `data` - the restored image, encoded as base64
-* `message` - will contain details in the case of errors
 
+- `status` - either `success` or `failed`
+- `data` - the restored image, encoded as base64
+- `message` - will contain details in the case of errors
 
 ## Example usage
 

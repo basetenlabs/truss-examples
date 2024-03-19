@@ -1,8 +1,13 @@
 description: Zephyr 7B Alpha, optimized for chat! Compatible with OpenAI Client
+environment_variables: {}
+external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/huggingface_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/zephyr_profile.png
-  example_model_input: {"messages": [{"role": "user", "content": "What is the meaning of life?"}]}
+  example_model_input:
+    messages:
+    - content: What is the meaning of life?
+      role: user
   model: HuggingFaceH4/zephyr-7b-alpha
   pretty_name: Zephyr 7B Alpha
   tags:
@@ -20,3 +25,5 @@ resources:
   accelerator: A10G
   memory: 25Gi
   use_gpu: true
+secrets: {}
+system_packages: []

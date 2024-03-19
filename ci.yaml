@@ -5,7 +5,6 @@ tests:
   - 04-image-generation
   - 05-speech-to-text
   - 06-high-performance-cached-weights
-  - 07-high-performance-tgi
   - 10-using-system-packages
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
@@ -17,3 +16,7 @@ tests:
   - stable-diffusion/stable-diffusion-xl-1.0
   - whisper/faster-whisper-v2
   - whisper/faster-whisper-v3
+  - solar-10.7b-instruct-v1.0
+  - llama/llama-2-7b-chat
+  - bark
+  - playground-v2-aesthetic

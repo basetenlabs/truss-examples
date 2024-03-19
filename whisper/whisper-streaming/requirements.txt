@@ -1,0 +1,4 @@
+torch==2.1.0
+faster-whisper==0.10.0
+librosa==0.10.1
+opus-fast-mosestokenizer==0.0.8.5

@@ -16,7 +16,7 @@
 #
 # # Setting up the model.py
 #
-# For this model, we use the HuggingFace transformers library, and the the document-question-answering task.
+# For this model, we use the HuggingFace transformers library, and the document-question-answering task.
 from transformers import pipeline
 
 
