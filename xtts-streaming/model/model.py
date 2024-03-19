@@ -95,14 +95,3 @@ class Model:
             processed_chunk = self.wav_postprocess(chunk)
             processed_bytes = processed_chunk.tobytes()
             yield processed_bytes
-
-        # def inner():
-        #     for chunk in streamer:
-        #         print(type(chunk))
-        #         processed_chunk = self.wav_postprocess(chunk)
-        #         processed_bytes = processed_chunk.tobytes()
-        #         base64_bytes = base64.b64encode(processed_bytes)
-        #         base64_string = base64_bytes.decode('utf-8')
-        #         yield base64_string
-        #
-        # return inner()
