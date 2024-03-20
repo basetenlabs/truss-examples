@@ -1,13 +1,13 @@
 base_image:
-  image: docker.io/baseten/trtllm-build-server:r23.12_baseten_v0.9.0_20240305
+  image: docker.io/baseten/trtllm-build-server:r23.12_baseten_v0.9.0_20240319
   python_executable_path: /usr/bin/python3
 description: A TRT-LLM builder truss for Llama-based models. This truss is used to
   build and deploy models that are based on the Llama model architecture and use the TensorRT
   Large Language Model (TRT-LLM) engine.
 trt_llm:
   build:
-    base_model_architecture: mistral
-    huggingface_ckpt_repository: mistralai/Mistral-7B-Instruct-v0.2
+    base_model_architecture: deepseek
+    huggingface_ckpt_repository: deepseek-ai/deepseek-coder-6.7b-instruct
     max_input_len: 2000
     max_output_len: 2000
     max_batch_size: 32
@@ -21,8 +21,8 @@ model_metadata:
   - text-generation
   - openai-compatible
   tensor_parallelism: 1
-  tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
-model_name: TRT-LLM Model
+  tokenizer_repository: deepseek-ai/deepseek-coder-6.7b-instruct
+model_name: deepseek builder and serving
 python_version: py311
 requirements:
 - tritonclient[all]
