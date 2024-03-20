@@ -68,7 +68,7 @@ class Model:
         env[TOKENIZER_KEY_CONSTANT] = tokenizer_repository
 
         self.triton_server.start(
-            tensor_parallelism=tensor_parallel_count,
+            world_size=tensor_parallel_count,
             env=env,
         )
 
