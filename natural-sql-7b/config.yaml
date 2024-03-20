@@ -1,0 +1,13 @@
+python_version: py311
+resources:
+  cpu: 2 # Adjusted as an estimated requirement for enhanced performance
+  memory: 8Gi # Enhanced based on potential in-memory operations during model loading and inference
+  use_gpu: true # Explicitly enabling GPU usage as per guidelines
+  gpu: A10G # Aligning with the usage of A10G as specified
+requirements_file: ./requirements.txt
+model_class_name: Model # Reflects the model class responsible for handling prediction logic
+model_cache:
+  hugging_face:
+    endpoint: chatdb/natural-sql-7b
+    revision: main
+    include: ["*.bin"] # Assuming model binary files are crucial for caching
