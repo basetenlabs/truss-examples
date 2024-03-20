@@ -1,0 +1,16 @@
+python_version: py311
+resources:
+  use_gpu: true
+  accelerator: A10G
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6
+requirements_file: ./requirements.txt
+model_cache:
+  - endpoint: "huggingface://TencentARC/PhotoMaker"
+    subdirectory: "./models"
+    filter_include: "*.bin"
+    filename: "photo_maker_model.bin"
+environment_variables:
+  PHOTO_MAKER_MODEL_PATH: "./models/photo_maker_model.bin"

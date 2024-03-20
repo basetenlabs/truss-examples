@@ -1,0 +1,14 @@
+python>=3.10
+torch>=2.0.1
+torchvision>=0.15.2
+diffusers>=0.25.0
+transformers>=4.36.2
+huggingface-hub>=0.20.2
+spaces>=0.19.4
+numpy>=1.22
+accelerate
+safetensors
+omegaconf
+peft
+gradio>=4.0.0
+git+https://github.com/TencentARC/PhotoMaker.git
