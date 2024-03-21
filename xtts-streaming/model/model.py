@@ -34,7 +34,9 @@ class Model:
         config.load_json(os.path.join(model_path, "config.json"))
         self.model = Xtts.init_from_config(config)
         # self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True)
-        self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True, use_deepspeed=True)
+        self.model.load_checkpoint(
+            config, checkpoint_dir=model_path, eval=True, use_deepspeed=True
+        )
         self.model.to(device)
         # self.compiled_model = torch.compile(self.model.inference_stream)
 
@@ -91,7 +93,7 @@ class Model:
             self.speaker_embedding,
             stream_chunk_size=chunk_size,
             enable_text_splitting=True,
-            temperature=0.2
+            temperature=0.2,
         )
 
         for chunk in streamer:
