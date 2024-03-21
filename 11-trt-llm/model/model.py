@@ -8,11 +8,12 @@ from constants import (
     HTTP_SERVICE_PORT,
     TOKENIZER_KEY_CONSTANT,
 )
+from builder.constants import ENGINE_DIRECTORY_PATH
 from schema import ModelInput
 from builder.types import TrussTRTLLMConfiguration
 from transformers import AutoTokenizer
 from triton_client import TritonClient, TritonServer
-
+from builder.utils import execute_command
 
 class Model:
     def __init__(self, data_dir, config, secrets):
@@ -26,6 +27,7 @@ class Model:
         self.uses_openai_api = None
 
     def load(self):
+        execute_command(["ldconfig"])
         trtllm_config = TrussTRTLLMConfiguration(**self._config.get("trt_llm", {}))
         self.uses_openai_api = "openai-compatible" in self._config.get(
             "model_metadata", {}
@@ -38,8 +40,8 @@ class Model:
         if trtllm_config.requires_build:
             build_engine_utils.build_engine_from_config_args(
                 truss_trtllm_configuration=trtllm_config,
-                checkpoint_dir_path=None,
                 dst=self._data_dir,
+                checkpoint_dir_path=None,
             )
 
         self.triton_server = TritonServer(
