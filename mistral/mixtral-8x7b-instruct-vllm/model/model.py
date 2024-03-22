@@ -17,7 +17,10 @@ class Model:
 
     def load(self):
         self.model_args = AsyncEngineArgs(
-            model="mistralai/Mixtral-8x7B-Instruct-v0.1", tensor_parallel_size=2
+            model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+            tensor_parallel_size=2,
+            gpu_memory_utilization=0.95,
+            max_model_len=4096
         )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
