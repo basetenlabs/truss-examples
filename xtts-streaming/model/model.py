@@ -1,9 +1,5 @@
-import base64
-import io
 import logging
 import os
-import time
-import wave
 
 import numpy as np
 import torch
@@ -24,7 +20,7 @@ class Model:
     def load(self):
         device = "cuda"
         model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
-        logging.info("⏳Downloading model")
+        logging.info("⏳ Downloading model")
         ModelManager().download_model(model_name)
         model_path = os.path.join(
             get_user_data_dir("tts"), model_name.replace("/", "--")
@@ -34,7 +30,9 @@ class Model:
         config.load_json(os.path.join(model_path, "config.json"))
         self.model = Xtts.init_from_config(config)
         # self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True)
-        self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True, use_deepspeed=True)
+        self.model.load_checkpoint(
+            config, checkpoint_dir=model_path, eval=True, use_deepspeed=True
+        )
         self.model.to(device)
         # self.compiled_model = torch.compile(self.model.inference_stream)
 
@@ -65,7 +63,7 @@ class Model:
             .reshape((-1, 1024))
             .unsqueeze(0)
         )
-        logging.info("🔥Model Loaded")
+        logging.info("🔥 Model Loaded")
 
     def wav_postprocess(self, wav):
         """Post process the output waveform"""
@@ -91,7 +89,7 @@ class Model:
             self.speaker_embedding,
             stream_chunk_size=chunk_size,
             enable_text_splitting=True,
-            temperature=0.2
+            temperature=0.2,
         )
 
         for chunk in streamer:
