@@ -1,5 +1,5 @@
 code:
-  plan_guidelines: 
+  plan_guidelines:
     - These models are meant to be quick start examples. We are always generating a new example. Always include all necessary files.
     - Never modify the README at the root of the repo.
     - Always create the model first.
@@ -11,9 +11,13 @@ code:
   coding_tips:
     - path : "**/config.yaml"
       instructions: |
-        - The reference docs for the config file are at: https://truss.baseten.co/reference/config DO NOT use values that are not in the reference docs.
-        - Always include ALL dependencies.
-        - Always use py311
+        - The reference docs for the config file are at: https://truss.baseten.co/reference/config - DO NOT use values that are not in the reference docs.
+        - Add a model_metadata section to the config. Inside the model_metadata include a value for example_model_input
+          - example_model_input should be a JSON string that can be passed to the model's predict function to test its functionality.
+          - If a base64 image is required simply leave the string as 'image'. For example you might do "{'image': 'image'}" as an example input to a model that takes a single image as input.
+          - We will be using this example input to test the model. Ensure that the JSON is well formmatted and conforms to the expected inputs of the predict() function in model.py.
+        - make sure to include ALL dependencies.
+        - Always use py311 python_version.
         - Default to using an A10G for the GPU when relevant. This should go under the resources section.
         - Look at the model.py file closely and ensure that all the necessary information is included. For example if the model requires a GPU specify that a GPU is required in the config file.
         - Any caching of models that's required should happen here in the config.
