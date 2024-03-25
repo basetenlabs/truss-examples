@@ -4,13 +4,15 @@ import re
 import os
 import requests
 import time
-import argparse
 
 API_KEY = os.environ["BASETEN_API_KEY"]
 
 
-def get_model_dir(changed_files):
-    print(changed_files)
+def get_model_dir():
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "origin/main", "HEAD"], capture_output=True
+    )
+    changed_files = result.stdout.decode().split("\n")
     for file in changed_files:
         if re.match(r".*/model/model\.py", file):
             return os.path.dirname(os.path.dirname(file))
@@ -65,7 +67,6 @@ remote_url = https://app.baseten.co"""
 def truss_predict(model_id, input):
     result = "Model is not ready, it is still building or deploying"
     seconds_remaining = 60 * 15  # Wait for 15 minutes
-
     while (
         result == "Model is not ready, it is still building or deploying"
         and seconds_remaining > 0
@@ -122,12 +123,7 @@ def deactivate_truss(model_id):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument_group("changed_files")
-    # parser.add_argument("changed_files", nargs="+")
-    # args = parser.parse_args()
-
-    model_dir = get_model_dir(["natural-sql-7b/model/model.py"])
+    model_dir = get_model_dir()
 
     image_str = open("bin/image.txt", "r").read()
 

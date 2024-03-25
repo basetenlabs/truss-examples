@@ -10,11 +10,13 @@ on:
 
 jobs:
     truss_test:
-        if: ${{ github.triggering_actor == 'factory-droid-dev' || github.triggering_actor == 'factory-droid-dev[bot]'}}
+        if: ${{ github.triggering_actor == 'factory-droid-dev' || github.triggering_actor == 'factory-droid-dev[bot]' || github.triggering_actor == 'affan-hussain'}}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:  
+                fetch-depth: 0
 
             - name: Set up Python
               uses: actions/setup-python@v5
@@ -26,11 +28,7 @@ jobs:
                 python -m pip install --upgrade pip
                 pip install git+https://github.com/basetenlabs/truss.git requests tenacity --upgrade
 
-            - name: Get changed files
-              id: changed_files
-              uses: jitterbit/get-changed-files@v1
-
             - name: Run tests
               env:
                 BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
-              run: python bin/test_truss_deploy.py ${{ steps.changed-files.outputs.all }} 
+              run: python bin/test_truss_deploy.py
