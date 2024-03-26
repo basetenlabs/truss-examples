@@ -1,0 +1,38 @@
+apply_library_patches: true
+base_image:
+  image: docker.io/baseten/trtllm-server:r23.12_baseten_v0.9.0.dev2024022000
+  python_executable_path: /usr/bin/python3
+description: Generate text from a prompt with this seven billion parameter language
+  model.
+build:
+  arguments:
+    engine_repository: strangervb/mistral_fp8_i100_o400_tp2_v0
+    pipeline_parallel_count: 1
+    tensor_parallel_count: 2
+    tokenizer_repository: NousResearch/Llama-2-7b-chat-hf
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  engine_repository: strangervb/mistral_fp8_i100_o400_tp2_v0
+  example_model_input:
+    max_tokens: 100
+    prompt: What's the meaning of life?
+  repo_id: NousResearch/Llama-2-7b-chat-hf
+  tags:
+  - text-generation
+  tensor_parallelism: 2
+  tokenizer_repository: NousResearch/Llama-2-7b-chat-hf
+model_name: Llama 7B Chat TRT 2TP
+python_version: py311
+requirements:
+- tritonclient[all]
+- transformers
+- jinja2
+resources:
+  accelerator: H100:2
+  use_gpu: true
+runtime:
+  predict_concurrency: 4
+secrets: {}
