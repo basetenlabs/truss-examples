@@ -4,10 +4,10 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/mistral_fp8_tp8_i2048_o2048_bs128-tllm_0.9.0.dev2024022000
+    engine_repository: baseten/solar_fp8_tp1_i6000_o1000_bs64-tllm_0.9.0.dev2024022000
     pipeline_parallel_count: 1
-    tensor_parallel_count: 8
-    tokenizer_repository: mistralai/Mistral-7B-Instruct-v0.2
+    tensor_parallel_count: 1
+    tokenizer_repository: NousResearch/Nous-Hermes-2-SOLAR-10.7B
 bundled_packages_dir: packages
 data_dir: data
 description: Generate text from a prompt with this seven billion parameter language
@@ -27,7 +27,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: Mistral 8
+model_name: Solar
 model_type: Model
 python_version: py311
 requirements:
@@ -35,7 +35,7 @@ requirements:
 - transformers
 - jinja2
 resources:
-  accelerator: H100:8
+  accelerator: H100:1
   use_gpu: true
 runtime:
   num_workers: 1
