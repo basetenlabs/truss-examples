@@ -34,8 +34,8 @@ requirements:
 - tritonclient[all]
 - transformers
 - jinja2
-- --extra-index-url https://pypi.ngc.nvidia.com
 - TensorRT==9.3.0.post12.dev1
+- --extra-index-url https://pypi.ngc.nvidia.com
 resources:
   accelerator: H100:8
   use_gpu: true
