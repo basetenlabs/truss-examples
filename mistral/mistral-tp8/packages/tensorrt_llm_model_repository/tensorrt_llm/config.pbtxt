@@ -185,7 +185,7 @@ parameters: {
 parameters: {
   key: "kv_cache_free_gpu_mem_fraction"
   value: {
-    string_value: "0.9"
+    string_value: "0.7"
   }
 }
 parameters: {
