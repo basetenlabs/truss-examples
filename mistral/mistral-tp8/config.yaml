@@ -4,7 +4,7 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/solar_fp8_tp1_i6000_o1000_bs64-tllm_0.9.0.dev2024022000
+    engine_repository: baseten/solar_i6000_o1024_bs64_fp8_tp1-tllm_0.9.0.dev2024022000
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: NousResearch/Nous-Hermes-2-SOLAR-10.7B
