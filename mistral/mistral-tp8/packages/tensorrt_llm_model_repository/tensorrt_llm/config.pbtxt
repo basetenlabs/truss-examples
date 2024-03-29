@@ -177,12 +177,6 @@ parameters: {
   }
 }
 parameters: {
-  key: "max_tokens_in_paged_kv_cache"
-  value: {
-    string_value: "1000000"
-  }
-}
-parameters: {
   key: "batch_scheduler_policy"
   value: {
     string_value: "max_utilization"
