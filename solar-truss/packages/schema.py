@@ -70,18 +70,6 @@ class ModelInput:
         top_p_data = np.array([[self._top_p]], dtype=np.float32)
         top_k_data = np.array([[self._top_k]], dtype=np.uint32)
         random_seed_data = np.array([[self._random_seed]], dtype=np.uint64)
-        
-        print(f"Prompt: {self._prompt}")
-        print(f"Max Tokens: {self._max_tokens}")
-        print(f"Beam Width: {self._beam_width}")
-        print(f"Bad Words: {self._bad_words_list}")
-        print(f"Stop Words: {self._stop_words_list}")
-        print(f"Stream: {self.stream}")
-        print(f"Repetition Penalty: {self._repetition_penalty}")
-        print(f"Temperature: {self._temperature}")
-        print(f"Top P: {self._top_p}")
-        print(f"Top K: {self._top_k}")
-        print(f"Random Seed: {self._random_seed}")
 
         inputs = [
             self._prepare_grpc_tensor("text_input", prompt_data),
