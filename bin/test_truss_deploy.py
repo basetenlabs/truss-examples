@@ -31,11 +31,19 @@ def get_example_input(image_str):
             loaded_config = yaml.safe_load(f.read())
         except yaml.YAMLError as e:
             raise Exception(f"Invalid config.yaml: {e}")
+
     if "model_metadata" not in loaded_config:
-        raise Exception("No model_metadata found in config.yaml")
+        raise Exception(
+            "No model_metadata found in config.yaml. Config must include model_metadata with an example_model_input value."
+        )
 
     if "example_model_input" not in loaded_config["model_metadata"]:
         raise Exception("No example_model_input found in model_metadata")
+
+    if "model_name" not in loaded_config:
+        loaded_config["model_name"] = "model"
+        with open("config.yaml", "w") as f:
+            f.write(yaml.safe_dump(loaded_config))
 
     example_input = loaded_config["model_metadata"]["example_model_input"]
     for key in ["image", "b64_image", "base64_image", "base_image", "input_image"]:
