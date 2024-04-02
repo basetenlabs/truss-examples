@@ -1,0 +1,29 @@
+description: Configuration for PhotoMaker Truss project
+python_version: 'py311'
+requirements_file: './requirements.txt'
+
+resources:
+  cpu: '3'
+  memory: '14Gi'
+  use_gpu: true
+  accelerator: 'A10G'
+
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6
+
+model_metadata:
+  example_model_input: '{"image": "image"}'
+
+caching:
+  - repo_id: 'TencentARC/PhotoMaker'
+    revision: 'main'
+    allow_patterns: ['*.bin']
+
+environment_variables:
+  PYTHONUNBUFFERED: '1'
+  TORCH_DTYPE: 'torch.float16'
+
+runtime:
+  predict_concurrency: 1
