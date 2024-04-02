@@ -1,12 +1,12 @@
 description: Configuration for PhotoMaker Truss project
-python_version: 'py311'
+python_version: py311
 requirements_file: './requirements.txt'
 
 resources:
-  cpu: '3'
-  memory: '14Gi'
+  cpu: 3
+  memory: 14Gi
   use_gpu: true
-  accelerator: 'A10G'
+  accelerator: A10G
 
 system_packages:
   - ffmpeg
@@ -17,9 +17,9 @@ model_metadata:
   example_model_input: '{"image": "image"}'
 
 caching:
-  - repo_id: 'TencentARC/PhotoMaker'
-    revision: 'main'
-    allow_patterns: ['*.bin']
+  repo_id: 'TencentARC/PhotoMaker'
+  revision: 'main'
+  allow_patterns: ['*.bin']
 
 environment_variables:
   PYTHONUNBUFFERED: '1'

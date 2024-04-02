@@ -1,29 +1,45 @@
 # PhotoMaker Truss
 
 ## Introduction
-The PhotoMaker model is a cutting-edge solution designed for customizing realistic human photos with high fidelity and text controllability. This remarkable model is the result of a collaborative effort led by Tencent ARC Lab and Nankai University's [MCG-NKU](https://mmcheng.net/cmm/) team. The work presents an innovative approach to rapidly customizing images while maintaining impressive identity fidelity and offering diversity. PhotoMaker serves as an adaptable tool that can be utilized alongside other Base Models with LoRA modules to enhance image modification capabilities. For detailed information, visit the [PhotoMaker GitHub Repository](https://github.com/TencentARC/PhotoMaker).
+PhotoMaker Truss is an exceptional model developed through the collaboration of Tencent ARC Lab and the MCG-NKU team at Nankai University. It enables high-fidelity customization of human photos, leveraging advanced text controllability for varied and rapid imagery modifications. Honouring its innovative predecessors, PhotoMaker further amplifies the capabilities of base models through the integration of LoRA modules. Discover more about this transformative technology at the [PhotoMaker GitHub Repository](https://github.com/TencentARC/PhotoMaker).
 
 ## Deploying PhotoMaker on Baseten
-To utilize the capabilities of PhotoMaker within the Baseten platform, follow these deployment steps:
-1. Obtain the truss-examples repository by executing: `git clone https://github.com/basetenlabs/truss-examples/`
-2. Navigate to the directory for PhotoMaker Truss with: `cd truss-examples/photomaker_truss`
-3. Deploy the model on Baseten using: `truss push`
-
-This will host the PhotoMaker model on Baseten, making it accessible for online prediction.
+Harness the power of the PhotoMaker model with these steps on the Baseten platform:
+1. Begin by cloning the `truss-examples` repository:
+   ```
+   git clone https://github.com/basetenlabs/truss-examples/
+   ```
+2. Transition into the PhotoMaker Truss directory:
+   ```
+   cd truss-examples/photomaker_truss
+   ```
+3. Commence the model's deployment on Baseten with:
+   ```
+   truss push
+   ```
+This procedure stations the PhotoMaker model on Baseten, facilitating its immediate availability for online predictive processing and seamless image enhancement.
 
 ## Input
-The model expects input in JSON format carrying a base64 encoded string of the image that should be processed. The format of your input should look like this: `{"image": "<base64_encoded_image_string>"}`. This setup allows you to provide a diverse range of inputs for image customization and enhancement.
+PhotoMaker necessitates a JSON-format input comprising a base64 encoded string of the to-be-processed image. Ensure your input mirrors the subsequent framework:
+```
+{"image": "<base64_encoded_image_string>"}
+```
+This architecture guarantees the comprehensive processability and customization feasibility of a broad image spectrum by the model.
 
 ## Output
-Following successful processing, PhotoMaker returns a prediction in the form of a base64 encoded image string encapsulated in a JSON object: `{"prediction": "<base64_encoded_image_string>"}`. This output can then be decoded to retrieve the enhanced image.
+Subsequent to processing, PhotoMaker articulates its predictions using a JSON object encasing a base64 encoded image string. This output is thereby structured as follows:
+```
+{"prediction": "<base64_encoded_image_string>"}
+```
+Decoding this output divulges the enhanced and meticulously customized image, demonstrating the model's exquisite capability to refine photos with unparalleled fidelity and control.
 
 ## Example Usage
-Invoke the PhotoMaker model on Baseten as follows:
+Engage the PhotoMaker model on Baseten via the ensuing command:
 ```
 truss predict --input '{"image": "base64_encoded_image_string"}'
 ```
-Expected Output:
+Anticipated output is:
 ```
 {"prediction": "base64_encoded_modified_image_string"}
 ```
-This command will send the input image to the PhotoMaker model hosted on Baseten and return a modified image in response, showcasing the model's capability to enhance and customize photos with remarkable fidelity and control.
+This example succinctly illustrates submitting an image to the PhotoMaker model on Baseten and retrieving a modified version in return, underpinning the model's distinguishable proficiency in photo customization and enhancement.
