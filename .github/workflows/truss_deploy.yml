@@ -10,7 +10,7 @@ on:
 
 jobs:
     truss_test:
-        if: ${{ github.triggering_actor == 'factory-droid-dev' || github.triggering_actor == 'factory-droid-dev[bot]'}}
+        if: ${{ github.triggering_actor == 'factory-droid' || github.triggering_actor == 'factory-droid[bot]'}}
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
