@@ -1,0 +1,62 @@
+code:
+  plan_guidelines:
+    - These models are meant to be quick start examples. We are always generating a new example. Always include all necessary files.
+    - Never modify the README at the root of the repo.
+    - Always create the model first.
+    - Always create the requirements.txt file before the config. Point to the requirements.txt file in the config.
+    - Instead of putting the python requirements in the `config.yaml` file, we recommend putting them in a `requirements.txt` file. Then in the config.yaml file, you can use the `requirements_file` field to point to the `requirements.txt` file. This will make it easier to manage the dependencies and make it easier for the users to install the dependencies.
+    - The config creation step will have full access to the documentation for the config file. We will determine which specific keys to use at that point
+    - Model caching should be done in the config file. You do not need to handle this in the model.
+    - Always create the README for the model last. The README should always be markdown.
+  coding_tips:
+    - path : "**/config.yaml"
+      instructions: |
+        - The reference docs for the config file are at: https://truss.baseten.co/reference/config - DO NOT use values that are not in the reference docs.
+        - Add a model_metadata section to the config. Inside the model_metadata include a value for example_model_input
+          - example_model_input should be a JSON string that can be passed to the model's predict function to test its functionality.
+          - If a base64 image is required simply leave the string as 'image'. For example you might do "{'image': 'image'}" as an example input to a model that takes a single image as input.
+          - We will be using this example input to test the model. Ensure that the JSON is well formmatted and conforms to the expected inputs of the predict() function in model.py.
+        - make sure to include ALL dependencies.
+        - Always use py311 python_version.
+        - Default to using an A10G for the GPU when relevant. This should go under the resources section.
+        - Look at the model.py file closely and ensure that all the necessary information is included. For example if the model requires a GPU specify that a GPU is required in the config file.
+        - Any caching of models that's required should happen here in the config.
+    - path: "**/README.md"
+      instructions: |
+        - The readme should always credit the creators of the model and the dataset. It should also include a link to the original source of the model and the dataset.
+        - The explanation for how to run the model should use Baseten's platform as an example. Look at the existing READMEs in the repo.
+        - The README should be markdown formatted.
+        - The structure of the READMEs should be as follows. Do not deviate from this format:
+          - <model_name> Truss
+            - A short introduction to the model and its capabilities. Include any acknowledgements here.
+          - Deploying <model_name> on Baseten
+            - Instructions for cloning the repo (git clone https://github.com/basetenlabs/truss-examples/).
+            - And deploying the model on Baseten using `truss push`.
+          - Input
+            - The format of the input. All inputs are json. Specify if the model expects a base64 encoded image or a string, or a dictionary with multiple value.
+            - Explain what each input does.
+          - Output
+            - The format of the output. All outputs are json. Specify if the model returns a base64 encoded image or a string, or a dictionary with multiple value.
+          - Example usage
+            - Instructions for using the model on Baseten using `truss predict`.
+            - Be specific about input parameters and the expected output.
+            - e.g. `truss predict --input '{"prompt": "A photo of a cat"}'`
+            - Make it relevant to the model.
+            - The truss will never be executed locally. The README should not include instructions for running the model locally.
+    - path: "**/requirements.txt"
+      instructions: |
+        - Always pin the dependencies in the requirements using >=.
+        - Some dependencies may require you to install directly from a git repository. In that case, you can specify it like 'git+<repo_url>.git'
+    - path: "**/model.py"
+      instructions: |
+         - These models are being created as examples for the Truss platform. They should be runnable without additional configuration. That means you should select reasonable default values and not leave decisions up to the user.
+          - For image models that use a pretrained base model always use SG161222/RealVisXL_V3.0
+          - If there is an example of how to use the model in an .ipnyb file, use it. Use as much of it as possible. For the load() method, et up the pipelines as they have done so in the notebooks. Implement predict() to run prediction as they have done in the notebooks.
+          - All models must implement a load() function and a predict() function. The load() function should load the model and the predict() function should take in a dict of the input parameters and return the output. For image inputs and outputs use base64 strings.
+          - Images passed as inputs will be base64 encoded strings. Make sure to properly process these inputs into a format that's usable by the model.
+          - The output of the predict function will be converted to JSON and sent over the internet. Make sure that the output is JSON serializable. For images convert them to base64 strings.
+          - The model class must be called Model.
+          - Do not make up functions. Only use functions that you know exist or you can see being used in example code.
+          - Ensure all your imports are correct. Use the examples provided to ensure you're importing things correctly.
+          - When creating prompt templates, ensure there is enough detail filled in for a user to understand the model's capabilities and how to use it. If there are any specific requirements for the prompt, ensure they are included in the prompt.
+          - Try to always use a GPU if the model supports it.
