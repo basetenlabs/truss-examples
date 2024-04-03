@@ -1,0 +1,12 @@
+description: Natural SQL 7B Model Configuration
+environment_variables: {}
+python_version: py311
+requirements_file: ./requirements.txt
+model_metadata:
+  example_model_input: '{"questions": ["Show me the day with the most users joining", "Show me the project that has a task with the most comments", "What is the ratio of users with gmail addresses vs without?"]}'
+
+resources:
+  cpu: "2"
+  memory: 8Gi
+  use_gpu: true
+  accelerator: A10G
