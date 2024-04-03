@@ -1,41 +1,41 @@
 # Natural SQL 7B Truss
 
-NaturalSQL-7B, created by ChatDB, is a state-of-the-art model designed to translate natural language questions into SQL queries efficiently. Thanks to the collaborative effort of researchers and developers at ChatDB and contributions from the wider community such as [Defog](https://github.com/defog-ai/sql-eval) for the SQL-Eval benchmarking framework, this model stands out in the realm of structured query language generation. For a deeper dive into its capabilities, refer to the [model's page on HuggingFace](https://huggingface.co/chatdb/natural-sql-7b) and the official [NaturalSQL Github repository](https://github.com/cfahlgren1/natural-sql).
+Created by the innovative minds at ChatDB, Natural SQL 7B represents a premier solution for converting natural language queries into SQL commands seamlessly. This model highlights the collective genius of the ChatDB team and contributions from wider community projects, including the SQL-Eval framework by Defog. Dive deeper into its capabilities at [HuggingFace](https://huggingface.co/chatdb/natural-sql-7b) and explore the repository on [GitHub](https://github.com/cfahlgren1/natural-sql).
 
-This model, including its code, is licensed under `apache-2.0`, and the model's data is under `CC BY-SA 4.0`.
+This model and its code are under an `apache-2.0` license, with the dataset licensed under `CC BY-SA 4.0`, promoting open and flexible usage.
 
 ## Deploying Natural SQL 7B on Baseten
 
-To use Natural SQL 7B, begin by cloning the truss-examples repository using the command below:
+Deploying this model with Baseten takes just a few steps. Start by cloning the truss-examples repository:
 
 ```shell
 git clone https://github.com/basetenlabs/truss-examples/
 ```
 
-Within the `natural-sql-7b` directory, deploy the model onto the Baseten platform by:
+Next, position yourself within the `natural-sql-7b` directory. With the Baseten CLI installed and after you have logged into your Baseten account, execute:
 
 ```shell
 truss push
 ```
 
-Ensure the Baseten CLI is installed and you are signed into your Baseten account before executing the above command.
+This command deploys the model to Baseten, making it ready for use.
 
 ## Input
 
-Natural SQL 7B expects a JSON formatted input under the key 'questions:', comprising an array of human language questions. Here’s an example of what the input looks like:
+Expecting JSON formatted input, Natural SQL 7B looks for the key 'questions' containing an array of your queries. An input example:
 
 ```json
 {
   "questions": [
-    "Show me the day with the most users joining",
-    "What is the ratio of users with gmail addresses vs without?"
+    "Which day saw the most user registrations?",
+    "Ratio of users with vs without gmail accounts?"
   ]
 }
 ```
 
 ## Output
 
-The model responds with a JSON array containing SQL queries corresponding to each natural language question from the input. Example of an output:
+Corresponding SQL queries for each question are provided in a JSON array, showcasing the model's translation excellence.
 
 ```json
 [
@@ -43,17 +43,14 @@ The model responds with a JSON array containing SQL queries corresponding to eac
   "SELECT SUM(CASE WHEN email LIKE '%@gmail.com%' THEN 1 ELSE 0 END) AS gmail_users, SUM(CASE WHEN email NOT LIKE '%@gmail.com%' THEN 1 ELSE 0 END) AS non_gmail_users, (SUM(CASE WHEN email LIKE '%@gmail.com%' THEN 1 ELSE 0 END)::FLOAT / NULLIF(SUM(CASE WHEN email NOT LIKE '%@gmail.com%' THEN 1 ELSE 0 END), 0)) AS gmail_ratio FROM users;"
 ]
 
-```
-
 ## Example Usage
 
-To issue a prediction from the deployed Natural SQL 7B model on Baseten, utilize:
+To obtain SQL queries from your natural language questions:
 
 ```shell
-truss predict --input '{"questions": ["List all projects starting next month"]}'
+truss predict --input '{"questions": ["Identify all active projects for the next month."]}'
 ```
 
-This command will return a SQL query that retrieves projects based on the specified criteria, as demonstrated in the above examples, highlighting the model's proficiency in handling various query complexities.
+This command interacts with the model to provide a relevant SQL query, demonstrating the model's capacity to address a variety of queries.
 
-This guide aims to facilitate your understanding of deploying and engaging with the Natural SQL 7B Model within the Baseten environment, offering insights into its operational dynamics through detailed examples and structured information.
-`
+For further exploration and more detailed operation instructions, refer to the documentation and examples on the Baseten documentation site and the Truss example GitHub repository.

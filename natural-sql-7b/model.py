@@ -4,10 +4,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 class Model:
     def __init__(self):
-        self.tokenizer = None
-        self.model = None
-
-    def load(self):
         self.tokenizer = AutoTokenizer.from_pretrained("chatdb/natural-sql-7b")
         self.model = AutoModelForCausalLM.from_pretrained(
             "chatdb/natural-sql-7b",
