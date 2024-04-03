@@ -59,12 +59,12 @@ def truss_push():
             f"""[baseten]
 remote_provider = baseten
 api_key = {API_KEY}
-remote_url = https://app.baseten.co"""
+remote_url = https://app.staging.baseten.co"""
         )
 
     result = subprocess.run(["truss", "push", "--trusted"], capture_output=True)
     match = re.search(
-        r"View logs for your deployment at \n?https://app\.baseten\.co/models/(\w+)/logs/(\w+)",
+        r"View logs for your deployment at \n?https://app\.staging\.baseten\.co/models/(\w+)/logs/(\w+)",
         result.stdout.decode(),
     )
     if not match:
@@ -113,7 +113,7 @@ def truss_predict(model_id, input):
 
 def get_truss_logs(deployment_id, start_time):
     result = requests.post(
-        "https://app.baseten.co/logs",
+        "https://app.staging.baseten.co/logs",
         headers={"Authorization": f"Api-Key {API_KEY}"},
         json={
             "type": "MODEL",
