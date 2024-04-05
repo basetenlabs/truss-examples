@@ -6,7 +6,7 @@ model_cache:
   - '*.json'
   - '*.safetensors'
   - '*.model'
-  repo_id: mistralai/Mistral-7B-Instruct-v0.1
+  repo_id: mistralai/Mistral-7B-Instruct-v0.2
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
@@ -14,7 +14,7 @@ model_metadata:
     messages:
     - content: What is the mistral wind?
       role: user
-  model: mistralai/Mistral-7B-Instruct-v0.1
+  model: mistralai/Mistral-7B-Instruct-v0.2
   pretty_name: Mistral 7B Chat
   tags:
   - text-generation
@@ -24,7 +24,7 @@ python_version: py311
 requirements:
 - sentencepiece
 - accelerate
-- transformers==4.34.0
+- transformers==4.38.1
 - torch==2.0.1
 - hf_transfer==0.1.4
 resources:
