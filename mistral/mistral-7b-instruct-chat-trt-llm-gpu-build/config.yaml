@@ -1,0 +1,34 @@
+# base_image:
+#   image: python:3.11
+#   python_executable_path: /usr/local/bin/python3
+description: empty truss
+# environment_variables: {"foo":"bar", "foob":"changed"}
+examples_filename: examples.yaml
+input_type: Any
+live_reload: true
+model_class_filename: model.py
+model_class_name: Model
+model_framework: custom
+model_metadata:
+  tags:
+  - text-generation
+  - openai-compatible
+model_module_dir: model
+model_name: Mistral 7B TRT-LLM 
+model_type: Model
+python_version: py39
+requirements: []
+resources:
+  accelerator: A100
+  cpu: '1'
+  memory: 32Gi
+  use_gpu: true
+trt_llm:
+  build:
+    huggingface_ckpt_repository: "mistralai/Mistral-7B-v0.1"
+    base_model_architecture: "mistral"
+    max_input_len: 1000
+    max_output_len: 1000
+    max_beam_width: 1
+    max_batch_size: 64
+    quantization_type: fp8
