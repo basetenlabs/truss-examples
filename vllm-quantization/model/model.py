@@ -21,8 +21,8 @@ class Model:
             quantization="awq",
             dtype="float16",
             max_model_len=8000,
-            max_num_seqs=8
-)
+            max_num_seqs=8,
+        )
 
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
 
