@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Mistral 7B v2 vLLM AWQ - T4
+python_version: py310
+requirements:
+  - vllm==0.4.0.post1
+resources:
+  accelerator: T4
+  use_gpu: true
+secrets: {}
+system_packages: []
+runtime:
+  predict_concurrency: 128
