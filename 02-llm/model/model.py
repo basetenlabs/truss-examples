@@ -46,7 +46,7 @@ class Model:
             "max_new_tokens": request.get("max_new_tokens", 128),
             "temperature": request.get("temperature", 1.0),
             "top_p": request.get("top_p", 0.95),
-            "top_k": request.get("top_p", 50),
+            "top_k": request.get("top_k", 50),
             "repetition_penalty": 1.0,
             "no_repeat_ngram_size": 0,
             "use_cache": True,
