@@ -1,0 +1,14 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Mixtral 8x22
+python_version: py310
+requirements:
+  - accelerate
+  - transformers==4.39.3
+  - torch==2.2.0
+resources:
+  accelerator: A100:4
+  use_gpu: true
+secrets: {}
+system_packages: []
