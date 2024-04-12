@@ -1,6 +1,7 @@
 # Mixtral 8x22B Truss
 
 This is a [Truss](https://truss.baseten.co/) for the community edition of [Mixtral 8x22B](https://huggingface.co/mistral-community/Mixtral-8x22B-v0.1).
+This is not an optimized model. If you would like to have a more optimized version that has lower latency + higher throughput, please contact our team. 
 
 
 ## Deployment
@@ -17,7 +18,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `mixtral-8x7b-instruct-vllm` as your working directory, you can deploy the model with:
+With `mixtral-8x22b` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
@@ -31,7 +32,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 You need four A100s to run Mixtral at `fp16`. If you need access to A100s, please [contact us](mailto:support@baseten.co).
 
-## Mixtral 8x22B Instruct API documentation
+## Mixtral 8x22B API documentation
 
 This section provides an overview of the Mixtral 8x22B API, its parameters, and how to use it. The API consists of a single route named  `predict`, which you can invoke to generate text based on the provided prompt.
 
