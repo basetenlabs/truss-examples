@@ -1,0 +1,16 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Llama 3 70B Instruct
+python_version: py310
+requirements:
+  - accelerate
+  - einops
+  - transformers
+  - torch
+resources:
+  accelerator: H100:4
+  use_gpu: true
+secrets:
+  hf_access_token: "your api key"
+system_packages: []
