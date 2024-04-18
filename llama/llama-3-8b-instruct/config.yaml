@@ -3,6 +3,8 @@ external_package_dirs: []
 model_metadata: {}
 model_name: Llama 3 8B Instruct
 python_version: py310
+model_cache:
+  - repo_id: meta-llama/Meta-Llama-3-8B-Instruct
 requirements:
   - accelerate
   - einops
