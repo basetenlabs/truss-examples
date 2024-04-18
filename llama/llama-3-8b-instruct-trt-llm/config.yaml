@@ -4,7 +4,7 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: aspctu/llama3-8b-instruct-bs64-8000-8000
+    engine_repository: baseten/llama3-8b-instruct-bs64-8000-8000
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: NousResearch/Meta-Llama-3-8B-Instruct
