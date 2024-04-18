@@ -1,7 +1,7 @@
 # Mixtral 8x22B Truss
 
 This is a [Truss](https://truss.baseten.co/) for the community edition of [Mixtral 8x22B](https://huggingface.co/mistral-community/Mixtral-8x22B-v0.1).
-This is not an optimized model. If you would like to have a more optimized version that has lower latency + higher throughput, please contact our team. 
+This is not an optimized model. If you would like to have a more optimized version that has lower latency + higher throughput, please contact our team.
 
 
 ## Deployment
