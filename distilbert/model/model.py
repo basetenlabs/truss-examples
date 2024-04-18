@@ -9,7 +9,7 @@ class Model:
     def load(self):
         # Load model here and assign to self._model.
         self.device = (
-            "cuda" if torch.cuda.is_available() else "mps"
+            "cuda" if torch.cuda.is_available() else "cpu"
         )  # the device to load the model onto
 
         self._tokenizer = AutoTokenizer.from_pretrained(
