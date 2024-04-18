@@ -1,0 +1,16 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Llama 3 8B Instruct
+python_version: py310
+requirements:
+  - accelerate
+  - einops
+  - transformers
+  - torch
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: "your-hf-access-token"
+system_packages: []
