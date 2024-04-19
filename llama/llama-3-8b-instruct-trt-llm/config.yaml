@@ -7,10 +7,10 @@ build:
     engine_repository: baseten/llama3-8b-instruct-bs64-8000-8000
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
-    tokenizer_repository: NousResearch/Meta-Llama-3-8B-Instruct
+    tokenizer_repository: meta-llama/Meta-Llama-3-8B-Instruct
 bundled_packages_dir: packages
 data_dir: data
-description: Generate text from a prompt with this seven billion parameter language
+description: Generate text from a prompt with this eight billion parameter language
   model.
 environment_variables: {}
 examples_filename: examples.yaml
@@ -18,7 +18,11 @@ external_data: null
 external_package_dirs: []
 input_type: Any
 live_reload: false
-model_cache: []
+model_cache:
+  - repo_id: "baseten/llama3-8b-instruct-bs64-8000-8000"
+  - repo_id: "meta-llama/Meta-Llama-3-8B-Instruct"
+    allow_patterns:
+      - '*.json'
 model_class_filename: model.py
 model_class_name: Model
 model_framework: custom
@@ -40,4 +44,5 @@ resources:
 runtime:
   num_workers: 1
   predict_concurrency: 512
-secrets: {}
+secrets:
+  hf_access_token: "your-hf-access-token"
