@@ -70,6 +70,8 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(
             build_config.tokenizer_repository, token=hf_access_token
         )
+        self.tokenizer.eos_token = "<|eot_id|>"
+        self.tokenizer.eos_token_id = self.tokenizer.encode("<|eot_id|>")[0]
         self.eos_token_id = self.tokenizer.eos_token_id
 
     async def predict(self, model_input):
@@ -77,6 +79,13 @@ class Model:
             next(self._request_id_counter)
         )
         model_input["eos_token_id"] = self.eos_token_id
+
+        prompt = self.tokenizer.apply_chat_template(
+            model_input.pop("messages"),
+            tokenize=False,
+        )
+
+        model_input["prompt"] = prompt
 
         self.triton_client.start_grpc_stream()
 
