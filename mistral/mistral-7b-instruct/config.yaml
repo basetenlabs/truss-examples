@@ -26,5 +26,6 @@ resources:
   accelerator: A10G
   memory: 10Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 system_packages: []
