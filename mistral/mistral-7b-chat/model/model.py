@@ -1,3 +1,4 @@
+import os
 from threading import Thread
 
 import torch
@@ -7,6 +8,7 @@ from transformers import GenerationConfig, TextIteratorStreamer, pipeline
 class Model:
     def __init__(self, **kwargs):
         self._repo_id = kwargs["config"]["model_metadata"]["model"]
+        self._hf_access_token = kwargs["secrets"]["hf_access_token"]
         self._model = None
 
     def load(self):
@@ -15,6 +17,7 @@ class Model:
             model=self._repo_id,
             torch_dtype=torch.bfloat16,
             device_map="auto",
+            token=self._hf_access_token,
         )
 
     def preprocess(self, request: dict):

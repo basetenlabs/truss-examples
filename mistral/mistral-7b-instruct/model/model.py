@@ -14,18 +14,21 @@ class Model:
         self.tokenizer = None
         self.model = None
         self._config = kwargs["config"]
+        self._hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
             self._config["model_cache"][0]["repo_id"],
             torch_dtype=torch.float16,
             device_map="auto",
+            token=self._hf_access_token,
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             self._config["model_cache"][0]["repo_id"],
             device_map="auto",
             torch_dtype=torch.float16,
+            token=self._hf_access_token,
         )
 
     def preprocess(self, request: dict):
