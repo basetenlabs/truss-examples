@@ -37,5 +37,6 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 256
-secrets: {}
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 system_packages: []
