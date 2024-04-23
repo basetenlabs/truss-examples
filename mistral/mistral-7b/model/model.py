@@ -15,16 +15,21 @@ class Model:
     def __init__(self, **kwargs):
         self.tokenizer = None
         self.model = None
+        self._hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def load(self):
         self.model = AutoModelForCausalLM.from_pretrained(
-            "mistralai/Mistral-7B-v0.1", torch_dtype=torch.float16, device_map="auto"
+            "mistralai/Mistral-7B-v0.1",
+            torch_dtype=torch.float16,
+            device_map="auto",
+            token=self._hf_access_token,
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             "mistralai/Mistral-7B-v0.1",
             device_map="auto",
             torch_dtype=torch.float16,
+            token=self._hf_access_token,
         )
 
     def preprocess(self, request: dict):
