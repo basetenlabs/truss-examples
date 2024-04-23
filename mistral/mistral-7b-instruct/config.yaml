@@ -8,6 +8,7 @@ model_cache:
   - '*.model'
   repo_id: mistralai/Mistral-7B-Instruct-v0.2
 model_metadata:
+  repo_id: mistralai/Mistral-7B-Instruct-v0.2
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
   example_model_input:

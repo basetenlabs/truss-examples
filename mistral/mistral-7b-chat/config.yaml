@@ -15,6 +15,7 @@ model_metadata:
     - content: What is the mistral wind?
       role: user
   model: mistralai/Mistral-7B-Instruct-v0.1
+  repo_id: mistralai/Mistral-7B-Instruct-v0.1
   pretty_name: Mistral 7B Chat
   tags:
   - text-generation
