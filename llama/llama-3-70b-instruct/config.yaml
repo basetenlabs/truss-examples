@@ -14,7 +14,7 @@ requirements:
   - transformers
   - torch
 resources:
-  accelerator: H100:4
+  accelerator: H100:2
   use_gpu: true
 secrets:
   hf_access_token: "your api key"
