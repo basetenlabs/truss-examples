@@ -15,6 +15,7 @@ from triton_client import TritonClient, TritonServer
 DEFAULT_MAX_TOKENS = 128
 DEFAULT_MAX_NEW_TOKENS = 128
 
+
 class Model:
     def __init__(self, data_dir, config, secrets):
         self._data_dir = data_dir
@@ -86,7 +87,7 @@ class Model:
             next(self._request_id_counter)
         )
         model_input["eos_token_id"] = self.eos_token_id
-        
+
         if "messages" in model_input:
             messages = model_input.pop("messages")
             if self.uses_openai_api and "prompt" not in model_input:
