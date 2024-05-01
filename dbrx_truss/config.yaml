@@ -1,0 +1,13 @@
+python_version: py311
+requirements_file: requirements.txt
+
+resources:
+  accelerator: A10G
+  use_gpu: true
+
+model_metadata:
+  example_model_input: |
+    {
+      "prompt": "What is machine learning?"
+    }
+  repo_id: databricks/dbrx-instruct
