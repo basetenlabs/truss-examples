@@ -25,6 +25,7 @@ model_metadata:
   - openai-compatible
   tensor_parallelism: 1
   tokenizer_repository: mistralai/Mixtral-8x7B-v0.1
+  repo_id: mistralai/Mixtral-8x7B-v0.1
 model_name: Mixtral 8x7B Instruct TRT-LLM Weights Only Quantized
 python_version: py311
 requirements:
@@ -36,5 +37,6 @@ resources:
 runtime:
   num_workers: 2
   predict_concurrency: 256
-secrets: {}
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 system_packages: []

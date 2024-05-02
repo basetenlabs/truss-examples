@@ -15,6 +15,7 @@ class Model:
     def __init__(self, **kwargs):
         self.model = None
         self.tokenizer = None
+        self._hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -67,10 +68,16 @@ class Model:
 
     def load(self):
         self.tokenizer = AutoTokenizer.from_pretrained(
-            MODEL_NAME, torch_dtype=torch.float16, device_map="auto"
+            MODEL_NAME,
+            torch_dtype=torch.float16,
+            device_map="auto",
+            token=self._hf_access_token,
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME, torch_dtype=torch.float16, device_map="auto"
+            MODEL_NAME,
+            torch_dtype=torch.float16,
+            device_map="auto",
+            token=self._hf_access_token,
         )
 
     def predict(self, request):
