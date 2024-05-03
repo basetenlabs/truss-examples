@@ -9,18 +9,21 @@ model_metadata:
     texts:
     - I want to eat pasta
     - I want to eat pizza
+  repo_id: nomic-ai/nomic-embed-text-v1.5
   tags:
   - text-embeddings
 model_name: Nomic Embed v1.5
-python_version: py39
+python_version: py310
 requirements:
 - einops==0.7.0
 - sentence_transformers==2.3.1
-- torch==2.0.1
+- torch==2.3.0
+- huggingface-hub==0.23.0
 resources:
   accelerator: T4
   cpu: '2'
   memory: 7Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
 system_packages: []
