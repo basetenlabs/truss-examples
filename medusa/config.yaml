@@ -10,7 +10,8 @@ build:
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
 bundled_packages_dir: packages
 data_dir: data
-description: Generate text from a prompt with this eight billion parameter language
+description: Generate text from a prompt with this seven billion parameter language  
+
   model.
 environment_variables: {}
 examples_filename: examples.yaml
@@ -26,7 +27,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: tester-medusa-base-mistral
+model_name: medusa-model
 model_type: Model
 python_version: py311
 requirements:

@@ -211,4 +211,10 @@ parameters: {
   value: {
     string_value: "medusa"
   }
+},
+parameters: {
+  key: "medusa_choices"
+    value: {
+      string_value: "mc_sim_7b_63",
+  }
 }

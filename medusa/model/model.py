@@ -1,7 +1,6 @@
 import os
 from itertools import count
 
-import build_engine_utils
 from constants import (
     GRPC_SERVICE_PORT,
     HF_AUTH_KEY_CONSTANT,
@@ -35,13 +34,6 @@ class Model:
         hf_access_token = None
         if "hf_access_token" in self._secrets._base_secrets.keys():
             hf_access_token = self._secrets["hf_access_token"]
-
-        # TODO(Abu): Move to pre-runtime
-        if build_config.requires_build:
-            build_engine_utils.build_engine_from_config_args(
-                engine_build_args=build_config.engine_build_args,
-                dst=self._data_dir,
-            )
 
         self.triton_server = TritonServer(
             grpc_port=GRPC_SERVICE_PORT,
