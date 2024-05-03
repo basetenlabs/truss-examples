@@ -10,7 +10,7 @@ build:
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
 bundled_packages_dir: packages
 data_dir: data
-description: Generate text from a prompt with this seven billion parameter language  
+description: Generate text from a prompt with this seven billion parameter language
 
   model.
 environment_variables: {}
