@@ -5,15 +5,13 @@ model_metadata:
 model_name: Qwen1.5-vllm-streaming
 python_version: py310
 requirements:
-- torch==2.1.2
-- transformers==4.37.0
-- vllm
+- torch==2.2.1
+- transformers==4.40.0
+- vllm==0.4.1
 - asyncio==3.4.3
 - ray
 resources:
-  accelerator: A100
-  cpu: '40'
-  memory: 100Gi
+  accelerator: A100:4
   use_gpu: true
 secrets: {}
 system_packages: []
