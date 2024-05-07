@@ -1,10 +1,10 @@
 apply_library_patches: true
 base_image:
-  image: docker.io/baseten/triton_trt_llm:c6ac3d8a7532e5282921541ac17e48f8f05b2a12
+  image: docker.io/baseten/triton_trt_llm:v0.9.0
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/mistral-fp16-0.10.0.dev2024042300
+    engine_repository: baseten/mistral-fp16-0.9.0
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
@@ -27,7 +27,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: medusa-model
+model_name: medusa-model-latest
 model_type: Model
 python_version: py311
 requirements:
