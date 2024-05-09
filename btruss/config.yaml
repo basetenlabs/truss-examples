@@ -17,5 +17,6 @@ environment_variables:
   HF_HUB_ENABLE_HF_TRANSFER: true
 resources:
   accelerator: A100
-secrets: {}
+secrets:
+  hf_access_token:
 system_packages: []
