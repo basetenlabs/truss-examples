@@ -1,0 +1,21 @@
+base_image:
+  image: baseten/briton-server:06c0e9b1ec38f981d023a223b212b312cfb62417
+  python_executable_path: /usr/bin/python3
+environment_variables: {}
+external_package_dirs: []
+model_metadata: 
+  engine_repository: baseten/mistral7b-bs128-i1024-o1024-trtllm06c0e9b1-A100
+  hf_tokenizer: mistralai/Mistral-7B-Instruct-v0.2
+model_name: btruss
+python_version: py310
+requirements: 
+- grpcio
+- grpcio-tools
+- transformers
+- hf_transfer
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: true
+resources:
+  accelerator: A100
+secrets: {}
+system_packages: []
