@@ -62,3 +62,4 @@ class Model:
                 yield delta
 
         return generator()
+    
