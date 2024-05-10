@@ -1,4 +1,3 @@
-environment_variables: {CUDA_VISIBLE_DEVICES: "0,1,2,3"}
 external_package_dirs: []
 model_metadata:
   example_model_input: {"prompt": "How long would it take to reach the sun?"}
