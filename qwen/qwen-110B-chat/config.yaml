@@ -1,7 +1,8 @@
+environment_variables: {CUDA_VISIBLE_DEVICES: "0,1,2,3"}
 external_package_dirs: []
 model_metadata:
   example_model_input: {"prompt": "How long would it take to reach the sun?"}
-model_name: Qwen1.5-vllm-streaminggg
+model_name: Qwen1.5-vllm-streaming
 python_version: py310
 requirements:
 - torch==2.2.1
