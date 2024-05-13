@@ -4,7 +4,7 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300
+    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300-h100
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
