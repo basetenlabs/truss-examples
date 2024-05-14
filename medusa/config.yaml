@@ -4,9 +4,9 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300-h100
+    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300-h100-4x
     pipeline_parallel_count: 1
-    tensor_parallel_count: 1
+    tensor_parallel_count: 4
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
 bundled_packages_dir: packages
 data_dir: data
@@ -35,7 +35,7 @@ requirements:
 - transformers
 - jinja2
 resources:
-  accelerator: A100:1
+  accelerator: H100:4
   use_gpu: true
 runtime:
   num_workers: 1
