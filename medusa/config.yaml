@@ -4,9 +4,9 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300-h100-4x
+    engine_repository: baseten/medusa-mistral-7b-instruct-0.10.0.dev2024042300-h100
     pipeline_parallel_count: 1
-    tensor_parallel_count: 4
+    tensor_parallel_count: 1
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
 bundled_packages_dir: packages
 data_dir: data
@@ -27,7 +27,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: medusa-model
+model_name: Mistral 7B Instruct v0.2
 model_type: Model
 python_version: py311
 requirements:
@@ -35,7 +35,7 @@ requirements:
 - transformers
 - jinja2
 resources:
-  accelerator: H100:4
+  accelerator: H100:1
   use_gpu: true
 runtime:
   num_workers: 1
