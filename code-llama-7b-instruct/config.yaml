@@ -9,7 +9,7 @@ model_metadata:
   tags:
   - text-generation
 model_name: Code Llama 7B Instruct
-python_version: py38
+python_version: py39
 requirements:
 - accelerate==0.23.0
 - bitsandbytes==0.41.1
