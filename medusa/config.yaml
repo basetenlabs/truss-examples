@@ -27,7 +27,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: Mistral 7B Instruct v0.2
+model_name: Mistral 7B Instruct v0.2 v2
 model_type: Model
 python_version: py311
 requirements:
