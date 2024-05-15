@@ -9,7 +9,7 @@ model_metadata:
   tags:
   - text-generation
 model_name: StableLM
-python_version: py38
+python_version: py39
 requirements:
 - torch==2.0.1
 - peft==0.3.0
