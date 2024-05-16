@@ -7,7 +7,7 @@ build:
     engine_repository: baseten/llama3-8b-instruct-bs128-8000-8000-fp8-fp8kv
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
-    tokenizer_repository: NousResearch/Meta-Llama-3-8B-Instruct
+    tokenizer_repository: meta-llama/Meta-Llama-3-8B-Instruct
 bundled_packages_dir: packages
 data_dir: data
 description: Generate text from a prompt with this seven billion parameter language
@@ -40,4 +40,5 @@ resources:
 runtime:
   num_workers: 1
   predict_concurrency: 512
-secrets: {}
+secrets:
+  hf_access_token: null
