@@ -14,6 +14,8 @@ from triton_client import TritonClient, TritonServer
 
 DEFAULT_MAX_TOKENS = 128
 DEFAULT_MAX_NEW_TOKENS = 128
+
+
 class Model:
     def __init__(self, data_dir, config, secrets):
         self._data_dir = data_dir
