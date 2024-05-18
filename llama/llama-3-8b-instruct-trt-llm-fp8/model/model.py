@@ -12,6 +12,9 @@ from schema import ModelInput, TrussBuildConfig
 from transformers import AutoTokenizer
 from triton_client import TritonClient, TritonServer
 
+DEFAULT_MAX_TOKENS = 128
+DEFAULT_MAX_NEW_TOKENS = 128
+
 
 class Model:
     def __init__(self, data_dir, config, secrets):
@@ -73,15 +76,26 @@ class Model:
         self.eos_token_id = self.tokenizer.eos_token_id
 
     async def predict(self, model_input):
+        if "messages" not in model_input and "prompt" not in model_input:
+            raise ValueError("Prompt or messages must be provided")
+
+        model_input.setdefault("max_tokens", DEFAULT_MAX_TOKENS)
+        model_input.setdefault("max_new_tokens", DEFAULT_MAX_NEW_TOKENS)
         model_input["request_id"] = str(os.getpid()) + str(
             next(self._request_id_counter)
         )
         model_input["eos_token_id"] = self.eos_token_id
 
+        if "messages" in model_input:
+            messages = model_input.pop("messages")
+            if self.uses_openai_api and "prompt" not in model_input:
+                model_input["prompt"] = self.tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                )
+
         self.triton_client.start_grpc_stream()
-
         model_input = ModelInput(**model_input)
-
         result_iterator = self.triton_client.infer(model_input)
 
         async def generate():

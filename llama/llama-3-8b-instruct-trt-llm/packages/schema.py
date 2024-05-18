@@ -14,6 +14,7 @@ class ModelInput:
         prompt: str,
         request_id: int,
         max_tokens: int = 50,
+        max_new_tokens: int = 50,
         temperature: float = 0.7,
         top_p: float = 0.7,
         top_k: int = 50,
@@ -29,6 +30,7 @@ class ModelInput:
         self.request_id = request_id
         self._prompt = prompt
         self._max_tokens = max_tokens
+        self._max_new_tokens = max_new_tokens
         self._temperature = temperature
         self._top_p = top_p
         self._top_k = top_k

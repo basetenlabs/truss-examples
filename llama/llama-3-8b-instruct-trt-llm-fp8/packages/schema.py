@@ -14,6 +14,10 @@ class ModelInput:
         prompt: str,
         request_id: int,
         max_tokens: int = 50,
+        max_new_tokens: int = 50,
+        temperature: float = 0.7,
+        top_p: float = 0.7,
+        top_k: int = 50,
         beam_width: int = 1,
         bad_words_list: Optional[list] = None,
         stop_words_list: Optional[list] = None,
@@ -26,6 +30,10 @@ class ModelInput:
         self.request_id = request_id
         self._prompt = prompt
         self._max_tokens = max_tokens
+        self._max_new_tokens = max_new_tokens
+        self._temperature = temperature
+        self._top_p = top_p
+        self._top_k = top_k
         self._beam_width = beam_width
         self._bad_words_list = [""] if bad_words_list is None else bad_words_list
         self._stop_words_list = [""] if stop_words_list is None else stop_words_list
@@ -57,6 +65,9 @@ class ModelInput:
         repetition_penalty_data = np.array(
             [[self._repetition_penalty]], dtype=np.float32
         )
+        temperature_data = np.array([[self._temperature]], dtype=np.float32)
+        top_p_data = np.array([[self._top_p]], dtype=np.float32)
+        top_k_data = np.array([[self._top_k]], dtype=np.uint32)
 
         inputs = [
             self._prepare_grpc_tensor("text_input", prompt_data),
@@ -66,6 +77,9 @@ class ModelInput:
             self._prepare_grpc_tensor("stream", stream_data),
             self._prepare_grpc_tensor("beam_width", beam_width_data),
             self._prepare_grpc_tensor("repetition_penalty", repetition_penalty_data),
+            self._prepare_grpc_tensor("temperature", temperature_data),
+            self._prepare_grpc_tensor("top_p", top_p_data),
+            self._prepare_grpc_tensor("top_k", top_k_data),
         ]
 
         if not self._ignore_eos:
