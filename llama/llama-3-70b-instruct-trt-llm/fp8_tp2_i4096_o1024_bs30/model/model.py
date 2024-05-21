@@ -73,8 +73,7 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(
             build_config.tokenizer_repository, token=hf_access_token
         )
-        self.tokenizer.eos_token = "<|eot_id|>"
-        self.tokenizer.eos_token_id = self.tokenizer.encode("<|eot_id|>")[0]
+
         self.eos_token_id = self.tokenizer.eos_token_id
 
     async def predict(self, model_input):
