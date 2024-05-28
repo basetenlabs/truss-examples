@@ -7,13 +7,12 @@ from transformers import GenerationConfig, TextIteratorStreamer, pipeline
 import jsonformer
 
 class Model:
-    def __init__(self, schema, **kwargs):
+    def __init__(self, **kwargs):
         self._repo_id = "NousResearch/Hermes-2-Pro-Mistral-7B"
         self._hf_access_token = kwargs["secrets"]["hf_access_token"]
-        self._schema = schema
         self._latency_metrics = dict()
         self._model = None
-        self._jsonformer = jsonformer.Jsonformer(model=self._model, tokenizer=self._model.tokenizer, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+        self._jsonformer = None
 
     def get_latency_metrics(self):
         return self._latency_metrics
@@ -26,6 +25,9 @@ class Model:
             device_map="auto",
             token=self._hf_access_token,
         )
+
+        self._jsonformer = jsonformer.Jsonformer(model=self._model, tokenizer=self._model.tokenizer, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+
 
     def preprocess(self, request: dict):
         generate_args = {
@@ -74,7 +76,7 @@ class Model:
 
         return inner()
 
-    def predict(self, request: dict):
+    def predict(self, schema: str, request: dict):
         start_time = time.time()
         prefill_start = time.time()
         model_inputs = self._model.tokenizer.apply_chat_template(messages, ...)
@@ -86,7 +88,7 @@ class Model:
 
         # Create template for JSON generation
         system_prompt = f"""<|im_start|>system
-You are a helpful assistant that answers in JSON. Here's the json schema you must adhere to:\n<schema>\n{self._schema}\n</schema><|im_end|>"""
+You are a helpful assistant that answers in JSON. Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema><|im_end|>"""
         
         chat_template = system_prompt + "\n"
         chat_template += "{% for message in messages %}"
