@@ -25,6 +25,7 @@ requirements:
 - transformers
 - torch
 - sentencepiece
+- protobuf
 - jsonformer
 resources:
   accelerator: A10G
