@@ -4,15 +4,14 @@ from threading import Thread
 
 import torch
 from transformers import GenerationConfig, TextIteratorStreamer, pipeline
-import jsonformer
+from jsonformer.format import highlight_values
+from jsonformer.main import Jsonformer
 
 class Model:
     def __init__(self, **kwargs):
         self._repo_id = "NousResearch/Hermes-2-Pro-Mistral-7B"
         self._hf_access_token = kwargs["secrets"]["hf_access_token"]
         self._latency_metrics = dict()
-        self._model = None
-        self._jsonformer = None
 
     def get_latency_metrics(self):
         return self._latency_metrics
@@ -25,8 +24,6 @@ class Model:
             device_map="auto",
             token=self._hf_access_token,
         )
-
-        self._jsonformer = jsonformer.Jsonformer(model=self._model, tokenizer=self._model.tokenizer, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
 
     def preprocess(self, request: dict):
@@ -76,7 +73,7 @@ class Model:
 
         return inner()
 
-    def predict(self, schema: str, request: dict):
+    def predict(self, schema: str, request: dict, prompt:str="Generate an example for the provided schema"):
         start_time = time.time()
         prefill_start = time.time()
         model_inputs = self._model.tokenizer.apply_chat_template(messages, ...)
@@ -86,32 +83,15 @@ class Model:
         stream = request.pop("stream", False)
         messages = request.pop("messages")
 
-        # Create template for JSON generation
-        system_prompt = f"""<|im_start|>system
-You are a helpful assistant that answers in JSON. Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema><|im_end|>"""
-        
-        chat_template = system_prompt + "\n"
-        chat_template += "{% for message in messages %}"
-        chat_template += "<|im_start|>{{ message['role'] }}\n{{ message['content'] }}<|im_end|>\n"
-        chat_template += "{% endfor %}"
-        chat_template += "{% if add_generation_prompt is not defined %}{% set add_generation_prompt = false %}{% endif %}"
-        chat_template += "{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
-        
-        model_inputs = self._model.tokenizer.apply_chat_template(
-            messages, chat_template=chat_template, tokenize=False, add_generation_prompt=True
-        )
         generation_args = request.pop("generate_args")
+        jsonformer = jsonformer.Jsonformer(model=self._model, tokenizer=self._model.tokenizer, json_schema=schema, prompt=prompt)
 
         generation_start = time.time() 
-        
-        if stream:
-            return self.stream(model_inputs, generation_args)
 
-        with torch.no_grad():
-            results = self._jsonformer(text_inputs=model_inputs, **generation_args)
-            
+        output = jsonformer()  
+        
         first_token_time = time.time() - generation_start
-        total_tokens = len(results.split())
+        total_tokens = len(output.split())
         total_time = time.time() - start_time
         tpot = (total_time - first_token_time) / total_tokens if total_tokens > 0 else 0
         
@@ -123,7 +103,7 @@ You are a helpful assistant that answers in JSON. Here's the json schema you mus
         }   
 
 
-        if len(results) > 0:
-            return results[0].get("generated_text")
+        if len(output) > 0:
+            return output
 
         raise Exception("No results returned from model")
