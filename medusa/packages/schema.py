@@ -1,12 +1,20 @@
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-
 import numpy as np
 import tritonclient
 import tritonclient.grpc.aio as grpcclient
 from pydantic import BaseModel, ConfigDict, PrivateAttr
 
+class LoraAdapater(BaseModel):
+    # The path to the LoRA on HuggingFace
+    lora_hf_path: str
+    # The ID of the LoRA associated within Triton after registration
+    lora_id: int
+    # The LoRA weights
+    lora_weights: np.ndarray
+    # The LoRA config
+    lora_config: np.ndarray
 
 class ModelInput:
     def __init__(
@@ -25,6 +33,9 @@ class ModelInput:
         ignore_eos: bool = False,
         stream: bool = True,
         eos_token_id: int = None,  # type: ignore
+        lora_task_id: Optional[np.uint64] = None,
+        lora_weights: Optional[np.ndarray] = None,
+        lora_config: Optional[np.ndarray] = None,
     ) -> None:
         self.stream = stream
         self.request_id = request_id
@@ -40,6 +51,9 @@ class ModelInput:
         self._repetition_penalty = repetition_penalty
         self._eos_token_id = eos_token_id
         self._ignore_eos = ignore_eos
+        self._lora_task_id = lora_task_id
+        self._lora_weights = lora_weights
+        self._lora_config = lora_config
 
     def _prepare_grpc_tensor(
         self, name: str, input_data: np.ndarray
@@ -85,6 +99,18 @@ class ModelInput:
         if not self._ignore_eos:
             end_id_data = np.array([[self._eos_token_id]], dtype=np.uint32)
             inputs.append(self._prepare_grpc_tensor("end_id", end_id_data))
+
+        if self._lora_task_id is not None:
+            lora_task_id_data = np.array([[self._lora_task_id]], dtype=np.uint64)
+            inputs.append(self._prepare_grpc_tensor("lora_task_id", lora_task_id_data))
+
+        if self._lora_weights is not None:
+            lora_weights_data = self._lora_weights
+            inputs.append(self._prepare_grpc_tensor("lora_weights", lora_weights_data))
+
+        if self._lora_config is not None:
+            lora_config_data = self._lora_config
+            inputs.append(self._prepare_grpc_tensor("lora_config", lora_config_data))
 
         return inputs
 

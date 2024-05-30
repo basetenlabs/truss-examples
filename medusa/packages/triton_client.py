@@ -12,7 +12,7 @@ from constants import (
     GRPC_SERVICE_PORT,
     TENSORRT_LLM_MODEL_REPOSITORY_PATH,
 )
-from schema import ModelInput
+from schema import ModelInput, LoraAdapater
 from utils import download_engine, prepare_model_repository
 
 
@@ -134,3 +134,23 @@ class TritonClient:
 
         except grpcclient.InferenceServerException as e:
             print(f"InferenceServerException: {e}")
+    
+    async def register_lora(
+        self, lora_adapter: LoraAdapater
+    ) -> None:
+        dummy_model_input = ModelInput(
+            request_id=hash(time.time()),
+            prompt="I am a dummy request to register a LoRA adapter",
+            lora_task_id=lora_adapter.task_id,
+            lora_weights=lora_adapter.weights,
+            lora_config=lora_adapter.config,
+        )
+
+        try:
+            async for response in self.infer(dummy_model_input):
+                if response["status"] == "error":
+                    raise ValueError(response["message"])
+                else:
+                    return
+        except Exception as e:
+            raise e

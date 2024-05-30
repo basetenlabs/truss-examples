@@ -25,6 +25,7 @@ class Model:
         self.triton_server = None
         self.tokenizer = None
         self.uses_openai_api = None
+        self._registered_lora_ids = set()
 
     def load(self):
         build_config = TrussBuildConfig(**self._config["build"]["arguments"])
@@ -90,6 +91,16 @@ class Model:
 
         self.triton_client.start_grpc_stream()
         model_input = ModelInput(**model_input)
+        
+        # LoRA validation
+        if model_input.lora_task_id is not None:
+            if model_input.lora_task_id not in self._registered_lora_ids:
+                if model_input.lora_weights is None:
+                    raise ValueError(f"LoRA weights must be provided for new ID: {model_input.lora_task_id}")
+            else:
+                if model_input.lora_weights is not None:
+                    raise ValueError(f"Found registered LoRA weights for ID: {model_input.lora_task_id} but weights are provided")
+
         result_iterator = self.triton_client.infer(model_input)
 
         async def generate():
