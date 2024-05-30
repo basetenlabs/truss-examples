@@ -10,6 +10,7 @@ from constants import (
 from schema import ModelInput, TrussBuildConfig
 from transformers import AutoTokenizer
 from triton_client import TritonClient, TritonServer
+from lora_manager import LoRAManager
 
 DEFAULT_MAX_TOKENS = 128
 DEFAULT_MAX_NEW_TOKENS = 128
@@ -25,7 +26,7 @@ class Model:
         self.triton_server = None
         self.tokenizer = None
         self.uses_openai_api = None
-        self._registered_lora_ids = set()
+        self.lora_manager = None
 
     def load(self):
         build_config = TrussBuildConfig(**self._config["build"]["arguments"])
@@ -62,6 +63,7 @@ class Model:
         self.triton_client = TritonClient(
             grpc_service_port=GRPC_SERVICE_PORT,
         )
+        self.lora_manager = LoRAManager(self.triton_client)
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             build_config.tokenizer_repository, token=hf_access_token
@@ -92,14 +94,10 @@ class Model:
         self.triton_client.start_grpc_stream()
         model_input = ModelInput(**model_input)
         
-        # LoRA validation
-        if model_input.lora_task_id is not None:
-            if model_input.lora_task_id not in self._registered_lora_ids:
-                if model_input.lora_weights is None:
-                    raise ValueError(f"LoRA weights must be provided for new ID: {model_input.lora_task_id}")
-            else:
-                if model_input.lora_weights is not None:
-                    raise ValueError(f"Found registered LoRA weights for ID: {model_input.lora_task_id} but weights are provided")
+        if model_input.hf_lora_dir is not None:
+            print("Found LoRA in request")
+            lora_id = self.lora_manager.get_lora_id(model_input.hf_lora_dir)
+            model_input.lora_task_id = lora_id
 
         result_iterator = self.triton_client.infer(model_input)
 

@@ -56,9 +56,11 @@ class LoraManager:
     
     def get_lora_id(self, lora_hf_dir: str) -> int:
         if lora_hf_dir in self._lora_map:
+            print("Found LoRA in cache")
             lora_adapter = self._lora_map[lora_hf_dir]
             return lora_adapter.lora_id
         else:
+            print("LoRA not found in cache, registering")
             lora_id = self.register_lora(lora_hf_dir, lora_id)
             self._lora_map[lora_hf_dir] = lora_id
             
