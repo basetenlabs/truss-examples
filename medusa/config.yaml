@@ -1,6 +1,6 @@
 apply_library_patches: true
 base_image:
-  image: docker.io/baseten/triton_trt_llm:c6ac3d8a7532e5282921541ac17e48f8f05b2a12
+  image: baseten/triton_trt_llm:b93b948be37046cf2a8a222067771fb366baf2a8
   python_executable_path: /usr/bin/python3
 build:
   arguments:
