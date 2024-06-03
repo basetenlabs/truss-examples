@@ -1,0 +1,40 @@
+apply_library_patches: true
+base_image:
+  image: baseten/triton_trt_llm:b93b948be37046cf2a8a222067771fb366baf2a8
+  python_executable_path: /usr/bin/python3
+build:
+  arguments:
+    engine_repository: baseten/mistral_i1500_o500_bs16_fp16_tp1_tllm_0.11.0.dev2024052100
+    pipeline_parallel_count: 1
+    tensor_parallel_count: 1
+    tokenizer_repository: mistral-community/Mistral-7B-v0.2
+bundled_packages_dir: packages
+data_dir: data
+description: Generate text from a prompt with this seven billion parameter language model.
+environment_variables: {}
+examples_filename: examples.yaml
+external_data: null
+external_package_dirs: []
+input_type: Any
+live_reload: false
+model_class_filename: model.py
+model_class_name: Model
+model_framework: custom
+model_metadata:
+  tags:
+  - text-generation
+  - openai-compatible
+model_module_dir: model
+model_name: Mistral 7B Instruct TRT-LLM no LoRA
+model_type: Model
+python_version: py311
+requirements:
+- tritonclient[all]
+- transformers
+- jinja2
+resources:
+  accelerator: A100:1
+  use_gpu: true
+runtime:
+  num_workers: 1
+  predict_concurrency: 512
