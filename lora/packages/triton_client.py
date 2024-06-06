@@ -12,7 +12,7 @@ from constants import (
     GRPC_SERVICE_PORT,
     TENSORRT_LLM_MODEL_REPOSITORY_PATH,
 )
-from schema import ModelInput, LoraAdapter
+from schema import LoraAdapter, ModelInput
 from utils import download_engine, prepare_model_repository
 
 
