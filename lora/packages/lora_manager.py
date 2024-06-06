@@ -47,10 +47,7 @@ class LoraRegistryManager:
         self._lora_task_index += 1
         task_index = self._lora_task_index
 
-        # [important] todo: fix this
-        lora_hf_repo_orig = model_input.lora_hf_repo
-        # pankaj: ignore suffix
-        lora_hf_repo = lora_hf_repo_orig.split('+')[0] if '+' in lora_hf_repo_orig else lora_hf_repo_orig
+        lora_hf_repo = model_input.lora_hf_repo
         lora_hf_dir = self._download_lora(
             lora_hf_repo,
             auth_token=os.environ.get(HF_AUTH_KEY_CONSTANT, None)
@@ -66,7 +63,7 @@ class LoraRegistryManager:
                 lora_weights=lora_weights_data,
                 lora_config=lora_config_data,
             )
-            self._lora_registry[lora_hf_repo_orig] = task_index
+            self._lora_registry[lora_hf_repo] = task_index
             model_input = self._prepare_lora_inputs(model_input, lora_adapter)
 
             # In case of error the followup element in gen will have the error message
