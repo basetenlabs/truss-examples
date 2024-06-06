@@ -384,3 +384,17 @@ parameters: {
     string_value: "/opt/tritonserver/backends/tensorrtllm/trtllmExecutorWorker"
   }
 }
+
+parameters: {
+  key: "lora_cache_host_memory_bytes"
+  value: {
+    string_value: "4000000000"
+  }
+}
+
+parameters: {
+  key: "lora_cache_gpu_memory_fraction"
+  value: {
+    string_value: "0.5"
+  }
+}
