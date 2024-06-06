@@ -7,10 +7,10 @@ from constants import (
     HTTP_SERVICE_PORT,
     TOKENIZER_KEY_CONSTANT,
 )
+from lora_manager import LoraRegistryManager
 from schema import ModelInput, TrussBuildConfig
 from transformers import AutoTokenizer
 from triton_client import TritonClient, TritonServer
-from lora_manager import LoraRegistryManager
 
 DEFAULT_MAX_TOKENS = 128
 DEFAULT_MAX_NEW_TOKENS = 128
@@ -64,7 +64,7 @@ class Model:
             grpc_service_port=GRPC_SERVICE_PORT,
         )
         self.lora_manager = LoraRegistryManager(self.triton_client)
-        
+
         self.tokenizer = AutoTokenizer.from_pretrained(
             build_config.tokenizer_repository, token=hf_access_token
         )
@@ -91,7 +91,7 @@ class Model:
 
         self.triton_client.start_grpc_stream()
         model_input = ModelInput(**model_input)
-        
+
         if model_input.lora_hf_repo is not None:
             print("Found LoRA in request")
             result_iterator = self.lora_manager.infer_lora(model_input)

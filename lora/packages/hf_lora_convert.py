@@ -25,7 +25,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-
 from tensorrt_llm._utils import str_dtype_to_torch, torch_to_numpy
 from tensorrt_llm.lora_manager import LoraManager
 from tensorrt_llm.models.convert_utils import get_model_path, load_state_dict
@@ -47,7 +46,7 @@ def save_val(val, dir, key, tp_num=None, write_npy=False):
 def get_all_lora_weights(lora_weights):
     all_weights = defaultdict(lambda: defaultdict(dict))
     pattern = re.compile(
-        r'.*\.layers\.([0-9]+)\.(self_attn|mlp)\.([a-z_]+)\.lora_(A|B)\.weight.*'
+        r".*\.layers\.([0-9]+)\.(self_attn|mlp)\.([a-z_]+)\.lora_(A|B)\.weight.*"
     )
     for key, weights in lora_weights.items():
         m = pattern.match(key)
@@ -68,11 +67,10 @@ hf_modules_to_trtllm_modules = {
     "o_proj": "attn_dense",
     "gate_proj": "mlp_h_to_4h",
     "down_proj": "mlp_4h_to_h",
-    "up_proj": "mlp_gate"
+    "up_proj": "mlp_gate",
 }  # lora modules on llama
 hf_modules_to_module_id = {
-    k: LoraManager.LORA_MODULE_IDS[v]
-    for k, v in hf_modules_to_trtllm_modules.items()
+    k: LoraManager.LORA_MODULE_IDS[v] for k, v in hf_modules_to_trtllm_modules.items()
 }
 
 
@@ -88,8 +86,8 @@ def convert_hf_model(model_dir, dtype, out_dir):
     converted_config = []
     for layer_idx, layer_weights in all_weights.items():
         for hf_module, module_weights in layer_weights.items():
-            in_weights = module_weights['in']
-            out_weights = module_weights['out']
+            in_weights = module_weights["in"]
+            out_weights = module_weights["out"]
             in_out_weights = []
             adapter_size = 0
             for w, inout in ((in_weights, "in"), (out_weights, "out")):
@@ -112,62 +110,66 @@ def convert_hf_model(model_dir, dtype, out_dir):
             in_out_weights = torch.concatenate(in_out_weights).flatten()
             converted_weights.append(in_out_weights)
             converted_config.append(
-                [hf_modules_to_module_id[hf_module], layer_idx, adapter_size])
+                [hf_modules_to_module_id[hf_module], layer_idx, adapter_size]
+            )
     max_row_size = 0
     for t in converted_weights:
         max_row_size = max(max_row_size, t.shape[0])
     for i in range(len(converted_weights)):
         converted_weights[i] = torch.nn.functional.pad(
-            converted_weights[i],
-            (0, max_row_size - converted_weights[i].shape[0])).unsqueeze(0)
+            converted_weights[i], (0, max_row_size - converted_weights[i].shape[0])
+        ).unsqueeze(0)
     converted_weights = torch_to_numpy(
-        torch.concatenate(
-            converted_weights,
-            dim=0).unsqueeze(0).to(dtype=str_dtype_to_torch(dtype)).cpu())
-    converted_config = torch.tensor(converted_config,
-                                    dtype=torch.int32,
-                                    device='cpu').unsqueeze(0).numpy()
+        torch.concatenate(converted_weights, dim=0)
+        .unsqueeze(0)
+        .to(dtype=str_dtype_to_torch(dtype))
+        .cpu()
+    )
+    converted_config = (
+        torch.tensor(converted_config, dtype=torch.int32, device="cpu")
+        .unsqueeze(0)
+        .numpy()
+    )
 
-    save_val(converted_weights,
-             saved_dir,
-             "lora_weights",
-             tp_num=None,
-             write_npy=True)
-    save_val(converted_config,
-             saved_dir,
-             "lora_config",
-             tp_num=None,
-             write_npy=True)
+    save_val(converted_weights, saved_dir, "lora_weights", tp_num=None, write_npy=True)
+    save_val(converted_config, saved_dir, "lora_config", tp_num=None, write_npy=True)
 
 
 def main(args):
     start_time = datetime.datetime.now()
     convert_hf_model(args.in_file, args.storage_type, args.out_dir)
 
-    LOGGER.info("Spent %s (h:m:s) to convert the prompt model",
-                datetime.datetime.now() - start_time)
+    LOGGER.info(
+        "Spent %s (h:m:s) to convert the prompt model",
+        datetime.datetime.now() - start_time,
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--out-dir',
-        '-o',
+        "--out-dir",
+        "-o",
         type=Path,
-        help='path to output embedding table file in the .npy format',
-        required=True)
-    parser.add_argument('--in-file',
-                        '-i',
-                        type=Path,
-                        help='path to input lora checkpoint file',
-                        required=True)
-    parser.add_argument("--verbose",
-                        action="store_true",
-                        help="Provide verbose messages")
-    parser.add_argument("--storage-type",
-                        type=str,
-                        default="float16",
-                        choices=["float32", "float16", "bfloat16"])
+        help="path to output embedding table file in the .npy format",
+        required=True,
+    )
+    parser.add_argument(
+        "--in-file",
+        "-i",
+        type=Path,
+        help="path to input lora checkpoint file",
+        required=True,
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Provide verbose messages"
+    )
+    parser.add_argument(
+        "--storage-type",
+        type=str,
+        default="float16",
+        choices=["float32", "float16", "bfloat16"],
+    )
     args = parser.parse_args()
 
     LOGGER.setLevel(logging.DEBUG if args.verbose else logging.INFO)
