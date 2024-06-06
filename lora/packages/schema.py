@@ -51,8 +51,8 @@ class ModelInput:
         self._ignore_eos = ignore_eos
         self.lora_hf_repo = lora_hf_repo
         self.lora_task_id = lora_task_id
-        self._lora_weights = lora_weights
-        self._lora_config = lora_config
+        self.lora_weights = lora_weights
+        self.lora_config = lora_config
 
     def _prepare_grpc_tensor(
         self, name: str, input_data: np.ndarray
@@ -103,12 +103,12 @@ class ModelInput:
             lora_task_id_data = np.array([[self.lora_task_id]], dtype=np.uint64)
             inputs.append(self._prepare_grpc_tensor("lora_task_id", lora_task_id_data))
 
-        if self._lora_weights is not None:
-            lora_weights_data = self._lora_weights
+        if self.lora_weights is not None:
+            lora_weights_data = self.lora_weights
             inputs.append(self._prepare_grpc_tensor("lora_weights", lora_weights_data))
 
-        if self._lora_config is not None:
-            lora_config_data = self._lora_config
+        if self.lora_config is not None:
+            lora_config_data = self.lora_config
             inputs.append(self._prepare_grpc_tensor("lora_config", lora_config_data))
 
         return inputs

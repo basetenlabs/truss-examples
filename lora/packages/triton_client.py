@@ -108,7 +108,19 @@ class TritonClient:
 
     async def infer(
         self, model_input: ModelInput, model_name="ensemble"
-    ) -> AsyncGenerator[str, None]:
+    ) -> AsyncGenerator:
+        """
+        Returns a generator with a special format. First element indicates
+        if the first response is error or not. Rest of it is the actual
+        transformed response.
+
+        The first element in streaming response is None if there's no initial
+        error, or the error message.
+
+        While any result in the streaming response can be an error, the first
+        response is special because it can catch a lot of setup issues. e.g.
+        if lora was evicted. That's why the special handling.
+        """
         grpc_client_instance = self.start_grpc_stream()
         inputs = model_input.to_tensors()
 
@@ -124,8 +136,18 @@ class TritonClient:
         )
 
         try:
+            first_done = False
             async for response in response_iterator:
                 result, error = response
+
+                # Yield for initial error
+                if not first_done:
+                    first_done = True
+                    if result:
+                        yield None
+                    else:
+                        yield error.message()
+
                 if result:
                     result = result.as_numpy("text_output")
                     yield result[0].decode("utf-8")

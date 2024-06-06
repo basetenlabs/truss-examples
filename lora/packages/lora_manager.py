@@ -1,4 +1,7 @@
+import asyncio
 import os
+import copy
+import inspect
 from huggingface_hub import snapshot_download
 from hf_lora_convert import convert_hf_model
 from pathlib import Path
@@ -11,7 +14,7 @@ from schema import LoraAdapter, ModelInput
 class LoraRegistryManager:
     def __init__(self, triton_client: TritonClient):
         self.triton_client = triton_client
-        self._lora_registry: Dict[str, LoraAdapter] = {}
+        self._lora_registry: Dict[str, int] = {}
         self._lora_task_index: int = 0
         LORA_DIR.mkdir(parents=True, exist_ok=True)
         TLLM_LORA_DIR.mkdir(parents=True, exist_ok=True)
@@ -40,9 +43,14 @@ class LoraRegistryManager:
         return model_input
 
 
-    def register_and_infer_lora(self, model_input: ModelInput) -> AsyncGenerator[str, None]:
+    async def register_and_infer_lora(self, model_input: ModelInput) -> AsyncGenerator[str, None]:
         self._lora_task_index += 1
-        lora_hf_repo = model_input.lora_hf_repo
+        task_index = self._lora_task_index
+
+        # [important] todo: fix this
+        lora_hf_repo_orig = model_input.lora_hf_repo
+        # pankaj: ignore suffix
+        lora_hf_repo = lora_hf_repo_orig.split('+')[0] if '+' in lora_hf_repo_orig else lora_hf_repo_orig
         lora_hf_dir = self._download_lora(
             lora_hf_repo,
             auth_token=os.environ.get(HF_AUTH_KEY_CONSTANT, None)
@@ -54,13 +62,18 @@ class LoraRegistryManager:
         lora_config_data = np.load(tllm_lora_path / LORA_CONFIG_PATH, allow_pickle=True)
         try:
             lora_adapter = LoraAdapter(
-                lora_task_id=self._lora_task_index,
+                lora_task_id=task_index,
                 lora_weights=lora_weights_data,
                 lora_config=lora_config_data,
             )
-            self._lora_registry[lora_hf_repo] = lora_adapter
+            self._lora_registry[lora_hf_repo_orig] = task_index
             model_input = self._prepare_lora_inputs(model_input, lora_adapter)
-            return self.triton_client.infer(model_input)
+
+            # In case of error the followup element in gen will have the error message
+            # We rely on that error message to convey error details, and ignore the
+            # first element here.
+            _, gen = await _extract_first_element(self.triton_client.infer(model_input))
+            return gen
         # TODO(Abu): Add proper error handling here, maybe a specific LoRAFailedToRegister error
         except Exception as e:
             import traceback
@@ -68,14 +81,28 @@ class LoraRegistryManager:
             print(tb)
             print(f"LoRA registration for {lora_hf_repo} failed with error: {e}")
     
-    def infer_lora(self, model_input: ModelInput) -> AsyncGenerator[str, None]:
+    async def infer_lora(self, model_input: ModelInput) -> AsyncGenerator[str, None]:
         lora_hf_repo: str = model_input.lora_hf_repo
         if lora_hf_repo in self._lora_registry:
             print("Found LoRA in registry")
-            lora_adapter = self._lora_registry[lora_hf_repo]
-            model_input = self._prepare_lora_inputs(model_input, lora_adapter)
-            return self.triton_client.infer(model_input)
+            lora_task_id = self._lora_registry[lora_hf_repo]
+            model_input.lora_task_id = lora_task_id
+            first_element_error, gen = await _extract_first_element(self.triton_client.infer(model_input))
+            if first_element_error is not None:
+                # TODO(pankaj) Need a better way to detect lora eviction but don't
+                # know of one right now other than this string check.
+                if "not found in cache" in first_element_error:
+                    return await self.register_and_infer_lora(model_input)
+            return gen
         else:
             print("LoRA not found in registry, registering")
-            return self.register_and_infer_lora(model_input)
+            return await self.register_and_infer_lora(model_input)
             
+
+async def _extract_first_element(gen):
+    first_element = await anext(gen)
+
+    async def remaining():
+        async for item in gen:
+            yield item
+    return first_element, remaining()
