@@ -1,17 +1,19 @@
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+
 import numpy as np
 import tritonclient
 import tritonclient.grpc.aio as grpcclient
 from pydantic import BaseModel, ConfigDict, PrivateAttr
-from typing import Any
+
 
 class LoraAdapter(BaseModel):
     # The ID of the LoRA associated within Triton after registration
     lora_task_id: int
     lora_weights: Any
     lora_config: Any
+
 
 class ModelInput:
     def __init__(
