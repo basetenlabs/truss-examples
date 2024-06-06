@@ -94,7 +94,7 @@ class Model:
 
         if model_input.lora_hf_repo is not None:
             print("Found LoRA in request")
-            result_iterator = self.lora_manager.infer_lora(model_input)
+            result_iterator = await self.lora_manager.infer_lora(model_input)
         else:
             result_iterator = self.triton_client.infer(model_input)
 
