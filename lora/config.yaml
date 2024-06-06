@@ -4,7 +4,7 @@ base_image:
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/mistral_i1500_o500_bs16_fp16_tp1_tllm_0.11.0.dev2024052100
+    engine_repository: baseten/mistral_i1600_o600_bs96_fp16_tp1_lora_tllm_0.11.0.dev2024052100
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
