@@ -25,7 +25,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: Mistral 7B Instruct TRT-LLM no LoRA
+model_name: Mistral 7B Instruct TRT-LLM with LoRA
 model_type: Model
 python_version: py311
 requirements:
