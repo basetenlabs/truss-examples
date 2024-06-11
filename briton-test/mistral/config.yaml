@@ -1,0 +1,17 @@
+model_name: mistral-h100-briton
+python_version: py310
+resources:
+  accelerator: H100
+  use_gpu: True
+requirements:
+  - sentencepiece
+trt_llm:
+  build:
+    max_input_len: 1000
+    max_batch_size: 1
+    max_beam_width: 1
+    max_output_len: 1000
+    base_model: llama
+    checkpoint_repository:
+      repo: mistralai/Mistral-7B-Instruct-v0.2
+      source: HF
