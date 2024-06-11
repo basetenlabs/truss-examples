@@ -8,7 +8,7 @@ requirements:
 trt_llm:
   build:
     max_input_len: 1000
-    max_batch_size: 1
+    max_batch_size: 128
     max_beam_width: 1
     max_output_len: 1000
     base_model: llama
