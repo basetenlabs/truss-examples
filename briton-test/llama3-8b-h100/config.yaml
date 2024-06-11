@@ -1,0 +1,19 @@
+model_name: llama3-8b-h100-briton
+python_version: py310
+resources:
+  accelerator: H100
+  use_gpu: True
+requirements:
+  - sentencepiece
+secrets:
+  hf_access_token: null
+trt_llm:
+  build:
+    max_input_len: 1000
+    max_batch_size: 128
+    max_beam_width: 1
+    max_output_len: 1000
+    base_model: llama
+    checkpoint_repository:
+      repo: meta-llama/Meta-Llama-3-8B-Instruct
+      source: HF
