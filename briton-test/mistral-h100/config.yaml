@@ -5,6 +5,8 @@ resources:
   use_gpu: True
 requirements:
   - sentencepiece
+secrets:
+  hf_access_token: null
 trt_llm:
   build:
     max_input_len: 1000
