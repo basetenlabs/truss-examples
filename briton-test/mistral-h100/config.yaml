@@ -5,6 +5,7 @@ resources:
   use_gpu: True
 requirements:
   - sentencepiece
+  - requests
 secrets:
   hf_access_token: null
 trt_llm:
