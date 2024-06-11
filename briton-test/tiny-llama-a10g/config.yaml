@@ -3,6 +3,8 @@ python_version: py310
 resources:
   accelerator: A10G
   use_gpu: True
+system_packages:
+  - python3.10-venv
 requirements:
   - sentencepiece
 trt_llm:

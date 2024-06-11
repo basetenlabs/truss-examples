@@ -6,6 +6,8 @@ resources:
 requirements:
   - sentencepiece
   - requests
+system_packages:
+  - python3.10-venv
 secrets:
   hf_access_token: null
 trt_llm:
