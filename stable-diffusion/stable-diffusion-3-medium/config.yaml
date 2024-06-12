@@ -1,0 +1,25 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  repo_id: stabilityai/stable-diffusion-3-medium
+model_name: Stable Diffusion 3 Medium
+python_version: py310
+requirements:
+  - git+https://github.com/huggingface/diffusers.git@sd3
+  - transformers
+  - accelerate
+  - sentencepiece
+  - protobuf
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: ""
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6
