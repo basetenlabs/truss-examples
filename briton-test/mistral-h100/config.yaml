@@ -12,10 +12,10 @@ secrets:
   hf_access_token: null
 trt_llm:
   build:
-    max_input_len: 1000
+    max_input_len: 4000
     max_batch_size: 64
     max_beam_width: 1
-    max_output_len: 1000
+    max_output_len: 4000
     base_model: llama
     checkpoint_repository:
       repo: mistralai/Mistral-7B-Instruct-v0.2
