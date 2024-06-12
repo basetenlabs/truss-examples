@@ -1,4 +1,4 @@
-model_name: mistral-h100-briton
+model_name: mistral-h100-briton-fp81
 python_version: py310
 resources:
   accelerator: H100
