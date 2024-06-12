@@ -38,3 +38,5 @@ resources:
 runtime:
   num_workers: 1
   predict_concurrency: 512
+system_packages:
+  - python3.10-venv
