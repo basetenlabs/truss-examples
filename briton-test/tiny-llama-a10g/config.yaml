@@ -17,3 +17,4 @@ trt_llm:
     checkpoint_repository:
       repo: TinyLlama/TinyLlama-1.1B-Chat-v1.0
       source: HF
+    tensor_parallel_count: 2
