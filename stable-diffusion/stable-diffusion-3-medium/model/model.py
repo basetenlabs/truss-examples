@@ -1,19 +1,14 @@
-import base64
-import random
-from io import BytesIO
-
-import numpy as np
 import torch
-from diffusers import (
-    FlowMatchEulerDiscreteScheduler,
-    SD3Transformer2DModel,
-    StableDiffusion3Pipeline,
-)
+from diffusers import StableDiffusion3Pipeline, SD3Transformer2DModel, FlowMatchEulerDiscreteScheduler
+import numpy as np
+import random
 from PIL import Image
+from io import BytesIO
+import base64
 
-MODEL_NAME = "stabilityai/stable-diffusion-3-medium"
+
+MODEL_NAME = "stabilityai/stable-diffusion-3-medium-diffusers"
 MAX_SEED = np.iinfo(np.int32).max
-
 
 class Model:
     def __init__(self, **kwargs):
@@ -25,8 +20,7 @@ class Model:
         self.pipe = StableDiffusion3Pipeline.from_pretrained(
             MODEL_NAME,
             torch_dtype=torch.float16,
-            revision="refs/pr/26",
-            token=self.hf_access_token,
+            token=self.hf_access_token
         ).to("cuda")
 
     def convert_to_b64(self, image: Image) -> str:
@@ -39,7 +33,7 @@ class Model:
         seed = model_input.get("seed")
         prompt = model_input.get("prompt")
         negative_prompt = model_input.get("negative_prompt")
-        guidance_scale = model_input.get("guidance_scale", 7.5)
+        guidance_scale = model_input.get("guidance_scale", 7.0)
         num_inference_steps = model_input.get("num_inference_steps", 30)
         width = model_input.get("width", 1024)
         height = model_input.get("height", 1024)
@@ -56,7 +50,7 @@ class Model:
             num_inference_steps=num_inference_steps,
             width=width,
             height=height,
-            generator=generator,
+            generator=generator
         ).images[0]
 
         b64_results = self.convert_to_b64(image)
