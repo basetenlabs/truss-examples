@@ -11,7 +11,7 @@ from diffusers import (
 )
 from PIL import Image
 
-MODEL_NAME = "stabilityai/stable-diffusion-3-medium"
+MODEL_NAME = "stabilityai/stable-diffusion-3-medium-diffusers"
 MAX_SEED = np.iinfo(np.int32).max
 
 
@@ -23,10 +23,7 @@ class Model:
 
     def load(self):
         self.pipe = StableDiffusion3Pipeline.from_pretrained(
-            MODEL_NAME,
-            torch_dtype=torch.float16,
-            revision="refs/pr/26",
-            token=self.hf_access_token,
+            MODEL_NAME, torch_dtype=torch.float16, token=self.hf_access_token
         ).to("cuda")
 
     def convert_to_b64(self, image: Image) -> str:
@@ -39,7 +36,7 @@ class Model:
         seed = model_input.get("seed")
         prompt = model_input.get("prompt")
         negative_prompt = model_input.get("negative_prompt")
-        guidance_scale = model_input.get("guidance_scale", 7.5)
+        guidance_scale = model_input.get("guidance_scale", 7.0)
         num_inference_steps = model_input.get("num_inference_steps", 30)
         width = model_input.get("width", 1024)
         height = model_input.get("height", 1024)
