@@ -20,3 +20,4 @@ trt_llm:
     checkpoint_repository:
       repo: mistralai/Mistral-7B-Instruct-v0.2
       source: HF
+    tensor_parallel_count: 2
