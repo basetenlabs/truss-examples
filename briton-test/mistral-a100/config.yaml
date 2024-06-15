@@ -1,7 +1,7 @@
 model_name: mistral-a100-briton
 python_version: py310
 resources:
-  accelerator: A10G
+  accelerator: A100
   use_gpu: True
 requirements:
   - sentencepiece
