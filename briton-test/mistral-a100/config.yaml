@@ -1,4 +1,4 @@
-model_name: mistral-a100-briton
+model_name: mistral-a100-briton2
 python_version: py310
 resources:
   accelerator: A100:2
