@@ -1,7 +1,7 @@
-model_name: mistral-a100-briton_tp2
+model_name: mistral-a100-briton
 python_version: py310
 resources:
-  accelerator: A100:2
+  accelerator: A100
   use_gpu: True
 requirements:
   - sentencepiece
@@ -20,4 +20,3 @@ trt_llm:
     checkpoint_repository:
       repo: mistralai/Mistral-7B-Instruct-v0.2
       source: HF
-    tensor_parallel_count: 2
