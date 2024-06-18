@@ -1,6 +1,7 @@
 import subprocess
 from typing import Any, Dict, List, Optional
 
+
 class Config:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
@@ -15,8 +16,10 @@ class Config:
     def get_command(self) -> List[str]:
         command = [
             "/usr/local/bin/text-embeddings-router",
-            "--port", "80",
-            "--model-id", self.config['model_id']
+            "--port",
+            "80",
+            "--model-id",
+            self.config["model_id"],
         ]
 
         optional_params = {
@@ -46,5 +49,5 @@ class Config:
 
     def run_router(self):
         command = self.get_command()
-        with open('/var/log/text_embeddings_router.log', 'w') as log_file:
+        with open("/var/log/text_embeddings_router.log", "w") as log_file:
             subprocess.Popen(command, stdout=log_file, stderr=log_file)

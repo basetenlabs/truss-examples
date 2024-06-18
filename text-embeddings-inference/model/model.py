@@ -1,35 +1,37 @@
 import subprocess
-import grpc
-from tei_pb import tei_pb2
-from tei_pb import tei_pb2_grpc
-from tei_pb.text_embeddings_router_config import Config
-from typing import Any, Dict, List
 import time
+from typing import Any, Dict, List
 
+import grpc
+from tei_pb import tei_pb2, tei_pb2_grpc
+from tei_pb.text_embeddings_router_config import Config
 
 
 class Model:
-    MAX_FAILED_SECONDS = 600 # 10 minutes; the reason this would take this long is mostly if we download a large model
-        
+    MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
+
     def __init__(self, data_dir, config, secrets):
         self._secrets = secrets
         self._config = config
-        
 
     def load(self):
-        config = Config(self._config['build']['arguments'])
+        config = Config(self._config["build"]["arguments"])
         config.run_router()
 
         # Health check loop
-        channel = grpc.insecure_channel('localhost:80')
+        channel = grpc.insecure_channel("localhost:80")
         stub = tei_pb2_grpc.InfoStub(channel)
         healthy = False
         failed_seconds = 0
-        print(f"Waiting for model to be ready for up to {self.MAX_FAILED_SECONDS} seconds")
+        print(
+            f"Waiting for model to be ready for up to {self.MAX_FAILED_SECONDS} seconds"
+        )
         while not healthy and failed_seconds < self.MAX_FAILED_SECONDS:
             try:
                 response = stub.Info(tei_pb2.InfoRequest())
-                if response.model_id:  # Assuming a valid model_id indicates the service is serving
+                if (
+                    response.model_id
+                ):  # Assuming a valid model_id indicates the service is serving
                     healthy = True
                     print("Model is ready")
                 else:
@@ -45,11 +47,12 @@ class Model:
 
         if isinstance(texts, str):
             texts = [texts]
-        
+
         print(f"Starting to embed {len(texts)} texts")
         requests = [tei_pb2.EmbedRequest(inputs=text) for text in texts]
+
         async def generator():
-            with grpc.insecure_channel('localhost:80') as channel:
+            with grpc.insecure_channel("localhost:80") as channel:
                 stub = tei_pb2_grpc.EmbedStub(channel)
                 responses = stub.EmbedStream(iter(requests))
                 for response in responses:
@@ -61,7 +64,7 @@ class Model:
             embeddings = []
             async for embedding in generator():
                 embeddings.append(embedding)
-            
+
             return {"embeddings": embeddings}
 
 

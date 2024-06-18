@@ -7,80 +7,81 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-
-
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ttei.proto\x12\x06tei.v1\"\r\n\x0bInfoRequest\"\xa3\x03\n\x0cInfoResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\x12\x10\n\x03sha\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x19\n\x0c\x64ocker_label\x18\x03 \x01(\tH\x01\x88\x01\x01\x12\x10\n\x08model_id\x18\x04 \x01(\t\x12\x16\n\tmodel_sha\x18\x05 \x01(\tH\x02\x88\x01\x01\x12\x13\n\x0bmodel_dtype\x18\x06 \x01(\t\x12%\n\nmodel_type\x18\x07 \x01(\x0e\x32\x11.tei.v1.ModelType\x12\x1f\n\x17max_concurrent_requests\x18\x08 \x01(\r\x12\x18\n\x10max_input_length\x18\t \x01(\r\x12\x18\n\x10max_batch_tokens\x18\n \x01(\r\x12\x1f\n\x12max_batch_requests\x18\x0b \x01(\rH\x03\x88\x01\x01\x12\x1d\n\x15max_client_batch_size\x18\x0c \x01(\r\x12\x1c\n\x14tokenization_workers\x18\r \x01(\rB\x06\n\x04_shaB\x0f\n\r_docker_labelB\x0c\n\n_model_shaB\x15\n\x13_max_batch_requests\"\xa0\x01\n\x08Metadata\x12\x15\n\rcompute_chars\x18\x01 \x01(\r\x12\x16\n\x0e\x63ompute_tokens\x18\x02 \x01(\r\x12\x15\n\rtotal_time_ns\x18\x03 \x01(\x04\x12\x1c\n\x14tokenization_time_ns\x18\x04 \x01(\x04\x12\x15\n\rqueue_time_ns\x18\x05 \x01(\x04\x12\x19\n\x11inference_time_ns\x18\x06 \x01(\x04\"C\n\x0c\x45mbedRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x11\n\tnormalize\x18\x03 \x01(\x08\"G\n\rEmbedResponse\x12\x12\n\nembeddings\x18\x01 \x03(\x02\x12\"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata\"6\n\x12\x45mbedSparseRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\"+\n\x0bSparseValue\x12\r\n\x05index\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x02\"i\n\x13\x45mbedSparseResponse\x12.\n\x11sparse_embeddings\x18\x01 \x03(\x0b\x32\x13.tei.v1.SparseValue\x12\"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata\"3\n\x0f\x45mbedAllRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\"$\n\x0eTokenEmbedding\x12\x12\n\nembeddings\x18\x01 \x03(\x02\"h\n\x10\x45mbedAllResponse\x12\x30\n\x10token_embeddings\x18\x01 \x03(\x0b\x32\x16.tei.v1.TokenEmbedding\x12\"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata\"F\n\x0ePredictRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x12\n\nraw_scores\x18\x03 \x01(\x08\"J\n\x12PredictPairRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x12\n\nraw_scores\x18\x03 \x01(\x08\"*\n\nPrediction\x12\r\n\x05score\x18\x01 \x01(\x02\x12\r\n\x05label\x18\x02 \x01(\t\"^\n\x0fPredictResponse\x12\'\n\x0bpredictions\x18\x01 \x03(\x0b\x32\x12.tei.v1.Prediction\x12\"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata\"h\n\rRerankRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\r\n\x05texts\x18\x02 \x03(\t\x12\x10\n\x08truncate\x18\x03 \x01(\x08\x12\x12\n\nraw_scores\x18\x04 \x01(\x08\x12\x13\n\x0breturn_text\x18\x05 \x01(\x08\"m\n\x13RerankStreamRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x10\n\x08truncate\x18\x03 \x01(\x08\x12\x12\n\nraw_scores\x18\x04 \x01(\x08\x12\x13\n\x0breturn_text\x18\x05 \x01(\x08\"@\n\x04Rank\x12\r\n\x05index\x18\x01 \x01(\r\x12\x11\n\x04text\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\r\n\x05score\x18\x03 \x01(\x02\x42\x07\n\x05_text\"Q\n\x0eRerankResponse\x12\x1b\n\x05ranks\x18\x01 \x03(\x0b\x32\x0c.tei.v1.Rank\x12\"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata\";\n\rEncodeRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x1a\n\x12\x61\x64\x64_special_tokens\x18\x02 \x01(\x08\"r\n\x0bSimpleToken\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x0f\n\x07special\x18\x03 \x01(\x08\x12\x12\n\x05start\x18\x04 \x01(\rH\x00\x88\x01\x01\x12\x11\n\x04stop\x18\x05 \x01(\rH\x01\x88\x01\x01\x42\x08\n\x06_startB\x07\n\x05_stop\"5\n\x0e\x45ncodeResponse\x12#\n\x06tokens\x18\x01 \x03(\x0b\x32\x13.tei.v1.SimpleToken\"9\n\rDecodeRequest\x12\x0b\n\x03ids\x18\x01 \x03(\r\x12\x1b\n\x13skip_special_tokens\x18\x02 \x01(\x08\"\x1e\n\x0e\x44\x65\x63odeResponse\x12\x0c\n\x04text\x18\x01 \x01(\t*Y\n\tModelType\x12\x18\n\x14MODEL_TYPE_EMBEDDING\x10\x00\x12\x19\n\x15MODEL_TYPE_CLASSIFIER\x10\x01\x12\x17\n\x13MODEL_TYPE_RERANKER\x10\x02\x32>\n\x04Info\x12\x36\n\x04Info\x12\x13.tei.v1.InfoRequest\x1a\x14.tei.v1.InfoResponse\"\x03\x90\x02\x02\x32\x9f\x03\n\x05\x45mbed\x12\x34\n\x05\x45mbed\x12\x14.tei.v1.EmbedRequest\x1a\x15.tei.v1.EmbedResponse\x12>\n\x0b\x45mbedStream\x12\x14.tei.v1.EmbedRequest\x1a\x15.tei.v1.EmbedResponse(\x01\x30\x01\x12\x46\n\x0b\x45mbedSparse\x12\x1a.tei.v1.EmbedSparseRequest\x1a\x1b.tei.v1.EmbedSparseResponse\x12P\n\x11\x45mbedSparseStream\x12\x1a.tei.v1.EmbedSparseRequest\x1a\x1b.tei.v1.EmbedSparseResponse(\x01\x30\x01\x12=\n\x08\x45mbedAll\x12\x17.tei.v1.EmbedAllRequest\x1a\x18.tei.v1.EmbedAllResponse\x12G\n\x0e\x45mbedAllStream\x12\x17.tei.v1.EmbedAllRequest\x1a\x18.tei.v1.EmbedAllResponse(\x01\x30\x01\x32\x9d\x02\n\x07Predict\x12:\n\x07Predict\x12\x16.tei.v1.PredictRequest\x1a\x17.tei.v1.PredictResponse\x12\x42\n\x0bPredictPair\x12\x1a.tei.v1.PredictPairRequest\x1a\x17.tei.v1.PredictResponse\x12\x44\n\rPredictStream\x12\x16.tei.v1.PredictRequest\x1a\x17.tei.v1.PredictResponse(\x01\x30\x01\x12L\n\x11PredictPairStream\x12\x1a.tei.v1.PredictPairRequest\x1a\x17.tei.v1.PredictResponse(\x01\x30\x01\x32\x88\x01\n\x06Rerank\x12\x37\n\x06Rerank\x12\x15.tei.v1.RerankRequest\x1a\x16.tei.v1.RerankResponse\x12\x45\n\x0cRerankStream\x12\x1b.tei.v1.RerankStreamRequest\x1a\x16.tei.v1.RerankResponse(\x01\x32\x86\x02\n\x08Tokenize\x12\x39\n\x08Tokenize\x12\x15.tei.v1.EncodeRequest\x1a\x16.tei.v1.EncodeResponse\x12\x43\n\x0eTokenizeStream\x12\x15.tei.v1.EncodeRequest\x1a\x16.tei.v1.EncodeResponse(\x01\x30\x01\x12\x37\n\x06\x44\x65\x63ode\x12\x15.tei.v1.DecodeRequest\x1a\x16.tei.v1.DecodeResponse\x12\x41\n\x0c\x44\x65\x63odeStream\x12\x15.tei.v1.DecodeRequest\x1a\x16.tei.v1.DecodeResponse(\x01\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\ttei.proto\x12\x06tei.v1"\r\n\x0bInfoRequest"\xa3\x03\n\x0cInfoResponse\x12\x0f\n\x07version\x18\x01 \x01(\t\x12\x10\n\x03sha\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x19\n\x0c\x64ocker_label\x18\x03 \x01(\tH\x01\x88\x01\x01\x12\x10\n\x08model_id\x18\x04 \x01(\t\x12\x16\n\tmodel_sha\x18\x05 \x01(\tH\x02\x88\x01\x01\x12\x13\n\x0bmodel_dtype\x18\x06 \x01(\t\x12%\n\nmodel_type\x18\x07 \x01(\x0e\x32\x11.tei.v1.ModelType\x12\x1f\n\x17max_concurrent_requests\x18\x08 \x01(\r\x12\x18\n\x10max_input_length\x18\t \x01(\r\x12\x18\n\x10max_batch_tokens\x18\n \x01(\r\x12\x1f\n\x12max_batch_requests\x18\x0b \x01(\rH\x03\x88\x01\x01\x12\x1d\n\x15max_client_batch_size\x18\x0c \x01(\r\x12\x1c\n\x14tokenization_workers\x18\r \x01(\rB\x06\n\x04_shaB\x0f\n\r_docker_labelB\x0c\n\n_model_shaB\x15\n\x13_max_batch_requests"\xa0\x01\n\x08Metadata\x12\x15\n\rcompute_chars\x18\x01 \x01(\r\x12\x16\n\x0e\x63ompute_tokens\x18\x02 \x01(\r\x12\x15\n\rtotal_time_ns\x18\x03 \x01(\x04\x12\x1c\n\x14tokenization_time_ns\x18\x04 \x01(\x04\x12\x15\n\rqueue_time_ns\x18\x05 \x01(\x04\x12\x19\n\x11inference_time_ns\x18\x06 \x01(\x04"C\n\x0c\x45mbedRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x11\n\tnormalize\x18\x03 \x01(\x08"G\n\rEmbedResponse\x12\x12\n\nembeddings\x18\x01 \x03(\x02\x12"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata"6\n\x12\x45mbedSparseRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08"+\n\x0bSparseValue\x12\r\n\x05index\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x02"i\n\x13\x45mbedSparseResponse\x12.\n\x11sparse_embeddings\x18\x01 \x03(\x0b\x32\x13.tei.v1.SparseValue\x12"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata"3\n\x0f\x45mbedAllRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08"$\n\x0eTokenEmbedding\x12\x12\n\nembeddings\x18\x01 \x03(\x02"h\n\x10\x45mbedAllResponse\x12\x30\n\x10token_embeddings\x18\x01 \x03(\x0b\x32\x16.tei.v1.TokenEmbedding\x12"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata"F\n\x0ePredictRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x12\n\nraw_scores\x18\x03 \x01(\x08"J\n\x12PredictPairRequest\x12\x0e\n\x06inputs\x18\x01 \x03(\t\x12\x10\n\x08truncate\x18\x02 \x01(\x08\x12\x12\n\nraw_scores\x18\x03 \x01(\x08"*\n\nPrediction\x12\r\n\x05score\x18\x01 \x01(\x02\x12\r\n\x05label\x18\x02 \x01(\t"^\n\x0fPredictResponse\x12\'\n\x0bpredictions\x18\x01 \x03(\x0b\x32\x12.tei.v1.Prediction\x12"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata"h\n\rRerankRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\r\n\x05texts\x18\x02 \x03(\t\x12\x10\n\x08truncate\x18\x03 \x01(\x08\x12\x12\n\nraw_scores\x18\x04 \x01(\x08\x12\x13\n\x0breturn_text\x18\x05 \x01(\x08"m\n\x13RerankStreamRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x10\n\x08truncate\x18\x03 \x01(\x08\x12\x12\n\nraw_scores\x18\x04 \x01(\x08\x12\x13\n\x0breturn_text\x18\x05 \x01(\x08"@\n\x04Rank\x12\r\n\x05index\x18\x01 \x01(\r\x12\x11\n\x04text\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\r\n\x05score\x18\x03 \x01(\x02\x42\x07\n\x05_text"Q\n\x0eRerankResponse\x12\x1b\n\x05ranks\x18\x01 \x03(\x0b\x32\x0c.tei.v1.Rank\x12"\n\x08metadata\x18\x02 \x01(\x0b\x32\x10.tei.v1.Metadata";\n\rEncodeRequest\x12\x0e\n\x06inputs\x18\x01 \x01(\t\x12\x1a\n\x12\x61\x64\x64_special_tokens\x18\x02 \x01(\x08"r\n\x0bSimpleToken\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04text\x18\x02 \x01(\t\x12\x0f\n\x07special\x18\x03 \x01(\x08\x12\x12\n\x05start\x18\x04 \x01(\rH\x00\x88\x01\x01\x12\x11\n\x04stop\x18\x05 \x01(\rH\x01\x88\x01\x01\x42\x08\n\x06_startB\x07\n\x05_stop"5\n\x0e\x45ncodeResponse\x12#\n\x06tokens\x18\x01 \x03(\x0b\x32\x13.tei.v1.SimpleToken"9\n\rDecodeRequest\x12\x0b\n\x03ids\x18\x01 \x03(\r\x12\x1b\n\x13skip_special_tokens\x18\x02 \x01(\x08"\x1e\n\x0e\x44\x65\x63odeResponse\x12\x0c\n\x04text\x18\x01 \x01(\t*Y\n\tModelType\x12\x18\n\x14MODEL_TYPE_EMBEDDING\x10\x00\x12\x19\n\x15MODEL_TYPE_CLASSIFIER\x10\x01\x12\x17\n\x13MODEL_TYPE_RERANKER\x10\x02\x32>\n\x04Info\x12\x36\n\x04Info\x12\x13.tei.v1.InfoRequest\x1a\x14.tei.v1.InfoResponse"\x03\x90\x02\x02\x32\x9f\x03\n\x05\x45mbed\x12\x34\n\x05\x45mbed\x12\x14.tei.v1.EmbedRequest\x1a\x15.tei.v1.EmbedResponse\x12>\n\x0b\x45mbedStream\x12\x14.tei.v1.EmbedRequest\x1a\x15.tei.v1.EmbedResponse(\x01\x30\x01\x12\x46\n\x0b\x45mbedSparse\x12\x1a.tei.v1.EmbedSparseRequest\x1a\x1b.tei.v1.EmbedSparseResponse\x12P\n\x11\x45mbedSparseStream\x12\x1a.tei.v1.EmbedSparseRequest\x1a\x1b.tei.v1.EmbedSparseResponse(\x01\x30\x01\x12=\n\x08\x45mbedAll\x12\x17.tei.v1.EmbedAllRequest\x1a\x18.tei.v1.EmbedAllResponse\x12G\n\x0e\x45mbedAllStream\x12\x17.tei.v1.EmbedAllRequest\x1a\x18.tei.v1.EmbedAllResponse(\x01\x30\x01\x32\x9d\x02\n\x07Predict\x12:\n\x07Predict\x12\x16.tei.v1.PredictRequest\x1a\x17.tei.v1.PredictResponse\x12\x42\n\x0bPredictPair\x12\x1a.tei.v1.PredictPairRequest\x1a\x17.tei.v1.PredictResponse\x12\x44\n\rPredictStream\x12\x16.tei.v1.PredictRequest\x1a\x17.tei.v1.PredictResponse(\x01\x30\x01\x12L\n\x11PredictPairStream\x12\x1a.tei.v1.PredictPairRequest\x1a\x17.tei.v1.PredictResponse(\x01\x30\x01\x32\x88\x01\n\x06Rerank\x12\x37\n\x06Rerank\x12\x15.tei.v1.RerankRequest\x1a\x16.tei.v1.RerankResponse\x12\x45\n\x0cRerankStream\x12\x1b.tei.v1.RerankStreamRequest\x1a\x16.tei.v1.RerankResponse(\x01\x32\x86\x02\n\x08Tokenize\x12\x39\n\x08Tokenize\x12\x15.tei.v1.EncodeRequest\x1a\x16.tei.v1.EncodeResponse\x12\x43\n\x0eTokenizeStream\x12\x15.tei.v1.EncodeRequest\x1a\x16.tei.v1.EncodeResponse(\x01\x30\x01\x12\x37\n\x06\x44\x65\x63ode\x12\x15.tei.v1.DecodeRequest\x1a\x16.tei.v1.DecodeResponse\x12\x41\n\x0c\x44\x65\x63odeStream\x12\x15.tei.v1.DecodeRequest\x1a\x16.tei.v1.DecodeResponse(\x01\x30\x01\x62\x06proto3'
+)
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'tei_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "tei_pb2", _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-  DESCRIPTOR._loaded_options = None
-  _globals['_INFO'].methods_by_name['Info']._loaded_options = None
-  _globals['_INFO'].methods_by_name['Info']._serialized_options = b'\220\002\002'
-  _globals['_MODELTYPE']._serialized_start=2145
-  _globals['_MODELTYPE']._serialized_end=2234
-  _globals['_INFOREQUEST']._serialized_start=21
-  _globals['_INFOREQUEST']._serialized_end=34
-  _globals['_INFORESPONSE']._serialized_start=37
-  _globals['_INFORESPONSE']._serialized_end=456
-  _globals['_METADATA']._serialized_start=459
-  _globals['_METADATA']._serialized_end=619
-  _globals['_EMBEDREQUEST']._serialized_start=621
-  _globals['_EMBEDREQUEST']._serialized_end=688
-  _globals['_EMBEDRESPONSE']._serialized_start=690
-  _globals['_EMBEDRESPONSE']._serialized_end=761
-  _globals['_EMBEDSPARSEREQUEST']._serialized_start=763
-  _globals['_EMBEDSPARSEREQUEST']._serialized_end=817
-  _globals['_SPARSEVALUE']._serialized_start=819
-  _globals['_SPARSEVALUE']._serialized_end=862
-  _globals['_EMBEDSPARSERESPONSE']._serialized_start=864
-  _globals['_EMBEDSPARSERESPONSE']._serialized_end=969
-  _globals['_EMBEDALLREQUEST']._serialized_start=971
-  _globals['_EMBEDALLREQUEST']._serialized_end=1022
-  _globals['_TOKENEMBEDDING']._serialized_start=1024
-  _globals['_TOKENEMBEDDING']._serialized_end=1060
-  _globals['_EMBEDALLRESPONSE']._serialized_start=1062
-  _globals['_EMBEDALLRESPONSE']._serialized_end=1166
-  _globals['_PREDICTREQUEST']._serialized_start=1168
-  _globals['_PREDICTREQUEST']._serialized_end=1238
-  _globals['_PREDICTPAIRREQUEST']._serialized_start=1240
-  _globals['_PREDICTPAIRREQUEST']._serialized_end=1314
-  _globals['_PREDICTION']._serialized_start=1316
-  _globals['_PREDICTION']._serialized_end=1358
-  _globals['_PREDICTRESPONSE']._serialized_start=1360
-  _globals['_PREDICTRESPONSE']._serialized_end=1454
-  _globals['_RERANKREQUEST']._serialized_start=1456
-  _globals['_RERANKREQUEST']._serialized_end=1560
-  _globals['_RERANKSTREAMREQUEST']._serialized_start=1562
-  _globals['_RERANKSTREAMREQUEST']._serialized_end=1671
-  _globals['_RANK']._serialized_start=1673
-  _globals['_RANK']._serialized_end=1737
-  _globals['_RERANKRESPONSE']._serialized_start=1739
-  _globals['_RERANKRESPONSE']._serialized_end=1820
-  _globals['_ENCODEREQUEST']._serialized_start=1822
-  _globals['_ENCODEREQUEST']._serialized_end=1881
-  _globals['_SIMPLETOKEN']._serialized_start=1883
-  _globals['_SIMPLETOKEN']._serialized_end=1997
-  _globals['_ENCODERESPONSE']._serialized_start=1999
-  _globals['_ENCODERESPONSE']._serialized_end=2052
-  _globals['_DECODEREQUEST']._serialized_start=2054
-  _globals['_DECODEREQUEST']._serialized_end=2111
-  _globals['_DECODERESPONSE']._serialized_start=2113
-  _globals['_DECODERESPONSE']._serialized_end=2143
-  _globals['_INFO']._serialized_start=2236
-  _globals['_INFO']._serialized_end=2298
-  _globals['_EMBED']._serialized_start=2301
-  _globals['_EMBED']._serialized_end=2716
-  _globals['_PREDICT']._serialized_start=2719
-  _globals['_PREDICT']._serialized_end=3004
-  _globals['_RERANK']._serialized_start=3007
-  _globals['_RERANK']._serialized_end=3143
-  _globals['_TOKENIZE']._serialized_start=3146
-  _globals['_TOKENIZE']._serialized_end=3408
+    DESCRIPTOR._loaded_options = None
+    _globals["_INFO"].methods_by_name["Info"]._loaded_options = None
+    _globals["_INFO"].methods_by_name["Info"]._serialized_options = b"\220\002\002"
+    _globals["_MODELTYPE"]._serialized_start = 2145
+    _globals["_MODELTYPE"]._serialized_end = 2234
+    _globals["_INFOREQUEST"]._serialized_start = 21
+    _globals["_INFOREQUEST"]._serialized_end = 34
+    _globals["_INFORESPONSE"]._serialized_start = 37
+    _globals["_INFORESPONSE"]._serialized_end = 456
+    _globals["_METADATA"]._serialized_start = 459
+    _globals["_METADATA"]._serialized_end = 619
+    _globals["_EMBEDREQUEST"]._serialized_start = 621
+    _globals["_EMBEDREQUEST"]._serialized_end = 688
+    _globals["_EMBEDRESPONSE"]._serialized_start = 690
+    _globals["_EMBEDRESPONSE"]._serialized_end = 761
+    _globals["_EMBEDSPARSEREQUEST"]._serialized_start = 763
+    _globals["_EMBEDSPARSEREQUEST"]._serialized_end = 817
+    _globals["_SPARSEVALUE"]._serialized_start = 819
+    _globals["_SPARSEVALUE"]._serialized_end = 862
+    _globals["_EMBEDSPARSERESPONSE"]._serialized_start = 864
+    _globals["_EMBEDSPARSERESPONSE"]._serialized_end = 969
+    _globals["_EMBEDALLREQUEST"]._serialized_start = 971
+    _globals["_EMBEDALLREQUEST"]._serialized_end = 1022
+    _globals["_TOKENEMBEDDING"]._serialized_start = 1024
+    _globals["_TOKENEMBEDDING"]._serialized_end = 1060
+    _globals["_EMBEDALLRESPONSE"]._serialized_start = 1062
+    _globals["_EMBEDALLRESPONSE"]._serialized_end = 1166
+    _globals["_PREDICTREQUEST"]._serialized_start = 1168
+    _globals["_PREDICTREQUEST"]._serialized_end = 1238
+    _globals["_PREDICTPAIRREQUEST"]._serialized_start = 1240
+    _globals["_PREDICTPAIRREQUEST"]._serialized_end = 1314
+    _globals["_PREDICTION"]._serialized_start = 1316
+    _globals["_PREDICTION"]._serialized_end = 1358
+    _globals["_PREDICTRESPONSE"]._serialized_start = 1360
+    _globals["_PREDICTRESPONSE"]._serialized_end = 1454
+    _globals["_RERANKREQUEST"]._serialized_start = 1456
+    _globals["_RERANKREQUEST"]._serialized_end = 1560
+    _globals["_RERANKSTREAMREQUEST"]._serialized_start = 1562
+    _globals["_RERANKSTREAMREQUEST"]._serialized_end = 1671
+    _globals["_RANK"]._serialized_start = 1673
+    _globals["_RANK"]._serialized_end = 1737
+    _globals["_RERANKRESPONSE"]._serialized_start = 1739
+    _globals["_RERANKRESPONSE"]._serialized_end = 1820
+    _globals["_ENCODEREQUEST"]._serialized_start = 1822
+    _globals["_ENCODEREQUEST"]._serialized_end = 1881
+    _globals["_SIMPLETOKEN"]._serialized_start = 1883
+    _globals["_SIMPLETOKEN"]._serialized_end = 1997
+    _globals["_ENCODERESPONSE"]._serialized_start = 1999
+    _globals["_ENCODERESPONSE"]._serialized_end = 2052
+    _globals["_DECODEREQUEST"]._serialized_start = 2054
+    _globals["_DECODEREQUEST"]._serialized_end = 2111
+    _globals["_DECODERESPONSE"]._serialized_start = 2113
+    _globals["_DECODERESPONSE"]._serialized_end = 2143
+    _globals["_INFO"]._serialized_start = 2236
+    _globals["_INFO"]._serialized_end = 2298
+    _globals["_EMBED"]._serialized_start = 2301
+    _globals["_EMBED"]._serialized_end = 2716
+    _globals["_PREDICT"]._serialized_start = 2719
+    _globals["_PREDICT"]._serialized_end = 3004
+    _globals["_RERANK"]._serialized_start = 3007
+    _globals["_RERANK"]._serialized_end = 3143
+    _globals["_TOKENIZE"]._serialized_start = 3146
+    _globals["_TOKENIZE"]._serialized_end = 3408
 # @@protoc_insertion_point(module_scope)
