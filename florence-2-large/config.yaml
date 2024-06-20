@@ -6,6 +6,9 @@ model_metadata:
   tags:
     - vision
     - multi-task
+  example_model_input:
+    prompt: "<OD>"
+    image_url: "https://example.com/test_image.jpg"
 python_version: py39
 requirements:
   - transformers==4.30.0
