@@ -1,0 +1,23 @@
+description: Deploy Florence-2 Large model for multi-task computer vision
+model_metadata:
+  model_name: Florence-2-Large
+  avatar_url: https://huggingface.co/microsoft/Florence-2-large/resolve/main/florence2_avatar.png
+  cover_image_url: https://huggingface.co/microsoft/Florence-2-large/resolve/main/florence2_cover_image.png
+  tags:
+    - vision
+    - multi-task
+python_version: py39
+requirements:
+  - transformers==4.30.0
+  - torch==2.0.1
+  - torchvision==0.15.2
+  - GitPython==3.1.31
+resources:
+  accelerator: A100
+  cpu: 4
+  memory: 16G
+  use_gpu: true
+secrets:
+  hf_access_token:
+    description: Access token for Hugging Face
+spec_version: 1
