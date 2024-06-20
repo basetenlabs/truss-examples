@@ -73,8 +73,6 @@ remote_url = https://app.staging.baseten.co"""
         )
     model_id = str(match.group(1))  # Ensure model_id is a string
     deployment_id = str(match.group(2))  # Ensure deployment_id is a string
-    model_id = str(match.group(1))  # Ensure model_id is a string
-    deployment_id = str(match.group(2))  # Ensure deployment_id is a string
     print(
         f"Model pushed successfully. model-id: {model_id}. deployment-id: {deployment_id}"
     )
