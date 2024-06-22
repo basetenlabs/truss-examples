@@ -12,11 +12,12 @@ secrets:
   hf_access_token: null
 trt_llm:
   build:
-    max_input_len: 1000
+    max_input_len: 4000
     max_batch_size: 128
     max_beam_width: 1
     max_output_len: 1000
     base_model: llama
+    quantization_type: fp8_kv
     checkpoint_repository:
       repo: meta-llama/Meta-Llama-3-8B-Instruct
       source: HF
