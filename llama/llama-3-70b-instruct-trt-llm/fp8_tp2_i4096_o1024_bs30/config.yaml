@@ -1,12 +1,12 @@
 apply_library_patches: true
 base_image:
-  image: baseten/triton_trt_llm:b93b948be37046cf2a8a222067771fb366baf2a8
+  image: docker.io/baseten/triton_trt_llm:4062d46_20240401
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/llama3-70b-instruct_fp8_tp4_i4096_o1024_bs40-tllm_0.11.0.dev2024052100
+    engine_repository: baseten/llama-3-70b_fp8_tp2_i4096_o1024_bs30-tllm_0.9.0.dev2024022000
     pipeline_parallel_count: 1
-    tensor_parallel_count: 4
+    tensor_parallel_count: 2
     tokenizer_repository: baseten/Meta-Llama-3-Instruct-tokenizer
 bundled_packages_dir: packages
 data_dir: data
@@ -34,7 +34,7 @@ requirements:
 - transformers
 - jinja2
 resources:
-  accelerator: H100:4
+  accelerator: H100:2
   use_gpu: true
 runtime:
   num_workers: 1
