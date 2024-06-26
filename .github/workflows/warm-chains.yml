@@ -1,0 +1,32 @@
+name: Warm up chains examples
+
+on:
+  schedule:
+    # Runs daily at 6am UTC
+    - cron:  '*/20 * * * *'
+  workflow_dispatch:
+
+jobs:
+  warm_chains:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.4'
+      - name: Install dependencies (if any)
+        run: |
+          python -m pip install --upgrade pip
+          pip install truss --upgrade
+      - name: Set up API Key
+        run: |
+          cat << EOF > ~/.trussrc
+          [baseten]
+          remote_provider = baseten
+          api_key = ${{secrets.BASETEN_CHAINS_WARMER_API_KEY}}
+          remote_url = https://app.baseten.co
+          EOF
+      - name: Warm up chains
+        run: |
+          truss chains deploy chains-examples/docs-examples/poems.py
