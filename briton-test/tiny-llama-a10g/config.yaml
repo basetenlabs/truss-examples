@@ -1,0 +1,19 @@
+model_name: tiny-llama-a10g-briton
+python_version: py310
+resources:
+  accelerator: A10G
+  use_gpu: True
+system_packages:
+  - python3.10-venv
+requirements:
+  - sentencepiece
+trt_llm:
+  build:
+    max_input_len: 1000
+    max_batch_size: 1
+    max_beam_width: 1
+    max_output_len: 1000
+    base_model: llama
+    checkpoint_repository:
+      repo: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+      source: HF
