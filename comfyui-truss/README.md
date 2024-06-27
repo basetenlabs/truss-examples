@@ -64,7 +64,7 @@ system_packages:
   - libgl1-mesa-glx
 ```
 
-Here is a breakdown of the things happenning in `build_commands`. First, we are cloning the ComfyUI repository, checking out a specific commit, and installing the required python packages to run Comfy. Next, we are use the `cd` commmand to go into the `custom_nodes` directory and then cloning and installing requirements for each custom node. Similarly for the checkpoints, we use the `wget` utility to download the checkpoints and place them in the appropriate directories within ComfyUI.
+Here is a breakdown of the actions happenning in `build_commands`. First, we are cloning the ComfyUI repository, checking out a specific commit, and installing the required python packages to run ComfyUI. Next, we use the `cd` commmand ensure all custom nodes are downloaded within the `custom_nodes` directory, and their respective requirements are installed. Similarly for the checkpoints, we use the `wget` utility to download the checkpoints and place them in the appropriate directories within ComfyUI.
 
 Every line under `build_commands` effectively does a `RUN` inside the dockerfile. The benefit of using this feature is that your model weights and custom nodes get cached during the docker build stage. So when your model deploys, it can access the cached weights directly which reduces the cold-start time.
 
