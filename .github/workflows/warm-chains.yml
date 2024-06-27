@@ -29,4 +29,4 @@ jobs:
           EOF
       - name: Warm up chains
         run: |
-          truss chains deploy chains-examples/docs-examples/poems.py
+          truss chains deploy chains-examples/docs/poems/poems.py
