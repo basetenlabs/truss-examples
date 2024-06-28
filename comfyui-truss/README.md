@@ -30,22 +30,43 @@ git clone https://github.com/basetenlabs/truss-examples/
 cd comfyui-truss
 ```
 
-For your ComfyUI workflow, you probably used one or more models. Those models need to be defined inside truss. From the root of the truss project, create and open the file inside the data directory called `data/model.json`. This file will contain all of the models that need to get downloaded in order for your ComfyUI workflow to run. Here is an example of the contents of this file:
+For your ComfyUI workflow, you probably used one or more models. Those models need to be defined inside truss. From the root of the truss project, open the file called `config.yaml`. In this file we will modify an element called `build_commands`. Build commands will allow you to run docker commands at build time. You can use this feature to download model weights and install custom nodes.
 
-```json
-[
-    {
-        "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
-        "path": "models/checkpoints/sd_xl_base_1.0.safetensors"
-    },
-    {
-        "url": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/main/diffusion_pytorch_model.fp16.safetensors",
-        "path": "models/controlnet/diffusers_xl_canny_full.safetensors"
-    }
-]
+```yaml
+build_commands:
+- git clone https://github.com/comfyanonymous/ComfyUI.git
+- cd ComfyUI && git checkout b1fd26fe9e55163f780bf9e5f56bf9bf5f035c93 && pip install -r requirements.txt
+- cd ComfyUI/custom_nodes && git clone https://github.com/LykosAI/ComfyUI-Inference-Core-Nodes --recursive && cd ComfyUI-Inference-Core-Nodes && pip install -e .[cuda12]
+- cd ComfyUI/custom_nodes && git clone https://github.com/ZHO-ZHO-ZHO/ComfyUI-Gemini --recursive && cd ComfyUI-Gemini && pip install -r requirements.txt
+- cd ComfyUI/custom_nodes && git clone https://github.com/kijai/ComfyUI-Marigold --recursive && cd ComfyUI-Marigold && pip install -r requirements.txt
+- cd ComfyUI/custom_nodes && git clone https://github.com/omar92/ComfyUI-QualityOfLifeSuit_Omar92 --recursive
+- cd ComfyUI/custom_nodes && git clone https://github.com/Fannovel16/comfyui_controlnet_aux --recursive && cd comfyui_controlnet_aux && pip install -r requirements.txt
+- cd ComfyUI/models/controlnet && wget -O control-lora-canny-rank256.safetensors https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-canny-rank256.safetensors
+- cd ComfyUI/models/controlnet && wget -O control-lora-depth-rank256.safetensors https://huggingface.co/stabilityai/control-lora/resolve/main/control-LoRAs-rank256/control-lora-depth-rank256.safetensors
+- cd ComfyUI/models/checkpoints && wget -O dreamshaperXL_v21TurboDPMSDE.safetensors https://civitai.com/api/download/models/351306
+- cd ComfyUI/models/loras && wget -O StudioGhibli.Redmond-StdGBRRedmAF-StudioGhibli.safetensors https://huggingface.co/artificialguybr/StudioGhibli.Redmond-V2/resolve/main/StudioGhibli.Redmond-StdGBRRedmAF-StudioGhibli.safetensors
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: comfy build commands
+python_version: py310
+requirements:
+  - websocket-client==1.6.4
+  - accelerate==0.23.0
+  - opencv-python
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets: {}
+system_packages:
+  - wget
+  - ffmpeg
+  - libgl1-mesa-glx
 ```
 
-In this case, I have 2 models: SDXL and a ControlNet. Each model needs to have 2 things, `url` and `path`. The `url` is the location for downloading the model. The `path` is where this model will get stored inside the Truss. For the path, follow the same guidelines as used in ComfyUI. Models should get stored inside `checkpoints`, ControlNets should be stored inside `controlnet`, etc.
+Here is a breakdown of the actions happenning in `build_commands`. First, we are cloning the ComfyUI repository, checking out a specific commit, and installing the required python packages to run ComfyUI. Next, we use the `cd` commmand ensure all custom nodes are downloaded within the `custom_nodes` directory, and their respective requirements are installed. Similarly for the checkpoints, we use the `wget` utility to download the checkpoints and place them in the appropriate directories within ComfyUI.
+
+Every line under `build_commands` effectively does a `RUN` inside the dockerfile. The benefit of using this feature is that your model weights and custom nodes get cached during the docker build stage. So when your model deploys, it can access the cached weights directly which reduces the cold-start time.
 
 We also need to place the JSON workflow from step 1 inside the data directory. In the data directory create an open a file called `data/comfy_ui_workflow.json`. Copy and paste the entire JSON workflow that we saved in step 1 into this file.
 
@@ -116,20 +137,16 @@ In the JSON workflow file, there might be some inputs such as the positive promp
 This is not the entire JSON workflow file, but the nodes 6, 7, and 11 accept variable inputs. You can do this by using the handlebars format of `{{variable_name_here}}`.
 
 ## Custom Nodes
-If your workflow uses custom nodes you add it to the `data/model.json`. Let's take an example. Suppose you want to add the [UltimateSDUpscale](https://github.com/ssitu/ComfyUI_UltimateSDUpscale) custom node. Inside your `data/model.json` you can define it like so:
+If your workflow uses custom nodes you add it to the `build_commands` in the `config.yaml` file. Let's take an example. Suppose you want to add the [UltimateSDUpscale](https://github.com/ssitu/ComfyUI_UltimateSDUpscale) custom node. Inside your `config.yaml` you can define it like so:
 
-```json
-[
-    {
-        "url": "https://github.com/ssitu/ComfyUI_UltimateSDUpscale",
-        "path": "custom_nodes"
-    }
-]
+```yaml
+build_commands:
+- cd ComfyUI/custom_nodes && git clone https://github.com/ssitu/ComfyUI_UltimateSDUpscale --recursive
 ```
 
-The `url` must point to a github url and the `path` must be "custom_nodes". Custom nodes must be placed above any checkpoints, vae, lora, etc. in the `model.json` file.
+Each command in `build_commands` is independent of the previous command. So you need to execute this part `cd ComfyUI/custom_nodes` each time you want to install a new custom node.
 
-Once you have both the `data/comfy_ui_workflow.json` and `data/model.json` set up correctly we can begin deployment.
+Once you have both the `data/comfy_ui_workflow.json` and `config.yaml` set up correctly we can begin deployment.
 
 ## Deployment
 
