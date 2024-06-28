@@ -77,3 +77,27 @@ class PhiLLM(chains.ChainletBase):
             outputs = self._model.generate(input_ids=input_ids, **self._generate_args)
             output_text = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
         return output_text
+
+
+@chains.mark_entrypoint
+class PoemGenerator(chains.ChainletBase):
+    def __init__(self, phi_llm: PhiLLM = chains.depends(PhiLLM)) -> None:
+        self._phi_llm = phi_llm
+
+    async def run_remote(self, words: list[str]) -> list[str]:
+        tasks = []
+        for word in words:
+            messages = Messages(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are poet who writes short, "
+                            "lighthearted, amusing poetry."
+                        ),
+                    },
+                    {"role": "user", "content": f"Write a poem about {word}"},
+                ]
+            )
+            tasks.append(asyncio.ensure_future(self._phi_llm.run_remote(messages)))
+        return await asyncio.gather(*tasks)
