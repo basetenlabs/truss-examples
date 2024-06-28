@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 import pydantic
@@ -10,7 +11,6 @@ PHI_HF_MODEL = "microsoft/Phi-3-mini-4k-instruct"
 PHI_CACHE = truss_config.ModelRepo(
     repo_id=PHI_HF_MODEL, allow_patterns=["*.json", "*.safetensors", ".model"]
 )
-# This name should correspond to a secret "name" in https://app.baseten.co/settings/secrets
 
 
 class Messages(pydantic.BaseModel):
@@ -18,7 +18,7 @@ class Messages(pydantic.BaseModel):
 
 
 class PhiLLM(chains.ChainletBase):
-    # The RemoteConfig object defines the resources required for this chainlet.
+    # `remote_config` defines the resources required for this chainlet.
     remote_config = chains.RemoteConfig(
         docker_image=chains.DockerImage(
             # The phi model needs some extra python packages.
@@ -35,16 +35,12 @@ class PhiLLM(chains.ChainletBase):
         assets=chains.Assets(cached=[PHI_CACHE]),
     )
 
-    def __init__(
-        self,
-        # Adding the `context` to the init arguments, allows us to access the
-        # huggingface token.
-        context: chains.DeploymentContext = chains.depends_context(),
-    ) -> None:
-        # Note the imports of the *specific* python requirements are pushed down to
-        # here. This code will only be executed on the remotely deployed chainlet,
-        # not in the local environment, so we don't need to install these packages
-        # in the local dev environment.
+    def __init__(self) -> None:
+        # Note the imports of the *specific* python requirements are
+        # pushed down to here. This code will only be executed on the
+        # remotely deployed Chainlet, not in the local environment,
+        # so we don't need to install these packages in the local
+        # dev environment.
         import torch
         import transformers
 
@@ -53,11 +49,9 @@ class PhiLLM(chains.ChainletBase):
             torch_dtype=torch.float16,
             device_map="auto",
         )
-
         self._tokenizer = transformers.AutoTokenizer.from_pretrained(
             PHI_HF_MODEL,
         )
-
         self._generate_args = {
             "max_new_tokens": 512,
             "temperature": 1.0,
@@ -71,7 +65,7 @@ class PhiLLM(chains.ChainletBase):
             "pad_token_id": self._tokenizer.pad_token_id,
         }
 
-    def run_remote(self, messages: Messages) -> str:
+    async def run_remote(self, messages: Messages) -> str:
         import torch
 
         model_inputs = self._tokenizer.apply_chat_template(
@@ -90,18 +84,20 @@ class PoemGenerator(chains.ChainletBase):
     def __init__(self, phi_llm: PhiLLM = chains.depends(PhiLLM)) -> None:
         self._phi_llm = phi_llm
 
-    def run_remote(self, words: list[str]) -> list[str]:
-        results = []
+    async def run_remote(self, words: list[str]) -> list[str]:
+        tasks = []
         for word in words:
             messages = Messages(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are poet who writes short, lighthearted, amusing poetry",
+                        "content": (
+                            "You are poet who writes short, "
+                            "lighthearted, amusing poetry."
+                        ),
                     },
                     {"role": "user", "content": f"Write a poem about {word}"},
                 ]
             )
-            poem = self._phi_llm.run_remote(messages)
-            results.append(poem)
-        return results
+            tasks.append(asyncio.ensure_future(self._phi_llm.run_remote(messages)))
+        return await asyncio.gather(*tasks)
