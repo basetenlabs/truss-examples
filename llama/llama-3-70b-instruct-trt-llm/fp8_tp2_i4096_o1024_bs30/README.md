@@ -2,7 +2,7 @@
 
 This is a [Truss](https://truss.baseten.co/) for an FP8 version of LLaMA3-70B-Instruct. Llama is a family of language models released by Meta. This README will walk you through how to deploy this Truss on Baseten to get your own instance of LLaMA3-70B-Instruct.
 
-**Warning: This example is only intended for usage on 4 H100s, changing your resource type for this deployment will result in unsupported behavior**
+**Warning: This example is only intended for usage on 2 H100s, changing your resource type for this deployment will result in unsupported behavior**
 
 ## Truss
 
