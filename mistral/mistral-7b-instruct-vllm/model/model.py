@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import Any
 
@@ -10,6 +11,11 @@ class Model:
     def __init__(self, **kwargs) -> None:
         self.engine_args = kwargs["config"]["model_metadata"]["engine_args"]
         self.prompt_format = kwargs["config"]["model_metadata"]["prompt_format"]
+        self._secrets = kwargs["secrets"]
+        
+        if "hf_access_token" in self._secrets._base_secrets.keys():
+            # Set the environment variable
+            os.environ["HF_TOKEN"] = self._secrets["hf_access_token"]
 
     def load(self) -> None:
         self.llm_engine = AsyncLLMEngine.from_engine_args(
