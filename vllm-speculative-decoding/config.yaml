@@ -1,3 +1,4 @@
+# This base image is required for developer build of vLLM
 base_image:
   image: nvcr.io/nvidia/pytorch:23.11-py3
   python_executable_path: /usr/bin/python3
@@ -11,7 +12,6 @@ model_metadata:
   tensor_parallel: 1
   max_num_seqs: 16
 model_name: vLLM Speculative Decoding
-python_version: py310
 requirements:
   - git+https://github.com/vllm-project/vllm@9def10664e8b54dcc5c6114f2895bc9e712bf182
 resources:
