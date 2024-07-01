@@ -1,10 +1,10 @@
 apply_library_patches: true
 base_image:
-  image: docker.io/baseten/triton_trt_llm:c6ac3d8a7532e5282921541ac17e48f8f05b2a12
+  image: docker.io/baseten/triton_trt_llm:9691e12bce7ae1c126c435a049eb516eb119486c
   python_executable_path: /usr/bin/python3
 build:
   arguments:
-    engine_repository: baseten/llama-3-8b-medusa-fp16
+    engine_repository: aspctu/fp8_mistral_medusa
     pipeline_parallel_count: 1
     tensor_parallel_count: 1
     tokenizer_repository: mistral-community/Mistral-7B-v0.2
@@ -33,7 +33,7 @@ requirements:
 - transformers
 - jinja2
 resources:
-  accelerator: A100:1
+  accelerator: H100:1
   use_gpu: true
 runtime:
   num_workers: 1
