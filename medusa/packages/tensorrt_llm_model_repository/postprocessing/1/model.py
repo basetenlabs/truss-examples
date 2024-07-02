@@ -117,7 +117,17 @@ class TritonPythonModel:
                 .flatten()
             )
             if len(tokens_batch) == 0:
+                # Create a default response if tokens_batch is empty
+                output_tensor = pb_utils.Tensor("OUTPUT", np.array([""]).astype(self.output_dtype))
+                sequence_length_tensor = pb_utils.Tensor("SEQUENCE_LENGTH", np.array([0]))
+                inference_response = pb_utils.InferenceResponse(output_tensors=[output_tensor, sequence_length_tensor])
+                responses.append(inference_response)
                 continue
+
+            # Get sequence length
+            sequence_length = pb_utils.get_input_tensor_by_name(
+                request, "SEQUENCE_LENGTH"
+            ).as_numpy()
 
             # Postprocess output data
             prev_token = self._get_prev_token(request_id)
@@ -138,8 +148,12 @@ class TritonPythonModel:
             output_tensor = pb_utils.Tensor(
                 "OUTPUT", np.array([delta]).astype(self.output_dtype)
             )
+            sequence_length_tensor = pb_utils.Tensor(
+                "SEQUENCE_LENGTH", sequence_length
+            )
+            
             inference_response = pb_utils.InferenceResponse(
-                output_tensors=[output_tensor]
+                output_tensors=[output_tensor, sequence_length_tensor]
             )
             responses.append(inference_response)
 
@@ -176,6 +190,13 @@ class TritonPythonModel:
         )
         return delta
 
-    def _postprocessing(self, tokens):
-        decoded_tokens = self.tokenizer.decode(tokens)
-        return decoded_tokens
+def _postprocessing(self, tokens_batch, sequence_lengths):
+    outputs = []
+    for batch_idx, tokens in enumerate(tokens_batch):
+        seq_len = sequence_lengths[batch_idx]
+        output = self.tokenizer.decode(
+            tokens[:seq_len],
+            skip_special_tokens=self.skip_special_tokens
+        )
+        outputs.append(output.encode('utf8'))
+    return outputs

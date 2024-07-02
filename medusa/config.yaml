@@ -25,7 +25,7 @@ model_metadata:
   - text-generation
   - openai-compatible
 model_module_dir: model
-model_name: medusa-model
+model_name: medusa-model-h100
 model_type: Model
 python_version: py311
 requirements:
