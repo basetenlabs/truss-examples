@@ -17,28 +17,6 @@ COMFYUI_DIR = "/app/ComfyUI"
 BASE64_PREAMBLE = "data:image/png;base64,"
 
 
-def download_model(model_url, destination_path):
-    logging.info(f"Downloading model {model_url} ...")
-    try:
-        response = requests.get(model_url, stream=True)
-        response.raise_for_status()
-        logging.debug("download response: ", response)
-
-        # Open the destination file and write the content in chunks
-        logging.debug("opening: ", destination_path)
-        with open(destination_path, "wb") as file:
-            logging.debug("writing chunks...")
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:  # Filter out keep-alive new chunks
-                    file.write(chunk)
-
-            logging.debug("done writing chunks!")
-
-        logging.info(f"Downloaded file to: {destination_path}")
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Download failed: {e}")
-
-
 def download_tempfile(file_url, filename):
     try:
         response = requests.get(file_url)
@@ -52,51 +30,8 @@ def download_tempfile(file_url, filename):
         return None
 
 
-def add_custom_node(git_url: str):
-    repo = git_url.split(".")
-    if repo[-1] == "git":
-        repo_name = repo[-2].split("/")[-1]
-    else:
-        repo_name = repo[1].split("/")[-1]
-
-    subprocess.run(
-        [
-            "git",
-            "clone",
-            git_url,
-            f"{COMFYUI_DIR}/custom_nodes/{repo_name}",
-            "--recursive",
-        ]
-    )
-    print(
-        "all directories in comfy custom nodes: ",
-        os.listdir(f"{COMFYUI_DIR}/custom_nodes"),
-    )
-
-
 def setup_comfyui(original_working_directory, data_dir):
-
     try:
-        model_json = os.path.join(original_working_directory, data_dir, "model.json")
-        with open(model_json, "r") as file:
-            data = json.load(file)
-
-        logging.debug(f"model json file: {data}")
-
-        if data and len(data) > 0:
-            for model in data:
-                if model.get("path") == "custom_nodes":
-                    # Install custom nodes
-                    add_custom_node(model.get("url"))
-                else:
-                    # Download checkpoints, loras, vaes, etc.
-                    download_model(
-                        model_url=model.get("url"),
-                        destination_path=os.path.join(COMFYUI_DIR, model.get("path")),
-                    )
-
-        logging.debug("Finished downloading models!")
-
         # run the comfy-ui server
         subprocess.run([sys.executable, "main.py"], cwd=COMFYUI_DIR, check=True)
 

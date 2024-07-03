@@ -1,0 +1,353 @@
+{
+    "1": {
+      "inputs": {
+        "ckpt_name": "dreamshaperXL_v21TurboDPMSDE.safetensors"
+      },
+      "class_type": "CheckpointLoaderSimple",
+      "_meta": {
+        "title": "Load Checkpoint"
+      }
+    },
+    "3": {
+      "inputs": {
+        "image": "{{input_image}}",
+        "upload": "image"
+      },
+      "class_type": "LoadImage",
+      "_meta": {
+        "title": "Load Image"
+      }
+    },
+    "4": {
+      "inputs": {
+        "text": [
+          "160",
+          0
+        ],
+        "clip": [
+          "154",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "12": {
+      "inputs": {
+        "strength": 0.8,
+        "conditioning": [
+          "131",
+          0
+        ],
+        "control_net": [
+          "13",
+          0
+        ],
+        "image": [
+          "71",
+          0
+        ]
+      },
+      "class_type": "ControlNetApply",
+      "_meta": {
+        "title": "Apply ControlNet"
+      }
+    },
+    "13": {
+      "inputs": {
+        "control_net_name": "control-lora-canny-rank256.safetensors"
+      },
+      "class_type": "ControlNetLoader",
+      "_meta": {
+        "title": "Load ControlNet Model"
+      }
+    },
+    "15": {
+      "inputs": {
+        "strength": 0.8,
+        "conditioning": [
+          "12",
+          0
+        ],
+        "control_net": [
+          "16",
+          0
+        ],
+        "image": [
+          "18",
+          0
+        ]
+      },
+      "class_type": "ControlNetApply",
+      "_meta": {
+        "title": "Apply ControlNet"
+      }
+    },
+    "16": {
+      "inputs": {
+        "control_net_name": "control-lora-depth-rank256.safetensors"
+      },
+      "class_type": "ControlNetLoader",
+      "_meta": {
+        "title": "Load ControlNet Model"
+      }
+    },
+    "18": {
+      "inputs": {
+        "seed": 995352869972963,
+        "denoise_steps": 4,
+        "n_repeat": 10,
+        "regularizer_strength": 0.02,
+        "reduction_method": "median",
+        "max_iter": 5,
+        "tol": 0.001,
+        "invert": true,
+        "keep_model_loaded": true,
+        "n_repeat_batch_size": 2,
+        "use_fp16": true,
+        "scheduler": "LCMScheduler",
+        "normalize": true,
+        "model": "marigold-lcm-v1-0",
+        "image": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "MarigoldDepthEstimation",
+      "_meta": {
+        "title": "MarigoldDepthEstimation"
+      }
+    },
+    "19": {
+      "inputs": {
+        "images": [
+          "71",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "20": {
+      "inputs": {
+        "images": [
+          "18",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "21": {
+      "inputs": {
+        "seed": 358881677137626,
+        "steps": 20,
+        "cfg": 7,
+        "sampler_name": "dpmpp_2m_sde",
+        "scheduler": "karras",
+        "denoise": 0.7000000000000001,
+        "model": [
+          "154",
+          0
+        ],
+        "positive": [
+          "15",
+          0
+        ],
+        "negative": [
+          "4",
+          0
+        ],
+        "latent_image": [
+          "25",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "KSampler"
+      }
+    },
+    "25": {
+      "inputs": {
+        "pixels": [
+          "70",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      },
+      "class_type": "VAEEncode",
+      "_meta": {
+        "title": "VAE Encode"
+      }
+    },
+    "27": {
+      "inputs": {
+        "samples": [
+          "21",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "VAE Decode"
+      }
+    },
+    "70": {
+      "inputs": {
+        "upscale_method": "lanczos",
+        "megapixels": 1,
+        "image": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "ImageScaleToTotalPixels",
+      "_meta": {
+        "title": "ImageScaleToTotalPixels"
+      }
+    },
+    "71": {
+      "inputs": {
+        "low_threshold": 50,
+        "high_threshold": 150,
+        "resolution": 1024,
+        "image": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "CannyEdgePreprocessor",
+      "_meta": {
+        "title": "Canny Edge"
+      }
+    },
+    "123": {
+      "inputs": {
+        "images": [
+          "27",
+          0
+        ]
+      },
+      "class_type": "PreviewImage",
+      "_meta": {
+        "title": "Preview Image"
+      }
+    },
+    "131": {
+      "inputs": {
+        "text": [
+          "159",
+          0
+        ],
+        "clip": [
+          "154",
+          1
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "CLIP Text Encode (Prompt)"
+      }
+    },
+    "152": {
+      "inputs": {
+        "text": "{{prompt}}"
+      },
+      "class_type": "Text _O",
+      "_meta": {
+        "title": "Text_1"
+      }
+    },
+    "154": {
+      "inputs": {
+        "lora_name": "StudioGhibli.Redmond-StdGBRRedmAF-StudioGhibli.safetensors",
+        "strength_model": 0.6,
+        "strength_clip": 1,
+        "model": [
+          "1",
+          0
+        ],
+        "clip": [
+          "1",
+          1
+        ]
+      },
+      "class_type": "LoraLoader",
+      "_meta": {
+        "title": "Load LoRA"
+      }
+    },
+    "156": {
+      "inputs": {
+        "text_1": [
+          "152",
+          0
+        ],
+        "text_2": [
+          "158",
+          0
+        ]
+      },
+      "class_type": "ConcatText_Zho",
+      "_meta": {
+        "title": "✨ConcatText_Zho"
+      }
+    },
+    "157": {
+      "inputs": {
+        "text": "StdGBRedmAF,Studio Ghibli,"
+      },
+      "class_type": "Text _O",
+      "_meta": {
+        "title": "Text _2"
+      }
+    },
+    "158": {
+      "inputs": {
+        "text": "no humans,animal focus, looking at viewer, anime artwork, anime style, key visual, vibrant, studio anime, highly detailed"
+      },
+      "class_type": "Text _O",
+      "_meta": {
+        "title": "Text _O"
+      }
+    },
+    "159": {
+      "inputs": {
+        "text_1": [
+          "156",
+          0
+        ],
+        "text_2": [
+          "157",
+          0
+        ]
+      },
+      "class_type": "ConcatText_Zho",
+      "_meta": {
+        "title": "✨ConcatText_Zho"
+      }
+    },
+    "160": {
+      "inputs": {
+        "text": "photo, deformed, black and white, realism, disfigured, low contrast"
+      },
+      "class_type": "Text _O",
+      "_meta": {
+        "title": "Text _O"
+      }
+    }
+  }
