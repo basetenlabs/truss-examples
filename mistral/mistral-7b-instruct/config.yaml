@@ -21,7 +21,7 @@ python_version: py311
 requirements:
 - sentencepiece
 - accelerate
-- transformers==4.38.1
+- transformers==4.42.3
 - torch==2.0.1
 resources:
   accelerator: A10G
