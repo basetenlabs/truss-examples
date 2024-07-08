@@ -30,7 +30,7 @@ model_name: Mixtral 8x7B Instruct TRT-LLM Weights Only Quantized
 python_version: py311
 requirements:
 - tritonclient[all]
-- transformers==4.36.0
+- transformers==4.42.3
 resources:
   accelerator: A100
   use_gpu: true

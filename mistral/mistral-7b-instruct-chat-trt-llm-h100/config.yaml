@@ -29,7 +29,7 @@ model_name: Mistral 7B Instruct Chat TRT-LLM
 python_version: py311
 requirements:
 - tritonclient[all]
-- transformers==4.35.0
+- transformers==4.42.3
 - jinja2==3.1.3
 resources:
   accelerator: H100
