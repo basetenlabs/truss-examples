@@ -11,7 +11,7 @@ model_metadata:
 model_name: mistral-7b
 python_version: py311
 requirements:
-- transformers==4.34.0
+- transformers==4.42.3
 - sentencepiece
 - accelerate
 - torch==2.0.1
