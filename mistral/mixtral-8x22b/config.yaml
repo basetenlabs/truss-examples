@@ -13,7 +13,7 @@ model_name: Mixtral 8x22
 python_version: py310
 requirements:
   - accelerate
-  - transformers==4.39.3
+  - transformers==4.42.3
   - torch==2.2.0
 resources:
   accelerator: A100:4
