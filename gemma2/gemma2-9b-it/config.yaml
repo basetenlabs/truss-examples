@@ -20,7 +20,5 @@ secrets:
   hf_access_token: null
 # Note that we need an A10G to run this model.
 resources:
-  cpu: "3"
-  memory: 14Gi
   use_gpu: true
   accelerator: A10G

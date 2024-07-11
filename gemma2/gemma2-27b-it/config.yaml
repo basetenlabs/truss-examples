@@ -20,7 +20,5 @@ secrets:
   hf_access_token: null
 # Note that we need an A100 to run this model.
 resources:
-  cpu: "8"
-  memory: 32G
   use_gpu: true
   accelerator: A100

@@ -49,6 +49,7 @@ class Model:
 
     def predict(self, request: Dict) -> Dict:
         prompt = request.pop("prompt")
+        stream = request.pop("stream", True)
         # Instantiate the Streamer object, which we'll later use for
         # returning the output to users.
         streamer = TextIteratorStreamer(self.tokenizer)
@@ -58,21 +59,32 @@ class Model:
         # When creating the generation parameters, ensure to pass the `streamer` object
         # that we created previously.
         with torch.no_grad():
-            generation_kwargs = {
-                "input_ids": model_inputs,
-                "do_sample": True,
-                "pad_token_id": self.tokenizer.eos_token_id,
-                "max_new_tokens": 1000,
-                "streamer": streamer,
-            }
-            # Spawn a thread to run the generation, so that it does not block the main
-            # thread.
-            thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
-            thread.start()
+            if stream:
+                generation_kwargs = {
+                    "input_ids": model_inputs,
+                    "do_sample": True,
+                    "pad_token_id": self.tokenizer.eos_token_id,
+                    "max_new_tokens": 1000,
+                    "streamer": streamer,
+                }
+                # Spawn a thread to run the generation, so that it does not block the main
+                # thread.
+                thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
+                thread.start()
 
-            def inner():
-                for text in streamer:
-                    yield text
-                thread.join()
+                def inner():
+                    for text in streamer:
+                        yield text
+                    thread.join()
 
-            return inner()
+                return inner()
+            else:
+                generation_kwargs = {
+                    "input_ids": model_inputs,
+                    "do_sample": True,
+                    "pad_token_id": self.tokenizer.eos_token_id,
+                    "max_new_tokens": 1000,
+                }
+                outputs = self.model.generate(**generation_kwargs)
+                output_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+                return {"output": output_text}
