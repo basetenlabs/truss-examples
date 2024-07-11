@@ -22,6 +22,18 @@ class Model:
             raise ValueError("Missing secrets")
 
     def load(self):
+        # print GPU memory
+        total_memory = torch.cuda.get_device_properties("cuda:0").total_memory
+        print(total_memory)
+        # use subprocess to run nvidia-smi
+        try:
+            result = subprocess.run(
+                ["nvidia-smi"], capture_output=True, text=True, check=True
+            )
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"Command failed with code {e.returncode}: {e.stderr}")
+
         # make sure token exists
         if not self._secrets["hf_access_token"]:
             raise ValueError("Missing hf_access_token")
@@ -43,13 +55,24 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(
             CHECKPOINT, token=self._secrets["hf_access_token"]
         )
+        print("LOADING MODEL")
         self.model = LocalGemma2ForCausalLM.from_pretrained(
             CHECKPOINT, preset="auto", token=self._secrets["hf_access_token"]
         )
+        print("MODEL LOADED")
+        try:
+            result = subprocess.run(
+                ["nvidia-smi"], capture_output=True, text=True, check=True
+            )
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print(f"Command failed with code {e.returncode}: {e.stderr}")
 
     def predict(self, request: Dict) -> Dict:
         prompt = request.pop("prompt")
         stream = request.pop("stream", True)
+        if stream == "False":
+            stream = False
         # Instantiate the Streamer object, which we'll later use for
         # returning the output to users.
         streamer = TextIteratorStreamer(self.tokenizer)
@@ -86,5 +109,7 @@ class Model:
                     "max_new_tokens": 1000,
                 }
                 outputs = self.model.generate(**generation_kwargs)
-                output_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+                output_text = self.tokenizer.decode(
+                    outputs[0], skip_special_tokens=True
+                )
                 return {"output": output_text}

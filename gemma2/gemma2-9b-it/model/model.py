@@ -69,6 +69,8 @@ class Model:
     def predict(self, request: Dict) -> Dict:
         prompt = request.pop("prompt")
         stream = request.pop("stream", True)
+        if stream == "False":
+            stream = False
         # Instantiate the Streamer object, which we'll later use for
         # returning the output to users.
         streamer = TextIteratorStreamer(self.tokenizer)
@@ -105,5 +107,7 @@ class Model:
                     "max_new_tokens": 1000,
                 }
                 outputs = self.model.generate(**generation_kwargs)
-                output_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+                output_text = self.tokenizer.decode(
+                    outputs[0], skip_special_tokens=True
+                )
                 return {"output": output_text}
