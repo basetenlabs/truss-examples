@@ -22,8 +22,8 @@ Truss is an open-source model serving framework developed by Baseten. It allows 
 First, clone this repository:
 
 ```sh
-git clone https://github.com/your-repo/Ultravox-vllm-truss
-cd Ultravox-vllm-truss
+git clone https://github.com/basetenlabs/truss-examples.git
+cd ultravox
 ```
 
 Before deployment:
@@ -31,7 +31,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `Ultravox-vllm-truss` as your working directory, you can deploy the model with:
+With `ultravox` as your working directory, you can deploy the model with:
 
 ```sh
 truss push
@@ -69,10 +69,13 @@ client = OpenAI(
 
 response = client.chat.completions.create(
     model="fixie-ai/ultravox-v0.2",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Tell me about the Ultravox model."}
-    ],
+    messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Summarize the following: <|audio|>"},
+                {"type": "image_url", "image_url": {"url": f"data:audio/wav;base64,{base64_wav}"}}
+            ]
+        }]
     stream=True
 )
 

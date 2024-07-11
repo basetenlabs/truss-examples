@@ -12,6 +12,7 @@ class Model:
     def __init__(self, data_dir, config, secrets):
         self._secrets = secrets
         self._config = config
+        self.vllm_base_url = None
 
         # TODO: uncomment for multi-GPU support
         # command = "ray start --head"
@@ -34,12 +35,14 @@ class Model:
         else:
             self._vllm_port = 8000
 
+        self.vllm_base_url = f"http://localhost:{self._vllm_port}"
+
         # Polling to check if the server is up
         server_up = False
         start_time = time.time()
         while time.time() - start_time < self.MAX_FAILED_SECONDS:
             try:
-                response = httpx.get(f"http://localhost:{self._vllm_port}/health")
+                response = httpx.get(f"{self.vllm_base_url}/health")
                 if response.status_code == 200:
                     server_up = True
                     break
@@ -55,9 +58,7 @@ class Model:
 
         # if the key metrics: true is present, let's return the vLLM /metrics endpoint
         if model_input.get("metrics", False):
-            response = await self._client.get(
-                f"http://localhost:{self._vllm_port}/metrics"
-            )
+            response = await self._client.get(f"{self.vllm_base_url}/metrics")
             return response.text
 
         # convenience for Baseten bridge
@@ -73,7 +74,7 @@ class Model:
             async def generator():
                 async with self._client.stream(
                     "POST",
-                    f"http://localhost:{self._vllm_port}/v1/chat/completions",
+                    f"{self.vllm_base_url}/v1/chat/completions",
                     json=model_input,
                 ) as response:
                     async for chunk in response.aiter_bytes():
@@ -83,7 +84,7 @@ class Model:
             return generator()
         else:
             response = await self._client.post(
-                f"http://localhost:{self._vllm_port}/v1/chat/completions",
+                f"{self.vllm_base_url}/v1/chat/completions",
                 json=model_input,
             )
             return response.json()
