@@ -6,8 +6,8 @@ model_metadata:
   tensor_parallel: 1
   max_num_seqs: 16
 requirements:
-  - vllm>=0.5.1
-  - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.8/flashinfer-0.0.8+cu121torch2.3-cp311-cp311-linux_x86_64.whl
+  - vllm==0.5.2
+  - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.9/flashinfer-0.0.9+cu121torch2.3-cp311-cp311-linux_x86_64.whl
 resources:
   accelerator: L4
   use_gpu: true
