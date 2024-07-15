@@ -5,9 +5,11 @@ from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 import os
-import huggingface_hub
+from transformers import AutoTokenizer
 
 os.environ["VLLM_ATTENTION_BACKEND"] = "FLASHINFER"
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,14 +21,6 @@ class Model:
         self.model_args = None
         self.hf_secret_token = kwargs["secrets"]["hf_access_token"]
         os.environ["HF_TOKEN"] = self.hf_secret_token
-        print(
-            "logging in with huggingface authentication token: ", self.hf_secret_token
-        )
-        huggingface_hub.login(token=self.hf_secret_token, add_to_git_credential=True)
-        num_gpus = self._config["model_metadata"]["tensor_parallel"]
-        logger.info(f"num GPUs ray: {num_gpus}")
-        command = f"ray start --head --num-gpus={num_gpus}"
-        subprocess.check_output(command, shell=True, text=True)
 
     def load(self):
         try:
@@ -51,6 +45,10 @@ class Model:
             enforce_eager=True,
         )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
+        # create tokenizer for gemma 2 to apply chat template to prompts
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model_metadata["main_model"])
+
         try:
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, check=True
@@ -65,7 +63,16 @@ class Model:
 
         sampling_params = SamplingParams(**model_input)
         idx = str(uuid.uuid4().hex)
-        vllm_generator = self.llm_engine.generate(prompt, sampling_params, idx)
+        chat = [
+            {"role": "user", "content": prompt},
+        ]
+        # templatize the input to the model
+        input = self.tokenizer.apply_chat_template(
+            chat, tokenize=False, add_generation_prompt=True
+        )
+        # since we accept any valid vllm sampling parameters, we can just pass it through
+
+        vllm_generator = self.llm_engine.generate(input, sampling_params, idx)
 
         async def generator():
             full_text = ""

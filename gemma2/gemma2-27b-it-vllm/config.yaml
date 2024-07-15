@@ -3,19 +3,15 @@ python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
   main_model: google/gemma-2-27b-it
-  tensor_parallel: 1
+  tensor_parallel: 2
   max_num_seqs: 16
 requirements:
   - vllm>=0.5.1
-  - ray==2.31.0
-  - huggingface-hub==0.23.4
   - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.8/flashinfer-0.0.8+cu121torch2.3-cp311-cp311-linux_x86_64.whl
 resources:
-  accelerator: A100
+  accelerator: A100:2
   use_gpu: true
 runtime:
   predict_concurrency: 128
-system_packages:
-  - git
 secrets:
   hf_access_token: null
