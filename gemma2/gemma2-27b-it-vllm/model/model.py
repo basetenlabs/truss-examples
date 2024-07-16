@@ -9,7 +9,9 @@ from transformers import AutoTokenizer
 
 os.environ["VLLM_ATTENTION_BACKEND"] = "FLASHINFER"
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = "spawn" # for multiprocessing to work with CUDA
+os.environ[
+    "VLLM_WORKER_MULTIPROC_METHOD"
+] = "spawn"  # for multiprocessing to work with CUDA
 logger = logging.getLogger(__name__)
 
 
