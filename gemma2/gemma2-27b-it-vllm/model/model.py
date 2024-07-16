@@ -1,11 +1,12 @@
 import logging
+import os
 import subprocess
 import uuid
+
+from transformers import AutoTokenizer
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
-import os
-from transformers import AutoTokenizer
 
 os.environ["VLLM_ATTENTION_BACKEND"] = "FLASHINFER"
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
