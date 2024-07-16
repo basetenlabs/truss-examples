@@ -1,0 +1,17 @@
+model_name: "Gemma 2 27B Instruct VLLM"
+python_version: py311
+model_metadata:
+  example_model_input: {"prompt": "what is the meaning of life"}
+  main_model: google/gemma-2-27b-it
+  tensor_parallel: 1
+  max_num_seqs: 16
+requirements:
+  - vllm==0.5.1
+  - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.8/flashinfer-0.0.8+cu121torch2.3-cp311-cp311-linux_x86_64.whl
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
