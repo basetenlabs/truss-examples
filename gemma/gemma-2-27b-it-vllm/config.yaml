@@ -2,7 +2,7 @@ model_name: "Gemma 2 27B Instruct VLLM"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  main_model: google/gemma-2-27b-it
+  repo_id: google/gemma-2-27b-it
   tensor_parallel: 1
   max_num_seqs: 16
 requirements:
