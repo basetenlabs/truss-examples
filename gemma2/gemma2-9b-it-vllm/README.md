@@ -1,4 +1,4 @@
-# Gemma 2 9B 
+# Gemma 2 9B
 
 This is a [Truss](https://truss.baseten.co/) for Gemma 2 9B Instruct. This README will walk you through how to deploy this Truss on Baseten to get your own instance of Gemma 2 9B Instruct.
 
@@ -40,8 +40,8 @@ This section provides an overview of the Gemma 2 9B Instruct API, its parameters
 
 The predict route is the primary method for generating text completions based on a given prompt. It takes several parameters:
 
-- __prompt__: The input text that you want the model to generate a response for.  
-- __max_tokens__: The maximum number of output tokens.  
+- __prompt__: The input text that you want the model to generate a response for.
+- __max_tokens__: The maximum number of output tokens.
 
 ## Example usage
 
