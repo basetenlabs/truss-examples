@@ -34,12 +34,12 @@ class Model:
         except subprocess.CalledProcessError as e:
             print(f"Command failed with code {e.returncode}: {e.stderr}")
         model_metadata = self._config["model_metadata"]
-        logger.info(f"main model: {model_metadata['main_model']}")
+        logger.info(f"main model: {model_metadata['repo_id']}")
         logger.info(f"tensor parallelism: {model_metadata['tensor_parallel']}")
         logger.info(f"max num seqs: {model_metadata['max_num_seqs']}")
 
         self.model_args = AsyncEngineArgs(
-            model=model_metadata["main_model"],
+            model=model_metadata["repo_id"],
             trust_remote_code=True,
             tensor_parallel_size=model_metadata["tensor_parallel"],
             max_num_seqs=model_metadata["max_num_seqs"],
@@ -50,7 +50,7 @@ class Model:
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
         # create tokenizer for gemma 2 to apply chat template to prompts
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_metadata["main_model"])
+        self.tokenizer = AutoTokenizer.from_pretrained(model_metadata["repo_id"])
 
         try:
             result = subprocess.run(
