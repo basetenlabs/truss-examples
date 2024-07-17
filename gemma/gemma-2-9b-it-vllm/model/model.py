@@ -34,13 +34,11 @@ class Model:
         model_metadata = self._config["model_metadata"]
         logger.info(f"main model: {model_metadata['repo_id']}")
         logger.info(f"tensor parallelism: {model_metadata['tensor_parallel']}")
-        logger.info(f"max num seqs: {model_metadata['max_num_seqs']}")
 
         self.model_args = AsyncEngineArgs(
             model=model_metadata["repo_id"],
             trust_remote_code=True,
             tensor_parallel_size=model_metadata["tensor_parallel"],
-            max_num_seqs=model_metadata["max_num_seqs"],
             dtype="auto",
             use_v2_block_manager=True,
             enforce_eager=True,
