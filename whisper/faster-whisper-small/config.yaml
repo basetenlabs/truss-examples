@@ -1,0 +1,20 @@
+description: A small speech-to-text model for multi-lingual audio transcription.
+model_cache:
+- repo_id: Systran/faster-whisper-small
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/openai.png
+  cover_image_url: https://cdn.baseten.co/production/static/whisper.png
+  example_model_input:
+    url: https://cdn.baseten.co/docs/production/Gettysburg.mp3
+  model_id: small
+  pretty_name: Whisper
+  tags:
+  - speech-recognition
+model_name: Faster Whisper Small
+python_version: py39
+requirements:
+- torch==2.1.0
+- faster-whisper==1.0.3
+resources:
+  accelerator: T4
+  use_gpu: true
