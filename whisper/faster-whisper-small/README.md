@@ -36,7 +36,7 @@ Once your Truss is deployed, you can start using Whisper Small for inference! Na
 
 ## Example usage
 
-Here's a sample script which loads a sample .mp3 file for transcription with Whisper Small: 
+Here's a sample script which loads a sample .mp3 file for transcription with Whisper Small:
 
 ```python
 import requests
@@ -45,7 +45,7 @@ import os
 # Replace the empty string with your model id below
 model_id = ""
 
-# We recommend storing your API key as an environment variable 
+# We recommend storing your API key as an environment variable
 baseten_api_key = os.environ["BASETEN_API_KEY"]
 
 data = {

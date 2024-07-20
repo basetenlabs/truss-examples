@@ -1,4 +1,4 @@
-description: A small speech-to-text model for multi-lingual audio transcription. 
+description: A small speech-to-text model for multi-lingual audio transcription.
 model_cache:
 - repo_id: Systran/faster-whisper-small
 model_metadata:
