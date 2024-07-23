@@ -5,7 +5,7 @@ model_metadata:
   repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
   tensor_parallel: 1
 requirements:
-  - vllm==0.5.3
+  - vllm==0.5.3post1
 model_cache:
   - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
     ignore_patterns:

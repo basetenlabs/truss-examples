@@ -41,7 +41,6 @@ class Model:
             dtype="auto",
             use_v2_block_manager=True,
             enforce_eager=True,
-            rope_scaling={"type": "extended", "factor": 8.0},
         )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
         # create tokenizer for llama 3.1 to apply chat template to prompts
