@@ -8,7 +8,7 @@ requirements:
   - vllm==0.5.3
 model_cache:
   - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
-    ignore_patterns: 
+    ignore_patterns:
       - "original/*"
       - "*.pth"
 resources:
