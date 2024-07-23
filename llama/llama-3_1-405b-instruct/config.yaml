@@ -1,4 +1,4 @@
-model_name: "Llama 3.1 405B Instruct VLLM"
+model_name: "Llama 3.1 405B Instruct VLLM A100"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
@@ -13,7 +13,7 @@ requirements:
 #       - "original/*"
 #       - "*.pth"
 resources:
-  accelerator: H100:8
+  accelerator: A100:8
   use_gpu: true
 runtime:
   predict_concurrency: 128
