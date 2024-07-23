@@ -41,7 +41,6 @@ class Model:
             max_num_seqs=8,
             max_model_len=50000,
             dtype="auto",
-            rope_scaling={"type": "dynamic", "factor": 2.0},
             use_v2_block_manager=True,
             enforce_eager=True,
             enable_chunked_prefill=False,
