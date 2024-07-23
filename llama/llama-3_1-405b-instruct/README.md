@@ -1,8 +1,8 @@
-# Llama 3.1 405B Instruct (VLLM)
+# Llama 3.1 405B Instruct
 
-This is an implementation of Llama 3 405B for deployment on Baseten.
+This is an implementation of Llama 3.1 405B for deployment on Baseten.
 
-- VLLM for the model server
+- VLLM for faster inference
 - FP8 model weights
 - Runs on an 8xH100 instance
 
