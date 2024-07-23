@@ -6,7 +6,6 @@ model_metadata:
   tensor_parallel: 1
 requirements:
   - vllm==0.5.3
-  - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.9/flashinfer-0.0.9+cu121torch2.3-cp311-cp311-linux_x86_64.whl
 model_cache:
   - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
     ignore_patterns: 
