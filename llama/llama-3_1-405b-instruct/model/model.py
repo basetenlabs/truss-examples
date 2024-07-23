@@ -3,8 +3,9 @@ import os
 import subprocess
 import uuid
 
-from model.sighelper import patch
 from transformers import AutoTokenizer
+
+from model.sighelper import patch
 
 patch()
 
@@ -47,8 +48,8 @@ class Model:
             dtype="auto",
             use_v2_block_manager=True,
             enforce_eager=True,
-            max_model_len=20480, # to fit fp8 into 8 H100s
-            gpu_memory_utilization=0.98 # to fit fp8 into 8 H100s
+            max_model_len=20480,  # to fit fp8 into 8 H100s
+            gpu_memory_utilization=0.98,  # to fit fp8 into 8 H100s
         )
         self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
         # create tokenizer for llama 3.1 to apply chat template to prompts
