@@ -76,7 +76,6 @@ class Model:
                 }
             },
         ]
-        self.uninstall_and_run("jupyter", functions, kwargs_list)
 
     def download_file(self, url, filename):
         try:
@@ -231,31 +230,3 @@ class Model:
             cv2.drawContours(img, contours, -1, (0, 0, 1, 0.4), thickness=1)
 
         ax.imshow(img)
-
-    def uninstall_and_run(
-        self, dependency: str, functions: List[Callable], kwargs_list: List[Dict]
-    ) -> None:
-        """
-        Uninstall a pip dependency and run specified functions.
-
-        :param dependency: Name of the pip dependency to uninstall.
-        :param functions: List of functions to run.
-        :param kwargs_list: List of dictionaries containing keyword arguments for each function.
-        """
-        try:
-            # Uninstall the specified dependency
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "uninstall", "-y", dependency]
-            )
-            print(f"Successfully uninstalled {dependency}.")
-        except subprocess.CalledProcessError as e:
-            print(f"Error occurred while uninstalling {dependency}: {e}")
-            return
-
-        # Run the provided functions with the specified kwargs
-        for func, kwargs in zip(functions, kwargs_list):
-            try:
-                print(f"Running {func.__name__} with arguments {kwargs}")
-                func(**kwargs)
-            except Exception as e:
-                print(f"Error occurred while running {func.__name__}: {e}")
