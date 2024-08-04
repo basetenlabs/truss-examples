@@ -126,7 +126,6 @@ class Model:
             print(f"Command failed with code {e.returncode}: {e.stderr}")
 
     def predict(self, model_input):
-        start = time.perf_counter()
         # Run model inference here
         image = model_input.get("image")  # assuming image is a url
         points_per_side = model_input.get("points_per_side", 32)
@@ -153,13 +152,8 @@ class Model:
         individual_mask_paths = self.return_individual_masks(masks)
         # create a list of b64_results and individual_mask_paths
         b64_results = [b64_results] + individual_mask_paths
-        stop = time.perf_counter()
-
-        print(f"Inference took  {stop - start} seconds")
-        start = time.perf_counter()
         del masks
         torch.cuda.empty_cache()
-        gc.collect()
         try:
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, check=True
@@ -167,8 +161,6 @@ class Model:
             print(result.stdout)
         except subprocess.CalledProcessError as e:
             print(f"Command failed with code {e.returncode}: {e.stderr}")
-        stop = time.perf_counter()
-        print(f"Cleanup took  {stop - start} seconds")
         return {"status": "success", "masks": b64_results}
 
     def return_combined_mask(self, input_image, masks):
