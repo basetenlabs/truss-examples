@@ -2,10 +2,11 @@ build_commands: []
 base_image:
   image: alphatozeta/cuda-python:12.1.1-cudnn8-devel-ubuntu22.04
   python_executable_path: /usr/bin/python3
+model_name: segment-anything-2
 environment_variables: {}
 external_package_dirs: []
-model_metadata: {}
-model_name: sam2
+model_metadata:
+  example_model_input: {"image": "what is the meaning of life", "points_per_side": 32, "pred_iou_thresh": 0.8, "stability_score_thresh": 0.95, "use_m2m": true}
 python_version: py310
 requirements:
   - torch==2.4.0
