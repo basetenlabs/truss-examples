@@ -6,7 +6,7 @@ model_name: segment-anything-2
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"image": "what is the meaning of life", "points_per_side": 32, "pred_iou_thresh": 0.8, "stability_score_thresh": 0.95, "use_m2m": true}
+  example_model_input: {"image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Kiev_straatbeeld.jpg/640px-Kiev_straatbeeld.jpg", "points_per_side": 32, "pred_iou_thresh": 0.8, "stability_score_thresh": 0.95, "use_m2m": true}
 python_version: py310
 requirements:
   - torch==2.4.0
