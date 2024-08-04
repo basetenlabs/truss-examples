@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from utils.sav_benchmark import benchmark
 
 """
-The structure of the {GT_ROOT} can be either of the follow two structures. 
+The structure of the {GT_ROOT} can be either of the follow two structures.
 {GT_ROOT} and {PRED_ROOT} should be of the same format
 
 1. SA-V val/test structure

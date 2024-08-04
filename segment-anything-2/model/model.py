@@ -1,27 +1,26 @@
 # Prediction interface for Cog ⚙️
 # https://cog.run/python
 
-import os
-import cv2
-import time
-import torch
-import subprocess
-import numpy as np
-from PIL import Image
-from typing import List
-import matplotlib.pyplot as plt
 import base64
-import torch
-import httpx
-from io import BytesIO
 import gc
+import os
+import subprocess
 import sys
-from typing import Callable, List, Dict
+import time
+from io import BytesIO
+from typing import Callable, Dict, List
+
+import cv2
+import httpx
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from PIL import Image
 
 sys.path.insert(1, "data")
 
-from sam2.build_sam import build_sam2
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
+from sam2.build_sam import build_sam2
 
 DEVICE = "cuda"
 MODEL_DIR = "checkpoints"
