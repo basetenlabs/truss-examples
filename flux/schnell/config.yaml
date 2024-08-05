@@ -1,0 +1,21 @@
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"prompt": 'black forest gateau cake spelling out the words "FLUX SCHNELL", tasty, food photography, dynamic shot'}
+  repo_id: black-forest-labs/FLUX.1-schnell
+model_name: Flux.1-schnell
+python_version: py311
+requirements:
+  - git+https://github.com/huggingface/diffusers.git@fc6a91e3834c35e57b398ad1c0d99f6f83557e04
+  - transformers
+  - accelerate
+  - sentencepiece
+  - protobuf
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6
