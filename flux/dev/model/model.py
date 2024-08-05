@@ -37,7 +37,7 @@ class Model:
 
     def convert_to_b64(self, image: Image) -> str:
         buffered = BytesIO()
-        image.save(buffered, format="WEBP")  # webp is more efficient than jpeg
+        image.save(buffered, format="JPEG")
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
         return img_b64
 
@@ -61,6 +61,9 @@ class Model:
             )
             prompt = prompt[:max_sequence_length]
         if prompt2 and len(prompt2) > max_sequence_length:
+            logging.warning(
+                f"Input prompt2 longer than {max_sequence_length} tokens, truncating"
+            )
             prompt2 = prompt2[:max_sequence_length]
         generator = torch.Generator().manual_seed(seed)
 
