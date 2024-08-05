@@ -99,7 +99,7 @@ class Model:
     def load(self):
         # run pip freeze
         os.system("pip freeze")
-        os.system(f"pip install --no-build-isolation -e data")
+        os.system(f"pip install --no-build-isolation -e /packages")
         # Download checkpoint
         for model in self.model_files:
             self.download_file(checkpoints.get(model), model)
@@ -165,14 +165,14 @@ class Model:
 
     def return_combined_mask(self, input_image, masks):
         """
-        Generates a combined mask image from the given input image and masks and returns a base64 encoded webp image
+        Generates a combined mask image from the given input image and masks and returns a base64 encoded jpeg image
         """
         buffer = BytesIO()
         plt.figure(figsize=(20, 20))
         plt.imshow(input_image)
         self.show_anns(masks)
         plt.axis("off")
-        plt.savefig(buffer, format="webp", bbox_inches="tight", pad_inches=0)
+        plt.savefig(buffer, format="jpeg", bbox_inches="tight", pad_inches=0)
         plt.close()
         buffer.seek(0)
         img_base64 = base64.b64encode(buffer.read()).decode("utf-8")
@@ -183,9 +183,8 @@ class Model:
         for i, mask in enumerate(masks):
             mask_image = mask["segmentation"].astype(np.uint8) * 255
 
-            # Convert the image to WebP and encode it in base64
             buffer = BytesIO()
-            Image.fromarray(mask_image).save(buffer, format="WEBP")
+            Image.fromarray(mask_image).save(buffer, format="JPEG")
             base64_string = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
             individual_mask_strings.append(base64_string)
