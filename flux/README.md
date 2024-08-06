@@ -20,7 +20,7 @@ Before deployment:
 With `flux/dev` or `flux/schnell` as your working directory, you can deploy the model with:
 
 ```
-truss push --trusted
+truss push --trusted --publish
 ```
 
 Paste your Baseten API key if prompted.
