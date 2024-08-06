@@ -47,7 +47,7 @@ class Model:
         prompt = model_input.get("prompt")
         prompt2 = model_input.get("prompt2")
         max_sequence_length = model_input.get("max_sequence_length", 512)
-        guidance_scale = model_input.get("guidance_scale", 3.5)
+        guidance_scale = model_input.get("guidance_scale", 7.5)
         num_inference_steps = model_input.get(
             "num_inference_steps", 50
         )  # schnell is timestep-distilled
@@ -55,16 +55,18 @@ class Model:
         height = model_input.get("height", 1024)
         if not seed:
             seed = random.randint(0, MAX_SEED)
-        if len(prompt) > max_sequence_length:
+        if len(prompt.split()) > max_sequence_length:
             logging.warning(
                 f"Input longer than {max_sequence_length} tokens, truncating"
             )
-            prompt = prompt[:max_sequence_length]
-        if prompt2 and len(prompt2) > max_sequence_length:
+            tokens = prompt.split()
+            prompt = " ".join(tokens[: min(len(tokens), max_sequence_length)])
+        if prompt2 and len(prompt2.split()) > max_sequence_length:
             logging.warning(
                 f"Input prompt2 longer than {max_sequence_length} tokens, truncating"
             )
-            prompt2 = prompt2[:max_sequence_length]
+            tokens = prompt2.split()
+            prompt2 = " ".join(tokens[: min(len(tokens), max_sequence_length)])
         generator = torch.Generator().manual_seed(seed)
 
         image = self.pipe(

@@ -64,16 +64,18 @@ class Model:
             guidance_scale = 0.0
         if not seed:
             seed = random.randint(0, MAX_SEED)
-        if len(prompt) > max_sequence_length:
+        if len(prompt.split()) > max_sequence_length:
             logging.warning(
                 "FLUX.1-schnell does not support prompts longer than 256 tokens, truncating"
             )
-            prompt = prompt[:max_sequence_length]
-        if prompt2 and len(prompt2) > max_sequence_length:
+            tokens = prompt.split()
+            prompt = " ".join(tokens[: min(len(tokens), max_sequence_length)])
+        if prompt2 and len(prompt2.split()) > max_sequence_length:
             logging.warning(
                 f"Input prompt2 longer than {max_sequence_length} tokens, truncating"
             )
-            prompt2 = prompt2[:max_sequence_length]
+            tokens = prompt2.split()
+            prompt2 = " ".join(tokens[: min(len(tokens), max_sequence_length)])
         generator = torch.Generator().manual_seed(seed)
 
         image = self.pipe(
