@@ -1,21 +1,28 @@
-base_image:
-  image: vshulman/vllm-openai-fixie:latest
-  python_executable_path: /usr/bin/python3
+model_name: "Llama 3.1 8B Instruct VLLM"
+python_version: py311
 model_metadata:
-  arguments:
-    model: fixie-ai/ultravox-v0.2
-    audio_token_id: 128002
-environment_variables: {}
-external_package_dirs: []
-model_name: Ultravox v0.2
-python_version: py310
-runtime:
-  predict_concurrency: 512
+  example_model_input: {"prompt": "what is the meaning of life"}
+  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  openai_compatible: false
+  vllm_engine_parameters: {
+    "trust_remote_code": true,
+    "tensor_parallel_size": 1,
+    "dtype": "auto",
+    "use_v2_block_manager": true,
+    "enforce_eager": true,
+    "distributed_executor_backend": "mp"
+  }
 requirements:
-  - httpx
+  - vllm==0.5.4
+model_cache:
+  - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
 resources:
   accelerator: A100
   use_gpu: true
-secrets: {}
-system_packages:
-- python3.10-venv
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
