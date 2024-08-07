@@ -14,7 +14,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 logger = logging.getLogger(__name__)
 
-
 class Model:
     MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
     
@@ -38,11 +37,20 @@ class Model:
             self._client = httpx.AsyncClient(timeout=None)
             command = ["python3", "-m", "vllm.entrypoints.openai.api_server"]
             for key, value in self._vllm_config.items():
-                command.append(f"--{key.replace('_', '-')}")
-                command.append(str(value))
+                if value is True:
+                    command.append(f"--{key.replace('_', '-')}")
+                elif value is False:
+                    continue
+                else:
+                    command.append(f"--{key.replace('_', '-')}")
+                    command.append(str(value)) 
             
             logger.info(f"Starting openai compatible vLLM server with command: {command}")
-            subprocess.Popen(command)
+            try:
+                result = subprocess.run(command, capture_output=True, text=True, check=True)
+                logger.info(f"Conmmand succeeded with output: {result.stdout}")
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"Command failed with code {e.returncode}: {e.stderr}")
 
             if "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
