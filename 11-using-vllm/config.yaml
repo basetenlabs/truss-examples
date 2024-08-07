@@ -1,17 +1,16 @@
-model_name: "Llama 3.1 8B Instruct VLLM"
+model_name: "Llama 3.1 8B Instruct VLLM openai-compatible"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
   repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
-  openai_compatible: false
-  vllm_engine_parameters: {
-    "trust_remote_code": true,
-    "tensor_parallel_size": 1,
-    "dtype": "auto",
-    "use_v2_block_manager": true,
-    "enforce_eager": true,
-    "distributed_executor_backend": "mp"
-  }
+  openai_compatible: true
+  vllm_config: 
+    trust_remote_code: true
+    tensor_parallel_size: 1
+    dtype: auto
+    use_v2_block_manager: true
+    enforce_eager: true
+    distributed_executor_backend: mp
 requirements:
   - vllm==0.5.4
 model_cache:
@@ -26,3 +25,31 @@ runtime:
   predict_concurrency: 128
 secrets:
   hf_access_token: null
+
+# model_name: "Gemma 2 9B Instruct VLLM"
+# python_version: py311
+# model_metadata:
+#   example_model_input: {"prompt": "what is the meaning of life"}
+#   repo_id: google/gemma-2-9b-it
+#   openai_compatible: false
+#   vllm_engine_parameters: 
+#     trust_remote_code: true
+#     tensor_parallel_size: 1
+#     dtype: auto
+#     use_v2_block_manager: true
+#     enforce_eager: true
+#     distributed_executor_backend: mp
+# requirements:
+#   - vllm==0.5.4
+# model_cache:
+#   - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+#     ignore_patterns:
+#       - "original/*"
+#       - "*.pth"
+# resources:
+#   accelerator: A100
+#   use_gpu: true
+# runtime:
+#   predict_concurrency: 128
+# secrets:
+#   hf_access_token: null
