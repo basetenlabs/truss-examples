@@ -3,9 +3,8 @@ import os
 import subprocess
 import uuid
 
-from transformers import AutoTokenizer
-
 from model.sighelper import patch
+from transformers import AutoTokenizer
 
 patch()
 
@@ -14,9 +13,9 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = (
-    "spawn"  # for multiprocessing to work with CUDA
-)
+os.environ[
+    "VLLM_WORKER_MULTIPROC_METHOD"
+] = "spawn"  # for multiprocessing to work with CUDA
 logger = logging.getLogger(__name__)
 
 
