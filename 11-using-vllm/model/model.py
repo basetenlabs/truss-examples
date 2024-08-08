@@ -1,10 +1,10 @@
 import logging
 import os
 import subprocess
-import uuid
-import httpx
 import time
+import uuid
 
+import httpx
 from transformers import AutoTokenizer
 from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -14,9 +14,10 @@ os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 logger = logging.getLogger(__name__)
 
+
 class Model:
     MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
-    
+
     def __init__(self, **kwargs):
         self._config = kwargs["config"]
         self.model = None
@@ -29,7 +30,7 @@ class Model:
 
     def load(self):
         model_metadata = self._config["model_metadata"]
-        model_repo_id = model_metadata['repo_id']
+        model_repo_id = model_metadata["repo_id"]
         self._vllm_config = model_metadata["vllm_config"]
         logger.info(f"main model: {model_repo_id}")
         logger.info(f"vllm config: {self._vllm_config}")
@@ -43,11 +44,15 @@ class Model:
                     continue
                 else:
                     command.append(f"--{key.replace('_', '-')}")
-                    command.append(str(value)) 
-            
-            logger.info(f"Starting openai compatible vLLM server with command: {command}")
+                    command.append(str(value))
 
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            logger.info(
+                f"Starting openai compatible vLLM server with command: {command}"
+            )
+
+            process = subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
 
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
@@ -58,7 +63,9 @@ class Model:
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
                     logger.error(f"Command failed with error: {stderr}")
-                    raise RuntimeError(f"Command failed with code {process.returncode}: {stderr}")
+                    raise RuntimeError(
+                        f"Command failed with code {process.returncode}: {stderr}"
+                    )
 
             if "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
@@ -73,7 +80,9 @@ class Model:
             while time.time() - start_time < self.MAX_FAILED_SECONDS:
                 try:
                     response = httpx.get(f"{self.vllm_base_url}/health")
-                    logger.info(f"Checking server health: {response.status_code}, {response.text}")
+                    logger.info(
+                        f"Checking server health: {response.status_code}, {response.text}"
+                    )
                     if response.status_code == 200:
                         server_up = True
                         break
@@ -84,7 +93,7 @@ class Model:
                 raise RuntimeError(
                     "Server failed to start within the maximum allowed time."
                 )
-        else: 
+        else:
             try:
                 result = subprocess.run(
                     ["nvidia-smi"], capture_output=True, text=True, check=True
@@ -139,7 +148,7 @@ class Model:
                     json=model_input,
                 )
                 return response.json()
-        else: 
+        else:
             prompt = model_input.pop("prompt")
             stream = model_input.pop("stream", True)
 
