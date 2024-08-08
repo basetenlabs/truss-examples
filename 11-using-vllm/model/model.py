@@ -35,7 +35,7 @@ class Model:
         logger.info(f"vllm config: {self._vllm_config}")
         if self.openai_compatible:
             self._client = httpx.AsyncClient(timeout=None)
-            command = ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+            command = ["vllm", "serve", model_repo_id]
             for key, value in self._vllm_config.items():
                 if value is True:
                     command.append(f"--{key.replace('_', '-')}")
@@ -46,11 +46,19 @@ class Model:
                     command.append(str(value)) 
             
             logger.info(f"Starting openai compatible vLLM server with command: {command}")
-            try:
-                result = subprocess.run(command, capture_output=True, text=True, check=True)
-                logger.info(f"Conmmand succeeded with output: {result.stdout}")
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(f"Command failed with code {e.returncode}: {e.stderr}")
+
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            # Wait for 10 seconds and check if command fails
+            time.sleep(10)
+
+            if process.poll() is None:
+                logger.info("Process is still running after 10 seconds")
+            else:
+                stdout, stderr = process.communicate()
+                if process.returncode != 0:
+                    logger.error(f"Command failed with error: {stderr}")
+                    raise RuntimeError(f"Command failed with code {process.returncode}: {stderr}")
 
             if "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
@@ -65,6 +73,7 @@ class Model:
             while time.time() - start_time < self.MAX_FAILED_SECONDS:
                 try:
                     response = httpx.get(f"{self.vllm_base_url}/health")
+                    logger.info(f"Checking server health: {response.status_code}, {response.text}")
                     if response.status_code == 200:
                         server_up = True
                         break
