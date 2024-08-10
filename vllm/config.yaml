@@ -2,26 +2,21 @@ model_name: "Llama 3.1 8B Instruct VLLM openai-compatible"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct # check https://docs.vllm.ai/en/latest/models/supported_models.html for supported models
   openai_compatible: true
   vllm_config: # you can override any vllm config listed in https://docs.vllm.ai/en/stable/models/engine_args.html
     trust_remote_code: true
-    tensor_parallel_size: 4
+    tensor_parallel_size: 1
     dtype: auto
     use_v2_block_manager: true
     enforce_eager: true
     distributed_executor_backend: mp # using "ray" might not be supported out of the box
     enable_chunked_prefill: false
-    max_model_len: 50000
+    max_model_length: 4096
 requirements:
   - vllm==0.5.4
-model_cache:
-  - repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
-    ignore_patterns:
-      - "original/*"
-      - "*.pth"
 resources:
-  accelerator: A10G:4
+  accelerator: A100
   use_gpu: true
 runtime:
   predict_concurrency: 128
