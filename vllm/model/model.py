@@ -21,7 +21,7 @@ class Model:
 
     def __init__(self, **kwargs):
         self._config = kwargs["config"]
-        self.model = None
+        self.model_id = None
         self.llm_engine = None
         self.model_args = None
         self.hf_secret_token = kwargs["secrets"]["hf_access_token"]
@@ -30,14 +30,16 @@ class Model:
         os.environ["HF_TOKEN"] = self.hf_secret_token
 
     def load(self):
-        model_metadata = self._config["model_metadata"]
-        model_repo_id = model_metadata["repo_id"]
-        self._vllm_config = model_metadata["vllm_config"]
-        logger.info(f"main model: {model_repo_id}")
+        self._model_metadata = self._config["model_metadata"]
+        self._model_repo_id = self._model_metadata["repo_id"]
+        self._vllm_config = self._model_metadata["vllm_config"]
+        if self._vllm_config is None:
+            self._vllm_config = {}
+        logger.info(f"main model: {self._model_repo_id}")
         logger.info(f"vllm config: {self._vllm_config}")
         if self.openai_compatible:
             self._client = httpx.AsyncClient(timeout=None)
-            command = ["vllm", "serve", model_repo_id]
+            command = ["vllm", "serve", self._model_repo_id]
             for key, value in self._vllm_config.items():
                 if value is True:
                     command.append(f"--{key.replace('_', '-')}")
@@ -68,7 +70,7 @@ class Model:
                         f"Command failed with code {process.returncode}: {stderr}"
                     )
 
-            if "port" in self._vllm_config:
+            if self._vllm_config and "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
             else:
                 self._vllm_port = 8000
@@ -99,9 +101,9 @@ class Model:
                 result = subprocess.run(
                     ["nvidia-smi"], capture_output=True, text=True, check=True
                 )
-                print(result.stdout)
+                logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
-                print(f"Command failed with code {e.returncode}: {e.stderr}")
+                logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
 
             self.model_args = AsyncEngineArgs(model=model_repo_id, **self._vllm_config)
             self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
@@ -111,9 +113,9 @@ class Model:
                 result = subprocess.run(
                     ["nvidia-smi"], capture_output=True, text=True, check=True
                 )
-                print(result.stdout)
+                logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
-                print(f"Command failed with code {e.returncode}: {e.stderr}")
+                logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
 
     async def predict(self, model_input):
         if self.openai_compatible:
@@ -123,11 +125,11 @@ class Model:
                 return response.text
 
             # convenience for Baseten bridge
-            if "model" not in model_input and "model" in self._vllm_config:
-                print(
-                    f"model_input missing model due to Baseten bridge, using {self._vllm_config['model']}"
+            if "model" not in model_input and self._model_repo_id:
+                logger.info(
+                    f"model_input missing model due to Baseten bridge, using {self._model_repo_id}"
                 )
-                model_input["model"] = self._vllm_config["model"]
+                model_input["model"] = self._model_repo_id
 
             stream = model_input.get("stream", False)
             if stream:

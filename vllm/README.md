@@ -1,96 +1,180 @@
-# Truss for vLLM
+# vLLM Truss
 
-This is a generic [Truss](https://truss.baseten.co/) that can
+## What is this Truss example doing
 
-## OpenAI Bridge Compatibility
+This is a generic [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible models](https://docs.vllm.ai/en/latest/models/supported_models.html). We create this example to give you the most codeless experience, so you can configure all vLLM engine parameters in `config.yaml`, without making code changes in `model.py` for most of the use cases.
 
-This Truss is compatible with a *custom* version of our [bridge endpoint for OpenAI ChatCompletion users](https://docs.baseten.co/api-reference/openai). This means you can easily integrate this model into your existing applications that use the OpenAI API format.
+## Configure your Truss by modifying the config.yaml
+
+### Basic options using 1 GPU
+
+Here is the minimum config file you will need to deploy a model using vLLM on 1 GPU.
+The only parameters you need to touch are:
+- `model_name`
+- `repo_id`
+- `accelerator`
 
 ```
-client = OpenAI(
-    api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/{model_id}/direct/v1"
-)
+model_name: "Llama 3.1 8B Instruct VLLM"
+python_version: py311
+model_metadata:
+  example_model_input: {"prompt": "what is the meaning of life"}
+  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  openai_compatible: true
+  vllm_config: null
+requirements:
+  - vllm==0.5.4
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
 ```
 
-## Truss
+### Basic options using multiple GPUs
 
-Truss is an open-source model serving framework developed by Baseten. It allows you to develop and deploy machine learning models onto Baseten (and other platforms like [AWS](https://truss.baseten.co/deploy/aws) or [GCP](https://truss.baseten.co/deploy/gcp)). Using Truss, you can develop a GPU model using [live-reload](https://baseten.co/blog/technical-deep-dive-truss-live-reload), package models and their associated code, create Docker containers, and deploy on Baseten.
+If your model needs more than 1 GPU to run using tensor parallel, you will need to change `accelerator`, and to set `tensor_parallel_size` and `distributed_executor_backend` accordingly.
 
-## Deployment
-
-First, clone this repository:
-
-```sh
-git clone https://github.com/basetenlabs/truss-examples.git
-cd ultravox
+```
+model_name: "Llama 3.1 8B Instruct VLLM"
+python_version: py311
+model_metadata:
+  example_model_input: {"prompt": "what is the meaning of life"}
+  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  openai_compatible: false
+  vllm_config:
+    tensor_parallel_size: 4
+    distributed_executor_backend: mp
+requirements:
+  - vllm==0.5.4
+resources:
+  accelerator: A10G:4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
 ```
 
-Before deployment:
+### Customize vLLM engine parameters
 
-1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
+For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config`.
 
-With `ultravox` as your working directory, you can deploy the model with:
+#### Customized vLLM config example 1: prefix caching
 
-```sh
-truss push
-```
+#### Customized vLLM config example 2: model quantization
 
-Paste your Baseten API key if prompted.
+### Use vLLM's OpenAI compatible server
 
-For more information, see [Truss documentation](https://truss.baseten.co).
-
-## vLLM OpenAI Compatible Server
-
-This Truss demonstrates how to start [vLLM's OpenAI compatible server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html). The Truss is primarily used to start the server and then route requests to it. It currently supports ChatCompletions only.
-
-### Passing startup arguments to the server
-
-In the config any key-values under `model_metadata: arguments:` will be passed to the vLLM OpenAI-compatible server at startup.
+To use vLLM in [OpenAI compatible server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html) mode, simply set `openai_compatible: true` under `model_metadata`.
 
 ### Base Image
 
-You can use any vLLM compatible base image.
+todo: You can use any vLLM compatible base image.
 
-## API Documentation
+## Deploy your Truss
 
-The API follows the OpenAI ChatCompletion format. You can interact with the model using the standard ChatCompletion interface.
+1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install the latest version of Truss: `pip install --upgrade truss`
+3. With `vllm` as your working directory, you can deploy the model with:
 
-Example usage:
+    ```sh
+    truss push --trusted
+    ```
 
-```python
+    Paste your Baseten API key if prompted.
+
+For more information, see [Truss documentation](https://truss.baseten.co).
+
+## Call your model
+
+Once your deployment is up, there are [many ways](https://docs.baseten.co/invoke/quickstart) to call your model.
+
+### curl command
+
+#### If you are NOT using OpenAI compatible server
+
+```
+curl -X POST https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict \
+     -H "Authorization: Api-Key $BASETEN_API_KEY" \
+     -d '{"prompt": "what is the meaning of life"}'
+```
+
+
+#### If you are using OpenAI compatible server
+
+```
+curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {BASETEN_API_KEY}' \
+     -d '{
+           "model": "meta-llama/Meta-Llama-3.1-8B-Instruct"
+           "messages": [{"role": "user", "content": "What even is AGI?"}],
+           "max_tokens": 256
+         }'
+```
+
+### OpenAI SDK
+
+#### If you are NOT using OpenAI compatible server
+todo: verify the code snippet correctness
+
+```
 from openai import OpenAI
+import os
+
+model_id = "abcd1234" # Replace with your model ID
+deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
 
 client = OpenAI(
-    api_key="YOUR-API-KEY",
-    base_url="https://bridge.baseten.co/MODEL-ID/v1"
+    api_key=os.environ["BASETEN_API_KEY"],
+    base_url=f"https://bridge.baseten.co/v1/direct"
 )
 
 response = client.chat.completions.create(
-    model="fixie-ai/ultravox-v0.2",
-    messages=[{
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "Summarize the following: <|audio|>"},
-                {"type": "image_url", "image_url": {"url": f"data:audio/wav;base64,{base64_wav}"}}
-            ]
-        }]
-    stream=True
+  model=f"baseten/{model_id}/{deployment_id}",
+  messages=[
+    {"role": "user", "content": "Who won the world series in 2020?"},
+    {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+    {"role": "user", "content": "Where was it played?"}
+  ]
 )
 
-for chunk in response:
-    print(chunk.choices[0].delta)
+print(response.choices[0].message.content)
+
 ```
 
-## Future Improvements
+#### If you are using OpenAI compatible server
+todo: verify the code snippet correctness
 
-We are actively working on enhancing this Truss. Some planned improvements include:
+```
+from openai import OpenAI
+import os
 
-- Adding support for distributed serving with Ray (https://docs.vllm.ai/en/latest/serving/distributed_serving.html)
-- Implementing model caching for improved performance
+model_id = "abcd1234" # Replace with your model ID
+deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
 
-Stay tuned for updates!
+client = OpenAI(
+    api_key=os.environ["BASETEN_API_KEY"],
+    base_url=f"https://bridge.baseten.co/v1/direct"
+)
+
+response = client.chat.completions.create(
+  model=f"baseten/{model_id}/{deployment_id}",
+  messages=[
+    {"role": "user", "content": "Who won the world series in 2020?"},
+    {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+    {"role": "user", "content": "Where was it played?"}
+  ]
+)
+
+print(response.choices[0].message.content)
+
+```
+
+For more information, see [API reference](https://docs.baseten.co/api-reference/openai).
 
 ## Support
 
