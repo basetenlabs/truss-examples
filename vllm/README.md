@@ -62,9 +62,9 @@ secrets:
 
 For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config`.
 
-#### Customized vLLM config example 1: prefix caching
+#### TODO: Customized vLLM config example 1: prefix caching
 
-#### Customized vLLM config example 2: model quantization
+#### TODO: Customized vLLM config example 2: model quantization
 
 ### Use vLLM's OpenAI compatible server
 
@@ -72,7 +72,7 @@ To use vLLM in [OpenAI compatible server](https://docs.vllm.ai/en/latest/serving
 
 ### Base Image
 
-todo: You can use any vLLM compatible base image.
+TODO: You can use any vLLM compatible base image.
 
 ## Deploy your Truss
 
@@ -110,16 +110,26 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {BASETEN_API_KEY}' \
      -d '{
-           "model": "meta-llama/Meta-Llama-3.1-8B-Instruct"
            "messages": [{"role": "user", "content": "What even is AGI?"}],
            "max_tokens": 256
+         }'
+```
+
+To access [production metrics](https://docs.vllm.ai/en/latest/serving/metrics.html) out of OpenAI compatible server, simply add `metrics: true` to the request.
+
+```
+curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" \
+     -H "Content-Type: application/json" \
+     -H 'Authorization: Api-Key {BASETEN_API_KEY}' \
+     -d '{
+           "metrics": true
          }'
 ```
 
 ### OpenAI SDK
 
 #### If you are NOT using OpenAI compatible server
-todo: verify the code snippet correctness
+TODO: verify the code snippet correctness
 
 ```
 from openai import OpenAI
@@ -147,7 +157,7 @@ print(response.choices[0].message.content)
 ```
 
 #### If you are using OpenAI compatible server
-todo: verify the code snippet correctness
+TODO: verify the code snippet correctness
 
 ```
 from openai import OpenAI

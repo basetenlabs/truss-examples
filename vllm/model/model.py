@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Model:
+    # TODO: better way to detect loading failure
     MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
 
     def __init__(self, **kwargs):
@@ -152,6 +153,7 @@ class Model:
                 )
                 return response.json()
         else:
+            # TODO: support "messages" input
             prompt = model_input.pop("prompt")
             stream = model_input.pop("stream", True)
 
