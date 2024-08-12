@@ -107,10 +107,10 @@ class Model:
                 logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
 
             self.model_args = AsyncEngineArgs(
-                model=self.model_repo_id, **self._vllm_config
+                model=self._model_repo_id, **self._vllm_config
             )
             self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_repo_id)
+            self.tokenizer = AutoTokenizer.from_pretrained(self._model_repo_id)
 
             try:
                 result = subprocess.run(
