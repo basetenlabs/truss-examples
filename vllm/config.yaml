@@ -1,9 +1,9 @@
-model_name: "Llama 3.1 8B Instruct VLLM openai-compatible"
+model_name: "Llama 3.1 8B Instruct VLLM"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
   repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct # check https://docs.vllm.ai/en/latest/models/supported_models.html for supported models
-  openai_compatible: true
+  openai_compatible: false
   vllm_config: # you can override any vllm config listed in https://docs.vllm.ai/en/stable/models/engine_args.html
     # trust_remote_code: true
     tensor_parallel_size: 1
