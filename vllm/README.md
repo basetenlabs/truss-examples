@@ -65,7 +65,7 @@ To use vLLM in [OpenAI compatible server](https://docs.vllm.ai/en/latest/serving
 
 ### Customize vLLM engine parameters
 
-For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config`.
+For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config` under `model_metadata`.
 
 #### Example 1: using model quantization
 
@@ -163,7 +163,7 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
          }'
 ```
 
-To access [production metrics](https://docs.vllm.ai/en/latest/serving/metrics.html) out of OpenAI compatible server, simply add `metrics: true` to the request.
+To access [production metrics](https://docs.vllm.ai/en/latest/serving/metrics.html) reported by OpenAI compatible server, simply add `metrics: true` to the request.
 
 ```
 curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" \
