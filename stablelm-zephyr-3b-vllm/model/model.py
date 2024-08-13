@@ -1,9 +1,10 @@
 import subprocess
 import uuid
 
-from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
+
+from vllm import SamplingParams
 
 
 class Model:
