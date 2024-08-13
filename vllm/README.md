@@ -1,5 +1,7 @@
 # vLLM Truss
 
+[[_TOC_]]
+
 ## What is this Truss example doing
 
 This is a generic [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible models](https://docs.vllm.ai/en/latest/models/supported_models.html). We create this example to give you the most codeless experience, so you can configure all vLLM engine parameters in `config.yaml`, without making code changes in `model.py` for most of the use cases.
@@ -46,6 +48,7 @@ model_metadata:
   openai_compatible: false
   vllm_config:
     tensor_parallel_size: 4
+    max_model_len: 4096
     distributed_executor_backend: mp
 requirements:
   - vllm==0.5.4
@@ -58,21 +61,68 @@ secrets:
   hf_access_token: null
 ```
 
-### Customize vLLM engine parameters
-
-For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config`.
-
-#### TODO: Customized vLLM config example 1: prefix caching
-
-#### TODO: Customized vLLM config example 2: model quantization
-
 ### Use vLLM's OpenAI compatible server
 
 To use vLLM in [OpenAI compatible server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html) mode, simply set `openai_compatible: true` under `model_metadata`.
 
-### Base Image
+### Customize vLLM engine parameters
 
-TODO: You can use any vLLM compatible base image.
+For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config`.
+
+#### Example 1: using model quantization
+
+```
+model_name: Mistral 7B v2 vLLM AWQ - T4
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: TheBloke/Mistral-7B-Instruct-v0.2-AWQ
+  vllm_config:
+    quantization: "awq"
+    dtype: "float16"
+    max_model_len: 8000
+    max_num_seqs: 8
+python_version: py310
+requirements:
+  - vllm==0.5.4
+resources:
+  accelerator: T4
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
+runtime:
+  predict_concurrency: 128
+```
+
+#### Example 2: using customized vLLM image
+
+You can even override with your own customized vLLM docker image to work with models that are not supported yet by vanilla vLLM.
+
+```
+model_name: Ultravox v0.2
+base_image:
+  image: vshulman/vllm-openai-fixie:latest
+  python_executable_path: /usr/bin/python3
+model_metadata:
+  repo_id: fixie-ai/ultravox-v0.2
+  vllm_config:
+    audio_token_id: 128002
+environment_variables: {}
+external_package_dirs: []
+python_version: py310
+runtime:
+  predict_concurrency: 512
+requirements:
+  - httpx
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages:
+- python3.10-venv
+```
 
 ## Deploy your Truss
 
@@ -126,60 +176,27 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
          }'
 ```
 
-### OpenAI SDK
-
-#### If you are NOT using OpenAI compatible server
-TODO: verify the code snippet correctness
+### OpenAI SDK (if you are using OpenAI compatible server)
 
 ```
 from openai import OpenAI
 import os
 
-model_id = "abcd1234" # Replace with your model ID
-deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
+model_id = "a2345678" # Replace with your model ID
 
 client = OpenAI(
     api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/v1/direct"
+    base_url=f"https://bridge.baseten.co/{model_id}/v1/direct"
 )
 
 response = client.chat.completions.create(
-  model=f"baseten/{model_id}/{deployment_id}",
+  model="meta-llama/Meta-Llama-3.1-8B-Instruct",
   messages=[
     {"role": "user", "content": "Who won the world series in 2020?"},
     {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
     {"role": "user", "content": "Where was it played?"}
   ]
 )
-
-print(response.choices[0].message.content)
-
-```
-
-#### If you are using OpenAI compatible server
-TODO: verify the code snippet correctness
-
-```
-from openai import OpenAI
-import os
-
-model_id = "abcd1234" # Replace with your model ID
-deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
-
-client = OpenAI(
-    api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/v1/direct"
-)
-
-response = client.chat.completions.create(
-  model=f"baseten/{model_id}/{deployment_id}",
-  messages=[
-    {"role": "user", "content": "Who won the world series in 2020?"},
-    {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-    {"role": "user", "content": "Where was it played?"}
-  ]
-)
-
 print(response.choices[0].message.content)
 
 ```

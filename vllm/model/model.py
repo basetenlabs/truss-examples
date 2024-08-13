@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Model:
-    # TODO: better way to detect loading failure
+    # TODO: better way to detect model server startup failure than using `MAX_FAILED_SECONDS`
     MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
 
     def __init__(self, **kwargs):
@@ -25,8 +25,10 @@ class Model:
         self.model_id = None
         self.llm_engine = None
         self.model_args = None
-        self.hf_secret_token = kwargs["secrets"]["hf_access_token"]
-        self.openai_compatible = self._config["model_metadata"]["openai_compatible"]
+        self.hf_secret_token = kwargs["secrets"].get("hf_access_token", None)
+        self.openai_compatible = self._config["model_metadata"].get(
+            "openai_compatible", False
+        )
         self.vllm_base_url = None
         os.environ["HF_TOKEN"] = self.hf_secret_token
 
@@ -121,6 +123,10 @@ class Model:
                 logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
 
     async def predict(self, model_input):
+        if "messages" not in model_input and "prompt" not in model_input:
+            raise ValueError("Prompt or messages must be provided")
+
+        stream = model_input.pop("stream", False)
         if self.openai_compatible:
             # if the key metrics: true is present, let's return the vLLM /metrics endpoint
             if model_input.get("metrics", False):
@@ -134,7 +140,6 @@ class Model:
                 )
                 model_input["model"] = self._model_repo_id
 
-            stream = model_input.get("stream", False)
             if stream:
 
                 async def generator():
@@ -155,21 +160,31 @@ class Model:
                 )
                 return response.json()
         else:
-            # TODO: support "messages" input
-            prompt = model_input.pop("prompt")
-            stream = model_input.pop("stream", True)
-
-            sampling_params = SamplingParams(**model_input)
-            idx = str(uuid.uuid4().hex)
-            chat = [
-                {"role": "user", "content": prompt},
-            ]
-            # templatize the input to the model
-            input = self.tokenizer.apply_chat_template(
-                chat, tokenize=False, add_generation_prompt=True
-            )
+            # SamplingParams does not take/use argument 'model'
+            if "model" in model_input:
+                model_input.pop("model")
+            if "prompt" in model_input:
+                prompt = model_input.pop("prompt")
+                sampling_params = SamplingParams(**model_input)
+                idx = str(uuid.uuid4().hex)
+                messages = [
+                    {"role": "user", "content": prompt},
+                ]
+                # templatize the input to the model
+                input = self.tokenizer.apply_chat_template(
+                    messages, tokenize=False, add_generation_prompt=True
+                )
+            elif "messages" in model_input:
+                messages = model_input.pop("messages")
+                sampling_params = SamplingParams(**model_input)
+                idx = str(uuid.uuid4().hex)
+                # templatize the input to the model
+                input = self.tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                )
+            logger.info(f"Using SamplingParams: {sampling_params}")
             # since we accept any valid vllm sampling parameters, we can just pass it through
-
             vllm_generator = self.llm_engine.generate(input, sampling_params, idx)
 
             async def generator():
