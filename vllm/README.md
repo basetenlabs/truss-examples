@@ -1,7 +1,5 @@
 # vLLM Truss
 
-[[_TOC_]]
-
 ## What is this Truss example doing
 
 This is a generic [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible models](https://docs.vllm.ai/en/latest/models/supported_models.html). We create this example to give you the most codeless experience, so you can configure all vLLM engine parameters in `config.yaml`, without making code changes in `model.py` for most of the use cases.
