@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Model:
     # TODO: better way to detect model server startup failure than using `MAX_FAILED_SECONDS`
-    MAX_FAILED_SECONDS = 600  # 10 minutes; the reason this would take this long is mostly if we download a large model
+    MAX_FAILED_SECONDS = 1500  # 25 minutes; the reason this would take this long is mostly if we download a large model
 
     def __init__(self, **kwargs):
         self._config = kwargs["config"]
@@ -64,7 +64,7 @@ class Model:
             time.sleep(10)
 
             if process.poll() is None:
-                logger.info("Process is still running after 10 seconds")
+                logger.info("Command succeeded")
             else:
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
@@ -86,13 +86,14 @@ class Model:
             while time.time() - start_time < self.MAX_FAILED_SECONDS:
                 try:
                     response = httpx.get(f"{self.vllm_base_url}/health")
-                    logger.info(
-                        f"Checking server health: {response.status_code}, {response.text}"
-                    )
+                    logger.info(f"Checking server health: {response.status_code}")
                     if response.status_code == 200:
                         server_up = True
                         break
                 except httpx.RequestError:
+                    seconds_passed = int(time.time() - start_time)
+                    if seconds_passed % 10 == 0:
+                        logger.info(f"Server is starting for {seconds_passed} seconds")
                     time.sleep(1)  # Wait for 1 second before retrying
 
             if not server_up:
