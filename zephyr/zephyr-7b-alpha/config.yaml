@@ -18,7 +18,8 @@ python_version: py311
 requirements:
 - sentencepiece
 - accelerate
-- transformers==4.34.0
+- transformers==4.44.0
+- huggingface_hub==0.24.6
 - torch==2.0.1
 - hf_transfer==0.1.4
 resources:
