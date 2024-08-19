@@ -1,0 +1,19 @@
+model_name: "Llama 3.1 70B Instruct VLLM"
+python_version: py311
+model_metadata:
+  example_model_input: {"prompt": "what is the meaning of life"}
+  repo_id: meta-llama/Meta-Llama-3.1-70B-Instruct
+  openai_compatible: true
+  vllm_config:
+    tensor_parallel_size: 4
+    max_model_len: 4096
+    enable_prefix_caching: true
+requirements:
+  - vllm==0.5.4
+resources:
+  accelerator: A100:4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
