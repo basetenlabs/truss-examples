@@ -12,6 +12,7 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 from vllm import SamplingParams
+from vllm.model.health_check import run_background_vllm_health_check
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
@@ -34,32 +35,6 @@ class Model:
         )
         self.vllm_base_url = None
         os.environ["HF_TOKEN"] = self.hf_secret_token
-
-    async def _monitor_vllm_health(self):
-        try:
-            if self.openai_compatible:
-                async with httpx.AsyncClient() as client:
-                    while True:
-                        response = await client.get(f"{self.vllm_base_url}/health")
-                        if response.status_code != 200:
-                            raise RuntimeError("vLLM is unhealthy")
-                        await asyncio.sleep(self.HEALTH_CHECK_INTERVAL)
-            else:
-                while True:
-                    await self.llm_engine.check_health()
-                    await asyncio.sleep(self.HEALTH_CHECK_INTERVAL)
-        except Exception as e:
-            logging.error(
-                f"vLLM has gone into an unhealthy state due to error: {e}, restarting service now..."
-            )
-            os._exit(1)
-
-    def _run_background_vllm_health_check(self):
-        logger.info("Starting background health check loop")
-        loop = asyncio.new_event_loop()
-        loop.create_task(self._monitor_vllm_health())
-        thread = threading.Thread(target=loop.run_forever, daemon=True)
-        thread.start()
 
     def load(self):
         self._model_metadata = self._config["model_metadata"]
@@ -156,7 +131,12 @@ class Model:
             except subprocess.CalledProcessError as e:
                 logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
         try:
-            self._run_background_vllm_health_check()
+            run_background_vllm_health_check(
+                self.openai_compatible,
+                self.HEALTH_CHECK_INTERVAL,
+                self.llm_engine,
+                self.vllm_base_url,
+            )
         except Exception as e:
             raise RuntimeError(f"Failed to start background health check: {e}")
 
