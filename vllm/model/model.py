@@ -12,7 +12,7 @@ from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 from vllm import SamplingParams
-from vllm.model.health_check import run_background_vllm_health_check
+from vllm.model.helper import run_background_vllm_health_check
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
