@@ -5,6 +5,7 @@ import time
 import uuid
 
 import httpx
+from model.helper import run_background_vllm_health_check
 from transformers import AutoTokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 class Model:
     # TODO: better way to detect model server startup failure than using `MAX_FAILED_SECONDS`
     MAX_FAILED_SECONDS = 1500  # 25 minutes; the reason this would take this long is mostly if we download a large model
+    HEALTH_CHECK_INTERVAL = 5  # seconds
 
     def __init__(self, **kwargs):
         self._config = kwargs["config"]
@@ -56,21 +58,21 @@ class Model:
                 f"Starting openai compatible vLLM server with command: {command}"
             )
 
-            process = subprocess.Popen(
+            self._vllm_process = subprocess.Popen(
                 command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
 
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
 
-            if process.poll() is None:
-                logger.info("Command succeeded")
+            if self._vllm_process.poll() is None:
+                logger.info("Command to start vLLM server ran successfully")
             else:
-                stdout, stderr = process.communicate()
-                if process.returncode != 0:
+                stdout, stderr = self._vllm_process.communicate()
+                if self._vllm_process.returncode != 0:
                     logger.error(f"Command failed with error: {stderr}")
                     raise RuntimeError(
-                        f"Command failed with code {process.returncode}: {stderr}"
+                        f"Command failed with code {self._vllm_process.returncode}: {stderr}"
                     )
 
             if self._vllm_config and "port" in self._vllm_config:
@@ -90,10 +92,12 @@ class Model:
                     if response.status_code == 200:
                         server_up = True
                         break
-                except httpx.RequestError:
+                except httpx.RequestError as e:
                     seconds_passed = int(time.time() - start_time)
                     if seconds_passed % 10 == 0:
-                        logger.info(f"Server is starting for {seconds_passed} seconds")
+                        logger.info(
+                            f"Server is starting for {seconds_passed} seconds: {e}"
+                        )
                     time.sleep(1)  # Wait for 1 second before retrying
 
             if not server_up:
@@ -112,7 +116,9 @@ class Model:
             self.model_args = AsyncEngineArgs(
                 model=self._model_repo_id, **self._vllm_config
             )
-            self.llm_engine = AsyncLLMEngine.from_engine_args(self.model_args)
+            self.llm_engine = AsyncLLMEngine.from_engine_args(
+                engine_args=self.model_args
+            )
             self.tokenizer = AutoTokenizer.from_pretrained(self._model_repo_id)
 
             try:
@@ -122,6 +128,15 @@ class Model:
                 logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
                 logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
+        try:
+            run_background_vllm_health_check(
+                self.openai_compatible,
+                self.HEALTH_CHECK_INTERVAL,
+                self.llm_engine,
+                self.vllm_base_url,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to start background health check: {e}")
 
     async def predict(self, model_input):
         if "messages" not in model_input and "prompt" not in model_input:
