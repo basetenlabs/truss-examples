@@ -178,10 +178,6 @@ class Model:
                 )
                 return response.json()
         else:
-            if "kill" in str(model_input["messages"]):
-                logger.info("Killing the server")
-                self._vllm_process.terminate()
-                os._exit(1)
             # SamplingParams does not take/use argument 'model'
             if "model" in model_input:
                 model_input.pop("model")
