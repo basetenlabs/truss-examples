@@ -89,7 +89,6 @@ class Model:
             process = subprocess.Popen(
                 command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
-            self._vllm_process = process
 
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
