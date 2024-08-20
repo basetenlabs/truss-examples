@@ -122,6 +122,8 @@ class Model:
                 logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
                 logger.error(f"Command failed with code {e.returncode}: {e.stderr}")
+            # testing
+            raise RuntimeError("Oops!")
 
     async def predict(self, model_input):
         if "messages" not in model_input and "prompt" not in model_input:
