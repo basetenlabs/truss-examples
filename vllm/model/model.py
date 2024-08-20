@@ -7,12 +7,12 @@ import time
 import uuid
 
 import httpx
+from model.helper import run_background_vllm_health_check
 from transformers import AutoTokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
 from vllm import SamplingParams
-from vllm.model.helper import run_background_vllm_health_check
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
@@ -60,21 +60,21 @@ class Model:
                 f"Starting openai compatible vLLM server with command: {command}"
             )
 
-            process = subprocess.Popen(
+            self._vllm_process = subprocess.Popen(
                 command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
 
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
 
-            if process.poll() is None:
+            if self._vllm_process.poll() is None:
                 logger.info("Command to start vLLM server ran successfully")
             else:
-                stdout, stderr = process.communicate()
-                if process.returncode != 0:
+                stdout, stderr = self._vllm_process.communicate()
+                if self._vllm_process.returncode != 0:
                     logger.error(f"Command failed with error: {stderr}")
                     raise RuntimeError(
-                        f"Command failed with code {process.returncode}: {stderr}"
+                        f"Command failed with code {self._vllm_process.returncode}: {stderr}"
                     )
 
             if self._vllm_config and "port" in self._vllm_config:
@@ -178,6 +178,10 @@ class Model:
                 )
                 return response.json()
         else:
+            if "kill" in str(model_input["messages"]):
+                logger.info("Killing the server")
+                self._vllm_process.terminate()
+                os._exit(1)
             # SamplingParams does not take/use argument 'model'
             if "model" in model_input:
                 model_input.pop("model")
