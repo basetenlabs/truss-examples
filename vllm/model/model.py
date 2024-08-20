@@ -56,7 +56,6 @@ class Model:
 
     def _run_background_vllm_health_check(self):
         logger.info("Starting background health check loop")
-        # loop = asyncio.get_event_loop()
         loop = asyncio.new_event_loop()
         loop.create_task(self._monitor_vllm_health())
         thread = threading.Thread(target=loop.run_forever, daemon=True)
