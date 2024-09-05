@@ -20,3 +20,4 @@ tests:
   - llama/llama-2-7b-chat
   - bark
   - playground-v2-aesthetic
+  - engine-builder/tinyllama
