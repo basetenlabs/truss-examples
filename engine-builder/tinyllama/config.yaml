@@ -1,3 +1,6 @@
+model_metadata:
+  example_model_input:
+    prompt: How tall is a tiny llama?
 model_name: tinyllama-trt
 python_version: py310
 resources:
