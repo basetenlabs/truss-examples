@@ -17,14 +17,18 @@ class Model:
         self.hf_secret_token = kwargs["secrets"]["hf_access_token"]
         os.environ["HF_TOKEN"] = self.hf_secret_token
 
-    def load(self):
+    @staticmethod
+    def get_gpu_memory():
         try:
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, check=True
             )
-            print(result.stdout)
+            logger.info(result.stdout)
         except subprocess.CalledProcessError as e:
-            print(f"Command failed with code {e.returncode}: {e.stderr}")
+            logger.info(f"Command failed with code {e.returncode}: {e.stderr}")
+
+    def load(self):
+        self.get_gpu_memory()
         model_metadata = self._config["model_metadata"]
         logger.info(f"main model: {model_metadata['repo_id']}")
         logger.info(f"tensor parallelism: {model_metadata['tensor_parallel']}")
@@ -39,13 +43,7 @@ class Model:
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_metadata["repo_id"])
 
-        try:
-            result = subprocess.run(
-                ["nvidia-smi"], capture_output=True, text=True, check=True
-            )
-            print(result.stdout)
-        except subprocess.CalledProcessError as e:
-            print(f"Command failed with code {e.returncode}: {e.stderr}")
+        self.get_gpu_memory()
 
     @staticmethod
     def convert_payload_to_sampling_params(payload: dict) -> dict:
