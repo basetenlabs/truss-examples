@@ -5,6 +5,7 @@ model_metadata:
   repo_id: microsoft/Phi-3.5-mini-instruct
   openai_compatible: true
   vllm_config:
+    port: 8080
     tensor_parallel_size: 1
     max_model_len: 10000
     enable_prefix_caching: true

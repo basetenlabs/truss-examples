@@ -78,7 +78,7 @@ class Model:
             if self._vllm_config and "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
             else:
-                self._vllm_port = 8000
+                self._vllm_port = 8080
 
             self.vllm_base_url = f"http://localhost:{self._vllm_port}"
 
