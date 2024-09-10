@@ -5,8 +5,8 @@ model_metadata:
   repo_id: meta-llama/Meta-Llama-3.1-405B-Instruct-FP8
   tensor_parallel: 8
 requirements:
-  - vllm==0.5.3post1
-  - transformers==4.43.1
+  - vllm==0.6.0
+  - transformers==4.43.2
 resources:
   accelerator: H100:8
   use_gpu: true
