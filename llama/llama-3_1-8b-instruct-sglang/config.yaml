@@ -13,7 +13,7 @@ model_cache:
       - "original/*"
       - "*.pth"
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   use_gpu: true
 runtime:
   predict_concurrency: 128
