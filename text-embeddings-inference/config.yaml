@@ -12,7 +12,8 @@ model_cache:
 model_metadata: {}
 model_name: TEI Experiment
 python_version: py39
-predict_concurrency: 512
+runtime:
+  predict_concurrency: 512
 requirements: []
 resources:
   accelerator: A100
