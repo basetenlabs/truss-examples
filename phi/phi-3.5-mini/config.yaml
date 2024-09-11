@@ -1,14 +1,12 @@
-model_name: "Phi 3.5 Mini Instruct"
+model_name: "Phi 3.5 Mini Instruct VLLM openai compatible"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
   repo_id: microsoft/Phi-3.5-mini-instruct
   openai_compatible: true
   vllm_config:
-    port: 8080
     tensor_parallel_size: 1
     max_model_len: 10000
-    enable_prefix_caching: true
 requirements:
   - vllm==0.5.4
 resources:
