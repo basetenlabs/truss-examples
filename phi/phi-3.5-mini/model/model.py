@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import subprocess
@@ -207,7 +206,7 @@ class Model:
                 full_text = ""
                 async for output in vllm_generator:
                     text = output.outputs[0].text
-                    delta = text[len(full_text) :]
+                    delta = text[len(full_text):]
                     full_text = text
                     yield delta
 
