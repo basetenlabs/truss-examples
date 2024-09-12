@@ -157,6 +157,7 @@ class Model:
                 model_input["model"] = self._model_repo_id
 
             if stream:
+
                 async def generator():
                     async with self._client.stream(
                         "POST",
@@ -206,7 +207,7 @@ class Model:
                 full_text = ""
                 async for output in vllm_generator:
                     text = output.outputs[0].text
-                    delta = text[len(full_text):]
+                    delta = text[len(full_text) :]
                     full_text = text
                     yield delta
 
