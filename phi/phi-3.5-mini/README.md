@@ -64,21 +64,29 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
 from openai import OpenAI
 import os
 
-model_id = "a2345678" # Replace with your model ID
+model_id = "abcd1234" # Replace with your model ID
+deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
 
 client = OpenAI(
     api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/{model_id}/v1/direct"
+    base_url=f"https://bridge.baseten.co/v1/direct"
 )
 
 response = client.chat.completions.create(
-  model="microsoft/Phi-3.5-mini-instruct",
+  model=f"your_org/model_name",
   messages=[
     {"role": "user", "content": "Who won the world series in 2020?"},
     {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
     {"role": "user", "content": "Where was it played?"}
-  ]
+  ],
+  extra_body={
+    "baseten": {
+      "model_id": model_id,
+      "deployment_id": deployment_id
+    }
+  }
 )
+
 print(response.choices[0].message.content)
 
 ```
