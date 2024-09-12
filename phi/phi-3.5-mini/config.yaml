@@ -10,7 +10,7 @@ model_metadata:
 requirements:
   - vllm==0.5.4
 resources:
-  accelerator: A100
+  accelerator: A10G
   use_gpu: true
 runtime:
   predict_concurrency: 128
