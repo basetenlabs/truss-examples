@@ -142,7 +142,7 @@ class Model:
         if "messages" not in model_input and "prompt" not in model_input:
             raise ValueError("Prompt or messages must be provided")
 
-        stream = model_input.pop("stream", False)
+        stream = model_input.get("stream", False)
         if self.openai_compatible:
             # if the key metrics: true is present, let's return the vLLM /metrics endpoint
             if model_input.get("metrics", False):
