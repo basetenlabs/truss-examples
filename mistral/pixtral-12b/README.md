@@ -16,11 +16,14 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
+3. Accept the terms of service of the Pixtral model [here](https://huggingface.co/mistralai/Pixtral-12B-2409).
+4. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
+5. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`. Note that you will *not* be able to successfully deploy Pixtral without doing this.
 
 With `pixtral-12b` as your working directory, you can deploy the model with:
 
 ```sh
-truss push --publish
+truss push --publish --trusted
 ```
 
 Paste your Baseten API key if prompted.
@@ -29,7 +32,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ### Hardware notes
 
-You need one A100 to run Pixtral at `fp32`. If you need access to A100s, please [contact us](mailto:support@baseten.co).
+You need one A100 to run Pixtral at `fp16`.
 
 ## Pixtral 12B API documentation
 
