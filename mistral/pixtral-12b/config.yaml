@@ -24,7 +24,6 @@ model_metadata:
     max_tokens: 512,
     temperature: 0.5
   }
-  pretty_name: Pixtral 12B
   vllm_config:
     tensor_parallel_size: 1
     max_model_len: 16384
@@ -34,7 +33,7 @@ model_metadata:
     - text-generation
     - multimodal
 model_name: Pixtral 12B
-python_version: py310
+python_version: py311
 secrets:
   hf_access_token: null
 requirements:

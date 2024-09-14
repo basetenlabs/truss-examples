@@ -1,4 +1,4 @@
-# Mixtral 8x7B Instruct Truss
+# Pixtral 12B Truss
 
 This is a [Truss](https://truss.baseten.co/) for Pixtral 12B. Pixtral 12B parameter language model released by [Mistral AI](https://mistral.ai/) and is a multimodal (text + vision) LLM. This README will walk you through how to deploy this Truss on Baseten to get your own instance of it.
 
@@ -32,7 +32,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ### Hardware notes
 
-You need one A100 to run Pixtral at `fp16`.
+You need one A100 to run Pixtral at `bf16`.
 
 ## Pixtral 12B API documentation
 
