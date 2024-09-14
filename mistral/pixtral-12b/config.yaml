@@ -31,8 +31,8 @@ model_metadata:
     max_num_batched_tokens: 16384
     limit_mm_per_prompt: {image: 5}
   tags:
-  - text-generation
-  - multimodal
+    - text-generation
+    - multimodal
 model_name: Pixtral 12B
 python_version: py310
 secrets:
