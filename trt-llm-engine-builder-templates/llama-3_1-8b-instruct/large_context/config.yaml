@@ -2,7 +2,7 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: llama3.1_8b-trtllm-high_throughput
+model_name: llama3.1_8b-instruct-trtllm-large_context
 python_version: py39
 requirements: []
 resources:
