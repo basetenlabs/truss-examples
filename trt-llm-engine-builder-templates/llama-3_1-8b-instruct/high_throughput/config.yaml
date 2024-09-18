@@ -2,11 +2,11 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: llama-3_1-8b-instruct-high_throughput
+model_name: trtllm-llama-3_1-8b-instruct-high_throughput
 python_version: py311
 requirements: []
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -19,8 +19,9 @@ trt_llm:
     checkpoint_repository:
       repo: meta-llama/Meta-Llama-3.1-8B-Instruct
       source: HF
-    max_batch_size: 64
+    max_batch_size: 32
+    quantization_type: fp8_kv
     max_beam_width: 1
-    max_input_len: 7168
+    max_input_len: 4096
     max_output_len: 1024
     num_builder_gpus: 1
