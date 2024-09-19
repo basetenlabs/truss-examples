@@ -1,6 +1,7 @@
+from typing import NamedTuple, Optional
+
 import pydantic
 from torch import Tensor
-from typing import NamedTuple, Optional
 
 SUPPORTED_SAMPLE_RATE = 16_000
 DEFAULT_MAX_NEW_TOKENS = 128

@@ -4,10 +4,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from whisper_trt import WhisperModel
 
-from whisper_trt.types import BatchWhisperItem
-
-from async_batcher.batcher import AsyncBatcher
 import torch
+from async_batcher.batcher import AsyncBatcher
+from whisper_trt.types import BatchWhisperItem
 
 
 class WhisperBatchProcessor(AsyncBatcher[list[BatchWhisperItem], list[str]]):

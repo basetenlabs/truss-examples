@@ -1,13 +1,12 @@
 import os
-import sys
+import shutil
 import subprocess
-from typing import NamedTuple, Optional
-
+import sys
 import urllib.request
 from pathlib import Path
+from typing import NamedTuple, Optional
 
 from ..assets import ASSETS_DIR, CACHE_DIR, get_engine_path
-import shutil
 
 
 class BuildArguments(NamedTuple):

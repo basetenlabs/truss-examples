@@ -15,9 +15,9 @@
 # Modified from https://github.com/openai/whisper/blob/main/whisper/tokenizer.py
 import base64
 import os
-import tiktoken
 from typing import Optional
 
+import tiktoken
 
 START = "<|startoftranscript|>"
 START_PREV = "<|startofprev|>"

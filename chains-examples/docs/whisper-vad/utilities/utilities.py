@@ -1,5 +1,5 @@
-import time
 import asyncio
+import time
 from contextlib import contextmanager
 from typing import Iterable, TypeVar
 

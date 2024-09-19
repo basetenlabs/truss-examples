@@ -1,11 +1,11 @@
 import re
-from pathlib import Path
-
 import urllib.request
+from pathlib import Path
 from typing import Iterable
+
+import tensorrt_llm
 import torch
 from huggingface_hub import snapshot_download
-import tensorrt_llm
 
 CACHE_DIR = Path.home() / ".cache" / "whisper-trt"
 ASSETS_DIR = CACHE_DIR / "assets"

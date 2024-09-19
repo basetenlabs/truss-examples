@@ -1,38 +1,38 @@
 import io
-import numpy as np
+import logging
 import re
+import zlib
+from pathlib import Path
+from typing import Optional, Union
+
+import numpy as np
 import tensorrt_llm
 import torch
 import torchaudio
-from pathlib import Path
 from torch import Tensor
-from typing import Optional, Union
-
 from whisper_trt.assets import download_assets, download_engine
 from whisper_trt.batching import WhisperBatchProcessor
 from whisper_trt.modeling import WhisperDecoding, WhisperEncoding
 from whisper_trt.tokenizer import (
     END_OF_TEXT,
-    NO_SPEECH,
     LANG_TO_CODE,
-    START,
-    START_PREV,
     LANGUAGES,
+    NO_SPEECH,
+    NO_TIMESTAMPS,
+    START,
+    START_OF_LM,
+    START_PREV,
     TRANSCRIBE,
     TRANSLATE,
-    START_OF_LM,
-    NO_TIMESTAMPS,
     get_tokenizer,
 )
 from whisper_trt.types import (
-    BatchWhisperItem,
     SUPPORTED_SAMPLE_RATE,
+    BatchWhisperItem,
     Segment,
     WhisperResult,
 )
 from whisper_trt.utils import log_mel_spectrogram, pad_or_trim
-import logging
-import zlib
 
 SEGMENTS_PATTERN = re.compile(r"<\|([\d.]+)\|>([^<]+)(?:<\|([\d.]+)\|>)?")
 LANG_CODE_PATTERN = re.compile(r"<\|([a-z]{2,3})\|>")

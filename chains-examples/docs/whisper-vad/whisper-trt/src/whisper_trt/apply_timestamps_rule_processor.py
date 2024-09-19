@@ -1,7 +1,7 @@
 from typing import Optional
+
 import torch
 import torch.nn.functional as F
-
 
 EOT_PROB_THRESHOLD = 0.95
 END_OF_CHUNK_MARGIN_SECS = 1.0
