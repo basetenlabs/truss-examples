@@ -49,5 +49,3 @@ The model returns a dictionary which contains the start and end timestamps along
   "language_code": "en"
 }
 ```
-
-
