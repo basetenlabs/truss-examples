@@ -1,4 +1,4 @@
-# Llama 3.1 8B Instruct using TensorRT-LLM with High Throughput
+# Llama 3.1 8B Instruct using TensorRT-LLM with Low TTFT
 
 This directory is a base model [Truss](https://truss.baseten.co/) example of the model Llama 3.1 8b using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview), catered towards low TTFT (Time to First Token).
 
@@ -8,7 +8,8 @@ This includes products that prioritize low latency to the first token generated.
 * Code editor auto-complete
 * Translation services
 
-This particular example uses prefix caching, small `max_batch_size` of `8`, and `fp8_kv` quantization to reduce our TTFT. Below is a view of the important configuration values:
+This particular example uses prefix caching, small `max_batch_size` of `8`, and `fp8_kv` quantization to reduce our TTFT. 
+Below is a view of the important configuration values:
 
 
 | Property             | Value  |

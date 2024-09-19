@@ -1,4 +1,4 @@
-# Llama 3.1 8B Instruct using TensorRT-LLM with High Throughput
+# Llama 3.1 8B Instruct using TensorRT-LLM to handle Large Context
 
 This directory is a base model [Truss](https://truss.baseten.co/) example of the model Llama 3.1 8b using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview), catered towards large context use cases.
 
@@ -7,7 +7,7 @@ This includes products that prioritize large data processing and accuracy over l
 * Codebase analysis
 * Multi-turn conversation
 
-This particular example uses a very large `max_input_len` and `max_output_len`, smaller batch size of `16`, along with standard `no_quant` quantization to retain model accuracy. Below is a view of the important configuration values:
+This particular example uses a large `max_input_len` and `max_output_len`, smaller batch size of `16`, along with standard `no_quant` quantization to retain model accuracy. Below is a view of the important configuration values:
 
 | Property             | Value  |
 |----------------------|--------|

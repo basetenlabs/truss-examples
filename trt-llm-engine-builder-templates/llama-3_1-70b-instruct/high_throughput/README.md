@@ -20,7 +20,15 @@ This particular example uses a `max_batch_size` of `16` wrt this large model, an
 
 
 ### Metrics
-TODO
+A small benchmarking test was ran on this configuration, conducting 150 requests at 16 concurrent requests at a time, with full input load (~4000 input tokens). Important details are below:
+
+| Metric                             | Value      |
+|------------------------------------|------------|
+| Total Requests                     | 150        |
+| Average Latency                    | 2.6890     |
+| Average TTFT                       | 2.6097     |
+| Average Perceived Tokens per Second| 281.4879   |
+| Average Overall Throughput         | 4503.8064  |
 
 ## Deployment
 

@@ -23,6 +23,9 @@ trt_llm:
     max_beam_width: 1
     max_input_len: 4096
     max_output_len: 1024
-    num_builder_gpus: 4
+    num_builder_gpus: 4 # Need 4 builder GPUs fpr fp8
     quantization_type: fp8_kv
     tensor_parallel_count: 2
+  plugin_configuration: 
+    use_paged_context_fmha: True
+    use_fp8_context_fmha: True
