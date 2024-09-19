@@ -1,11 +1,8 @@
+import json
 from collections import OrderedDict
 
-import json
-import torch
-
-
 import tensorrt_llm
-
+import torch
 from tensorrt_llm._utils import str_dtype_to_trt, trt_dtype_to_torch
 from tensorrt_llm.runtime import ModelConfig, SamplingConfig
 from tensorrt_llm.runtime.session import Session, TensorInfo
@@ -208,7 +205,7 @@ class WhisperDecoding:
         return output_ids[:, 0, 1:]
 
     def generate(
-        self, 
+        self,
         decoder_input_ids,
         encoder_outputs,
         eot_id,
@@ -266,7 +263,7 @@ class WhisperDecoding:
         torch.cuda.synchronize()
 
         decoder_input_ids = decoder_input_ids.type(torch.int32).cuda()
-        
+
         apply_timestamp_rules_logits_processor = None
         if use_timstamps_processor:
             apply_timestamp_rules_logits_processor = ApplyTimestampsRule(
@@ -280,7 +277,7 @@ class WhisperDecoding:
                 # padded before being sent to this function.
                 input_prompt_ids_offset=decoder_max_input_length,
             )
-        
+
         result_dict = self.decoder_generation_session.decode(
             decoder_input_ids,
             decoder_input_lengths,
@@ -306,7 +303,7 @@ class WhisperDecoding:
                 torch.sum(log_prob, dim=-1), dim=0, descending=True
             )
             output_id = output_id[sorted_indices]
-            
+
             if no_speech_id is not None and output_id[0][-1] == no_speech_id:
                 no_speech_probability = torch.softmax(
                     log_prob[sorted_indices][0], dim=-1

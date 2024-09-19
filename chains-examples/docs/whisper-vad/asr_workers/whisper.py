@@ -90,7 +90,6 @@ class WhisperModel(chains.ChainletBase):
         self, whisper_input: data_types.WhisperInput
     ) -> data_types.WhisperResult:
         # TODO: consider splitting out types from whisper-trt into their own package to eliminate all this ser/deser.
-        print("Here")
         binary_data = base64.b64decode(whisper_input.audio_b64.encode("utf-8"))
         waveform = self._model.preprocess_audio(binary_data)
         return data_types.WhisperResult(
