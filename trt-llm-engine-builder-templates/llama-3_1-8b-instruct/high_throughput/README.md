@@ -20,7 +20,7 @@ This particular example uses a large `max_batch_size` of `32` and `fp8_kv` quant
 
 
 ### Metrics
-A small benchmarking test was ran on this configuration, conducting 150 requests at 32 concurrent requests at a time, with full load (~4000 input tokens). Important details are below:
+A small benchmarking test was ran on this configuration, conducting 150 requests at 32 concurrent requests at a time, with full input load (~4000 input tokens). Important details are below:
 
 | Metric                             | Value      |
 |------------------------------------|------------|

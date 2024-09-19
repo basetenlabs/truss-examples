@@ -19,7 +19,7 @@ This particular example uses a very large `max_input_len` and `max_output_len`, 
 
 
 ### Metrics
-A small benchmarking test was ran on this configuration, conducting 150 requests at 16 concurrent requests at a time, with full load (~8000 input tokens). Details are below:
+A small benchmarking test was ran on this configuration, conducting 150 requests at 16 concurrent requests at a time, with full input load (~8000 input tokens). Details are below:
 
 | Metric                             | Value      |
 |------------------------------------|------------|

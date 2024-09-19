@@ -23,7 +23,7 @@ This particular example uses prefix caching, small `max_batch_size` of `8`, and 
 
 ### Metrics
 
-A small benchmarking test was ran on this configuration, conducting 150 requests at 8 concurrent requests at a time, with full load (~4000 input tokens). Important details are below:
+A small benchmarking test was ran on this configuration, conducting 150 requests at 8 concurrent requests at a time, with full input load (~4000 input tokens). Important details are below:
 
 | Metric                             | Value      |
 |------------------------------------|------------|
