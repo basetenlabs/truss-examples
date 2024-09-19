@@ -1,0 +1,48 @@
+[project]
+name = "whisper-trt"
+version = "0.1.0"
+description = "Implementation of Whisper API on top of TRT-LLM"
+dependencies = [
+    'tensorrt_llm==0.12.0.dev2024071600; sys_platform == "linux"',
+    'tensorrt_cu12_bindings==10.1.0; sys_platform == "linux"',
+    'tensorrt_cu12_libs==10.1.0; sys_platform == "linux"',
+    'tensorrt-cu12==10.1.0; sys_platform == "linux"',
+    "hf_transfer",
+    "janus",
+    "kaldialign",
+    "librosa",
+    "mpi4py",
+    "safetensors",
+    "soundfile",
+    "tiktoken",
+    "torchaudio",
+    "async-batcher>=0.2.0",
+    "pydantic>=2.7.1",
+]
+readme = "README.md"
+requires-python = "~=3.10"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[[tool.rye.sources]]
+name = "nvidia"
+url = "https://pypi.nvidia.com"
+find_links = true
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/whisper_trt"]
+
+[tool.setuptools.package-data]
+"pkgname" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
