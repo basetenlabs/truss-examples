@@ -177,8 +177,8 @@ class WhisperModel:
         self._eot_id = get_token_id(END_OF_TEXT)
         # self._pad_id = self._eot_id
         WHISPER_PAD_TOKEN_ID = 50256
-        self._pad_id =  WHISPER_PAD_TOKEN_ID  # self._eot_id
-        self._pad_token = WHISPER_PAD_TOKEN_ID # self._eot_id # TODO: confirm Justin why his pad token is different
+        self._pad_id = WHISPER_PAD_TOKEN_ID  # self._eot_id
+        self._pad_token = WHISPER_PAD_TOKEN_ID  # self._eot_id # TODO: confirm Justin why his pad token is different
         # self._sot_id = get_token_id(START)
 
         # self._no_speech_id = get_token_id(NO_SPEECH)
