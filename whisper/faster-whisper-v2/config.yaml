@@ -10,6 +10,8 @@ model_metadata:
   pretty_name: Whisper
   tags:
   - speech-recognition
+model_cache:
+  - repo_id: Systran/faster-whisper-large-v2
 model_name: Faster Whisper v2
 python_version: py310
 requirements:

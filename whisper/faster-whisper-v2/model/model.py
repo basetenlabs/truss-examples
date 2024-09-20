@@ -1,12 +1,12 @@
+import base64
+import logging
 import os
-
-from faster_whisper import WhisperModel, BatchedInferencePipeline
-import httpx
 import tempfile
 import time
 from typing import Dict
-import base64
-import logging
+
+import httpx
+from faster_whisper import BatchedInferencePipeline, WhisperModel
 
 DEFAULT_BATCH_SIZE = 8
 DEFAULT_WORD_LEVEL_TIMESTAMPS = False
@@ -29,7 +29,9 @@ class Model:
 
     def base64_to_wav(self, base64_string):
         binary_data = base64.b64decode(base64_string)
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as output_file_path:
+        with tempfile.NamedTemporaryFile(
+            suffix=".wav", delete=False
+        ) as output_file_path:
             output_file_path.write(binary_data)
             output_file_path.flush()
         return output_file_path.name
@@ -39,19 +41,25 @@ class Model:
             response = client.get(url, timeout=500)
             if response.status_code == 200:
                 # Save the file to a local file
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as output_file_path:
+                with tempfile.NamedTemporaryFile(
+                    suffix=".wav", delete=False
+                ) as output_file_path:
                     output_file_path.write(response.content)
                     output_file_path.flush()
                 logging.info("File downloaded successfully.")
                 return output_file_path.name
             else:
-                logging.info(f"Failed to download file. Status code: {response.status_code}")
+                logging.info(
+                    f"Failed to download file. Status code: {response.status_code}"
+                )
                 return None
 
     def preprocess(self, request: Dict) -> Dict:
         audio_base64 = request.get("audio")
         url = request.get("url")
-        word_level_timestamps = request.get("word_timestamps", DEFAULT_WORD_LEVEL_TIMESTAMPS)
+        word_level_timestamps = request.get(
+            "word_timestamps", DEFAULT_WORD_LEVEL_TIMESTAMPS
+        )
         prompt = request.get("prompt", DEFAULT_PROMPT)
         temperature = request.get("temperature", DEFAULT_TEMPERATURE)
         batch_size = request.get("batch_size", DEFAULT_BATCH_SIZE)
@@ -72,21 +80,23 @@ class Model:
 
         if audio_base64:
             file_name = self.base64_to_wav(audio_base64)
-            response['audio'] = file_name
+            response["audio"] = file_name
 
         elif url:
             start = time.time()
             file_name = self.download_file(url)
-            logging.info(f"url download time: {time.time() - start}",)
-            response['audio'] = file_name
+            logging.info(
+                f"url download time: {time.time() - start}",
+            )
+            response["audio"] = file_name
 
-        response['word_timestamps'] = word_level_timestamps
-        response['initial_prompt'] = prompt
-        response['temperature'] = temperature
-        response['batch_size'] = batch_size
-        response['beam_size'] = beam_size
-        response['best_of'] = best_of
-        response['language'] = language
+        response["word_timestamps"] = word_level_timestamps
+        response["initial_prompt"] = prompt
+        response["temperature"] = temperature
+        response["batch_size"] = batch_size
+        response["beam_size"] = beam_size
+        response["best_of"] = best_of
+        response["language"] = language
 
         return response
 
@@ -103,21 +113,17 @@ class Model:
                 segment_information = {
                     "text": segment.text,
                     "start": segment.start,
-                    "end": segment.end
+                    "end": segment.end,
                 }
 
                 words = []
                 if segment.words:
                     for word in segment.words:
                         words.append(
-                            {
-                                "start": word.start,
-                                "end": word.end,
-                                "word": word.word
-                            }
+                            {"start": word.start, "end": word.end, "word": word.word}
                         )
 
-                    segment_information['words'] = words
+                    segment_information["words"] = words
 
                 all_segments.append(segment_information)
                 full_transcript += segment.text
@@ -126,12 +132,14 @@ class Model:
             end = time.time()
             transcription_time = end - start
 
+            # Delete temp file
+            os.remove(audio)
+
             return {
-                        "segments": all_segments,
-                        "language": language,
-                        "transcript": full_transcript,
-                        "transcription_time": transcription_time
-                    }
+                "segments": all_segments,
+                "language": language,
+                "transcript": full_transcript,
+                "transcription_time": transcription_time,
+            }
 
         return model_input
-
