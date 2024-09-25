@@ -36,33 +36,6 @@ class Model:
             print(result.stdout)
         except subprocess.CalledProcessError as e:
             print(f"Command failed with code {e.returncode}: {e.stderr}")
-        url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/0052a70beed5bf71b92610a43a52df6d286cd5f3/diffusers/rabbit.jpg"
-        image = Image.open(requests.get(url, stream=True).raw)
-
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image"},
-                    {
-                        "type": "text",
-                        "text": "Can you please describe this image in just one sentence?",
-                    },
-                ],
-            }
-        ]
-
-        input_text = self.processor.apply_chat_template(
-            messages,
-            add_generation_prompt=True,
-        )
-        inputs = self.processor(image, input_text, return_tensors="pt").to(
-            self.model.device
-        )
-
-        output = self.model.generate(**inputs, max_new_tokens=70)
-
-        print(self.processor.decode(output[0][inputs["input_ids"].shape[-1] :]))
 
     def _process_image(self, image_input):
         if isinstance(image_input, str):
