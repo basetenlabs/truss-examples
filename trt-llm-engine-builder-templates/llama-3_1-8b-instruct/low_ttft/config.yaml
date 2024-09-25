@@ -7,7 +7,7 @@ python_version: py311
 requirements: []
 resources:
   accelerator: H100
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets:
@@ -26,6 +26,6 @@ trt_llm:
     num_builder_gpus: 1
     quantization_type: fp8_kv
     tensor_parallel_count: 1
-  plugin_configuration: 
+  plugin_configuration:
     use_paged_context_fmha: True
     use_fp8_context_fmha: True

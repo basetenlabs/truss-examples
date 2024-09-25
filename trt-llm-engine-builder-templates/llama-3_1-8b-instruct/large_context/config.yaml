@@ -7,7 +7,7 @@ python_version: py311
 requirements: []
 resources:
   accelerator: H100
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets:
@@ -26,4 +26,3 @@ trt_llm:
     quantization_type: no_quant
     tensor_parallel_count: 1
     num_builder_gpus: 1
-  

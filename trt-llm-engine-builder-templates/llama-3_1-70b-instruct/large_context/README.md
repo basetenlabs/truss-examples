@@ -13,13 +13,13 @@ This deployment is tailored for applications that require processing extensive a
 
 The template uses the following key configuration parameters:
 
-| Property             | Value  | Description |
-|----------------------|--------|-------------|
-| GPU                  | 2xH100 | Two NVIDIA H100 GPUs |
-| `max_batch_size`     |   8    | Allows processing up to 8 requests simultaneously |
-| `quantization_type`  | `fp16` | FP16 quantization to retain model accuracy |
-| `max_input_len`      |  8192  | Maximum number of input tokens |
-| `max_output_len`     |  4096  | Maximum number of output tokens |
+| Property            | Value  | Description                                       |
+| ------------------- | ------ | ------------------------------------------------- |
+| GPU                 | 2xH100 | Two NVIDIA H100 GPUs                              |
+| `max_batch_size`    | 8      | Allows processing up to 8 requests simultaneously |
+| `quantization_type` | `fp16` | FP16 quantization to retain model accuracy        |
+| `max_input_len`     | 8192   | Maximum number of input tokens                    |
+| `max_output_len`    | 4096   | Maximum number of output tokens                   |
 
 ## Performance Metrics
 
@@ -30,12 +30,12 @@ A preliminary benchmark was conducted with the following parameters:
 
 Results:
 
-| Metric                             | Value      |
-|------------------------------------|------------|
-| Average Latency                    | 3.6395 s   |
-| Average Time to First Token (TTFT) | 2.6284 s   |
-| Average Perceived Tokens per Second| 404.0099   |
-| Average Overall Throughput         | 3232.0791 tokens/s |
+| Metric                              | Value              |
+| ----------------------------------- | ------------------ |
+| Average Latency                     | 3.6395 s           |
+| Average Time to First Token (TTFT)  | 2.6284 s           |
+| Average Perceived Tokens per Second | 404.0099           |
+| Average Overall Throughput          | 3232.0791 tokens/s |
 
 ## Deployment
 

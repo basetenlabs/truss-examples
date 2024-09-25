@@ -14,14 +14,14 @@ This deployment is tailored for applications that require rapid response times, 
 
 The template uses the following key configuration parameters:
 
-| Property             | Value  | Description |
-|----------------------|--------|-------------|
-| GPU                  | 2xH100 | Two NVIDIA H100 GPUs |
-| `max_batch_size`     |   4    | Allows processing up to 4 requests simultaneously |
-| `quantization_type`  |`fp8_kv`| FP8 quantization for key and value tensors, balancing performance and accuracy |
-| `max_input_len`      |  4096  | Maximum number of input tokens |
-| `max_output_len`     |  1024  | Maximum number of output tokens |
-| `prefix_caching`     | `true` | Enables caching of prefix computations for faster responses |
+| Property            | Value    | Description                                                                    |
+| ------------------- | -------- | ------------------------------------------------------------------------------ |
+| GPU                 | 2xH100   | Two NVIDIA H100 GPUs                                                           |
+| `max_batch_size`    | 4        | Allows processing up to 4 requests simultaneously                              |
+| `quantization_type` | `fp8_kv` | FP8 quantization for key and value tensors, balancing performance and accuracy |
+| `max_input_len`     | 4096     | Maximum number of input tokens                                                 |
+| `max_output_len`    | 1024     | Maximum number of output tokens                                                |
+| `prefix_caching`    | `true`   | Enables caching of prefix computations for faster responses                    |
 
 ## Performance Metrics
 
@@ -32,12 +32,12 @@ A preliminary benchmark was conducted with the following parameters:
 
 Results:
 
-| Metric                             | Value      |
-|------------------------------------|------------|
-| Average Latency                    | 1.3686 s   |
-| Average Time to First Token (TTFT) | 0.7580 s   |
-| Average Perceived Tokens per Second| 530.0073   |
-| Average Overall Throughput         | 2120.0290 tokens/s |
+| Metric                              | Value              |
+| ----------------------------------- | ------------------ |
+| Average Latency                     | 1.3686 s           |
+| Average Time to First Token (TTFT)  | 0.7580 s           |
+| Average Perceived Tokens per Second | 530.0073           |
+| Average Overall Throughput          | 2120.0290 tokens/s |
 
 ## Deployment
 

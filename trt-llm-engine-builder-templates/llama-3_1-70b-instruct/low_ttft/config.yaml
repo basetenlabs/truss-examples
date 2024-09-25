@@ -26,6 +26,6 @@ trt_llm:
     num_builder_gpus: 4 # Need 4 builder GPUs fpr fp8
     quantization_type: fp8_kv
     tensor_parallel_count: 2
-  plugin_configuration: 
+  plugin_configuration:
     use_paged_context_fmha: True
     use_fp8_context_fmha: True

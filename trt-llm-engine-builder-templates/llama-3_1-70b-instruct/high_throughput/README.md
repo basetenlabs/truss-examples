@@ -13,13 +13,13 @@ This deployment is tailored for applications that require processing large volum
 
 The template uses the following key configuration parameters:
 
-| Property             | Value  | Description |
-|----------------------|--------|-------------|
-| GPU                  | 2xH100 | Two NVIDIA H100 GPUs |
-| `max_batch_size`     |   16   | Allows processing up to 16 requests simultaneously |
-| `quantization_type`  |`fp8_kv`| FP8 quantization for key and value tensors, balancing performance and accuracy |
-| `max_input_len`      |  4096  | Maximum number of input tokens |
-| `max_output_len`     |  1024  | Maximum number of output tokens |
+| Property            | Value    | Description                                                                    |
+| ------------------- | -------- | ------------------------------------------------------------------------------ |
+| GPU                 | 2xH100   | Two NVIDIA H100 GPUs                                                           |
+| `max_batch_size`    | 16       | Allows processing up to 16 requests simultaneously                             |
+| `quantization_type` | `fp8_kv` | FP8 quantization for key and value tensors, balancing performance and accuracy |
+| `max_input_len`     | 4096     | Maximum number of input tokens                                                 |
+| `max_output_len`    | 1024     | Maximum number of output tokens                                                |
 
 ## Performance Metrics
 
@@ -30,12 +30,12 @@ A preliminary benchmark was conducted with the following parameters:
 
 Results:
 
-| Metric                             | Value      |
-|------------------------------------|------------|
-| Average Latency                    | 2.6890 s   |
-| Average Time to First Token (TTFT) | 2.6097 s   |
-| Average Perceived Tokens per Second| 281.4879   |
-| Average Overall Throughput         | 4503.8064 tokens/s |
+| Metric                              | Value              |
+| ----------------------------------- | ------------------ |
+| Average Latency                     | 2.6890 s           |
+| Average Time to First Token (TTFT)  | 2.6097 s           |
+| Average Perceived Tokens per Second | 281.4879           |
+| Average Overall Throughput          | 4503.8064 tokens/s |
 
 ## Deployment
 

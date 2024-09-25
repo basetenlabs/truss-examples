@@ -7,7 +7,7 @@ python_version: py311
 requirements: []
 resources:
   accelerator: H100
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets:
