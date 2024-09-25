@@ -1,6 +1,6 @@
 # Llama 3.1 8B Instruct using TensorRT-LLM for Large Context
 
-This directory is a [Truss](https://truss.baseten.co/) template for deploying the Llama 3.1 8b Instruct model using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for large context scenarios.
+This directory is a [Truss](https://truss.baseten.co/) template for deploying the Llama 3.1 8B Instruct model using our TensorRT-LLM (TRT-LLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for large context scenarios.
 
 ## Use case
 
@@ -13,13 +13,13 @@ This deployment is tailored for applications that require processing extensive i
 
 The template uses the following key configuration parameters:
 
-| Property            | Value  | Description                                        |
-| ------------------- | ------ | -------------------------------------------------- |
-| GPU                 | 1xH100 | Single NVIDIA H100 GPU                             |
-| `max_batch_size`    | 16     | Allows processing up to 16 requests simultaneously |
-| `quantization_type` | `fp16` | FP16 quantization to retain model accuracy         |
-| `max_input_len`     | 8192   | Maximum number of input tokens                     |
-| `max_output_len`    | 4096   | Maximum number of output tokens                    |
+| Property            | Value  | Description                                               |
+| ------------------- | ------ | --------------------------------------------------------- |
+| GPU                 | 1xH100 | Single NVIDIA H100 GPU                                    |
+| `max_batch_size`    | 16     | Allows processing up to 16 requests simultaneously        |
+| `quantization_type` | `fp16` | Maintain FP16 to retain model accuracy                    |
+| `max_input_len`     | 8192   | Maximum number of input tokens that the model will accept |
+| `max_output_len`    | 4096   | Maximum number of output tokens the model can generate    |
 
 ## Performance Metrics
 A preliminary benchmark was conducted with the following parameters:

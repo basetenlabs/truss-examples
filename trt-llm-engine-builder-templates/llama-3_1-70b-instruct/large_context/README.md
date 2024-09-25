@@ -1,6 +1,6 @@
 # Llama 3.1 70B Instruct using TensorRT-LLM for Large Context
 
-This directory is [Truss](https://truss.baseten.co/) template for deploying model Llama 3.1 70b Instruct using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for large context scenarios.
+This directory is [Truss](https://truss.baseten.co/) template for deploying model Llama 3.1 70B Instruct using our TensorRT-LLM (TRT-LLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for large context scenarios.
 
 ## Use case
 
@@ -13,13 +13,13 @@ This deployment is tailored for applications that require processing extensive a
 
 The template uses the following key configuration parameters:
 
-| Property            | Value  | Description                                       |
-| ------------------- | ------ | ------------------------------------------------- |
-| GPU                 | 2xH100 | Two NVIDIA H100 GPUs                              |
-| `max_batch_size`    | 8      | Allows processing up to 8 requests simultaneously |
-| `quantization_type` | `fp16` | FP16 quantization to retain model accuracy        |
-| `max_input_len`     | 8192   | Maximum number of input tokens                    |
-| `max_output_len`    | 4096   | Maximum number of output tokens                   |
+| Property            | Value  | Description                                               |
+| ------------------- | ------ | --------------------------------------------------------- |
+| GPU                 | 2xH100 | Two NVIDIA H100 GPUs                                      |
+| `max_batch_size`    | 8      | Allows processing up to 8 requests simultaneously         |
+| `quantization_type` | `fp16` | Maintain FP16 to retain model accuracy                    |
+| `max_input_len`     | 8192   | Maximum number of input tokens that the model will accept |
+| `max_output_len`    | 4096   | Maximum number of output tokens the model can generate    |
 
 ## Performance Metrics
 

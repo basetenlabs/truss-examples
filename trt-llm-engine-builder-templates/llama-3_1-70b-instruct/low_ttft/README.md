@@ -1,6 +1,6 @@
 # Llama 3.1 70B Instruct using TensorRT-LLM with Low TTFT
 
-This directory is [Truss](https://truss.baseten.co/) template for deploying model Llama 3.1 70b Instruct using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for low Time to First Token (TTFT) scenarios.
+This directory is [Truss](https://truss.baseten.co/) template for deploying model Llama 3.1 70B Instruct using our TensorRT-LLM (TRT-LLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for low Time to First Token (TTFT) scenarios.
 
 ## Use case
 
@@ -14,14 +14,14 @@ This deployment is tailored for applications that require rapid response times, 
 
 The template uses the following key configuration parameters:
 
-| Property            | Value    | Description                                                                    |
-| ------------------- | -------- | ------------------------------------------------------------------------------ |
-| GPU                 | 2xH100   | Two NVIDIA H100 GPUs                                                           |
-| `max_batch_size`    | 4        | Allows processing up to 4 requests simultaneously                              |
-| `quantization_type` | `fp8_kv` | FP8 quantization for key and value tensors, balancing performance and accuracy |
-| `max_input_len`     | 4096     | Maximum number of input tokens                                                 |
-| `max_output_len`    | 1024     | Maximum number of output tokens                                                |
-| `prefix_caching`    | `true`   | Enables caching of prefix computations for faster responses                    |
+| Property         | Value  | Description                                                                                        |
+| ---------------- | ------ | ---------------------------------------------------------------------------------------------------|
+| GPU              | 2xH100 | Two NVIDIA H100 GPUs                                                                               |
+| `max_batch_size` | 4      | Allows processing up to 4 requests simultaneously                                                  |
+| `quantization_type` | `fp8_kv` | FP8 quantization, balancing performance and accuracy. See this [blog](https://www.baseten.co/blog/33-faster-llm-inference-with-fp8-quantization/). |
+| `max_input_len`  | 4096   | Maximum number of input tokens that the model will accept                                          |
+| `max_output_len` | 1024   | Maximum number of output tokens the model can generate                                             |
+| `prefix_caching` | `true` | Reuse KV Cache across requests, improving performance when requests share the same prompt prefixes |
 
 ## Performance Metrics
 
