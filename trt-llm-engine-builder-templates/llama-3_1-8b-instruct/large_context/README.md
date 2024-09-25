@@ -1,36 +1,40 @@
-# Llama 3.1 8B Instruct using TensorRT-LLM to handle Large Context
+# Llama 3.1 8B Instruct using TensorRT-LLM for Large Context
 
-This directory is a base model [Truss](https://truss.baseten.co/) example of the model Llama 3.1 8b using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview), catered towards large context use cases.
+This directory is a [Truss](https://truss.baseten.co/) template for deploying the Llama 3.1 8b Instruct model using our TensorRT-LLM (TRTLLM) [engine builder](https://docs.baseten.co/performance/engine-builder-overview). This configuration is optimized for large context scenarios.
 
-This includes products that prioritize large data processing and accuracy over latency.
+## Use case
+
+This deployment is tailored for applications that require processing extensive input with high accuracy, such as:
 * Textbook summarization
 * Codebase analysis
 * Multi-turn conversation
 
-This particular example uses a large `max_input_len` and `max_output_len`, smaller batch size of `16`, along with standard `no_quant` quantization to retain model accuracy. Below is a view of the important configuration values:
+## Configuration
 
-| Property             | Value  |
-|----------------------|--------|
-| GPU                  | 1xH100 |
-| `max_batch_size`     |   16   |
-| `quantization_type`  | `fp16` |
-| `max_input_len`      |  8192  |
-| `max_output_len`     |  4096  |
+The template uses the following key configuration parameters:
 
+| Property             | Value  | Description |
+|----------------------|--------|-------------|
+| GPU                  | 1xH100 | Single NVIDIA H100 GPU |
+| `max_batch_size`     |   16   | Allows processing up to 16 requests simultaneously |
+| `quantization_type`  | `fp16` | FP16 quantization to retain model accuracy |
+| `max_input_len`      |  8192  | Maximum number of input tokens |
+| `max_output_len`     |  4096  | Maximum number of output tokens |
 
-### Metrics
-A small benchmarking test was ran on this configuration, conducting 150 requests at 16 concurrent requests at a time, with full input load (~8000 input tokens). Details are below:
+## Performance Metrics
+A preliminary benchmark was conducted with the following parameters:
+- 150 total requests
+- 16 concurrent requests
+- ~8000 input tokens per request
+
+Results:
 
 | Metric                             | Value      |
 |------------------------------------|------------|
-| Total Requests                     | 150        |
-| Average Latency                    | 1.8100     |
-| Average TTFT                       | 1.1407     |
-| Total Prompt Tokens                | 204450     |
-| Total Completion Tokens            | 15150      |
-| Total Tokens                       | 219600     |
+| Average Latency                    | 1.8100 s   |
+| Average Time to First Token (TTFT) | 1.1407 s   |
 | Average Perceived Tokens per Second| 812.0655   |
-| Average Overall Throughput         | 12993.0482 |
+| Average Overall Throughput         | 12993.0482 tokens/s |
 
 ## Deployment
 
@@ -54,6 +58,6 @@ truss push --trusted --publish
 
 Paste your Baseten API key if prompted. Also ensure the `hf_access_token` secret is properly setup in your Baseten Account to access this model.
 
-_**Note**: TensorRT-LLM with engine builder will only work under a Baseten production deployment_
+**Note**: TensorRT-LLM with engine builder will only work under a Baseten production deployment
 
-For more information, see [Truss documentation](https://docs.baseten.co/performance/engine-builder-overview).
+For more information, refer to the [Truss documentation](https://docs.baseten.co/performance/engine-builder-overview).
