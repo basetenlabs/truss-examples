@@ -1,0 +1,21 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  tags:
+  - text-generation
+model_name: llama 3.2 11B vision
+python_version: py311
+requirements:
+- accelerate
+- protobuf
+- sentencepiece
+- torch
+- pillow
+- transformers==4.45.0
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
