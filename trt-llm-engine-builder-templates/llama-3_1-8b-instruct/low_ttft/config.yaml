@@ -17,7 +17,7 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Meta-Llama-3.1-8B-Instruct
+      repo: meta-llama/Llama-3.1-8B-Instruct
       source: HF
     max_batch_size: 8
     max_beam_width: 1

@@ -2,7 +2,7 @@ model_name: "Llama 3.1 8B Instruct VLLM openai compatible"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
   openai_compatible: true
   vllm_config:
     tensor_parallel_size: 1

@@ -19,7 +19,7 @@ model_name: "Llama 3.1 8B Instruct VLLM"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
   openai_compatible: true
   vllm_config: null
 requirements:
@@ -42,7 +42,7 @@ model_name: "Llama 3.1 8B Instruct VLLM"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  repo_id: meta-llama/Meta-Llama-3.1-8B-Instruct
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
   openai_compatible: false
   vllm_config:
     tensor_parallel_size: 4
@@ -189,7 +189,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="meta-llama/Meta-Llama-3.1-8B-Instruct",
+  model="meta-llama/Llama-3.1-8B-Instruct",
   messages=[
     {"role": "user", "content": "Who won the world series in 2020?"},
     {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
