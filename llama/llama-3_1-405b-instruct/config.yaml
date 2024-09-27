@@ -2,7 +2,7 @@ model_name: "Llama 3.1 405B Instruct VLLM"
 python_version: py311
 model_metadata:
   example_model_input: {"prompt": "what is the meaning of life"}
-  repo_id: meta-llama/Meta-Llama-3.1-405B-Instruct-FP8
+  repo_id: meta-llama/Llama-3.1-405B-Instruct-FP8
   tensor_parallel: 8
 requirements:
   - vllm==0.5.3post1
