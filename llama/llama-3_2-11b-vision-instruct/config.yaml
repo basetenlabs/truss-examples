@@ -28,9 +28,8 @@ model_metadata:
   vllm_config:
     tensor_parallel_size: 1
     enforce_eager: true
-    max_model_len: 4096
     max_num_seqs: 16
-    limit_mm_per_prompt: {image: 5}
+    limit_mm_per_prompt: {image: 1}
   tags:
     - text-generation
     - multimodal
