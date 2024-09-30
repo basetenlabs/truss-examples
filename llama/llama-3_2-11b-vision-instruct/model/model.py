@@ -52,7 +52,8 @@ class Model:
                     continue
                 elif isinstance(value, dict):
                     nested_config = ",".join(
-                        f"{sub_key.replace('_', '-') }={sub_value}" for sub_key, sub_value in value.items()
+                        f"{sub_key.replace('_', '-') }={sub_value}"
+                        for sub_key, sub_value in value.items()
                     )
                     command.append(f"--{key.replace('_', '-')}")
                     command.append(nested_config)
@@ -64,7 +65,7 @@ class Model:
                 f"Starting openai compatible vLLM server with command: {command}"
             )
 
-            try: 
+            try:
                 self._vllm_process = subprocess.Popen(
                     command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
                 )
@@ -75,7 +76,6 @@ class Model:
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
 
-            
             if self._vllm_process.poll() is None:
                 logger.info("Command to start vLLM server ran successfully")
             else:
@@ -168,6 +168,7 @@ class Model:
                 model_input["model"] = self._model_repo_id
 
             if stream:
+
                 async def generator():
                     async with self._client.stream(
                         "POST",
