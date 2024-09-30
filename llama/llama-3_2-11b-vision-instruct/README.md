@@ -1,6 +1,6 @@
-# Llama 3.2 11B Vision Instruct VLLM Truss
+# Llama 3.2 11B Vision Instruct vLLM Truss
 
-This is a [Truss](https://truss.baseten.co/) for Llama 3.2 11B Vision Instruct with VLLM. Llama 3.2 11B Vision Instruct is a multimodal (text + vision) LLM. This README will walk you through how to deploy this Truss on Baseten to get your own instance of it.
+This is a [Truss](https://truss.baseten.co/) for Llama 3.2 11B Vision Instruct with vLLM. Llama 3.2 11B Vision Instruct is a multimodal (text + vision) LLM. This README will walk you through how to deploy this Truss on Baseten to get your own instance of it.
 
 
 ## Deployment
@@ -32,7 +32,7 @@ For more information, see [Truss documentation](https://truss.baseten.co).
 
 ### Notes
 
-Limitations from VLLM allow for a maximum of 1 image as input. You will get a memory error otherwise. You can keep track of the issue [here](https://github.com/vllm-project/vllm/issues/8826).
+Limitations from vLLM allow for a maximum of 1 image as input. You will get a memory error otherwise. You can keep track of the issue [here](https://github.com/vllm-project/vllm/issues/8826).
 
 ## Example usage
 
@@ -40,7 +40,7 @@ Limitations from VLLM allow for a maximum of 1 image as input. You will get a me
 truss predict -d '{"messages": [{"role": "user", "content": "Tell me about yourself"}]}'
 ```
 
-You can also invoke your model via a REST API:
+Here's another example of invoking your model via a REST API but for image input:
 
 ```
 curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
