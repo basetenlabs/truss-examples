@@ -75,6 +75,7 @@ class Model:
             # Wait for 10 seconds and check if command fails
             time.sleep(10)
 
+            
             if self._vllm_process.poll() is None:
                 logger.info("Command to start vLLM server ran successfully")
             else:
@@ -84,9 +85,6 @@ class Model:
                     raise RuntimeError(
                         f"Command failed with code {self._vllm_process.returncode}: {stderr}"
                     )
-            stdout, stderr = self._vllm_process.communicate()
-            logger.info(f"VLLM server output: {stdout}")
-            logger.info(f"VLLM server error: {stderr}")
 
             if self._vllm_config and "port" in self._vllm_config:
                 self._vllm_port = self._vllm_config["port"]
@@ -94,8 +92,6 @@ class Model:
                 self._vllm_port = 8000
 
             self.vllm_base_url = f"http://localhost:{self._vllm_port}"
-            
-            print(self.vllm_base_url)
 
             # Polling to check if the server is up
             server_up = False

@@ -1,4 +1,4 @@
-model_name: "Llama 3.2 11B Vision Instruct VLLM openai compatible"
+model_name: "Llama 3.2 11B Vision Instruct VLLM openai compatible A100"
 python_version: py311
 model_metadata:
   example_model_input: {
@@ -27,7 +27,9 @@ model_metadata:
   openai_compatible: true
   vllm_config:
     tensor_parallel_size: 1
-    max_model_len: 16384
+    enforce_eager: true
+    max_model_len: 4096
+    max_num_seqs: 16
     limit_mm_per_prompt: {image: 5}
   tags:
     - text-generation
@@ -36,7 +38,7 @@ requirements:
   - vllm==0.6.2
   - uvloop>=0.18.0
 resources:
-  accelerator: A100:2
+  accelerator: A100
   use_gpu: true
 runtime:
   predict_concurrency: 128
