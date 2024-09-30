@@ -1,0 +1,45 @@
+model_name: "Llama 3.2 11B Vision Instruct VLLM openai compatible"
+python_version: py311
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Describe this image in one sentence."
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: "https://picsum.photos/id/237/200/300"
+            }
+          }
+        ]
+      }
+    ],
+    stream: true,
+    max_tokens: 512,
+    temperature: 0.5
+  }
+  repo_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  openai_compatible: true
+  vllm_config:
+    tensor_parallel_size: 1
+    enforce_eager: true
+    max_num_seqs: 16
+    limit_mm_per_prompt: {image: 1}
+  tags:
+    - text-generation
+    - multimodal
+requirements:
+  - vllm==0.6.2
+  - uvloop>=0.18.0
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
