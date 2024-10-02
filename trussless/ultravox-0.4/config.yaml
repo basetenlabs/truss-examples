@@ -30,7 +30,7 @@ docker_server:
 resources:
   accelerator: A10G
   use_gpu: true
-model_name: Ultravox v0.4 Trussless
+model_name: Ultravox v0.4
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   hf_access_token: null
