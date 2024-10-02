@@ -1,0 +1,36 @@
+base_image:
+  image: vllm/vllm-openai:v0.5.5
+model_metadata:
+  repo_id: fixie-ai/ultravox-v0.4
+  avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/628d700fdb4cd1d1717c7d2f/m9n8O1Jk88UadmN6GoLNR.png
+  example_model_metadata: {
+    "model": "ultravox",
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "For like Michigan,"
+                },
+                {
+                    "type": "audio_url",
+                    "audio_url": {"url": "http://study.aitech.ac.jp/tat/239977.mp3"}
+                }
+            ]
+        }
+    ]
+}
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve fixie-ai/ultravox-v0_4 --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: A10G
+  use_gpu: true
+model_name: Ultravox v0.4
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  hf_access_token: null
