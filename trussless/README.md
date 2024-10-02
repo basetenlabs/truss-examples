@@ -1,4 +1,4 @@
-## Deploying on Baseten Without Truss
+## Deploying on Baseten with `start_command`
 
 If you've deployed on [Baseten](https://baseten.co) before, you're likely familiar with using [Truss](https://docs.baseten.co/quickstart) to do so.
 
