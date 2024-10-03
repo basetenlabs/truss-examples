@@ -3,7 +3,7 @@ base_image:
 model_metadata:
   repo_id: mistralai/Pixtral-12B-2409
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
-  example_model_metadata: {
+  example_model_input: {
     "model": "pixtral",
     "messages": [
       {
@@ -25,7 +25,7 @@ model_metadata:
     "stream": false,
     "max_tokens": 512,
     "temperature": 0.5
-    }
+  }
 docker_server:
   start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Pixtral-12B-2409 --served-model-name pixtral --tokenizer_mode mistral --limit_mm_per_prompt 'image=4'"
   readiness_endpoint: /health
