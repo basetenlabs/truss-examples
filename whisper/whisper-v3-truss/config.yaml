@@ -12,8 +12,9 @@ model_metadata:
 model_name: Whisper V3
 python_version: py310
 requirements:
-- torch==2.0.1
-- openai-whisper==20231106
+- torch
+- openai-whisper
+- ffmpeg-python
 resources:
   accelerator: T4
   cpu: '3'
