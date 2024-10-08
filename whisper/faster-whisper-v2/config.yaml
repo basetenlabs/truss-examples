@@ -25,5 +25,5 @@ resources:
   memory: 512Mi
   use_gpu: true
 secrets: {}
-system_packages: 
+system_packages:
   - ffmpeg

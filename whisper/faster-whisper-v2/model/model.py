@@ -1,13 +1,14 @@
 import base64
+import io
 import logging
 import tempfile
 import time
 from typing import Dict
+
+import ffmpeg
+import httpx
 import numpy as np
 import torch
-import httpx
-import ffmpeg
-import io
 from faster_whisper import BatchedInferencePipeline, WhisperModel
 
 DEFAULT_BATCH_SIZE = 8
@@ -32,7 +33,7 @@ class Model:
     def base64_to_wav(self, base64_string):
         binary_data = base64.b64decode(base64_string)
         with tempfile.NamedTemporaryFile(
-                suffix=".wav", delete=False
+            suffix=".wav", delete=False
         ) as output_file_path:
             output_file_path.write(binary_data)
             output_file_path.flush()
@@ -71,7 +72,7 @@ class Model:
 
         # Use ffmpeg to process the raw bytes and convert to monochannel, 16kHz wav format
         out, _ = (
-            ffmpeg.input('pipe:0')  # Input is from pipe
+            ffmpeg.input("pipe:0")  # Input is from pipe
             .output("pipe:", format="wav", acodec="pcm_s16le", ac=1, ar=sampling_rate)
             .run(input=audio_stream.read(), capture_stdout=True, capture_stderr=True)
         )
@@ -93,7 +94,7 @@ class Model:
             if response.status_code == 200:
                 # Save the file to a local file
                 with tempfile.NamedTemporaryFile(
-                        suffix=".wav", delete=False
+                    suffix=".wav", delete=False
                 ) as output_file_path:
                     output_file_path.write(response.content)
                     output_file_path.flush()
