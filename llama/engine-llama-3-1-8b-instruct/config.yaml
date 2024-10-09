@@ -1,0 +1,43 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "system",
+        content: "You are a pirate chatbot who always responds in pirate speak!"
+      },
+      {
+        role: "user",
+        content: "Who are you?"
+      }
+    ],
+    stream: true,
+    max_tokens: 512
+  }
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
+model_name: Llama 3.1 8B Instruct
+python_version: py39
+requirements: []
+resources:
+  accelerator: A100
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets:
+  hf_access_token: set token in baseten workspace
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: meta-llama/Llama-3.1-8B-Instruct
+      source: HF
+    max_batch_size: 32
+    max_beam_width: 1
+    max_input_len: 8192
+    max_output_len: 8192
+    num_builder_gpus: 1
+    quantization_type: no_quant
+    tensor_parallel_count: 1
