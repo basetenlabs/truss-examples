@@ -52,38 +52,25 @@ Example usage:
 ```python
 from openai import OpenAI
 
-model_id = "jwdp26kw" # Replace with your model ID
-
 client = OpenAI(
     api_key="YOUR-API-KEY",
-    base_url="https://bridge.baseten.co/v1/direct"
+    base_url="https://bridge.baseten.co/MODEL-ID/v1"
 )
 
 response = client.chat.completions.create(
-  model="ultravox", # Replace with your model name
-    messages=[
-        {
+    model="ultravox",
+    messages=[{
             "role": "user",
             "content": [
-                {
-                    "type": "text",
-                    "text": "Answer in one sentence. For lake Michigan,"
-                },
-                {
-                    "type": "audio_url",
-                    "audio_url": {"url": "http://study.aitech.ac.jp/tat/239977.mp3"}
-                }
+                {"type": "text", "text": "Summarize the following: <|audio|>"},
+                {"type": "image_url", "image_url": {"url": f"data:audio/wav;base64,{base64_wav}"}}
             ]
-        }
-    ],
-  extra_body={
-    "baseten": {
-      "model_id": model_id
-    }
-  }
+        }]
+    stream=True
 )
 
-print(response.choices[0].message.content)
+for chunk in response:
+    print(chunk.choices[0].delta)
 ```
 
 ## Support
