@@ -1,0 +1,48 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Describe this image in one sentence."
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: "https://picsum.photos/id/237/200/300"
+            }
+          }
+        ]
+      }
+    ],
+    stream: true,
+    max_tokens: 512,
+    temperature: 0.5
+  }
+  repo_id: Qwen/Qwen2-VL-7B-Instruct
+  openai_compatible: true
+  vllm_config:
+    tensor_parallel_size: 1
+    enforce_eager: true
+    max_num_seqs: 16
+    limit_mm_per_prompt: {image: 1}
+  tags:
+    - text-generation
+    - multimodal
+model_name: Qwen 2 VL 7B VLLM
+python_version: py311
+requirements:
+  - https://vllm-wheels.s3.us-west-2.amazonaws.com/nightly/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+runtime:
+  predict_concurrency: 32
+secrets:
+  hf_access_token: null
+system_packages:
+  - python3.10-venv
