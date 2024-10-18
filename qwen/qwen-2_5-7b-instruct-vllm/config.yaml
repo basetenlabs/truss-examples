@@ -1,0 +1,33 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  repo_id: Qwen/Qwen2.5-7B-Instruct
+  tags:
+    - text-generation
+  example_model_input:
+    model: Qwen2.5-7B-Instruct
+    messages:
+      - content: You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+        role: system
+      - content: Give me a short introduction to large language model.
+        role: user
+model_name: Qwen 2.5 7B Instruct - vLLM
+base_image:
+  image: vllm/vllm-openai:v0.6.3
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 30000 --port 8000 --served-model-name Qwen2.5-7B-Instruct --tensor-parallel-size 1 --gpu-memory-utilization 0.95"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:1
+  use_gpu: true
+model_cache:
+  - repo_id: Qwen/Qwen2.5-7B-Instruct
+runtime:
+  predict_concurrency: 32
+secrets:
+  hf_access_token: null
