@@ -9,8 +9,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    max_input_len: 2048
-    max_output_len: 2048
+    max_seq_len: 2048
     max_batch_size: 1
     max_beam_width: 1
     base_model: llama
