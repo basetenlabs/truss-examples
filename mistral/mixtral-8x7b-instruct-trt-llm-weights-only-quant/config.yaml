@@ -35,7 +35,7 @@ resources:
   accelerator: A100
   use_gpu: true
 runtime:
-  num_workers: 2
+  num_workers: 1
   predict_concurrency: 256
 secrets:
   hf_access_token: "ENTER HF ACCESS TOKEN HERE"
