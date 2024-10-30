@@ -15,8 +15,9 @@ model_metadata:
 model_name: Faster Whisper v2
 python_version: py39
 requirements:
-- torch==2.1.0
-- faster-whisper==0.10.0
+- torch==2.1.1
+- faster-whisper==1.0.3
+- ctranslate2==4.4.0
 resources:
   accelerator: T4
   cpu: 500m

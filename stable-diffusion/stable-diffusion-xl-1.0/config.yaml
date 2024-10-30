@@ -28,12 +28,12 @@ model_metadata:
 model_name: Stable Diffusion XL
 python_version: py39
 requirements:
-- transformers
-- accelerate
-- safetensors
+- transformers==4.34.0
+- accelerate==0.23.0
+- safetensors==0.4.0
 - git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
 - invisible-watermark>=0.2.0
-- xformers
+- xformers==0.0.22
 resources:
   accelerator: A10G
   cpu: '2'
