@@ -6,22 +6,23 @@ model_metadata:
     messages: [
       {
         role: "system",
-        content: "You are a pirate chatbot who always responds in pirate speak!"
+        content: "You are a knowledgable, engaging, history teacher."
       },
       {
         role: "user",
-        content: "Who are you?"
+        content: "What was the role of Llamas in the Inca empire?"
       }
     ],
     stream: true,
-    max_tokens: 512
+    max_tokens: 512,
+    temperature: 0.9
   }
   repo_id: meta-llama/Meta-Llama-3-8B-Instruct
 model_name: Llama 3.0 8B Instruct
 python_version: py39
 requirements: []
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -34,10 +35,7 @@ trt_llm:
     checkpoint_repository:
       repo: meta-llama/Meta-Llama-3-8B-Instruct
       source: HF
-    max_batch_size: 32
-    max_beam_width: 1
-    max_input_len: 8192
-    max_output_len: 8192
+    max_seq_len: 8192
     num_builder_gpus: 1
     quantization_type: no_quant
     tensor_parallel_count: 1

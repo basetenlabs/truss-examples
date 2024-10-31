@@ -17,7 +17,7 @@ model_name: Llama-3.1-Nemotron-70B-Instruct
 python_version: py39
 requirements: []
 resources:
-  accelerator: A100:4
+  accelerator: H100:2
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -29,10 +29,7 @@ trt_llm:
     checkpoint_repository:
       repo: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
       source: HF
-    max_batch_size: 32
-    max_beam_width: 1
-    max_input_len: 8192
-    max_output_len: 8192
-    num_builder_gpus: 4
-    quantization_type: no_quant
-    tensor_parallel_count: 4
+    max_seq_len: 8192
+    num_builder_gpus: 2
+    quantization_type: fp8_kv
+    tensor_parallel_count: 2
