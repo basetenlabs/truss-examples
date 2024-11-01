@@ -32,7 +32,7 @@ def write_trussrc_file(api_key: str):
 
 
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(8), reraise=True)
-def attempt_inference(truss_handle, model_version_id, api_key):
+def attempt_inference(truss_handle, model_id, model_version_id, api_key):
     """
     Retry every 20 seconds to call inference on the example, using the `example_model_input`
     from the Truss config to invoke the model. We return success if there is a 200 response,
@@ -57,7 +57,8 @@ def attempt_inference(truss_handle, model_version_id, api_key):
     except KeyError:
         raise Exception("No example_model_input defined in Truss config")
 
-    url = f"{BASETEN_HOST}/model_versions/{model_version_id}/predict"
+    url = f"https://model-{model_id}.api.baseten.co/deployments/{model_version_id}/predict"
+
     headers = {"Authorization": f"Api-Key {api_key}"}
     response = requests.post(url, headers=headers, json=example_model_input, timeout=30)
 
@@ -76,15 +77,15 @@ def deploy_truss(target_directory: str) -> str:
         target_directory, remote=REMOTE_NAME, trusted=True, publish=True
     )
     model_deployment.wait_for_active()
-    return model_deployment.model_deployment_id
+    return model_deployment.model_id, model_deployment.model_deployment_id
 
 
 def main(api_key: str, target_directory: str):
     write_trussrc_file(api_key)
     truss_handle = _get_truss_from_directory(target_directory)
-    model_version_id = deploy_truss(target_directory)
+    model_id, model_version_id = deploy_truss(target_directory)
     print(f"Deployed Truss {model_version_id}")
-    attempt_inference(truss_handle, model_version_id, api_key)
+    attempt_inference(truss_handle, model_id, model_version_id, api_key)
 
 
 if __name__ == "__main__":
