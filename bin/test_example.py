@@ -3,6 +3,7 @@ import sys
 import time
 
 import requests
+import truss
 from tenacity import (
     Retrying,
     retry,
@@ -30,7 +31,7 @@ def write_trussrc_file(api_key: str):
     RemoteFactory.update_remote_config(ci_user)
 
 
-@retry(wait=wait_fixed(60), stop=stop_after_attempt(20), reraise=True)
+@retry(wait=wait_fixed(30), stop=stop_after_attempt(3), reraise=True)
 def attempt_inference(truss_handle, model_version_id, api_key):
     """
     Retry every 20 seconds to call inference on the example, using the `example_model_input`
@@ -65,26 +66,22 @@ def attempt_inference(truss_handle, model_version_id, api_key):
         raise Exception(f"Request failed with status code {response.status_code}")
 
 
-def deploy_truss(truss_handle: TrussHandle) -> str:
-    remote_provider = RemoteFactory.create(remote=REMOTE_NAME)
-    model_name = truss_handle.spec.config.model_name
+def deploy_truss(target_directory: str) -> str:
     for _ in Retrying(
         wait=wait_random_exponential(multiplier=1, max=120),
         stop=stop_after_attempt(5),
         reraise=True,
     ):
-        service = remote_provider.push(
-            truss_handle, model_name, publish=True, trusted=True
-        )
-        return service.model_version_id
+        model_deployment = truss.push(target_directory, remote=REMOTE_NAME)
+    model_deployment.wait_for_active()
+    return model_deployment.model_deployment_id
 
 
 def main(api_key: str, target_directory: str):
     write_trussrc_file(api_key)
     truss_handle = _get_truss_from_directory(target_directory)
-    model_version_id = deploy_truss(truss_handle)
+    model_version_id = deploy_truss(target_directory)
     print(f"Deployed Truss {model_version_id}")
-    time.sleep(20)
     attempt_inference(truss_handle, model_version_id, api_key)
 
 
