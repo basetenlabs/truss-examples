@@ -13,7 +13,6 @@ from tenacity import (
 )
 from truss.cli.cli import _get_truss_from_directory
 from truss.remote.remote_factory import RemoteConfig, RemoteFactory
-from truss.truss_handle import TrussHandle
 
 REMOTE_NAME = "ci"
 BASETEN_HOST = "https://app.staging.baseten.co"
@@ -40,31 +39,28 @@ def attempt_inference(truss_handle, model_id, model_version_id, api_key):
     seconds.
     """
     print("Started attempt inference")
-    try:
-        if "example_model_input" in truss_handle.spec.config.model_metadata:
-            example_model_input = truss_handle.spec.config.model_metadata[
-                "example_model_input"
-            ]
-        else:
-            example_model_input = json.loads(
-                (
-                    truss_handle._truss_dir
-                    / truss_handle.spec.config.model_metadata[
-                        "example_model_input_file"
-                    ]
-                ).read_text()
-            )
-    except KeyError:
+
+    if "example_model_input" in truss_handle.spec.config.model_metadata:
+        example_model_input = truss_handle.spec.config.model_metadata[
+            "example_model_input"
+        ]
+    elif "example_model_input_file" in truss_handle.spec.config.model_metadata:
+        example_model_input = json.loads(
+            (
+                truss_handle._truss_dir
+                / truss_handle.spec.config.model_metadata["example_model_input_file"]
+            ).read_text()
+        )
+    else:
         raise Exception("No example_model_input defined in Truss config")
 
-    url = f"https://model-{model_id}.api.baseten.co/deployments/{model_version_id}/predict"
+    url = f"https://model-{model_id}.api.staging.baseten.co/deployments/{model_version_id}/predict"
 
     headers = {"Authorization": f"Api-Key {api_key}"}
     response = requests.post(url, headers=headers, json=example_model_input, timeout=30)
 
     print(response.content)
-    if response.status_code != 200:
-        raise Exception(f"Request failed with status code {response.status_code}")
+    response.raise_for_status()
 
 
 @retry(
