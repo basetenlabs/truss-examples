@@ -66,13 +66,13 @@ def attempt_inference(truss_handle, model_version_id, api_key):
         raise Exception(f"Request failed with status code {response.status_code}")
 
 
+@retry(
+    wait=wait_random_exponential(multiplier=1, max=120),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
 def deploy_truss(target_directory: str) -> str:
-    for _ in Retrying(
-        wait=wait_random_exponential(multiplier=1, max=120),
-        stop=stop_after_attempt(5),
-        reraise=True,
-    ):
-        model_deployment = truss.push(target_directory, remote=REMOTE_NAME)
+    model_deployment = truss.push(target_directory, remote=REMOTE_NAME)
     model_deployment.wait_for_active()
     return model_deployment.model_deployment_id
 
