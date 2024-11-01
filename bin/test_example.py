@@ -31,7 +31,7 @@ def write_trussrc_file(api_key: str):
     RemoteFactory.update_remote_config(ci_user)
 
 
-@retry(wait=wait_fixed(30), stop=stop_after_attempt(3), reraise=True)
+@retry(wait=wait_fixed(30), stop=stop_after_attempt(8), reraise=True)
 def attempt_inference(truss_handle, model_version_id, api_key):
     """
     Retry every 20 seconds to call inference on the example, using the `example_model_input`
@@ -72,7 +72,9 @@ def attempt_inference(truss_handle, model_version_id, api_key):
     reraise=True,
 )
 def deploy_truss(target_directory: str) -> str:
-    model_deployment = truss.push(target_directory, remote=REMOTE_NAME)
+    model_deployment = truss.push(
+        target_directory, remote=REMOTE_NAME, trusted=True, publish=True
+    )
     model_deployment.wait_for_active()
     return model_deployment.model_deployment_id
 
