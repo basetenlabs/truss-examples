@@ -54,7 +54,7 @@ def attempt_inference(truss_handle, model_id, model_version_id, api_key):
     else:
         raise Exception("No example_model_input defined in Truss config")
 
-    url = f"https://model-{model_id}.api.staging.baseten.co/deployments/{model_version_id}/predict"
+    url = f"https://model-{model_id}.api.staging.baseten.co/deployment/{model_version_id}/predict"
 
     headers = {"Authorization": f"Api-Key {api_key}"}
     response = requests.post(url, headers=headers, json=example_model_input, timeout=30)
