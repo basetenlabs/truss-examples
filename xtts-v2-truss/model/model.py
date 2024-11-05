@@ -1,8 +1,10 @@
 import base64
-import os
+from tempfile import NamedTemporaryFile
 from typing import Dict
 
 from TTS.api import TTS
+
+DEFAULT_SPEAKER_NAME = "Claribel Dervla"
 
 
 class Model:
@@ -24,51 +26,18 @@ class Model:
             base64_string = base64_data.decode("utf-8")
             return base64_string
 
-    def preprocess(self, request: Dict) -> Dict:
-        text = request.get("text")
-        speaker_voice = request.get("speaker_voice")
-        language = request.get("language")
-        supported_languages = {
-            "en",
-            "es",
-            "fr",
-            "de",
-            "it",
-            "pt",
-            "pl",
-            "tr",
-            "ru",
-            "nl",
-            "cs",
-            "ar",
-            "zh-cn",
-        }
-
-        if language not in supported_languages:
-            return {
-                "output": f"The language you chose is not supported. Please select from the following choices: {supported_languages}"
-            }
-
-        self.base64_to_wav(speaker_voice, "speaker_voice.wav")
-        return {
-            "text": text,
-            "speaker_voice": "speaker_voice.wav",
-            "language": language,
-        }
-
     def predict(self, request: Dict) -> Dict:
-        text = request.pop("text")
-        speaker_voice = request.pop("speaker_voice")
-        language = request.pop("language")
-        self.model.tts_to_file(
-            text=text,
-            file_path="output.wav",
-            speaker_wav=speaker_voice,
-            language=language,
-        )
+        text = request.get("text")
+        speaker_voice = request.get("speaker_voice", DEFAULT_SPEAKER_NAME)
+        language = request.get("language", "en")
 
-        base64_string = self.wav_to_base64("output.wav")
+        with NamedTemporaryFile(delete=True) as fp:
+            self.model.tts_to_file(
+                text=text,
+                file_path=fp.name,
+                speaker=speaker_voice,
+                language=language,
+            )
 
-        os.remove("speaker_voice.wav")
-        os.remove("output.wav")
-        return {"output": base64_string}
+            base64_string = self.wav_to_base64(fp.name)
+            return {"output": base64_string}
