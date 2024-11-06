@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = ">=3.9,<3.13"
 truss = { git = "https://github.com/basetenlabs/truss.git" }
 pyyaml = "^6.0.1"
 
