@@ -72,7 +72,7 @@ def deploy_truss(target_directory: str) -> str:
     model_deployment = truss.push(
         target_directory, remote=REMOTE_NAME, trusted=True, publish=True
     )
-    model_deployment.wait_for_active()
+    model_deployment.wait_for_active(timeout_seconds=30 * 60)
     return model_deployment.model_id, model_deployment.model_deployment_id
 
 

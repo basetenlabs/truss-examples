@@ -14,7 +14,6 @@ requirements:
 - torch==2.0.1
 - transformers==4.34.0
 - sentencepiece==0.1.99
-- protobuf==4.24.4
 # # Configuring the model_cache
 #
 # To cache model weights, set the `model_cache` key.
