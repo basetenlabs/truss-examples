@@ -28,7 +28,7 @@ truss push --publish --trusted
 ### curl
 
 ```bash
-curl -X POST https://model-6wg86zgq.api.baseten.co/development/predict \
+curl -X POST https://model-xxx.api.baseten.co/development/predict \
         -H "Authorization: Api-Key YOUR_API_KEY" \
         -d '{"input": "text string"}'
 ```
@@ -39,7 +39,7 @@ curl -X POST https://model-6wg86zgq.api.baseten.co/development/predict \
 import requests
 
 resp = requests.post(
-    "https://model-6wg86zgq.api.baseten.co/development/predict",
+    "https://model-xxx.api.baseten.co/development/predict",
     headers={"Authorization": "Api-Key YOUR_API_KEY"},
     json={"input": "text string"},
 )
