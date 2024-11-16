@@ -9,7 +9,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd trussless/pixtral-12b
+cd custom-server/pixtral-12b
 ```
 
 Before deployment:

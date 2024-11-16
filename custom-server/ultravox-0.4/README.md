@@ -19,7 +19,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd trussless/ultravox-0.4
+cd custom-server/ultravox-0.4
 ```
 
 Before deployment:
