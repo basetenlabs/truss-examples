@@ -15,7 +15,10 @@ model_metadata:
     ],
     stream: true,
     max_tokens: 512,
-    temperature: 0.9
+    temperature: 0.6,
+    top_p: 1.0,
+    top_k: 40,
+    frequency_penalty: 1
   }
   repo_id: meta-llama/Meta-Llama-3-8B-Instruct
 model_name: Llama 3.0 8B Instruct
