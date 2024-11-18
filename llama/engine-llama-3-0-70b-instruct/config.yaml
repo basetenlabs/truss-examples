@@ -39,6 +39,6 @@ trt_llm:
       repo: meta-llama/Meta-Llama-3-70B-Instruct
       source: HF
     max_seq_len: 8192
-    num_builder_gpus: 2
+    num_builder_gpus: 4
     quantization_type: fp8_kv
     tensor_parallel_count: 2
