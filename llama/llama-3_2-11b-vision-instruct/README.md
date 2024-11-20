@@ -37,7 +37,7 @@ Limitations from vLLM allow for a maximum of 1 image as input. You will get a me
 ## Example usage
 
 ```sh
-truss predict -d '{"messages": [{"role": "user", "content": "Tell me about yourself"}]}'
+truss predict -d '{model: "llama-3.2-11b-vision-instruct", "messages": [{"role": "user", "content": "Tell me about yourself"}]}'
 ```
 
 Here's another example of invoking your model via a REST API but for image input:
@@ -47,6 +47,7 @@ curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predi
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
+           "model: "llama-3.2-11b-vision-instruct",
            "messages": [
             {
                 "role": "user",
