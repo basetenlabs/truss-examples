@@ -21,8 +21,7 @@ trt_llm:
       source: HF
     max_batch_size: 16
     max_beam_width: 1
-    max_input_len: 4096
-    max_output_len: 1024
+    max_seq_len: 4096
     num_builder_gpus: 4 # Need 4 builder GPUs for fp8
     quantization_type: fp8_kv
     tensor_parallel_count: 2

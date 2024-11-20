@@ -5,15 +5,20 @@ model_metadata:
   example_model_input: {
     messages: [
       {
+        role: "system",
+        content: "Please reason step by step, and put your final answer within \\boxed{}."
+      },
+      {
         role: "user",
-        content: "How many r in strawberry?"
+        content: "Find the value of $x$ that satisfies the equation $4x+5 = 6x+7$."
       }
     ],
     stream: true,
-    max_tokens: 512
+    max_tokens: 512,
+    temperature: 0.9
   }
-  repo_id: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-model_name: Llama-3.1-Nemotron-70B-Instruct
+  repo_id: Qwen/Qwen2.5-Math-72B-Instruct
+model_name: Qwen Math 2.5 72B Instruct
 python_version: py39
 requirements: []
 resources:
@@ -25,11 +30,11 @@ secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: qwen
     checkpoint_repository:
-      repo: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+      repo: Qwen/Qwen2.5-Math-72B-Instruct
       source: HF
     max_seq_len: 8192
-    num_builder_gpus: 2
+    num_builder_gpus: 4
     quantization_type: fp8_kv
     tensor_parallel_count: 2

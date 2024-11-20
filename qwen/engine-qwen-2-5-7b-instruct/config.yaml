@@ -1,0 +1,40 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "system",
+        content: "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
+      },
+      {
+        role: "user",
+        content: "What does Tongyi Qianwen mean?"
+      }
+    ],
+    stream: true,
+    max_tokens: 512,
+    temperature: 0.9
+  }
+  repo_id: Qwen/Qwen2.5-7B-Instruct
+model_name: Qwen 2.5 7B Instruct
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: qwen
+    checkpoint_repository:
+      repo: Qwen/Qwen2.5-7B-Instruct
+      source: HF
+    max_seq_len: 8192
+    num_builder_gpus: 1
+    quantization_type: no_quant
+    tensor_parallel_count: 1

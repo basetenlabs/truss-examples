@@ -5,15 +5,23 @@ model_metadata:
   example_model_input: {
     messages: [
       {
+        role: "system",
+        content: "You are a knowledgable, engaging, history teacher."
+      },
+      {
         role: "user",
-        content: "How many r in strawberry?"
+        content: "What was the role of Llamas in the Inca empire?"
       }
     ],
     stream: true,
-    max_tokens: 512
+    max_tokens: 512,
+    temperature: 0.6,
+    top_p: 1.0,
+    top_k: 40,
+    frequency_penalty: 1
   }
-  repo_id: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-model_name: Llama-3.1-Nemotron-70B-Instruct
+  repo_id: meta-llama/Meta-Llama-3-70B-Instruct
+model_name: Llama 3.0 70B Instruct
 python_version: py39
 requirements: []
 resources:
@@ -21,15 +29,16 @@ resources:
   cpu: '1'
   memory: 24Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: set token in baseten workspace
 system_packages: []
 trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+      repo: meta-llama/Meta-Llama-3-70B-Instruct
       source: HF
     max_seq_len: 8192
-    num_builder_gpus: 2
+    num_builder_gpus: 4
     quantization_type: fp8_kv
     tensor_parallel_count: 2
