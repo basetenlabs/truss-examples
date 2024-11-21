@@ -42,3 +42,4 @@ trt_llm:
     num_builder_gpus: 4
     quantization_type: fp8_kv
     tensor_parallel_count: 2
+    enable_chunked_context: bool = False
