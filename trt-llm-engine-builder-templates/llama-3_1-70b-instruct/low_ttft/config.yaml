@@ -1,0 +1,30 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: trtllm-llama3.1_70b-instruct-low_ttft
+python_version: py311
+requirements: []
+resources:
+  accelerator: H100:2
+  cpu: '1'
+  memory: 80Gi
+  use_gpu: true
+secrets:
+  hf_access_token: set token in baseten workspace
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: meta-llama/Meta-Llama-3-70B-Instruct
+      source: HF
+    max_batch_size: 4
+    max_beam_width: 1
+    max_seq_len: 4096
+    num_builder_gpus: 4 # Need 4 builder GPUs fpr fp8
+    quantization_type: fp8_kv
+    tensor_parallel_count: 2
+  plugin_configuration:
+    use_paged_context_fmha: True
+    use_fp8_context_fmha: True

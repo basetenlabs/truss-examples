@@ -2,11 +2,11 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata: {}
-model_name: Llama 3.1 8B Instruct TensorRT LLM
-python_version: py39
+model_name: trtllm-llama3_1-70b-instruct-high_throughput
+python_version: py311
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100:2
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -17,12 +17,11 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Meta-Llama-3.1-8B-Instruct
+      repo: meta-llama/Llama-3.1-70B-Instruct
       source: HF
-    max_batch_size: 32
+    max_batch_size: 16
     max_beam_width: 1
-    max_input_len: 7168
-    max_output_len: 1024
-    num_builder_gpus: 1
-    quantization_type: no_quant
-    tensor_parallel_count: 1
+    max_seq_len: 4096
+    num_builder_gpus: 4 # Need 4 builder GPUs for fp8
+    quantization_type: fp8_kv
+    tensor_parallel_count: 2

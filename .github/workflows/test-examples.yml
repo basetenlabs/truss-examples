@@ -3,7 +3,7 @@ name: Truss Examples CI
 on:
   schedule:
     # Runs daily at 6am UTC
-    - cron:  '0 6 * * *'
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -13,15 +13,15 @@ jobs:
       tests: ${{ steps.generate-matrix.outputs.tests }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: yq - portable yaml processor
-      uses: mikefarah/yq@v4.35.2
-    - name: Generate all tests that need to be run
-      id: generate-matrix
-      run: |
-        TESTS=$(cat ci.yaml| yq e ".tests"  | yq eval -o=json | jq -c .)
-        echo "tests=$TESTS" >> $GITHUB_ENV
-        echo "tests=$TESTS" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.35.2
+      - name: Generate all tests that need to be run
+        id: generate-matrix
+        run: |
+          TESTS=$(cat ci.yaml | yq e ".tests" | yq eval -o=json | jq -c .)
+          echo "tests=$TESTS" >> $GITHUB_OUTPUT
+
   ci:
     runs-on: ubuntu-latest
     needs:
@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11.4'
       - name: Install dependencies (if any)

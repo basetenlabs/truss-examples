@@ -36,7 +36,7 @@ class Model:
         # logger.info(f"max num seqs: {model_metadata['max_num_seqs']}")
 
         self.model_args = AsyncEngineArgs(
-            model="meta-llama/Meta-Llama-3.1-70B-Instruct",
+            model="meta-llama/Llama-3.1-70B-Instruct",
             trust_remote_code=True,
             tensor_parallel_size=4,
             max_num_seqs=8,
@@ -51,7 +51,7 @@ class Model:
         # create tokenizer for gemma 2 to apply chat template to prompts
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "meta-llama/Meta-Llama-3.1-70B-Instruct"
+            "meta-llama/Llama-3.1-70B-Instruct"
         )
 
         try:
