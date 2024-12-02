@@ -1,8 +1,5 @@
-import base64
-import io
 import logging
 import os
-import wave
 
 import numpy as np
 import torch
@@ -23,7 +20,7 @@ class Model:
     def load(self):
         device = "cuda"
         model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
-        logging.info("⏳Downloading model")
+        logging.info("⏳ Downloading model")
         ModelManager().download_model(model_name)
         model_path = os.path.join(
             get_user_data_dir("tts"), model_name.replace("/", "--")
@@ -32,8 +29,12 @@ class Model:
         config = XttsConfig()
         config.load_json(os.path.join(model_path, "config.json"))
         self.model = Xtts.init_from_config(config)
-        self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True)
+        # self.model.load_checkpoint(config, checkpoint_dir=model_path, eval=True)
+        self.model.load_checkpoint(
+            config, checkpoint_dir=model_path, eval=True, use_deepspeed=True
+        )
         self.model.to(device)
+        # self.compiled_model = torch.compile(self.model.inference_stream)
 
         self.speaker = {
             "speaker_embedding": self.model.speaker_manager.speakers[SPEAKER_NAME][
@@ -51,7 +52,18 @@ class Model:
             .half()
             .tolist(),
         }
-        logging.info("🔥Model Loaded")
+
+        self.speaker_embedding = (
+            torch.tensor(self.speaker.get("speaker_embedding"))
+            .unsqueeze(0)
+            .unsqueeze(-1)
+        )
+        self.gpt_cond_latent = (
+            torch.tensor(self.speaker.get("gpt_cond_latent"))
+            .reshape((-1, 1024))
+            .unsqueeze(0)
+        )
+        logging.info("🔥 Model Loaded")
 
     def wav_postprocess(self, wav):
         """Post process the output waveform"""
@@ -66,32 +78,21 @@ class Model:
         text = model_input.get("text")
         language = model_input.get("language", "en")
         chunk_size = int(
-            model_input.get("chunk_size", 150)
+            model_input.get("chunk_size", 20)
         )  # Ensure chunk_size is an integer
         add_wav_header = False
-
-        speaker_embedding = (
-            torch.tensor(self.speaker.get("speaker_embedding"))
-            .unsqueeze(0)
-            .unsqueeze(-1)
-        )
-        gpt_cond_latent = (
-            torch.tensor(self.speaker.get("gpt_cond_latent"))
-            .reshape((-1, 1024))
-            .unsqueeze(0)
-        )
 
         streamer = self.model.inference_stream(
             text,
             language,
-            gpt_cond_latent,
-            speaker_embedding,
+            self.gpt_cond_latent,
+            self.speaker_embedding,
             stream_chunk_size=chunk_size,
             enable_text_splitting=True,
+            temperature=0.2,
         )
 
         for chunk in streamer:
-            print(type(chunk))
             processed_chunk = self.wav_postprocess(chunk)
             processed_bytes = processed_chunk.tobytes()
             yield processed_bytes
