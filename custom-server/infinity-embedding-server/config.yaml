@@ -9,8 +9,8 @@ docker_server:
 resources:
   accelerator: L4
   use_gpu: true
-model_name: infinity-embedding-server
+model_name: infinity-embedding-server 
 requirements:
-- infinity-emb[all]
+- infinity-emb[all]==0.0.71
 environment_variables:
   hf_access_token: null
