@@ -1,7 +1,7 @@
 base_image:
   image: python:3.11-slim
 docker_server:
-  start_command: sh -c "infinity_emb v2 --model-id BAAI/bge-small-en-v1.5 --revision main"
+  start_command: sh -c "infinity_emb v2 --batch-size 64 --model-id BAAI/bge-small-en-v1.5 --revision main"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /embeddings
@@ -14,6 +14,9 @@ resources:
 model_name: infinity-embedding-server
 requirements:
 - infinity-emb[all]==0.0.71
+runtime:
+  predict_concurrency: 16
 environment_variables:
   hf_access_token: null
+  INFINITY_QUEUE_SIZE: 8192
   DO_NOT_TRACK: 1
