@@ -15,7 +15,7 @@ model_name: infinity-embedding-server
 requirements:
 - infinity-emb[all]==0.0.71
 runtime:
-  predict_concurrency: 16
+  predict_concurrency : 16
 environment_variables:
   hf_access_token: null
   INFINITY_QUEUE_SIZE: 8192
