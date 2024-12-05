@@ -1,16 +1,20 @@
 base_image:
   image: python:3.11-slim
 docker_server:
-  start_command: sh -c "infinity_emb v2 --model-id BAAI/bge-small-en-v1.5"
+  start_command: sh -c "infinity_emb v2"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /embeddings
   server_port: 7997
+build_commands:
+- sh -c "infinity_emb v2 --preload-only --no-model-warmup"
 resources:
   accelerator: L4
   use_gpu: true
 model_name: infinity-embedding-server
 requirements:
-- infinity-emb[all]
+- infinity-emb[all]==0.0.71
 environment_variables:
   hf_access_token: null
+  INFINITY_MODEL_ID: BAAI/bge-small-en-v1.5
+  INFINITY_ENGINE: torch
