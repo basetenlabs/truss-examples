@@ -14,7 +14,7 @@ model_metadata:
       }
     ],
     stream: true,
-    max_tokens: 512,
+    max_tokens: 1024,
     temperature: 0.6,
     top_p: 1.0,
     top_k: 40,
