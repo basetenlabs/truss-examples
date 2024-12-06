@@ -1,13 +1,13 @@
 base_image:
   image: python:3.11-slim
 docker_server:
-  start_command: sh -c "infinity_emb v2 --batch-size 64 --model-id BAAI/bge-small-en-v1.5 --revision main"
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) infinity_emb v2 --batch-size 64 --model-id BAAI/bge-small-en-v1.5 --revision main"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /embeddings
   server_port: 7997
 build_commands: # optional step to download the weights of the model into the image
-- sh -c "infinity_emb v2 --preload-only --no-model-warmup --model-id BAAI/bge-small-en-v1.5 --revision main"
+- sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) infinity_emb v2 --preload-only --no-model-warmup --model-id BAAI/bge-small-en-v1.5 --revision main"
 resources:
   accelerator: L4
   use_gpu: true
