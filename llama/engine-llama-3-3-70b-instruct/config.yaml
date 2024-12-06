@@ -1,0 +1,44 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "system",
+        content: "You are a knowledgable, engaging, history teacher."
+      },
+      {
+        role: "user",
+        content: "What was the role of Llamas in the Inca empire?"
+      }
+    ],
+    stream: true,
+    max_tokens: 1024,
+    temperature: 0.6,
+    top_p: 1.0,
+    top_k: 40,
+    frequency_penalty: 1
+  }
+  repo_id: meta-llama/Llama-3.3-70B-Instruct
+model_name: Llama 3.3 70B Instruct
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100:2
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets:
+  hf_access_token: set token in baseten workspace
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: meta-llama/Llama-3.3-70B-Instruct
+      source: HF
+    max_seq_len: 8192
+    num_builder_gpus: 4
+    quantization_type: fp8_kv
+    tensor_parallel_count: 2
