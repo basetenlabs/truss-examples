@@ -6,17 +6,20 @@ docker_server:
   liveness_endpoint: /health
   predict_endpoint: /embeddings
   server_port: 7997
-build_commands:
+build_commands: # optional step to download the weights of the model into the image
 - sh -c "infinity_emb v2 --preload-only --no-model-warmup --model-id BAAI/bge-small-en-v1.5 --revision main"
 resources:
   accelerator: L4
   use_gpu: true
 model_name: infinity-embedding-server
 requirements:
-- infinity-emb[all]==0.0.71
+- infinity-emb[all]==0.0.72
 runtime:
-  predict_concurrency : 16
+  predict_concurrency : 40
 environment_variables:
   hf_access_token: null
-  INFINITY_QUEUE_SIZE: 8192
+  # constrain api to at most 256 sentences per request, for better load-balancing
+  INFINITY_MAX_CLIENT_BATCH_SIZE: 256
+  # constrain model to a max backpressure of INFINITY_MAX_CLIENT_BATCH_SIZE * predict_concurrency = 10241 requests
+  INFINITY_QUEUE_SIZE: 10241
   DO_NOT_TRACK: 1
