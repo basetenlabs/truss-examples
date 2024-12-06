@@ -1,0 +1,22 @@
+base_image:
+  image: michaelf34/text-embeddings-inference:1.5
+model_metadata:
+  repo_id: BAAI/bge-base-en-v1.5
+docker_server:
+  start_command: sh -c "text-embeddings-router --port 7998 --model-id /data/bge-base-en-v1.5 --max-client-batch-size 256 --max-concurrent-requests 40 --max-batch-tokens 32768"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  # switch to /rerank or others for different model types
+  predict_endpoint: /embeddings
+  server_port: 7998
+resources:
+  accelerator: L4
+  use_gpu: true
+model_name: text-embeddings-inference trussless
+build_commands: # optional step to download the weights of the model into the image
+- git clone https://huggingface.co/BAAI/bge-base-en-v1.5 /data/bge-base-en-v1.5
+runtime:
+  predict_concurrency : 40
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  hf_access_token: null
