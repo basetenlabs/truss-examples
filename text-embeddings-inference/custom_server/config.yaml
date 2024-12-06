@@ -1,9 +1,16 @@
 base_image:
-  image: michaelf34/text-embeddings-inference:1.5
+  # select an image: L4
+  # CPU	michaelf34/text-embeddings-inference:cpu-1.5
+  # Turing (T4, ...)	michaelf34/text-embeddings-inference:turing-1.5
+  # Ampere 80 (A100, A30)	michaelf34/text-embeddings-inference:1.5
+  # Ampere 86 (A10, A10G, A40, ...)	michaelf34/text-embeddings-inference:86-1.5
+  # Ada Lovelace (L4, ...)	michaelf34/text-embeddings-inference:89-1.5
+  # Hopper (H100/H100 40GB)	michaelf34/text-embeddings-inference:hopper-1.5
+  image: michaelf34/text-embeddings-inference:89-1.5
 model_metadata:
   repo_id: BAAI/bge-base-en-v1.5
 docker_server:
-  start_command: sh -c "text-embeddings-router --port 7998 --model-id /data/bge-base-en-v1.5 --max-client-batch-size 256 --max-concurrent-requests 40 --max-batch-tokens 32768"
+  start_command: sh -c "text-embeddings-router --port 7998 --model-id /data/local-model --max-client-batch-size 256 --max-concurrent-requests 40 --max-batch-tokens 32768"
   readiness_endpoint: /health
   liveness_endpoint: /health
   # switch to /rerank or others for different model types
@@ -14,7 +21,7 @@ resources:
   use_gpu: true
 model_name: text-embeddings-inference trussless
 build_commands: # optional step to download the weights of the model into the image
-- git clone https://huggingface.co/BAAI/bge-base-en-v1.5 /data/bge-base-en-v1.5
+- git clone https://huggingface.co/BAAI/bge-base-en-v1.5 /data/local-model
 runtime:
   predict_concurrency : 40
 environment_variables:
