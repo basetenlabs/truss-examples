@@ -270,9 +270,9 @@ class ReferenceAttentionControl:
             if self.only_cross_attention:
                 attn_output = self.attn1(
                     norm_hidden_states,
-                    encoder_hidden_states=encoder_hidden_states
-                    if self.only_cross_attention
-                    else None,
+                    encoder_hidden_states=(
+                        encoder_hidden_states if self.only_cross_attention else None
+                    ),
                     attention_mask=attention_mask,
                     **cross_attention_kwargs,
                 )
@@ -281,9 +281,9 @@ class ReferenceAttentionControl:
                     self.bank.append(norm_hidden_states.clone())
                     attn_output = self.attn1(
                         norm_hidden_states,
-                        encoder_hidden_states=encoder_hidden_states
-                        if self.only_cross_attention
-                        else None,
+                        encoder_hidden_states=(
+                            encoder_hidden_states if self.only_cross_attention else None
+                        ),
                         attention_mask=attention_mask,
                         **cross_attention_kwargs,
                     )

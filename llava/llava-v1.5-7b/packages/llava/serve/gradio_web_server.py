@@ -9,12 +9,7 @@ import gradio as gr
 import requests
 from llava.constants import LOGDIR
 from llava.conversation import SeparatorStyle, conv_templates, default_conversation
-from llava.utils import (
-    build_logger,
-    moderation_msg,
-    server_error_msg,
-    violates_moderation,
-)
+from llava.utils import build_logger, moderation_msg, server_error_msg, violates_moderation
 
 logger = build_logger("gradio_web_server", "gradio_web_server.log")
 
@@ -246,9 +241,11 @@ def http_bot(
         "temperature": float(temperature),
         "top_p": float(top_p),
         "max_new_tokens": min(int(max_new_tokens), 1536),
-        "stop": state.sep
-        if state.sep_style in [SeparatorStyle.SINGLE, SeparatorStyle.MPT]
-        else state.sep2,
+        "stop": (
+            state.sep
+            if state.sep_style in [SeparatorStyle.SINGLE, SeparatorStyle.MPT]
+            else state.sep2
+        ),
         "images": f"List of {len(state.get_images())} images: {all_image_hash}",
     }
     logger.info(f"==== request ====\n{pload}")
@@ -429,7 +426,9 @@ def build_demo(embed_mode):
                     downvote_btn = gr.Button(value="👎  Downvote", interactive=False)
                     flag_btn = gr.Button(value="⚠️  Flag", interactive=False)
                     # stop_btn = gr.Button(value="⏹️  Stop Generation", interactive=False)
-                    regenerate_btn = gr.Button(value="🔄  Regenerate", interactive=False)
+                    regenerate_btn = gr.Button(
+                        value="🔄  Regenerate", interactive=False
+                    )
                     clear_btn = gr.Button(value="🗑️  Clear", interactive=False)
 
         if not embed_mode:

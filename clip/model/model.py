@@ -19,6 +19,7 @@ from transformers import CLIPModel, CLIPProcessor
 # This is the CLIP model from Hugging Face that we will use for this example.
 CHECKPOINT = "openai/clip-vit-base-patch32"
 
+
 # # Define the Truss
 #
 # In the `load` method, we load in the pretrained CLIP model from the

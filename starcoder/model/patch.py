@@ -6,6 +6,7 @@ be time-consuming when there are multiple weights to be fetched. This patch aims
 parallelize the downloads using joblib, allowing the downloads to be spread across
 multiple cores and improving overall performance.
 """
+
 import os
 
 from joblib import Parallel, delayed

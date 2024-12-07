@@ -24,7 +24,7 @@ def fused_init_helper_(module: nn.Module, init_fn_):
         raise RuntimeError(f"Internal logic error")
     (dim, splits) = _fused
     splits = (0, *splits, module.weight.size(dim))
-    for (s, e) in zip(splits[:-1], splits[1:]):
+    for s, e in zip(splits[:-1], splits[1:]):
         slice_indices = [slice(None)] * module.weight.ndim
         slice_indices[dim] = slice(s, e)
         init_fn_(module.weight[slice_indices])
@@ -128,7 +128,7 @@ def generic_param_init_fn_(
             assert d_model is not None
             _d = d_model
             splits = (0, _d, 2 * _d, 3 * _d)
-            for (s, e) in zip(splits[:-1], splits[1:]):
+            for s, e in zip(splits[:-1], splits[1:]):
                 init_fn_(module.in_proj_weight[s:e])
         else:
             assert (

@@ -6,6 +6,7 @@ Causal LM to convert it to a Prefix LM.
 Prefix LMs accepts a `bidirectional_mask` input in `forward`
 and treat the input prompt as the prefix in `generate`.
 """
+
 import math
 import warnings
 from types import MethodType
@@ -20,9 +21,7 @@ from transformers.models.bloom.modeling_bloom import (
     CrossEntropyLoss,
 )
 from transformers.models.bloom.modeling_bloom import _expand_mask as _expand_mask_bloom
-from transformers.models.bloom.modeling_bloom import (
-    _make_causal_mask as _make_causal_mask_bloom,
-)
+from transformers.models.bloom.modeling_bloom import _make_causal_mask as _make_causal_mask_bloom
 from transformers.models.bloom.modeling_bloom import logging
 from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 from transformers.models.gpt_neo.modeling_gpt_neo import GPTNeoForCausalLM
@@ -30,9 +29,7 @@ from transformers.models.gpt_neox.modeling_gpt_neox import GPTNeoXForCausalLM
 from transformers.models.gptj.modeling_gptj import GPTJForCausalLM
 from transformers.models.opt.modeling_opt import OPTForCausalLM
 from transformers.models.opt.modeling_opt import _expand_mask as _expand_mask_opt
-from transformers.models.opt.modeling_opt import (
-    _make_causal_mask as _make_causal_mask_opt,
-)
+from transformers.models.opt.modeling_opt import _make_causal_mask as _make_causal_mask_opt
 
 logger = logging.get_logger(__name__)
 _SUPPORTED_GPT_MODELS = (
@@ -357,7 +354,7 @@ def _convert_bloom_causal_lm_to_prefix_lm(model: BloomForCausalLM) -> BloomForCa
             input_shape=(batch_size, seq_length),
             past_key_values_length=past_key_values_length,
         )
-        for (i, (block, layer_past)) in enumerate(zip(self.h, past_key_values)):
+        for i, (block, layer_past) in enumerate(zip(self.h, past_key_values)):
             if output_hidden_states:
                 hst = (hidden_states,)
                 all_hidden_states = all_hidden_states + hst
@@ -742,7 +739,7 @@ def add_bidirectional_mask_if_missing(batch: Dict[str, Any]):
     if "bidirectional_mask" not in batch:
         if batch.get("mode", None) == "icl_task":
             batch["bidirectional_mask"] = batch["attention_mask"].clone()
-            for (i, continuation_indices) in enumerate(batch["continuation_indices"]):
+            for i, continuation_indices in enumerate(batch["continuation_indices"]):
                 batch["bidirectional_mask"][i, continuation_indices] = 0
         elif "labels" in batch and "attention_mask" in batch:
             batch["bidirectional_mask"] = torch.logical_and(

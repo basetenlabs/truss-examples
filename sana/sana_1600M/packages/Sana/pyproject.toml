@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sana"
+version = "0.0.1"
+description = "SANA"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = [
+    "pre-commit",
+    "accelerate",
+    "beautifulsoup4",
+    "bs4",
+    "came-pytorch",
+    "einops",
+    "ftfy",
+    "diffusers@git+https://github.com/huggingface/diffusers",
+    "clip@git+https://github.com/openai/CLIP.git",
+    "gradio",
+    "image-reward",
+    "ipdb",
+    "mmcv==1.7.2",
+    "omegaconf",
+    "opencv-python",
+    "optimum",
+    "patch_conv",
+    "peft",
+    "protobuf",
+    "pytorch-fid",
+    "regex",
+    "sentencepiece",
+    "tensorboard",
+    "tensorboardX",
+    "timm",
+    "torchaudio==2.4.0",
+    "torchvision==0.19",
+    "transformers",
+    "triton==3.0.0",
+    "wandb",
+    "webdataset",
+    "xformers==0.0.27.post2",
+    "yapf",
+    "spaces",
+    "matplotlib",
+    "termcolor",
+    "pyrallis",
+]
+
+
+[project.scripts]
+sana-run = "sana.cli.run:main"
+sana-upload = "sana.cli.upload2hf:main"
+
+[project.optional-dependencies]
+
+[project.urls]
+
+[tool.pip]
+extra-index-url = ["https://download.pytorch.org/whl/cu121"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 120
+
+[tool.setuptools.packages.find]
+exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]
+
+[tool.wheel]
+exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*"]

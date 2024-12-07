@@ -1,6 +1,7 @@
 """
 A model worker executes the model.
 """
+
 import argparse
 import asyncio
 import json

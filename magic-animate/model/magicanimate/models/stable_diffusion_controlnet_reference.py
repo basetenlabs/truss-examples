@@ -13,12 +13,7 @@ import torch
 from diffusers import StableDiffusionControlNetPipeline
 from diffusers.models import ControlNetModel
 from diffusers.models.attention import BasicTransformerBlock
-from diffusers.models.unet_2d_blocks import (
-    CrossAttnDownBlock2D,
-    CrossAttnUpBlock2D,
-    DownBlock2D,
-    UpBlock2D,
-)
+from diffusers.models.unet_2d_blocks import CrossAttnDownBlock2D, CrossAttnUpBlock2D, DownBlock2D, UpBlock2D
 from diffusers.pipelines.controlnet.multicontrolnet import MultiControlNetModel
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.utils import logging
@@ -449,9 +444,9 @@ class StableDiffusionControlNetReferencePipeline(StableDiffusionControlNetPipeli
             if self.only_cross_attention:
                 attn_output = self.attn1(
                     norm_hidden_states,
-                    encoder_hidden_states=encoder_hidden_states
-                    if self.only_cross_attention
-                    else None,
+                    encoder_hidden_states=(
+                        encoder_hidden_states if self.only_cross_attention else None
+                    ),
                     attention_mask=attention_mask,
                     **cross_attention_kwargs,
                 )
@@ -460,9 +455,9 @@ class StableDiffusionControlNetReferencePipeline(StableDiffusionControlNetPipeli
                     self.bank.append(norm_hidden_states.detach().clone())
                     attn_output = self.attn1(
                         norm_hidden_states,
-                        encoder_hidden_states=encoder_hidden_states
-                        if self.only_cross_attention
-                        else None,
+                        encoder_hidden_states=(
+                            encoder_hidden_states if self.only_cross_attention else None
+                        ),
                         attention_mask=attention_mask,
                         **cross_attention_kwargs,
                     )
@@ -491,9 +486,11 @@ class StableDiffusionControlNetReferencePipeline(StableDiffusionControlNetPipeli
                     else:
                         attn_output = self.attn1(
                             norm_hidden_states,
-                            encoder_hidden_states=encoder_hidden_states
-                            if self.only_cross_attention
-                            else None,
+                            encoder_hidden_states=(
+                                encoder_hidden_states
+                                if self.only_cross_attention
+                                else None
+                            ),
                             attention_mask=attention_mask,
                             **cross_attention_kwargs,
                         )

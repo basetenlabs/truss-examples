@@ -8,15 +8,14 @@ from transformers import AutoTokenizer
 
 patch()
 
+from vllm import SamplingParams
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 
-from vllm import SamplingParams
-
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
-os.environ[
-    "VLLM_WORKER_MULTIPROC_METHOD"
-] = "spawn"  # for multiprocessing to work with CUDA
+os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = (
+    "spawn"  # for multiprocessing to work with CUDA
+)
 logger = logging.getLogger(__name__)
 
 

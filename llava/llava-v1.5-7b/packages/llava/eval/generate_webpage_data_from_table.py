@@ -1,4 +1,5 @@
 """Generate json file for webpage."""
+
 import json
 import os
 import re

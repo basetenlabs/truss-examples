@@ -1,4 +1,5 @@
 """GPT Blocks used for the GPT Model."""
+
 from typing import Dict, Optional, Tuple
 
 import torch

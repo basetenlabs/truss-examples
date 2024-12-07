@@ -24,6 +24,7 @@ from typing import Dict, List, Optional, Sequence
 
 import torch
 import transformers
+from llava import conversation as conversation_lib
 from llava.constants import (
     DEFAULT_IM_END_TOKEN,
     DEFAULT_IM_START_TOKEN,
@@ -36,8 +37,6 @@ from llava.model import *
 from llava.train.llava_trainer import LLaVATrainer
 from PIL import Image
 from torch.utils.data import Dataset
-
-from llava import conversation as conversation_lib
 
 local_rank = None
 
@@ -660,6 +659,7 @@ def preprocess(
         header = f"{conversation_lib.default_conversation.system}\n\n"
         conversation = _add_speaker_and_signal(header, source)
         conversations.append(conversation)
+
     # tokenize conversations
     def get_tokenize_len(prompts):
         return [len(tokenizer_image_token(prompt, tokenizer)) for prompt in prompts]
@@ -998,9 +998,9 @@ def train():
         model.config.tokenizer_padding_side = tokenizer.padding_side
         model.config.tokenizer_model_max_length = tokenizer.model_max_length
 
-        model.config.tune_mm_mlp_adapter = (
-            training_args.tune_mm_mlp_adapter
-        ) = model_args.tune_mm_mlp_adapter
+        model.config.tune_mm_mlp_adapter = training_args.tune_mm_mlp_adapter = (
+            model_args.tune_mm_mlp_adapter
+        )
         if model_args.tune_mm_mlp_adapter:
             model.requires_grad_(False)
             for p in model.get_model().mm_projector.parameters():
@@ -1016,9 +1016,9 @@ def train():
                 dtype=compute_dtype, device=training_args.device
             )
 
-        model.config.mm_use_im_start_end = (
-            data_args.mm_use_im_start_end
-        ) = model_args.mm_use_im_start_end
+        model.config.mm_use_im_start_end = data_args.mm_use_im_start_end = (
+            model_args.mm_use_im_start_end
+        )
         model.config.mm_projector_lr = training_args.mm_projector_lr
         training_args.use_im_start_end = model_args.mm_use_im_start_end
         model.config.mm_use_im_patch_token = model_args.mm_use_im_patch_token

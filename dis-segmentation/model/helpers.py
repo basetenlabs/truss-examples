@@ -122,14 +122,14 @@ def create_hyper_parameters():
     hypar = {}  # paramters for inferencing
     hypar["model_path"] = "./saved_models"  ## load trained weights from this path
     hypar["restore_model"] = "isnet.pth"  ## name of the to-be-loaded weights
-    hypar[
-        "interm_sup"
-    ] = False  ## indicate if activate intermediate feature supervision
+    hypar["interm_sup"] = (
+        False  ## indicate if activate intermediate feature supervision
+    )
 
     ##  choose floating point accuracy --
-    hypar[
-        "model_digit"
-    ] = "full"  ## indicates "half" or "full" accuracy of float number
+    hypar["model_digit"] = (
+        "full"  ## indicates "half" or "full" accuracy of float number
+    )
     hypar["seed"] = 0
 
     hypar["cache_size"] = [
