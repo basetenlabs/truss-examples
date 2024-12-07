@@ -17,12 +17,11 @@
 import os
 import time
 
+from diffusion.data.transforms import get_transform
+from diffusion.utils.logger import get_root_logger
 from mmcv import Registry, build_from_cfg
 from termcolor import colored
 from torch.utils.data import DataLoader
-
-from diffusion.data.transforms import get_transform
-from diffusion.utils.logger import get_root_logger
 
 DATASETS = Registry("datasets")
 

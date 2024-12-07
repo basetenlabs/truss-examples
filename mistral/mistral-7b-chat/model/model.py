@@ -36,9 +36,11 @@ class Model:
         }
 
         request["generate_args"] = {
-            k: request[k]
-            if k in request and request[k] is not None
-            else generate_args[k]
+            k: (
+                request[k]
+                if k in request and request[k] is not None
+                else generate_args[k]
+            )
             for k in generate_args.keys()
         }
 

@@ -249,33 +249,41 @@ def convert_response(response):
     output_tensors.append(
         pb_utils.Tensor(
             "cum_log_probs",
-            np.expand_dims(np.array(result.cum_log_probs, np.float32), 0)
-            if result.cum_log_probs is not None
-            else np.zeros((1, 1), np.float32),
+            (
+                np.expand_dims(np.array(result.cum_log_probs, np.float32), 0)
+                if result.cum_log_probs is not None
+                else np.zeros((1, 1), np.float32)
+            ),
         )
     )
     output_tensors.append(
         pb_utils.Tensor(
             "output_log_probs",
-            np.expand_dims(np.array(result.log_probs, np.float32), 0)
-            if result.log_probs is not None
-            else np.zeros((1, 1, 1), np.float32),
+            (
+                np.expand_dims(np.array(result.log_probs, np.float32), 0)
+                if result.log_probs is not None
+                else np.zeros((1, 1, 1), np.float32)
+            ),
         )
     )
     output_tensors.append(
         pb_utils.Tensor(
             "context_logits",
-            np.expand_dims(np.array(result.context_logits, np.float32), 0)
-            if result.context_logits is not None
-            else np.zeros((1, 1, 1), np.float32),
+            (
+                np.expand_dims(np.array(result.context_logits, np.float32), 0)
+                if result.context_logits is not None
+                else np.zeros((1, 1, 1), np.float32)
+            ),
         )
     )
     output_tensors.append(
         pb_utils.Tensor(
             "generation_logits",
-            np.expand_dims(np.array(result.generation_logits, np.float32), 0)
-            if result.generation_logits is not None
-            else np.zeros((1, 1, 1, 1), np.float32),
+            (
+                np.expand_dims(np.array(result.generation_logits, np.float32), 0)
+                if result.generation_logits is not None
+                else np.zeros((1, 1, 1, 1), np.float32)
+            ),
         )
     )
     return pb_utils.InferenceResponse(output_tensors), result.is_final
@@ -572,9 +580,9 @@ class TritonPythonModel:
                 triton_response, is_final = convert_response(response)
                 response_sender.send(
                     triton_response,
-                    flags=pb_utils.TRITONSERVER_RESPONSE_COMPLETE_FINAL
-                    if is_final
-                    else 0,
+                    flags=(
+                        pb_utils.TRITONSERVER_RESPONSE_COMPLETE_FINAL if is_final else 0
+                    ),
                 )
 
                 if is_final:

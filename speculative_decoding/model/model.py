@@ -165,9 +165,9 @@ class Model:
         # `ensure_future` makes sure the loop immediately runs until completion and
         # fills up the result queue as fast as possible (only limited by the inference
         # requests latency) and doesn't wait for the consumption of the results.
-        inference_gen: asyncio.Task[
-            speculative_decoding.SpeculationState
-        ] = asyncio.ensure_future(infer_co)
+        inference_gen: asyncio.Task[speculative_decoding.SpeculationState] = (
+            asyncio.ensure_future(infer_co)
+        )
 
         if maybe_queue is not None:
 

@@ -19,7 +19,8 @@ def _format_prompt(messages: list[dict], add_generation_prompt: bool = True) -> 
     'USER: hello world
     ASSISTANT:'
 
-    This is a workaround for Nous-Capybara not being configured with a chat template (see https://huggingface.co/NousResearch/Nous-Capybara-34B/discussions/5)"""
+    This is a workaround for Nous-Capybara not being configured with a chat template (see https://huggingface.co/NousResearch/Nous-Capybara-34B/discussions/5)
+    """
     formatted_prompts = []
     for message in messages:
         if message["role"] == "user":

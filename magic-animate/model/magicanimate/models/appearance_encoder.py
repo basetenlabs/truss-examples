@@ -562,9 +562,11 @@ class AppearanceEncoderModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixi
                 resnet_skip_time_act=resnet_skip_time_act,
                 resnet_out_scale_factor=resnet_out_scale_factor,
                 cross_attention_norm=cross_attention_norm,
-                attention_head_dim=attention_head_dim[i]
-                if attention_head_dim[i] is not None
-                else output_channel,
+                attention_head_dim=(
+                    attention_head_dim[i]
+                    if attention_head_dim[i] is not None
+                    else output_channel
+                ),
             )
             self.down_blocks.append(down_block)
 
@@ -659,9 +661,11 @@ class AppearanceEncoderModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixi
                 resnet_skip_time_act=resnet_skip_time_act,
                 resnet_out_scale_factor=resnet_out_scale_factor,
                 cross_attention_norm=cross_attention_norm,
-                attention_head_dim=attention_head_dim[i]
-                if attention_head_dim[i] is not None
-                else output_channel,
+                attention_head_dim=(
+                    attention_head_dim[i]
+                    if attention_head_dim[i] is not None
+                    else output_channel
+                ),
             )
             self.up_blocks.append(up_block)
             prev_output_channel = output_channel
@@ -674,9 +678,9 @@ class AppearanceEncoderModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixi
         self.up_blocks[3].attentions[2].transformer_blocks[
             0
         ].attn1.to_v = _LoRACompatibleLinear()
-        self.up_blocks[3].attentions[2].transformer_blocks[
-            0
-        ].attn1.to_out = nn.ModuleList([Identity(), Identity()])
+        self.up_blocks[3].attentions[2].transformer_blocks[0].attn1.to_out = (
+            nn.ModuleList([Identity(), Identity()])
+        )
         self.up_blocks[3].attentions[2].transformer_blocks[0].norm2 = Identity()
         self.up_blocks[3].attentions[2].transformer_blocks[0].attn2 = None
         self.up_blocks[3].attentions[2].transformer_blocks[0].norm3 = Identity()
@@ -1100,9 +1104,9 @@ class AppearanceEncoderModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixi
                 # For t2i-adapter CrossAttnDownBlock2D
                 additional_residuals = {}
                 if is_adapter and len(down_block_additional_residuals) > 0:
-                    additional_residuals[
-                        "additional_residuals"
-                    ] = down_block_additional_residuals.pop(0)
+                    additional_residuals["additional_residuals"] = (
+                        down_block_additional_residuals.pop(0)
+                    )
 
                 sample, res_samples = downsample_block(
                     hidden_states=sample,

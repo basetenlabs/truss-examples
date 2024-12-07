@@ -2,6 +2,7 @@
 
 Inspired by https://github.com/karpathy/minGPT/blob/master/mingpt/model.py
 """
+
 import math
 import warnings
 from typing import List, Optional, Tuple, Union
@@ -10,20 +11,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import PreTrainedModel, PreTrainedTokenizer, PreTrainedTokenizerFast
-from transformers.modeling_outputs import (
-    BaseModelOutputWithPast,
-    CausalLMOutputWithPast,
-)
+from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 
 from .adapt_tokenizer import AutoTokenizerForMOD, adapt_tokenizer_for_denoising
 from .attention import attn_bias_shape, build_attn_bias
 from .blocks import MPTBlock
 from .configuration_mpt import MPTConfig
 from .custom_embedding import SharedEmbedding
-from .hf_prefixlm_converter import (
-    add_bidirectional_mask_if_missing,
-    convert_hf_causal_lm_to_prefix_lm,
-)
+from .hf_prefixlm_converter import add_bidirectional_mask_if_missing, convert_hf_causal_lm_to_prefix_lm
 from .meta_init_context import init_empty_weights
 from .norm import NORM_CLASS_REGISTRY
 from .param_init_fns import MODEL_INIT_REGISTRY, generic_param_init_fn_
@@ -326,7 +321,7 @@ class MPTModel(MPTPreTrainedModel):
             past_key_values = [() for _ in range(self.config.n_layers)]
         all_hidden_states = () if output_hidden_states else None
         all_self_attns = () if output_attentions else None
-        for (b_idx, block) in enumerate(self.blocks):
+        for b_idx, block in enumerate(self.blocks):
             if output_hidden_states:
                 assert all_hidden_states is not None
                 all_hidden_states = all_hidden_states + (x,)

@@ -1,4 +1,5 @@
 """A HuggingFace-style model configuration."""
+
 from typing import Dict, Optional, Union
 
 from transformers import PretrainedConfig
@@ -132,7 +133,7 @@ class MPTConfig(PretrainedConfig):
         self._validate_config()
 
     def _set_config_defaults(self, config, config_defaults):
-        for (k, v) in config_defaults.items():
+        for k, v in config_defaults.items():
             if k not in config:
                 config[k] = v
         return config

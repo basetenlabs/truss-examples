@@ -43,9 +43,9 @@ class DefaultInferenceParams:
     enhancer: Optional[Literal["df"]] = "df"
     """Enhancer to use for post-processing."""
 
-    use_kv_cache: Optional[
-        Literal["flash_decoding", "vanilla"]
-    ] = get_default_use_kv_cache()
+    use_kv_cache: Optional[Literal["flash_decoding", "vanilla"]] = (
+        get_default_use_kv_cache()
+    )
     """Type of kv caching to use for inference: 1) [none] no kv caching, 2) [flash_decoding] use the
     flash decoding kernel, 3) [vanilla] use torch attention with hand implemented kv-cache."""
 

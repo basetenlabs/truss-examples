@@ -17,6 +17,7 @@ from PIL import Image
 # The following line is needed to enable TF32 on NVIDIA GPUs
 torch.backends.cuda.matmul.allow_tf32 = True
 
+
 # # Define the `Model` class and load function
 #
 # In the `load` function of the Truss, we implement logic involved in

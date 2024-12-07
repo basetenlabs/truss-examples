@@ -214,9 +214,9 @@ class BasicTransformerBlock(nn.Module):
                 dim_head=attention_head_dim,
                 dropout=dropout,
                 bias=attention_bias,
-                cross_attention_dim=cross_attention_dim
-                if only_cross_attention
-                else None,
+                cross_attention_dim=(
+                    cross_attention_dim if only_cross_attention else None
+                ),
                 upcast_attention=upcast_attention,
             )
         else:

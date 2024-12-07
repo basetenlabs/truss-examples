@@ -12,6 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # We use the 7B version of the Mistral model.
 CHECKPOINT = "mistralai/Mistral-7B-v0.1"
 
+
 # # Define the `Model` class and load function
 #
 # In the `load` function of the Truss, we implement logic involved in

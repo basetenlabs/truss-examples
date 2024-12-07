@@ -20,12 +20,7 @@ import torch.nn as nn
 from timm.models.layers import DropPath
 
 from diffusion.model.nets.basic_modules import DWMlp, MBConvPreGLU, Mlp
-from diffusion.model.nets.sana_blocks import (
-    Attention,
-    FlashAttention,
-    MultiHeadCrossAttention,
-    t2i_modulate,
-)
+from diffusion.model.nets.sana_blocks import Attention, FlashAttention, MultiHeadCrossAttention, t2i_modulate
 from diffusion.utils.import_utils import is_triton_module_available
 
 _triton_modules_available = False

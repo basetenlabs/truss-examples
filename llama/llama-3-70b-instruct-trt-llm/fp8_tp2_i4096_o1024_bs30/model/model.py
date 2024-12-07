@@ -50,9 +50,11 @@ class Model:
 
         self.triton_server.create_model_repository(
             truss_data_dir=self._data_dir,
-            engine_repository_path=build_config.engine_repository
-            if not build_config.requires_build
-            else None,
+            engine_repository_path=(
+                build_config.engine_repository
+                if not build_config.requires_build
+                else None
+            ),
             huggingface_auth_token=hf_access_token,
         )
 
