@@ -50,7 +50,7 @@ class Model:
         )
         logging.info("loading sana model from hf checkpoint")
         self.sana.from_pretrained(
-            "hf://Efficient-Large-Model/Sana_1600M_1024px/checkpoints/Sana_1600M_1024px.pth"
+            "hf://Efficient-Large-Model/Sana_600M_1024px/checkpoints/Sana_600M_1024px_MultiLing.pth"
         )
         logging.info("all done loading models")
         try:

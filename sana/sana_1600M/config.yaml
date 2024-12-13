@@ -13,7 +13,7 @@ model_metadata:
     "num_inference_steps": 18,
     "seed": 4096,
   }
-model_name: sana
+model_name: Sana 1600M
 python_version: py311
 requirements:
 - git+https://github.com/NVlabs/Sana.git@d7945026d8d85008aca1d1e6db5717a1069f5c84
