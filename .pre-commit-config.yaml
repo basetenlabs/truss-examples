@@ -31,5 +31,6 @@ repos:
       - id: validate-ci
         name: validate-ci-local
         entry: poetry run python ./bin/validate_ci.py
-        language: system
+        language: python
+        additional_dependencies: ['truss', 'pyyaml']
         pass_filenames: false
