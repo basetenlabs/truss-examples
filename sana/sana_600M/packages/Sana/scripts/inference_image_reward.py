@@ -29,9 +29,6 @@ warnings.filterwarnings("ignore")  # ignore warning
 
 import pyrallis
 import torch
-from torchvision.utils import save_image
-from tqdm import tqdm
-
 from diffusion import DPMS, FlowEuler, SASolverSampler
 from diffusion.data.datasets.utils import (
     ASPECT_RATIO_512_TEST,
@@ -50,6 +47,8 @@ from diffusion.utils.logger import get_root_logger
 
 # from diffusion.utils.misc import read_config
 from tools.download import find_model
+from torchvision.utils import save_image
+from tqdm import tqdm
 
 
 def set_env(seed=0, latent_size=256):

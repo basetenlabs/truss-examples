@@ -32,10 +32,11 @@ import os
 import os.path as osp
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
-import clip
 import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
+
+import clip
 
 try:
     from tqdm import tqdm

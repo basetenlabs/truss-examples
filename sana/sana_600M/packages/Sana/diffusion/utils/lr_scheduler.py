@@ -17,10 +17,9 @@
 import math
 
 from diffusers import get_constant_schedule_with_warmup, get_cosine_schedule_with_warmup
+from diffusion.utils.logger import get_root_logger
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-
-from diffusion.utils.logger import get_root_logger
 
 
 def build_lr_scheduler(config, optimizer, train_dataloader, lr_scale_ratio):

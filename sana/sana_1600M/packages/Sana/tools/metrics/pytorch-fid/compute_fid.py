@@ -9,9 +9,8 @@ import torchvision.transforms as T
 from PIL import Image
 from pytorch_fid.inception import InceptionV3
 from scipy import linalg
-from torch.nn.functional import adaptive_avg_pool2d
-
 from tools.metrics.utils import tracker
+from torch.nn.functional import adaptive_avg_pool2d
 
 try:
     from tqdm import tqdm

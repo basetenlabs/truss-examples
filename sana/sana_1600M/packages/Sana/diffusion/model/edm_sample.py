@@ -22,9 +22,8 @@
 import random
 
 import numpy as np
-from tqdm import tqdm
-
 from diffusion.model.utils import *
+from tqdm import tqdm
 
 # ----------------------------------------------------------------------------
 # Proposed EDM sampler (Algorithm 2).

@@ -6,9 +6,8 @@ from copy import deepcopy
 from random import choice, shuffle
 from typing import Sequence
 
-from torch.utils.data import BatchSampler, Dataset, Sampler
-
 from diffusion.utils.logger import get_root_logger
+from torch.utils.data import BatchSampler, Dataset, Sampler
 
 
 class AspectRatioBatchSampler(BatchSampler):

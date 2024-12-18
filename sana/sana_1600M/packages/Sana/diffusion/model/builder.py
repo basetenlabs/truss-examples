@@ -16,6 +16,8 @@
 
 import torch
 from diffusers.models import AutoencoderKL
+from diffusion.model.dc_ae.efficientvit.ae_model_zoo import DCAE_HF
+from diffusion.model.utils import set_fp32_attention, set_grad_checkpoint
 from mmcv import Registry
 from termcolor import colored
 from transformers import (
@@ -26,9 +28,6 @@ from transformers import (
     T5Tokenizer,
 )
 from transformers import logging as transformers_logging
-
-from diffusion.model.dc_ae.efficientvit.ae_model_zoo import DCAE_HF
-from diffusion.model.utils import set_fp32_attention, set_grad_checkpoint
 
 MODELS = Registry("models")
 
