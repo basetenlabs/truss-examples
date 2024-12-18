@@ -3,7 +3,7 @@ base_image:
 model_metadata:
   repo_id: deepseek-ai/DeepSeek-V2.5-1210
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path deepseek-ai/DeepSeek-V2.5-1210 --port 8000 --tp 8 --trust-remote-code --enable-dp-attention"
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path deepseek-ai/DeepSeek-V2.5-1210 --port 8000 --tp 8 --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/completions
