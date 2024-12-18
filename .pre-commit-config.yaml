@@ -15,6 +15,14 @@ repos:
       - id: debug-statements
         exclude: ^sana/
 
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort-local
+        entry: poetry run isort --profile=black
+        language: system
+        types: [python]
+        pass_filenames: true
   - repo: https://github.com/psf/black
     rev: 24.10.0
     hooks:
@@ -24,14 +32,6 @@ repos:
         # pre-commit's default_language_version, see
         # https://pre-commit.com/#top_level-default_language_version
         language_version: python3
-  - repo: local
-    hooks:
-      - id: isort
-        name: isort-local
-        entry: poetry run isort --profile=black
-        language: system
-        types: [python]
-        pass_filenames: true
   - repo: local
     hooks:
       - id: validate-ci

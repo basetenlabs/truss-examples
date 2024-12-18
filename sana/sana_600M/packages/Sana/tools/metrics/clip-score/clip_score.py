@@ -2,15 +2,15 @@ import io
 import os
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
-import clip
 import numpy as np
 import torch
 import webdataset as wds
+from diffusion.data.transforms import get_transform
 from PIL import Image
+from tools.metrics.utils import tracker
 from torch.utils.data import DataLoader, Dataset, IterableDataset
 
-from diffusion.data.transforms import get_transform
-from tools.metrics.utils import tracker
+import clip
 
 try:
     from tqdm import tqdm

@@ -6,7 +6,11 @@ from typing import Any
 import tensorrt as trt
 import torch
 from cuda import cudart
-from diffusers import AutoencoderKL, DiffusionPipeline, DPMSolverMultistepScheduler
+from diffusers import (
+    AutoencoderKL,
+    DiffusionPipeline,
+    DPMSolverMultistepScheduler,
+)
 from diffusion.trtclip import TRTClip
 from diffusion.trtunet import TRTUnet
 from huggingface_hub import snapshot_download

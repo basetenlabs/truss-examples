@@ -3,12 +3,11 @@ import os
 import uuid
 
 from mistral_common.tokens.tokenizers.mistral import ChatCompletionRequest
+from vllm import TokensPrompt
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.entrypoints.chat_utils import parse_chat_messages
 from vllm.sampling_params import SamplingParams
-
-from vllm import TokensPrompt
 
 logger = logging.getLogger(__name__)
 

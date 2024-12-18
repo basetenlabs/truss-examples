@@ -20,6 +20,8 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+from timm.models.layers import DropPath
+
 from diffusion.model.builder import MODELS
 from diffusion.model.nets.basic_modules import DWMlp, GLUMBConv, MBConvPreGLU, Mlp
 from diffusion.model.nets.sana_blocks import (
@@ -38,7 +40,6 @@ from diffusion.model.utils import auto_grad_checkpoint, to_2tuple
 from diffusion.utils.dist_utils import get_rank
 from diffusion.utils.import_utils import is_triton_module_available
 from diffusion.utils.logger import get_root_logger
-from timm.models.layers import DropPath
 
 _triton_modules_available = False
 if is_triton_module_available():

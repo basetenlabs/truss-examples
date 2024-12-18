@@ -24,7 +24,6 @@ from typing import Dict, List, Optional, Sequence
 
 import torch
 import transformers
-from llava import conversation as conversation_lib
 from llava.constants import (
     DEFAULT_IM_END_TOKEN,
     DEFAULT_IM_START_TOKEN,
@@ -37,6 +36,8 @@ from llava.model import *
 from llava.train.llava_trainer import LLaVATrainer
 from PIL import Image
 from torch.utils.data import Dataset
+
+from llava import conversation as conversation_lib
 
 local_rank = None
 

@@ -17,11 +17,10 @@
 # This file is modified from https://github.com/PixArt-alpha/PixArt-sigma
 import torch
 import torch.nn as nn
-from timm.models.vision_transformer import Mlp
-
 from diffusion.model.act import build_act, get_act_name
 from diffusion.model.norms import build_norm, get_norm_name
 from diffusion.model.utils import get_same_padding, val2tuple
+from timm.models.vision_transformer import Mlp
 
 
 class ConvLayer(nn.Module):

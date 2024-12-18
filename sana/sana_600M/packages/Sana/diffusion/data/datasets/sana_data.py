@@ -24,13 +24,12 @@ import random
 import numpy as np
 import torch
 import torch.distributed as dist
-from PIL import Image
-from termcolor import colored
-from torch.utils.data import Dataset
-
 from diffusion.data.builder import DATASETS, get_data_path
 from diffusion.data.wids import ShardListDataset, ShardListDatasetMulti, lru_json_load
 from diffusion.utils.logger import get_root_logger
+from PIL import Image
+from termcolor import colored
+from torch.utils.data import Dataset
 
 
 @DATASETS.register_module()
@@ -520,9 +519,8 @@ class SanaWebDataset(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
-    from torch.utils.data import DataLoader
-
     from diffusion.data.transforms import get_transform
+    from torch.utils.data import DataLoader
 
     image_size = 1024  # 256
     transform = get_transform("default_train", image_size)
