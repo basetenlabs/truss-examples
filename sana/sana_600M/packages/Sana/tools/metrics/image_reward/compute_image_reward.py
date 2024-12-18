@@ -3,9 +3,8 @@ import os
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 
 import ImageReward as RM
-from tqdm import tqdm
-
 from tools.metrics.utils import tracker
+from tqdm import tqdm
 
 
 def parse_args():

@@ -13,28 +13,24 @@ repos:
       - id: check-merge-conflict
       - id: check-symlinks
       - id: debug-statements
+        exclude: ^sana/
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
 
   - repo: https://github.com/psf/black
     rev: 24.10.0
     hooks:
       - id: black
-        # It is recommended to specify the latest version of Python
-        # supported by your project here, or alternatively use
-        # pre-commit's default_language_version, see
-        # https://pre-commit.com/#top_level-default_language_version
         language_version: python3
-  - repo: local
-    hooks:
-      - id: isort
-        name: isort-local
-        entry: poetry run isort --profile=black
-        language: system
-        types: [python]
-        pass_filenames: true
+
   - repo: local
     hooks:
       - id: validate-ci
         name: validate-ci-local
         entry: poetry run python ./bin/validate_ci.py
-        language: system
+        language: python
+        additional_dependencies: ['truss', 'pyyaml']
         pass_filenames: false

@@ -20,10 +20,9 @@ import argparse
 import os
 
 import torch
+from sana.tools import hf_download_or_fpath
 from termcolor import colored
 from torchvision.datasets.utils import download_url
-
-from sana.tools import hf_download_or_fpath
 
 pretrained_models = {}
 
