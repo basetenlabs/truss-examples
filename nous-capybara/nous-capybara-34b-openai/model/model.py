@@ -1,12 +1,10 @@
 from threading import Thread
 
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    GenerationConfig,
-    TextIteratorStreamer,
-)
+from transformers import (AutoModelForCausalLM,
+                          AutoTokenizer,
+                          GenerationConfig,
+                          TextIteratorStreamer,)
 
 MODEL_NAME = "NousResearch/Nous-Capybara-34B"
 

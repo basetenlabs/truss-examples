@@ -14,16 +14,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import torch
 import torch.nn.functional as F
 from diffusers.models.attention import BasicTransformerBlock
-from diffusers.models.unet_2d_blocks import (
-    CrossAttnDownBlock2D,
-    CrossAttnUpBlock2D,
-    DownBlock2D,
-    UpBlock2D,
-)
+from diffusers.models.unet_2d_blocks import CrossAttnDownBlock2D, CrossAttnUpBlock2D, DownBlock2D, UpBlock2D
 from einops import rearrange
-from model.magicanimate.models.attention import (
-    BasicTransformerBlock as _BasicTransformerBlock,
-)
+from model.magicanimate.models.attention import BasicTransformerBlock as _BasicTransformerBlock
 
 from .stable_diffusion_controlnet_reference import torch_dfs
 

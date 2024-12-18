@@ -19,9 +19,7 @@ import os
 import torch
 from diffusers import FlowMatchEulerDiscreteScheduler
 from diffusers.models.modeling_outputs import Transformer2DModelOutput
-from diffusers.pipelines.stable_diffusion_3.pipeline_stable_diffusion_3 import (
-    retrieve_timesteps,
-)
+from diffusers.pipelines.stable_diffusion_3.pipeline_stable_diffusion_3 import retrieve_timesteps
 from tqdm import tqdm
 
 

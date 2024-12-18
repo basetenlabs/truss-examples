@@ -23,12 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.models.modeling_utils import ModelMixin
-from diffusers.models.unet_2d_blocks import (
-    CrossAttnDownBlock2D,
-    DownBlock2D,
-    UNetMidBlock2DCrossAttn,
-    get_down_block,
-)
+from diffusers.models.unet_2d_blocks import CrossAttnDownBlock2D, DownBlock2D, UNetMidBlock2DCrossAttn, get_down_block
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.utils import BaseOutput, logging
 from torch import nn

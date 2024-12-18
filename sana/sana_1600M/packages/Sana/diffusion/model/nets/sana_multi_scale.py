@@ -18,36 +18,28 @@
 import torch
 import torch.nn as nn
 from diffusion.model.builder import MODELS
-from diffusion.model.nets.basic_modules import (
-    DWMlp,
-    GLUMBConv,
-    MBConvPreGLU,
-    Mlp,
-)
+from diffusion.model.nets.basic_modules import (DWMlp,
+                                                GLUMBConv,
+                                                MBConvPreGLU,
+                                                Mlp,)
 from diffusion.model.nets.sana import Sana, get_2d_sincos_pos_embed
-from diffusion.model.nets.sana_blocks import (
-    Attention,
-    CaptionEmbedder,
-    FlashAttention,
-    LiteLA,
-    MultiHeadCrossAttention,
-    PatchEmbedMS,
-    T2IFinalLayer,
-    t2i_modulate,
-)
+from diffusion.model.nets.sana_blocks import (Attention,
+                                              CaptionEmbedder,
+                                              FlashAttention,
+                                              LiteLA,
+                                              MultiHeadCrossAttention,
+                                              PatchEmbedMS,
+                                              T2IFinalLayer,
+                                              t2i_modulate,)
 from diffusion.model.utils import auto_grad_checkpoint
-from diffusion.utils.import_utils import (
-    is_triton_module_available,
-    is_xformers_available,
-)
+from diffusion.utils.import_utils import (is_triton_module_available,
+                                          is_xformers_available,)
 from timm.models.layers import DropPath
 
 _triton_modules_available = False
 if is_triton_module_available():
-    from diffusion.model.nets.fastlinear.modules import (
-        TritonLiteMLA,
-        TritonMBConvPreGLU,
-    )
+    from diffusion.model.nets.fastlinear.modules import (TritonLiteMLA,
+                                                         TritonMBConvPreGLU,)
 
     _triton_modules_available = True
 

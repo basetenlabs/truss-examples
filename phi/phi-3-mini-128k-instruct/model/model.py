@@ -1,12 +1,7 @@
 from threading import Thread
 
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    GenerationConfig,
-    TextIteratorStreamer,
-)
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, TextIteratorStreamer
 
 MAX_LENGTH = 512
 TEMPERATURE = 1.0

@@ -1,12 +1,7 @@
 import os
 from itertools import count
 
-from constants import (
-    GRPC_SERVICE_PORT,
-    HF_AUTH_KEY_CONSTANT,
-    HTTP_SERVICE_PORT,
-    TOKENIZER_KEY_CONSTANT,
-)
+from constants import GRPC_SERVICE_PORT, HF_AUTH_KEY_CONSTANT, HTTP_SERVICE_PORT, TOKENIZER_KEY_CONSTANT
 from lora_manager import LoraRegistryManager
 from schema import ModelInput, TrussBuildConfig
 from transformers import AutoTokenizer
