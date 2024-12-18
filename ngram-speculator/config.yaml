@@ -1,0 +1,14 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: ngram-speculator
+python_version: py310
+requirements:
+- vllm
+- transformers
+resources:
+  accelerator: H100
+  use_gpu: True
+secrets: {}
+system_packages: []
