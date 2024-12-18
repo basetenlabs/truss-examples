@@ -5,9 +5,18 @@ import os
 
 import shortuuid
 import torch
-from llava.constants import DEFAULT_IM_END_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
+from llava.constants import (
+    DEFAULT_IM_END_TOKEN,
+    DEFAULT_IM_START_TOKEN,
+    DEFAULT_IMAGE_TOKEN,
+    IMAGE_TOKEN_INDEX,
+)
 from llava.conversation import SeparatorStyle, conv_templates
-from llava.mm_utils import get_model_name_from_path, process_images, tokenizer_image_token
+from llava.mm_utils import (
+    get_model_name_from_path,
+    process_images,
+    tokenizer_image_token,
+)
 from llava.model.builder import load_pretrained_model
 from llava.utils import disable_torch_init
 from PIL import Image

@@ -10,7 +10,12 @@ from threading import Thread
 import tritonclient.grpc as grpcclient
 import tritonclient.http as httpclient
 from tritonclient.utils import InferenceServerException
-from utils import GRPC_SERVICE_PORT, HTTP_SERVICE_PORT, prepare_model_repository, server_loaded
+from utils import (
+    GRPC_SERVICE_PORT,
+    HTTP_SERVICE_PORT,
+    prepare_model_repository,
+    server_loaded,
+)
 
 
 class UserData:

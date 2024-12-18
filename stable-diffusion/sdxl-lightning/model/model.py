@@ -3,7 +3,11 @@ from io import BytesIO
 from typing import Dict
 
 import torch
-from diffusers import EulerDiscreteScheduler, StableDiffusionXLPipeline, UNet2DConditionModel
+from diffusers import (
+    EulerDiscreteScheduler,
+    StableDiffusionXLPipeline,
+    UNet2DConditionModel,
+)
 from huggingface_hub import hf_hub_download
 from PIL import Image
 from safetensors.torch import load_file

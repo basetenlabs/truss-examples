@@ -36,8 +36,17 @@ from tqdm import tqdm
 warnings.filterwarnings("ignore")  # ignore warning
 
 from diffusion import DPMS, FlowEuler, SASolverSampler
-from diffusion.data.datasets.utils import ASPECT_RATIO_512_TEST, ASPECT_RATIO_1024_TEST, ASPECT_RATIO_2048_TEST
-from diffusion.model.builder import build_model, get_tokenizer_and_text_encoder, get_vae, vae_decode
+from diffusion.data.datasets.utils import (
+    ASPECT_RATIO_512_TEST,
+    ASPECT_RATIO_1024_TEST,
+    ASPECT_RATIO_2048_TEST,
+)
+from diffusion.model.builder import (
+    build_model,
+    get_tokenizer_and_text_encoder,
+    get_vae,
+    vae_decode,
+)
 from diffusion.model.utils import prepare_prompt_ar
 from diffusion.utils.config import SanaConfig
 from diffusion.utils.logger import get_root_logger

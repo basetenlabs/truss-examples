@@ -8,7 +8,13 @@ from typing import AsyncGenerator, Optional
 import numpy as np
 import tritonclient.grpc.aio as grpcclient
 import tritonclient.http as httpclient
-from utils import GRPC_SERVICE_PORT, HTTP_SERVICE_PORT, prepare_grpc_tensor, prepare_model_repository, server_loaded
+from utils import (
+    GRPC_SERVICE_PORT,
+    HTTP_SERVICE_PORT,
+    prepare_grpc_tensor,
+    prepare_model_repository,
+    server_loaded,
+)
 
 
 class TritonClient:

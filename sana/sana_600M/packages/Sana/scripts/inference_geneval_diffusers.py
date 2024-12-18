@@ -26,14 +26,13 @@ from pathlib import Path
 import datasets
 import numpy as np
 import torch
+from diffusion.utils.logger import get_root_logger
 from einops import rearrange
 from PIL import Image
 from pytorch_lightning import seed_everything
 from torchvision.transforms import ToTensor
 from torchvision.utils import make_grid
 from tqdm import tqdm, trange
-
-from diffusion.utils.logger import get_root_logger
 
 _CITATION = """\
 @article{ghosh2024geneval,

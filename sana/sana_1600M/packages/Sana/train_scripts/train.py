@@ -41,7 +41,13 @@ warnings.filterwarnings("ignore")  # ignore warning
 from diffusion import DPMS, FlowEuler, Scheduler
 from diffusion.data.builder import build_dataloader, build_dataset
 from diffusion.data.wids import DistributedRangedSampler
-from diffusion.model.builder import build_model, get_tokenizer_and_text_encoder, get_vae, vae_decode, vae_encode
+from diffusion.model.builder import (
+    build_model,
+    get_tokenizer_and_text_encoder,
+    get_vae,
+    vae_decode,
+    vae_encode,
+)
 from diffusion.model.respace import compute_density_for_timestep_sampling
 from diffusion.utils.checkpoint import load_checkpoint, save_checkpoint
 from diffusion.utils.config import SanaConfig
@@ -49,7 +55,12 @@ from diffusion.utils.data_sampler import AspectRatioBatchSampler
 from diffusion.utils.dist_utils import clip_grad_norm_, flush, get_world_size
 from diffusion.utils.logger import LogBuffer, get_root_logger
 from diffusion.utils.lr_scheduler import build_lr_scheduler
-from diffusion.utils.misc import DebugUnderflowOverflow, init_random_seed, read_config, set_random_seed
+from diffusion.utils.misc import (
+    DebugUnderflowOverflow,
+    init_random_seed,
+    read_config,
+    set_random_seed,
+)
 from diffusion.utils.optimizer import auto_scale_lr, build_optimizer
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -721,7 +732,9 @@ def main(cfg: SanaConfig) -> None:
     if config.train.use_fsdp:
         init_train = "FSDP"
         from accelerate import FullyShardedDataParallelPlugin
-        from torch.distributed.fsdp.fully_sharded_data_parallel import FullStateDictConfig
+        from torch.distributed.fsdp.fully_sharded_data_parallel import (
+            FullStateDictConfig,
+        )
 
         set_fsdp_env()
         fsdp_plugin = FullyShardedDataParallelPlugin(

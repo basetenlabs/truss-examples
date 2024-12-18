@@ -30,7 +30,13 @@ from tensorrt_llm.runtime.session import Session, TensorInfo
 from tokenizer import get_tokenizer
 from torch.utils.data import DataLoader
 from whisper.normalizers import EnglishTextNormalizer
-from whisper_utils import N_SAMPLES, log_mel_spectrogram, pad_or_trim, store_transcripts, write_error_stats
+from whisper_utils import (
+    N_SAMPLES,
+    log_mel_spectrogram,
+    pad_or_trim,
+    store_transcripts,
+    write_error_stats,
+)
 
 
 def parse_arguments():

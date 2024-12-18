@@ -7,7 +7,11 @@ from typing import AsyncGenerator, Optional
 
 import tritonclient.grpc.aio as grpcclient
 import tritonclient.http as httpclient
-from constants import ENTRYPOINT_MODEL_NAME, GRPC_SERVICE_PORT, TENSORRT_LLM_MODEL_REPOSITORY_PATH
+from constants import (
+    ENTRYPOINT_MODEL_NAME,
+    GRPC_SERVICE_PORT,
+    TENSORRT_LLM_MODEL_REPOSITORY_PATH,
+)
 from schema import ModelInput
 from utils import download_engine, prepare_model_repository
 

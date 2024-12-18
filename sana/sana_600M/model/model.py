@@ -11,9 +11,8 @@ import numpy as np
 import torch
 from huggingface_hub import login
 from PIL import Image
-from torchvision.utils import save_image
-
 from Sana.app.sana_pipeline import SanaPipeline
+from torchvision.utils import save_image
 
 MAX_SEED = np.iinfo(np.int32).max
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"

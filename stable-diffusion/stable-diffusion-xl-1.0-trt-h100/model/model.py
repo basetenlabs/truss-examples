@@ -7,11 +7,10 @@ import tensorrt as trt
 import torch
 from cuda import cudart
 from diffusers import AutoencoderKL, DiffusionPipeline, DPMSolverMultistepScheduler
-from huggingface_hub import snapshot_download
-from PIL import Image
-
 from diffusion.trtclip import TRTClip
 from diffusion.trtunet import TRTUnet
+from huggingface_hub import snapshot_download
+from PIL import Image
 
 torch.backends.cuda.matmul.allow_tf32 = True
 
