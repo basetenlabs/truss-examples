@@ -1,0 +1,17 @@
+model_metadata:
+  example_model_input:
+    prompt: How tall is a tiny llama?
+model_name: tinyllama-trt
+python_version: py310
+resources:
+  accelerator: A10G
+  memory: 24Gi
+  use_gpu: true
+trt_llm:
+  build:
+    max_seq_len: 2048
+    base_model: llama
+    quantization_type: no_quant
+    checkpoint_repository:
+      repo: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+      source: HF
