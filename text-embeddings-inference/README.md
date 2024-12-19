@@ -14,13 +14,13 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd custom-server/text-embeddings-inference/custom_server
+cd text-embeddings-inference
 ```
 
-With `custom_server` as your working directory, you can deploy the model with the following command, paste your Baseten API key if prompted.
+With `text-embeddings-inference` as your working directory, you can deploy the model with the following command, paste your Baseten API key if prompted.
 
 ```sh
-truss push --publish --trusted
+truss push --publish
 ```
 
 ## Call your model
@@ -33,47 +33,22 @@ curl -X POST https://model-xxx.api.baseten.co/development/predict \
         -d '{"input": "text string"}'
 ```
 
+
 ### request python library
 
 ```python
+import os
 import requests
 
 resp = requests.post(
-    "https://model-xxx.api.baseten.co/development/predict",
-    headers={"Authorization": "Api-Key YOUR_API_KEY"},
-    json={"input": "text string"},
+    "https://model-xxx.api.baseten.co/environments/production/predict",
+    headers={"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"},
+    json={"input": ["text string", "second string"]},
 )
 
 print(resp.json())
 ```
 
-### openai python SDK
-
-```python
-import os
-from openai import OpenAI
-
-client = OpenAI(
-    api_key=os.environ["YOUR_API_KEY"],
-    base_url="https://bridge.baseten.co/v1/direct"
-)
-
-model_id = "xxx"
-deployment_id = "xxx"
-
-response = client.embeddings.create(
-    input="text string",
-    model="BAAI/bge-small-en-v1.5",
-    extra_body={
-        "baseten": {
-            "model_id": model_id,
-            "deployment_id": deployment_id
-        }
-    }
-)
-
-print(response.data[0].embedding)
-```
 
 ## Support
 

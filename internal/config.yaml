@@ -1,0 +1,50 @@
+
+model_metadata:
+  tags:
+  - openai-compatible
+model_name: briton-spec-dec
+python_version: py310
+requirements: []
+resources:
+  accelerator: A10G
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+runtime:
+  predict_concurrency: 1000
+secrets:
+  hf_access_token: None
+trt_llm:
+  draft:
+    build:
+      base_model: deepseek
+      checkpoint_repository:
+        repo: deepseek-ai/deepseek-coder-1.3b-instruct
+        source: HF
+      max_seq_len: 10000
+      plugin_configuration:
+        use_paged_context_fmha: true
+      tensor_parallel_count: 1
+    runtime:
+      batch_scheduler_policy: max_utilization
+      enable_chunked_context: true
+      kv_cache_free_gpu_mem_fraction: 0.6
+      num_draft_tokens: 4
+  target:
+    build:
+      base_model: deepseek
+      checkpoint_repository:
+        repo: deepseek-ai/deepseek-coder-1.3b-instruct
+        source: HF
+      max_draft_len: 10
+      max_seq_len: 10000
+      plugin_configuration:
+        use_paged_context_fmha: true
+      speculative_decoding_mode: DRAFT_TOKENS_EXTERNAL
+      tensor_parallel_count: 1
+    runtime:
+      batch_scheduler_policy: max_utilization
+      enable_chunked_context: true
+      kv_cache_free_gpu_mem_fraction: 0.65
+      request_default_max_tokens: 1000
+  total_token_limit: 500000

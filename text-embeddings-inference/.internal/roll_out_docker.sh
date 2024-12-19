@@ -12,8 +12,8 @@ declare -A ARCHES=(
 )
 
 # Define version and target
-VERSION="1.5"
-TARGET="michaelf34/text-embeddings-inference"
+VERSION="1.6"
+TARGET="baseten/text-embeddings-inference-mirror"
 
 # Build and push images
 for ARCH in "${!ARCHES[@]}"; do

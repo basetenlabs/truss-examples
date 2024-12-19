@@ -1,4 +1,4 @@
-ARG TAG=1.5
+ARG TAG=1.6
 # this image builds a truss-compatible image with the text-embeddings-inference image as base
 # it mainly requires python3
 # optional, git and git-lfs are installed to allow for easy cloning of the huggingface model repos.
