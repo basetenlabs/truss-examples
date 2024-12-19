@@ -5,8 +5,8 @@ model_metadata: {}
 model_name: ngram-speculator
 python_version: py310
 requirements:
-- vllm
-- transformers
+- vllm==0.6.5
+- transformers==4.47.1
 resources:
   accelerator: H100
   use_gpu: True
