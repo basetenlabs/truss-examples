@@ -1,0 +1,16 @@
+environment_variables: {}
+external_package_dirs: []
+model_metadata: {}
+model_name: Long Running Predictions
+python_version: py311
+requirements:
+- aiohttp
+resources:
+  accelerator: null
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: false
+secrets: {}
+system_packages: []
+runtime:
+  predict_concurrency: 256
