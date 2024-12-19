@@ -1,0 +1,34 @@
+base_image:
+  image: vllm/vllm-openai:v0.6.5
+model_metadata:
+  repo_id: NousResearch/Meta-Llama-3.1-8B-Instruct
+  example_model_input: {
+    "model": "llama",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "What do llamas dream of?"
+        }
+      ]
+      }
+    ],
+    "stream": false,
+    "max_tokens": 512,
+  }
+docker_server:
+  start_command: sh -c "vllm serve NousResearch/Meta-Llama-3.1-8B-Instruct --served-model-name llama --tensor-parallel-size 1 --speculative-model [ngram] --ngram-prompt-lookup-max 64 --ngram-prompt-lookup-min 2 --num-speculative-tokens 64"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+runtime:
+  predict_concurrency : 16
+resources:
+  accelerator: H100
+  use_gpu: true
+model_name: ngram-speculator
+environment_variables:
+  hf_access_token: null

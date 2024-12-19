@@ -1,7 +1,10 @@
 import os
-from typing import Dict, Any
-from vllm import LLM, SamplingParams
+from typing import Any, Dict
+
 from transformers import AutoTokenizer
+
+from vllm import LLM, SamplingParams
+
 
 class Model:
     def __init__(self, **kwargs):
@@ -13,8 +16,10 @@ class Model:
 
         self.model_metadata = self._config.get("model_metadata", {})
         self.model_name = self.model_metadata.get("model_name", "llama")
-        self.model_repo = self.model_metadata.get("repo_id", "NousResearch/Meta-Llama-3.1-8B-Instruct") 
-        
+        self.model_repo = self.model_metadata.get(
+            "repo_id", "NousResearch/Meta-Llama-3.1-8B-Instruct"
+        )
+
     def load(self):
         """
         Initialize and load the vLLM model
@@ -29,11 +34,11 @@ class Model:
             speculative_model="[ngram]",
             num_speculative_tokens=64,
             ngram_prompt_lookup_max=64,
-            ngram_prompt_lookup_min=2
+            ngram_prompt_lookup_min=2,
         )
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_repo)
-        
-    def predict(self, request: Dict[str, Any]) -> Dict[str, Any]:            
+
+    def predict(self, request: Dict[str, Any]) -> Dict[str, Any]:
         messages = request.get("messages", [])
         prompt = self._tokenizer.apply_chat_template(messages, tokenize=False)
 
@@ -42,5 +47,5 @@ class Model:
             max_tokens=request.get("max_tokens", 512),
         )
 
-        outputs = self._model.generate([prompt], sampling_params) 
+        outputs = self._model.generate([prompt], sampling_params)
         return outputs[0].outputs[0].text
