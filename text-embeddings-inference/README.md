@@ -23,6 +23,60 @@ With `text-embeddings-inference` as your working directory, you can deploy the m
 truss push --publish
 ```
 
+## Performance Optimization:
+
+The config.yaml contains a couple of variables that can be tuned, depending on:
+- which GPU is used
+- which model is deployed
+- how many concurrent requests users are sending
+
+The deployment example is for Bert-large and a Nvidia-L4. Bert-large has a maxiumum sequence length of 512 tokens per sentence.
+For Bert-large architecture & the L4, there are marginal gains above a batch-size of 16000 tokens.
+
+### Concurrent requests
+```
+--max-concurrent-requests 40
+# and
+runtime:
+  predict_concurrency : 40
+```
+The following set the number of parallel `post` requests.
+In this case we allow 40 parallel requests to be handled per replica & should allow to batch requests from multiple users together, reaching high token counts. Potentially 40 single parallel requests with one sequence each could fully utilize the GPU. `1*40*512=20480`
+
+
+### Tokens per batch
+```
+--max-batch-tokens 32768
+```
+
+This number of total tokens in a batch. For embedding models, this will determine the VRAM usage.
+As most of TEI's models are implemented with `nested` attention implementation, `32768 tokens` could mean `64 sentence with 512 tokens` or `512 sentences with 64 tokens`. While the first will take slightly longer to compute, the peak VRAM usage will stay roughly the same. For `llama` or `mistral` based `7b` embedding models, we recommend setting it a lower setting e.g.
+```
+--max-batch-tokens 8192
+```
+
+### Client batch size
+```
+--max-client-batch-size 256
+```
+This determines the number of sentences / items in a single request.
+For optimal autoscaling that gets regulated by metrics such as requests/second in Baseten's infrastructure, you want to set this as low as possible. OpenAI-API historically set it to `--max-client-batch-size 32`, which could help for more aggressive autoscaling and thus better latency. One the other hand, frameworks such as LLamaIndex, Langchain or Haystack might prefer or even require higher batch_sizes, especially if the user code is old-fashioned and sends requests 1-by-1 in a for loop. This depends on your users & how you are planning to use your deployment.
+
+### Endpoint and OpenAPI
+Change to /rerank or /predict if you want to use the rerank or predict endpoint.
+Embedding model:
+```yaml
+  predict_endpoint: /v1/embeddings
+```
+Rerank model:
+```yaml
+  predict_endpoint: /rerank
+```
+Classification model:
+```yaml
+  predict_endpoint: /predict
+```
+
 ## Call your model
 
 ### curl
