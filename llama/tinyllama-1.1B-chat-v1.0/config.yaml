@@ -10,8 +10,6 @@ resources:
 trt_llm:
   build:
     max_seq_len: 2048
-    max_batch_size: 1
-    max_beam_width: 1
     base_model: llama
     quantization_type: no_quant
     checkpoint_repository:
