@@ -10,7 +10,7 @@ base_image:
 model_metadata:
   repo_id: BAAI/bge-base-en-v1.5
 docker_server:
-  start_command: sh -c "text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size 256 --max-concurrent-requests 40 --max-batch-tokens 32768"
+  start_command: sh -c "text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size 32 --max-concurrent-requests 40 --max-batch-tokens 32768"
   readiness_endpoint: /health
   liveness_endpoint: /health
   # change to /rerank or /predict if you want to use the rerank or predict endpoint

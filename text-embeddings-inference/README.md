@@ -57,10 +57,10 @@ As most of TEI's models are implemented with `nested` attention implementation, 
 
 ### Client batch size
 ```
---max-client-batch-size 256
+--max-client-batch-size 32
 ```
-This determines the number of sentences / items in a single request.
-For optimal autoscaling that gets regulated by metrics such as requests/second in Baseten's infrastructure, you want to set this as low as possible. OpenAI-API historically set it to `--max-client-batch-size 32`, which could help for more aggressive autoscaling and thus better latency. One the other hand, frameworks such as LLamaIndex, Langchain or Haystack might prefer or even require higher batch_sizes, especially if the user code is old-fashioned and sends requests 1-by-1 in a for loop. This depends on your users & how you are planning to use your deployment.
+Client match size determines the number of sentences in a single request.
+Increase if clients cannot send multiple concurrent requests, or if clients require to larger requests size.
 
 ### Endpoint, Model Selection, and OpenAPI
 Change to /rerank or /predict if you want to use the rerank or predict endpoint.
