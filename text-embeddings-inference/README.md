@@ -1,6 +1,6 @@
 # Text Embeddings Inference Truss
 
-This is a [Truss](https://truss.baseten.co/) to deploy [text-embeddings-inference](https://github.com/huggingface/text-embeddings-inference), a high performance embedding and reranking api.
+This is a Trussless Customer Server example to deploy [text-embeddings-inference](https://github.com/huggingface/text-embeddings-inference), a high performance server that handles text-embeddings, ranranking and classification models as api.
 
 ## Deployment
 
@@ -62,17 +62,20 @@ As most of TEI's models are implemented with `nested` attention implementation, 
 This determines the number of sentences / items in a single request.
 For optimal autoscaling that gets regulated by metrics such as requests/second in Baseten's infrastructure, you want to set this as low as possible. OpenAI-API historically set it to `--max-client-batch-size 32`, which could help for more aggressive autoscaling and thus better latency. One the other hand, frameworks such as LLamaIndex, Langchain or Haystack might prefer or even require higher batch_sizes, especially if the user code is old-fashioned and sends requests 1-by-1 in a for loop. This depends on your users & how you are planning to use your deployment.
 
-### Endpoint and OpenAPI
+### Endpoint, Model Selection, and OpenAPI
 Change to /rerank or /predict if you want to use the rerank or predict endpoint.
-Embedding model:
+Embedding model.
+Example supported models: https://huggingface.co/models?pipeline_tag=feature-extraction&other=text-embeddings-inference&sort=trending
 ```yaml
   predict_endpoint: /v1/embeddings
 ```
-Rerank model:
+Rerank model.
+Example models https://huggingface.co/models?pipeline_tag=text-classification&other=text-embeddings-inference&sort=trending
 ```yaml
   predict_endpoint: /rerank
 ```
 Classification model:
+Example classification model: https://huggingface.co/SamLowe/roberta-base-go_emotions
 ```yaml
   predict_endpoint: /predict
 ```
