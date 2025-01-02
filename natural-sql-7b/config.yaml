@@ -1,0 +1,25 @@
+environment_variables: {}
+external_package_dirs: []
+model_framework: transformers
+model_type: AutoModelForCausalLM
+description: NaturalSQL-7B is a state-of-the-art model for generating SQL queries from natural language questions, developed by ChatDB.
+model_metadata:
+  avatar_url: https://cdn-uploads.huggingface.co/production/uploads/648a374f00f7a3374ee64b99/5ynfoKPzI3_-WasQQt7qR.png
+  cover_image_url: https://global-uploads.webflow.com/6348b2d49808811e3f7a0fff/640690727b722a05771960ec_graphic-data-p-800.png
+  tags:
+  - text-to-SQL
+  - natural language processing
+  - SQL generation
+model_name: natural-sql-7b
+python_version: 3.8
+requirements:
+- transformers==4.35.2
+- accelerate
+- sqlparse
+resources:
+  accelerator: A100
+  cpu: "16"
+  memory: 64Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
