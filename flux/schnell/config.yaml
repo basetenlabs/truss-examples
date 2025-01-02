@@ -10,8 +10,9 @@ requirements:
   - accelerate
   - sentencepiece
   - protobuf
+  - fastapi
 resources:
-  accelerator: H100_40GB
+  accelerator: A100
   use_gpu: true
 secrets:
   hf_access_token: null
