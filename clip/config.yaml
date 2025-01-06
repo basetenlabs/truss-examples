@@ -4,11 +4,11 @@ model_metadata:
   example_model_input:
     url: https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=1600
 model_name: clip-example
-python_version: py39
+python_version: py311
 requirements:
-- transformers==4.32.0
-- pillow==10.0.0
-- torch==2.0.1
+- transformers==4.47.1
+- pillow
+- torch
 resources:
   accelerator: A10G
   cpu: '3'

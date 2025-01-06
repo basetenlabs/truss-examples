@@ -58,6 +58,7 @@ class Model:
             padding=True,
         )
         return request
+    
 
     # The `predict` method performs the actual inference, and outputs a probability associated
     # with each of the labels defined earlier.
