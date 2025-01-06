@@ -41,7 +41,6 @@ trt_llm:
     num_builder_gpus: 4
     quantization_type: fp8_kv
     max_seq_len: 131072
-    default_max_tokens: 131072
     tensor_parallel_count: 2
     plugin_configuration:
       use_paged_context_fmha: true
