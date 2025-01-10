@@ -1,14 +1,14 @@
+base_image:
+  image: htrivedi05/xtts-streaming
+  python_executable_path: /opt/conda/bin/python
 environment_variables:
   COQUI_TOS_AGREED: '1'
 external_package_dirs: []
 model_metadata: {}
-model_name: XTTS Streaming
-python_version: py310
-requirements_file: ./requirements.txt
+model_name: XTTS Streaming - High Performance
 resources:
-  accelerator: T4
+  accelerator: H100
   cpu: '3'
   memory: 10Gi
   use_gpu: true
 secrets: {}
-system_packages: []
