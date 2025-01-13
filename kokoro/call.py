@@ -10,7 +10,7 @@ with httpx.Client() as client:
     resp = client.post(
         DEPLOYMENT_URL,
         headers={"Authorization": f"Api-Key {API_KEY}"},
-        json={"text": "Hello world" * 32, "voice": "af", "speed": 1.0},
+        json={"text": "Hello world", "voice": "af", "speed": 1.0},
         timeout=None,
     )
 
