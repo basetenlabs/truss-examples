@@ -1,0 +1,25 @@
+build_commands:
+- python3 -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+environment_variables: {}
+model_metadata:
+  example_model_input: {"text": "Kokoro is a frontier TTS model for its size of 82 million parameters (text in/audio out). On 25 Dec 2024, Kokoro v0.19 weights were permissively released in full fp32 precision under an Apache 2.0 license. As of 2 Jan 2025, 10 unique Voicepacks have been released, and a .onnx version of v0.19 is available.In the weeks leading up to its release, Kokoro v0.19 was the #1🥇 ranked model in TTS Spaces Arena. Kokoro had achieved higher Elo in this single-voice Arena setting over other models, using fewer parameters and less data. Kokoro's ability to top this Elo ladder suggests that the scaling law (Elo vs compute/data/params) for traditional TTS models might have a steeper slope than previously expected.", "voice": "af", "speed": 1.0}
+model_name: kokoro
+python_version: py311
+requirements:
+- torch==2.5.1
+- transformers==4.48.0
+- scipy==1.15.1
+- phonemizer==3.3.0
+- nltk==3.9.1
+- numpy
+- huggingface_hub[hf_transfer]
+- hf_transfer==0.1.9
+- munch==4.0.0
+resources:
+  accelerator: T4
+  use_gpu: true
+runtime:
+  predict_concurrency: 1
+secrets: {}
+system_packages:
+- espeak-ng
