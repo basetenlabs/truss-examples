@@ -1,5 +1,6 @@
-import httpx
 import base64
+
+import httpx
 
 DEPLOYMENT_URL = ""
 API_KEY = ""

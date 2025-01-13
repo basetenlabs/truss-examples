@@ -2,16 +2,17 @@ import logging
 import os
 
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
-import torch
+import base64
+import io
 import sys
+import time
+
+import nltk
 import numpy as np
 import scipy.io.wavfile as wav
-from nltk.tokenize import sent_tokenize
-import nltk
-import io
-import base64
-import time
+import torch
 from huggingface_hub import snapshot_download
+from nltk.tokenize import sent_tokenize
 
 nltk.download("punkt")
 
@@ -32,6 +33,7 @@ snapshot_download(
 sys.path.append("/app/data/Kokoro-82M")
 
 from models import build_model
+
 from kokoro import generate
 
 logger = logging.getLogger(__name__)
