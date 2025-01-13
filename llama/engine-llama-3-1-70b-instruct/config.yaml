@@ -41,12 +41,13 @@ trt_llm:
     num_builder_gpus: 4
     quantization_type: fp8_kv
     max_seq_len: 131072
-    batch_scheduler_policy: max_utilization
-    default_max_tokens: 131072
     tensor_parallel_count: 2
-    kv_cache_free_gpu_mem_fraction: 0.85
-    enable_chunked_context: true
     plugin_configuration:
       use_paged_context_fmha: true
       use_fp8_context_fmha: true
       paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.85
+    request_default_max_tokens: 131072
