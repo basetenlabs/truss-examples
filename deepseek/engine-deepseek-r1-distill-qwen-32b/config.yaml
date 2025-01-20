@@ -1,0 +1,49 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {
+    messages: [
+      {
+        role: "system",
+        content: "You are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step."
+      },
+      {
+        role: "user",
+        content: "Which is heavier, a pound of bricks or a pound of feathers?"
+      }
+    ],
+    stream: true,
+    max_tokens: 1024,
+    temperature: 0.6
+  }
+  repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+model_name: DeepSeek R1 Distill Qwen 32B
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: qwen
+    checkpoint_repository:
+      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+      source: HF
+    num_builder_gpus: 2
+    quantization_type: fp8_kv
+    max_seq_len: 32768
+    tensor_parallel_count: 1
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: true
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.85
+    request_default_max_tokens: 32768
