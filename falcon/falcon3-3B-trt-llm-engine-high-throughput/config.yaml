@@ -1,0 +1,46 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  tags:
+    - openai-compatible
+  example_model_input:
+    frequency_penalty: 1
+    max_tokens: 512
+    messages:
+      - content: You are a knowledgable, engaging, history teacher.
+        role: system
+      - content: What was the role of falcons in Lord of the Rings?
+        role: user
+    stream: true
+    temperature: 0.3
+    top_k: 40
+    top_p: 1.0
+  repo_id: tiiuae/Falcon3-3B-Instruct
+model_name: Falcon3-3B-Instruct-H100
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: "1"
+  memory: 24Gi
+  use_gpu: true
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: tiiuae/Falcon3-3B-Instruct
+      source: HF
+    max_seq_len: 8192
+    num_builder_gpus: 1
+    plugin_configuration:
+      paged_kv_cache: true
+      use_paged_context_fmha: true
+    quantization_type: no_quant
+    tensor_parallel_count: 1
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.85
+    request_default_max_tokens: 131072
