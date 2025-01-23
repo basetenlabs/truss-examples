@@ -40,7 +40,7 @@ trt_llm:
         # Models of the same architecture may be fine-tuned for higher performance
         repo: tiiuae/Falcon3-1B-Instruct
         source: HF
-      num_draft_tokens: 10
+      num_draft_tokens: 4
   runtime:
     enable_chunked_context: true
     kv_cache_free_gpu_mem_fraction: 0.62
