@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-truss = { git = "https://github.com/basetenlabs/truss.git" }
+truss = ">=0.9.58"
 pyyaml = "^6.0.1"
 
 [tool.poetry.group.dev.dependencies]
