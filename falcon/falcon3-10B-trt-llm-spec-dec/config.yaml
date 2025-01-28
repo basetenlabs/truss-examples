@@ -1,6 +1,4 @@
 model_metadata:
-  tags:
-    - openai-compatible
   example_model_input:
     frequency_penalty: 1
     max_tokens: 512
@@ -10,9 +8,7 @@ model_metadata:
       - content: What makes falcons effective hunters?
         role: user
     stream: true
-    temperature: 0.3
-    top_k: 40
-    top_p: 1.0
+    temperature: 0.6
   repo_id: tiiuae/Falcon3-10B-Instruct
 model_name: Falcon 3 10B Instruct
 resources:
