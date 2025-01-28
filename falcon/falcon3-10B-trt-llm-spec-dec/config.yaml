@@ -5,16 +5,16 @@ model_metadata:
     frequency_penalty: 1
     max_tokens: 512
     messages:
-      - content: You are a knowledgable, engaging, history teacher.
+      - content: You are a knowledgable, engaging, biology teacher.
         role: system
-      - content: What was the role of falcons in Lord of the Rings?
+      - content: What makes falcons effective hunters?
         role: user
     stream: true
     temperature: 0.3
     top_k: 40
     top_p: 1.0
   repo_id: tiiuae/Falcon3-10B-Instruct
-model_name: Falcon3-10B-Instruct-with-1B-SpecDec
+model_name: Falcon 3 10B Instruct
 resources:
   accelerator: H100
   cpu: "1"
