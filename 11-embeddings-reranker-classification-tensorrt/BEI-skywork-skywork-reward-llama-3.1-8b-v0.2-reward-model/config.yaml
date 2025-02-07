@@ -1,0 +1,28 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    input: This redirects to the embedding enpoint. Use the /sync api to reach /sync/predict
+      endpoint.
+model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: Skywork/Skywork-Reward-Llama-3.1-8B-v0.2
+      revision: main
+      source: HF
+    max_num_tokens: 131072
+    max_seq_len: 1000001
+    num_builder_gpus: 2
+    quantization_type: fp8

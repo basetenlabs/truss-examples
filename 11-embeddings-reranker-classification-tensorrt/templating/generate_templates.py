@@ -76,7 +76,10 @@ client = OpenAI(
     api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
 )
 
-embedding = client.embeddings("text string")
+embedding = client.embeddings.create(
+    input="Baseten Embeddings are fast",
+    model="model"
+)
 ```
 ### request python library
 
@@ -179,8 +182,6 @@ class Deployment:
     hf_model_id: str
     accelerator: Accelerator
     task: Task
-    # nickname for the arcihtecture, only used for the description
-    model_architecture: str 
     is_gated: bool = False
     is_fp8: bool = False
     
@@ -202,9 +203,10 @@ def generate_bei_deployment(dp: Deployment):
     
     hf_cfg = AutoConfig.from_pretrained(dp.hf_model_id)
     max_position_embeddings = hf_cfg.max_position_embeddings
+    architecture = hf_cfg.architectures[0]
     
     max_num_tokens = max(16384, max_position_embeddings)
-    quantization_disclaimer = "This model is quantized to FP8 for deployment, which are supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4" if dp.is_fp8 else ""
+    quantization_disclaimer = "\n This model is quantized to FP8 for deployment, which are supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. Quantization is optional, but leads to higher efficency." if dp.is_fp8 else ""
     quantization_removal = "If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16."
     
     config = TrussConfig(
@@ -246,7 +248,7 @@ With BEI you get the following benefits:
 - cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
 
 This deployment is specifically designed for the huggingface model [{dp.hf_model_id}](https://huggingface.co/{dp.hf_model_id}).
-It might be also working for other models that have the architecture of {dp.model_architecture} specificied in their huggingface transformers config.
+It might be also working for other models that have the architecture of {architecture} specificied in their huggingface transformers config.
 {dp.task.model_identification}
 
 {dp.hf_model_id} {dp.task.purpose}
@@ -297,49 +299,44 @@ DEPLOYMENTS_BEI = [
         "BAAI/bge-large-en-v1.5",
         Accelerator.L4,
         Embedder(),
-        model_architecture="BertModel"
     ),
     Deployment(
         "WhereIsAI/UAE-Large-V1-embedding",
         "WhereIsAI/UAE-Large-V1",
         Accelerator.L4,
         Embedder(),
-        model_architecture="BertModel"
     ),
     Deployment(
         "Snowflake/snowflake-arctic-embed-l-v2.0",
         "Snowflake/snowflake-arctic-embed-l-v2.0",
         Accelerator.L4,
         Embedder(),
-        model_architecture="XLMRobertaModel"
     ),
     Deployment(
         "intfloat/multilingual-e5-large-instruct-embedding",
         "intfloat/multilingual-e5-large-instruct",
         Accelerator.L4,
         Embedder(),
-        model_architecture="XLMRobertaModel"
     ),
     Deployment(
         "Linq-AI-Research/Linq-Embed-Mistral",
         "Linq-AI-Research/Linq-Embed-Mistral",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="LLamaModel/MistralModel"
+        is_fp8=True
     ),
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="Gemma2Model"
+        # no fp8 support
     ),
     Deployment(
         "Salesforce/SFR-Embedding-Mistral",
         "Salesforce/SFR-Embedding-Mistral",
         Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="LLamaModel/MistralModel",
         is_fp8=True
     ),
     Deployment(
@@ -347,7 +344,6 @@ DEPLOYMENTS_BEI = [
         "BAAI/bge-en-icl",
         Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="LLamaModel/MistralModel",
         is_fp8=True
     ),
     Deployment(
@@ -355,7 +351,6 @@ DEPLOYMENTS_BEI = [
         "intfloat/e5-mistral-7b-instruct",
         Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="LLamaModel/MistralModel",
         is_fp8=True
     ),
     Deployment(
@@ -363,35 +358,30 @@ DEPLOYMENTS_BEI = [
         "SamLowe/roberta-base-go_emotions",
         Accelerator.L4,
         Predictor(),
-        model_architecture="BertForSequenceClassification"
     ),
     Deployment(
         "ProsusAI/finbert-classification",
         "ProsusAI/finbert",
         Accelerator.L4,
         Predictor(),
-        model_architecture="BertForSequenceClassification"
     ),
     Deployment(
         "BAAI/bge-reranker-large",
         "BAAI/bge-reranker-large",
         Accelerator.L4,
         Reranker(),
-        model_architecture="XLMRobertaForSequenceClassification"
     ),
     Deployment(
         "cross-encoder/ms-marco-MiniLM-L-6-v2-reranker",
         "cross-encoder/ms-marco-MiniLM-L-6-v2",
         Accelerator.L4,
         Reranker(),
-        model_architecture="BertForSequenceClassification"
     ),
     Deployment(
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
         Accelerator.H100_40GB,
         Predictor(),
-        model_architecture="LLamaForSequenceClassification",
         is_fp8=True
     ),
 ]
@@ -423,13 +413,13 @@ if __name__ == "__main__":
     readme = f"""
 # BEI with Baseten
 
-This is a collection of BEI deployments with Baseten. BEI is Basetens soution for production-grade deployments via TensorRT-LLM.
+This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- low-latency (sub 6ms latency)
-- high user queries: (up to 1400 requests per second)
-- high-throughput inference - highest tokens / flops across any embedding solution (XQA kernels and dynamic batching)
-- cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) *1
+- highest-throughput inference*  across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, fp8 and dynamic batching. *2 
+- high parallism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and *high availability* - no huggingface hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -442,6 +432,10 @@ You can find the following deployments in this repository:
 
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
+
+
+* measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
+** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
 """
-    (Path(__file__).parent / "README.md").write_text(readme)
+    (Path(__file__).parent.parent / "README.md").write_text(readme)
     print(readme)
