@@ -1,21 +1,22 @@
-from pydantic import BaseModel, dataclasses
 from dataclasses import field
-from truss.base.truss_config import TrussConfig, Accelerator, Resources
-from truss.base.trt_llm_config import (
-    TrussTRTLLMBuildConfiguration,
-    TRTLLMConfiguration,
-    CheckpointRepository,
-    TrussTRTLLMQuantizationType,
-    CheckpointSource,
-    TrussTRTLLMModel,
-)
 from pathlib import Path
 from typing import Any
 
+from pydantic import dataclasses
+from truss.base.trt_llm_config import (
+    CheckpointRepository,
+    CheckpointSource,
+    TRTLLMConfiguration,
+    TrussTRTLLMBuildConfiguration,
+    TrussTRTLLMModel,
+    TrussTRTLLMQuantizationType,
+)
+from truss.base.truss_config import Accelerator, Resources, TrussConfig
 
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
 ROOT_NAME = Path(REPO_URL.split("/")[-1])
+
 
 @dataclasses.dataclass
 class Task:
@@ -23,7 +24,7 @@ class Task:
     client_usage: str
     model_identification: str
     model_metadata: dict[str, Any]
-    
+
 
 @dataclasses.dataclass
 class Embedder(Task):
@@ -37,7 +38,9 @@ class Embedder(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
-            example_model_input=dict(input="text string", encoding_format="float", model="model")
+            example_model_input=dict(
+                input="text string", encoding_format="float", model="model"
+            )
         )
     )
     client_usage: str = r"""
@@ -47,7 +50,7 @@ POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/
 {
   "encoding_format": "float", # or base64
   "input": "string", # can be list of strings for multiple embeddings
-  "model": "null", 
+  "model": "null",
   "user": "null"
 }
 ```
@@ -90,7 +93,7 @@ from openai import OpenAI
 import os
 
 client = OpenAI(
-    api_key=os.environ['BASETEN_API_KEY'], 
+    api_key=os.environ['BASETEN_API_KEY'],
     api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
 )
 
@@ -114,6 +117,8 @@ resp = requests.post(
 print(resp.json())
 ```
 """
+
+
 @dataclasses.dataclass
 class Reranker(Task):
     purpose: str = (
@@ -126,7 +131,9 @@ class Reranker(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
-            example_model_input=dict(input="This redirects to the embedding endpoint. Use the /sync API to reach /rerank")
+            example_model_input=dict(
+                input="This redirects to the embedding endpoint. Use the /sync API to reach /rerank"
+            )
         )
     )
     client_usage: str = r"""
@@ -166,6 +173,7 @@ Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 OpenAI.com does not have a rerank endpoint, therefore no client library is available.
 """
 
+
 @dataclasses.dataclass
 class Predictor(Task):
     purpose: str = (
@@ -178,7 +186,9 @@ class Predictor(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
-            example_model_input=dict(input="This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict endpoint.")
+            example_model_input=dict(
+                input="This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict endpoint."
+            )
         )
     )
     client_usage: str = r"""
@@ -213,6 +223,7 @@ POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync
 OpenAI does not have a classification endpoint, therefore no client library is available.
 """
 
+
 @dataclasses.dataclass
 class Deployment:
     name: str
@@ -221,16 +232,19 @@ class Deployment:
     task: Task
     is_gated: bool = False
     is_fp8: bool = False
-    
+
+
 def name_generator(dp: Deployment):
     return "BEI-" + dp.name.replace(" ", "-").replace("/", "-").lower()
 
+
 def generate_bei_deployment(dp: Deployment):
     from transformers import AutoConfig
+
     root = Path(__file__).parent.parent.parent
     assert root.name == ROOT_NAME.name, "This script has been moved"
     folder_name = name_generator(dp)
-    
+
     folder_relative_path = SUBFOLDER / folder_name
     full_folder_path = root / folder_relative_path
     model_nickname = folder_name + "-truss-example"
@@ -240,11 +254,11 @@ def generate_bei_deployment(dp: Deployment):
         if dp.is_gated
         else ""
     )
-    
+
     hf_cfg = AutoConfig.from_pretrained(dp.hf_model_id)
     max_position_embeddings = hf_cfg.max_position_embeddings
     architecture = hf_cfg.architectures[0]
-    
+
     max_num_tokens = max(16384, max_position_embeddings)
     quantization_disclaimer = (
         "\nThis model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. "
@@ -253,7 +267,7 @@ def generate_bei_deployment(dp: Deployment):
         else ""
     )
     quantization_removal = "If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16."
-    
+
     config = TrussConfig(
         model_metadata=dp.task.model_metadata,
         trt_llm=TRTLLMConfiguration(
@@ -266,28 +280,35 @@ def generate_bei_deployment(dp: Deployment):
                 ),
                 max_seq_len=1000001,
                 max_num_tokens=max_num_tokens,
-                **({"quantization_type": TrussTRTLLMQuantizationType.FP8, "num_builder_gpus": 2} if dp.is_fp8 else {})
+                **(
+                    {
+                        "quantization_type": TrussTRTLLMQuantizationType.FP8,
+                        "num_builder_gpus": 2,
+                    }
+                    if dp.is_fp8
+                    else {}
+                ),
             )
         ),
         resources=Resources(
             accelerator=dp.accelerator,
             use_gpu=True,
         ),
-        model_name=model_nickname
+        model_name=model_nickname,
     )
-    
+
     # Writes
     full_folder_path.mkdir(parents=True, exist_ok=True)
     config.write_to_yaml_file(full_folder_path / "config.yaml", verbose=False)
     config_yaml_as_str = Path(full_folder_path / "config.yaml").read_text()
-    
+
     README_SUBREPO = f"""# Baseten-Embeddings-Inference with {dp.name}
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with {dp.name}. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with {dp.name}. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
 - high parallelism: up to 1400 client embeddings per second
 - cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
@@ -317,7 +338,7 @@ With `{folder_relative_path.as_posix()}` as your working directory, you can depl
 
 ```sh
 truss push --publish
-# prints: 
+# prints:
 # ✨ Model {model_nickname} was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
@@ -368,7 +389,7 @@ DEPLOYMENTS_BEI = [
         "Linq-AI-Research/Linq-Embed-Mistral",
         Accelerator.H100_40GB,
         Embedder(),
-        is_fp8=True
+        is_fp8=True,
     ),
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
@@ -382,21 +403,21 @@ DEPLOYMENTS_BEI = [
         "Salesforce/SFR-Embedding-Mistral",
         Accelerator.H100_40GB,
         Embedder(),
-        is_fp8=True
+        is_fp8=True,
     ),
     Deployment(
         "BAAI/bge-en-icl-embedding",
         "BAAI/bge-en-icl",
         Accelerator.H100_40GB,
         Embedder(),
-        is_fp8=True
+        is_fp8=True,
     ),
     Deployment(
         "intfloat/e5-mistral-7b-instruct-embedding",
         "intfloat/e5-mistral-7b-instruct",
         Accelerator.H100_40GB,
         Embedder(),
-        is_fp8=True
+        is_fp8=True,
     ),
     Deployment(
         "SamLowe/roberta-base-go_emotions-classification",
@@ -427,7 +448,7 @@ DEPLOYMENTS_BEI = [
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
         Accelerator.H100_40GB,
         Predictor(),
-        is_fp8=True
+        is_fp8=True,
     ),
 ]
 
@@ -436,11 +457,10 @@ if __name__ == "__main__":
         generate_bei_deployment(dp)
 
     all_deployments = DEPLOYMENTS_BEI
-    
+
     def format_filter(dps: list[Deployment], type_):
         sorted_filter = sorted(
-            [dp for dp in dps if isinstance(dp.task, type_)],
-            key=lambda x: x.name
+            [dp for dp in dps if isinstance(dp.task, type_)], key=lambda x: x.name
         )
         names = [
             f"[{dp.name}]({REPO_URL}/tree/main/{SUBFOLDER}/{name_generator(dp)})"
@@ -461,7 +481,7 @@ This is a collection of BEI deployments with Baseten. BEI is Baseten's solution 
 
 With BEI you get the following benefits:
 - *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
 - high parallelism: up to 1400 client embeddings per second
 - cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
