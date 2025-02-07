@@ -34,3 +34,4 @@ You can find the following deployments in this repository:
 
 * measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 ** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+
