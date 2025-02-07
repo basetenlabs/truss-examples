@@ -5,7 +5,7 @@ This is a collection of BEI deployments with Baseten. BEI is Baseten's solution 
 
 With BEI you get the following benefits:
 - *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
 - high parallelism: up to 1400 client embeddings per second
 - cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
@@ -34,4 +34,3 @@ You can find the following deployments in this repository:
 
 * measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 ** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
-

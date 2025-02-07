@@ -1,10 +1,10 @@
 # Baseten-Embeddings-Inference with intfloat/multilingual-e5-large-instruct-embedding
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with intfloat/multilingual-e5-large-instruct-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with intfloat/multilingual-e5-large-instruct-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
 - high parallelism: up to 1400 client embeddings per second
 - cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
@@ -13,7 +13,7 @@ This deployment is specifically designed for the Hugging Face model [intfloat/mu
 It will also work for fine-tuned models that have the architecture of XLMRobertaModel specified in their Hugging Face transformers config.
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-intfloat/multilingual-e5-large-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input. 
+intfloat/multilingual-e5-large-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -35,7 +35,7 @@ With `11-embeddings-reranker-classification-tensorrt/BEI-intfloat-multilingual-e
 
 ```sh
 truss push --publish
-# prints: 
+# prints:
 # ✨ Model BEI-intfloat-multilingual-e5-large-instruct-embedding-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
@@ -48,7 +48,7 @@ POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/
 {
   "encoding_format": "float", # or base64
   "input": "string", # can be list of strings for multiple embeddings
-  "model": "null", 
+  "model": "null",
   "user": "null"
 }
 ```
@@ -91,7 +91,7 @@ from openai import OpenAI
 import os
 
 client = OpenAI(
-    api_key=os.environ['BASETEN_API_KEY'], 
+    api_key=os.environ['BASETEN_API_KEY'],
     api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
 )
 

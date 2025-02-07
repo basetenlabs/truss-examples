@@ -1,10 +1,10 @@
 # Baseten-Embeddings-Inference with cross-encoder/ms-marco-MiniLM-L-6-v2-reranker
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with cross-encoder/ms-marco-MiniLM-L-6-v2-reranker. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with cross-encoder/ms-marco-MiniLM-L-6-v2-reranker. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
 - high parallelism: up to 1400 client embeddings per second
 - cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
@@ -34,7 +34,7 @@ With `11-embeddings-reranker-classification-tensorrt/BEI-cross-encoder-ms-marco-
 
 ```sh
 truss push --publish
-# prints: 
+# prints:
 # ✨ Model BEI-cross-encoder-ms-marco-minilm-l-6-v2-reranker-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
