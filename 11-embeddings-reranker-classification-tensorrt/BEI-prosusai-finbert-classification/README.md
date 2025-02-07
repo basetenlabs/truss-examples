@@ -1,19 +1,19 @@
 # Baseten-Embeddings-Inference with ProsusAI/finbert-classification
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with ProsusAI/finbert-classification. BEI is Basetens soution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with ProsusAI/finbert-classification. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
 
 With BEI you get the following benefits:
-- low-latency (sub 6ms latency) 
-- high user queries: (up to 1400 requests per second)
-- high-throughput inference - highest tokens / flops across any embedding solution (XQA kernels and dynamic batching)
-- cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- high parallelism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
-This deployment is specifically designed for the huggingface model [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert).
-It might be also working for other models that have the architecture of BertForSequenceClassification specificied in their huggingface transformers config.
+# Examples:
+This deployment is specifically designed for the Hugging Face model [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert).
+It will also work for fine-tuned models that have the architecture of BertForSequenceClassification specified in their Hugging Face transformers config.
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
-ProsusAI/finbert  is a text-classification model, used to classify a text into a category. 
- It is frequently used in sentiment analysis, spam detection, and more. Its also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
+ProsusAI/finbert  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
 
 ## Deployment with Truss
@@ -30,7 +30,7 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd 11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification` as your working directory, you can deploy the model with the following command, paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
@@ -42,7 +42,7 @@ truss push --publish
 ## Call your model
 
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict`
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/predict
 ```json
 {
   "inputs": "Baseten is a fast inference provider",
@@ -52,19 +52,20 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 }
 ```
 
+Returns:
 ```json
 [
   {
-    "label": "excitment",
+    "label": "excitement",
     "score": 0.99
   }
 ]
 ```
-Important, this is different from the `predict` route: `https://model-xxxxxx.api.baseten.co/environments/production/predict`
-The OpenAPI.json is available under `https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json` for more details.
+Important, this is different from the `predict` route: https://model-xxxxxx.api.baseten.co/environments/production/predict
+The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
-You may also use Baseten's async jobs api, which returns a request_id, which you can use to query the status of the job and get the results.
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
 POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync
 
 ### OpenAI compatible client library
@@ -80,7 +81,7 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding enpoint. Use the /sync api to reach /sync/predict
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
 model_name: BEI-prosusai-finbert-classification-truss-example
 python_version: py39

@@ -4,10 +4,10 @@
 This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) *1
-- highest-throughput inference*  across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, fp8 and dynamic batching. *2 
-- high parallism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and *high availability* - no huggingface hub dependency at runtime
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- high parallelism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -31,7 +31,6 @@ You can find the following deployments in this repository:
  - [ProsusAI/finbert-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification)
  - [SamLowe/roberta-base-go_emotions-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification)
  - [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model)
-
 
 * measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 ** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)

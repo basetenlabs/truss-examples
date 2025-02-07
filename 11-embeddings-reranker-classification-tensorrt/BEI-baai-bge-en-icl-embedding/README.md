@@ -1,21 +1,22 @@
 # Baseten-Embeddings-Inference with BAAI/bge-en-icl-embedding
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-en-icl-embedding. BEI is Basetens soution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-en-icl-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
 
 With BEI you get the following benefits:
-- low-latency (sub 6ms latency) 
-- high user queries: (up to 1400 requests per second)
-- high-throughput inference - highest tokens / flops across any embedding solution (XQA kernels and dynamic batching)
-- cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- high parallelism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
-This deployment is specifically designed for the huggingface model [BAAI/bge-en-icl](https://huggingface.co/BAAI/bge-en-icl).
-It might be also working for other models that have the architecture of MistralModel specificied in their huggingface transformers config.
-Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such Repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
+# Examples:
+This deployment is specifically designed for the Hugging Face model [BAAI/bge-en-icl](https://huggingface.co/BAAI/bge-en-icl).
+It will also work for fine-tuned models that have the architecture of MistralModel specified in their Hugging Face transformers config.
+Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-BAAI/bge-en-icl  is a text-embeddings model, producing a 1D-embeddings vector, given an output. 
- Its frequently used for downstream tasks like clustering, used with vector-databases.
+BAAI/bge-en-icl  is a text-embeddings model, producing a 1D embeddings vector, given an input. 
+It's frequently used for downstream tasks like clustering, used with vector databases.
 
- This model is quantized to FP8 for deployment, which are supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. Quantization is optional, but leads to higher efficency.
+This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -31,7 +32,7 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd 11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-en-icl-embedding
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-en-icl-embedding` as your working directory, you can deploy the model with the following command, paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-en-icl-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
@@ -43,7 +44,7 @@ truss push --publish
 ## Call your model
 
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings
 ```json
 {
   "encoding_format": "float", # or base64
@@ -51,6 +52,7 @@ POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/
   "model": "null", 
   "user": "null"
 }
+```
 
 Returns:
 ```json
@@ -73,13 +75,15 @@ Returns:
 }
 ```
 Advanced:
-You may also use Baseten's async jobs api, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
-Read more about the [Baseten's Async API here ](https://docs.baseten.co/invoke/async)
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings
+Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### curl
 ```bash
-curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings         -H "Authorization: Api-Key YOUR_API_KEY"         -d '{"input": "text string"}'
+curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings \
+        -H "Authorization: Api-Key YOUR_API_KEY" \
+        -d '{"input": "text string"}'
 ```
 
 ### OpenAI compatible client library
@@ -97,7 +101,7 @@ embedding = client.embeddings.create(
     model="model"
 )
 ```
-### request python library
+### requests python library
 
 ```python
 import os
@@ -105,7 +109,7 @@ import requests
 
 resp = requests.post(
     "https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings",
-    headers={"Authorization": "Api-Key "+str(os.environ['BASETEN_API_KEY'])},
+    headers={"Authorization": "Api-Key " + str(os.environ['BASETEN_API_KEY'])},
     json={"input": ["text string", "second string"]},
 )
 
