@@ -1,7 +1,14 @@
 from pydantic import BaseModel, dataclasses
 from dataclasses import field
 from truss.base.truss_config import TrussConfig, Accelerator, Resources
-from truss.base.trt_llm_config import TrussTRTLLMBuildConfiguration, TRTLLMConfiguration, CheckpointRepository, TrussTRTLLMQuantizationType, CheckpointSource, TrussTRTLLMModel
+from truss.base.trt_llm_config import (
+    TrussTRTLLMBuildConfiguration,
+    TRTLLMConfiguration,
+    CheckpointRepository,
+    TrussTRTLLMQuantizationType,
+    CheckpointSource,
+    TrussTRTLLMModel,
+)
 from pathlib import Path
 from typing import Any
 
@@ -20,12 +27,22 @@ class Task:
 
 @dataclasses.dataclass
 class Embedder(Task):
-    purpose: str = " is a text-embeddings model, producing a 1D-embeddings vector, given an output. \n Its frequently used for downstream tasks like clustering, used with vector-databases."
-    model_identification: str = "Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such Repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file."
-    model_metadata: dict = field(default_factory=lambda: dict(example_model_input=dict(input="text string", encoding_format="float", model="model")))
-    client_usage: str = """
+    purpose: str = (
+        " is a text-embeddings model, producing a 1D embeddings vector, given an input. \n"
+        "It's frequently used for downstream tasks like clustering, used with vector databases."
+    )
+    model_identification: str = (
+        "Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. "
+        "Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: dict(
+            example_model_input=dict(input="text string", encoding_format="float", model="model")
+        )
+    )
+    client_usage: str = r"""
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings
 ```json
 {
   "encoding_format": "float", # or base64
@@ -33,6 +50,7 @@ POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/
   "model": "null", 
   "user": "null"
 }
+```
 
 Returns:
 ```json
@@ -55,9 +73,9 @@ Returns:
 }
 ```
 Advanced:
-You may also use Baseten's async jobs api, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
-Read more about the [Baseten's Async API here ](https://docs.baseten.co/invoke/async)
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings
+Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### curl
 ```bash
@@ -81,7 +99,7 @@ embedding = client.embeddings.create(
     model="model"
 )
 ```
-### request python library
+### requests python library
 
 ```python
 import os
@@ -89,7 +107,7 @@ import requests
 
 resp = requests.post(
     "https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings",
-    headers={"Authorization": "Api-Key "+str(os.environ['BASETEN_API_KEY'])},
+    headers={"Authorization": "Api-Key " + str(os.environ['BASETEN_API_KEY'])},
     json={"input": ["text string", "second string"]},
 )
 
