@@ -1,0 +1,26 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
+      endpoint.
+model_name: BEI-prosusai-finbert-classification-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: ProsusAI/finbert
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+    max_seq_len: 1000001
