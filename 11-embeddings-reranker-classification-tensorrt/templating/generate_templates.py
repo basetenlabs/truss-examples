@@ -114,15 +114,24 @@ resp = requests.post(
 print(resp.json())
 ```
 """
-
 @dataclasses.dataclass
 class Reranker(Task):
-    purpose: str = " is a reranker model, used to re-rank a list of items, given a query. \n It is frequently used in search engines, recommendation systems, and more."
-    model_identification: str = "Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Reranker models may have AT MOST ONE labels, which contains the score of the reranking."
-    model_metadata: dict = field(default_factory=lambda: dict(example_model_input=dict(input="This redirects to the embedding enpoint. Use the /sync api to reach /rerank")))
-    client_usage: str = """
+    purpose: str = (
+        " is a reranker model, used to re-rank a list of items, given a query. \\n"
+        "It is frequently used in search engines, recommendation systems, and more."
+    )
+    model_identification: str = (
+        "Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. "
+        "Reranker models may have at most one label, which contains the score of the reranking."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: dict(
+            example_model_input=dict(input="This redirects to the embedding endpoint. Use the /sync API to reach /rerank")
+        )
+    )
+    client_usage: str = r"""
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank:
 ```json
 {
   "query": "What is Baseten?",
@@ -134,6 +143,7 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/re
   "truncate": false,
   "truncation_direction": "right"
 }
+```
 
 Returns:
 ```json
@@ -145,27 +155,35 @@ Returns:
   }
 ]
 ```
-The OpenAPI.json is available under `https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json` for more details.
+The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
-You may also use Baseten's async jobs api, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`
-Read more about the [Baseten's Async API here ](https://docs.baseten.co/invoke/async)
-
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank
+Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### OpenAI compatible client library
 OpenAI.com does not have a rerank endpoint, therefore no client library is available.
-
 """
 
 @dataclasses.dataclass
 class Predictor(Task):
-    purpose: str = " is a text-classification model, used to classify a text into a category. \n It is frequently used in sentiment analysis, spam detection, and more. Its also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models."
-    model_identification: str = "Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction."
-    model_metadata: dict =field(default_factory=lambda: dict(example_model_input=dict(input="This redirects to the embedding enpoint. Use the /sync api to reach /sync/predict endpoint.")))
-    client_usage: str = """
+    purpose: str = (
+        " is a text-classification model, used to classify a text into a category. \\n"
+        "It is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models."
+    )
+    model_identification: str = (
+        "Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. "
+        "Prediction models may have one or more labels, which are returned with the prediction."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: dict(
+            example_model_input=dict(input="This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict endpoint.")
+        )
+    )
+    client_usage: str = r"""
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict`
+POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/predict
 ```json
 {
   "inputs": "Baseten is a fast inference provider",
@@ -175,19 +193,20 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 }
 ```
 
+Returns:
 ```json
 [
   {
-    "label": "excitment",
+    "label": "excitement",
     "score": 0.99
   }
 ]
 ```
-Important, this is different from the `predict` route: `https://model-xxxxxx.api.baseten.co/environments/production/predict`
-The OpenAPI.json is available under `https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json` for more details.
+Important, this is different from the `predict` route: https://model-xxxxxx.api.baseten.co/environments/production/predict
+The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
-You may also use Baseten's async jobs api, which returns a request_id, which you can use to query the status of the job and get the results.
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
 POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync
 
 ### OpenAI compatible client library
