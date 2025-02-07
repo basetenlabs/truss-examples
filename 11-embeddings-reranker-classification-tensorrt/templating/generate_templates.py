@@ -227,23 +227,31 @@ def name_generator(dp: Deployment):
 
 def generate_bei_deployment(dp: Deployment):
     from transformers import AutoConfig
-    # folder_name = "BEI-" + dp.name.replace(" ", "-").lower()
-    # full_folder_path = f"11-embeddings-reranker-classification-tensorrt/{folder_name}"
     root = Path(__file__).parent.parent.parent
     assert root.name == ROOT_NAME.name, "This script has been moved"
     folder_name = name_generator(dp)
     
     folder_relative_path = SUBFOLDER / folder_name
-    full_folder_path = root /  folder_relative_path
+    full_folder_path = root / folder_relative_path
     model_nickname = folder_name + "-truss-example"
-    is_gated = "Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`." if dp.is_gated else ""
+    is_gated = (
+        "Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). "
+        "Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`."
+        if dp.is_gated
+        else ""
+    )
     
     hf_cfg = AutoConfig.from_pretrained(dp.hf_model_id)
     max_position_embeddings = hf_cfg.max_position_embeddings
     architecture = hf_cfg.architectures[0]
     
     max_num_tokens = max(16384, max_position_embeddings)
-    quantization_disclaimer = "\n This model is quantized to FP8 for deployment, which are supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. Quantization is optional, but leads to higher efficency." if dp.is_fp8 else ""
+    quantization_disclaimer = (
+        "\nThis model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. "
+        "Quantization is optional, but leads to higher efficiency."
+        if dp.is_fp8
+        else ""
+    )
     quantization_removal = "If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16."
     
     config = TrussConfig(
@@ -255,7 +263,6 @@ def generate_bei_deployment(dp: Deployment):
                     repo=dp.hf_model_id,
                     revision="main",
                     source=CheckpointSource.HF,
-                    
                 ),
                 max_seq_len=1000001,
                 max_num_tokens=max_num_tokens,
@@ -269,23 +276,24 @@ def generate_bei_deployment(dp: Deployment):
         model_name=model_nickname
     )
     
-    # writes
+    # Writes
     full_folder_path.mkdir(parents=True, exist_ok=True)
     config.write_to_yaml_file(full_folder_path / "config.yaml", verbose=False)
     config_yaml_as_str = Path(full_folder_path / "config.yaml").read_text()
     
     README_SUBREPO = f"""# Baseten-Embeddings-Inference with {dp.name}
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with {dp.name}. BEI is Basetens soution for production-grade deployments via TensorRT-LLM. 
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with {dp.name}. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM. 
 
 With BEI you get the following benefits:
-- low-latency (sub 6ms latency) 
-- high user queries: (up to 1400 requests per second)
-- high-throughput inference - highest tokens / flops across any embedding solution (XQA kernels and dynamic batching)
-- cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- high parallelism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
-This deployment is specifically designed for the huggingface model [{dp.hf_model_id}](https://huggingface.co/{dp.hf_model_id}).
-It might be also working for other models that have the architecture of {architecture} specificied in their huggingface transformers config.
+# Examples:
+This deployment is specifically designed for the Hugging Face model [{dp.hf_model_id}](https://huggingface.co/{dp.hf_model_id}).
+It will also work for fine-tuned models that have the architecture of {architecture} specified in their Hugging Face transformers config.
 {dp.task.model_identification}
 
 {dp.hf_model_id} {dp.task.purpose}
@@ -305,7 +313,7 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd {folder_relative_path.as_posix()}
 ```
 
-With `{folder_relative_path.as_posix()}` as your working directory, you can deploy the model with the following command, paste your Baseten API key if prompted.
+With `{folder_relative_path.as_posix()}` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
@@ -426,37 +434,36 @@ DEPLOYMENTS_BEI = [
 if __name__ == "__main__":
     for dp in DEPLOYMENTS_BEI:
         generate_bei_deployment(dp)
-    
-    # sort deployments by embedder, reranker, predictor
-    # sort each of them alphabetically
-    # write to README.md
+
     all_deployments = DEPLOYMENTS_BEI
     
-    def format_filter(dps: list[Deployment], type):
-        sorted_filter = sorted([dp for dp in dps if isinstance(dp.task, type)], key=lambda x: x.name)
-        names = [f"[{dp.name}]({REPO_URL}/tree/main/{SUBFOLDER}/{name_generator(dp)})" for dp in sorted_filter]
+    def format_filter(dps: list[Deployment], type_):
+        sorted_filter = sorted(
+            [dp for dp in dps if isinstance(dp.task, type_)],
+            key=lambda x: x.name
+        )
+        names = [
+            f"[{dp.name}]({REPO_URL}/tree/main/{SUBFOLDER}/{name_generator(dp)})"
+            for dp in sorted_filter
+        ]
         names_fmt = "\n - ".join(names)
-        names_fmt = " - "+names_fmt
+        names_fmt = " - " + names_fmt
         return names_fmt
-    
-    
+
     embedders_names_fmt = format_filter(all_deployments, Embedder)
     rerankers_names_fmt = format_filter(all_deployments, Reranker)
     predictors_names_fmt = format_filter(all_deployments, Predictor)
-    
-    # names should be 
-    # name
-    
+
     readme = f"""
 # BEI with Baseten
 
 This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) *1
-- highest-throughput inference*  across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, fp8 and dynamic batching. *2 
-- high parallism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and *high availability* - no huggingface hub dependency at runtime
+- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
+- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2 
+- high parallelism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -469,7 +476,6 @@ You can find the following deployments in this repository:
 
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
-
 
 * measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 ** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
