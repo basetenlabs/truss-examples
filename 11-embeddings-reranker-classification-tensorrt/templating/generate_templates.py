@@ -323,16 +323,18 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Linq-AI-Research/Linq-Embed-Mistral",
         "Linq-AI-Research/Linq-Embed-Mistral",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         Embedder(),
-        model_architecture="LLamaModel/MistralModel"
+        model_architecture="LLamaModel/MistralModel",
+        is_fp8=True
     ),
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         Embedder(),
         model_architecture="Gemma2Model"
+        # no fp8 support
     ),
     Deployment(
         "Salesforce/SFR-Embedding-Mistral",
@@ -423,13 +425,13 @@ if __name__ == "__main__":
     readme = f"""
 # BEI with Baseten
 
-This is a collection of BEI deployments with Baseten. BEI is Basetens soution for production-grade deployments via TensorRT-LLM.
+This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- low-latency (sub 6ms latency)
-- high user queries: (up to 1400 requests per second)
-- high-throughput inference - highest tokens / flops across any embedding solution (XQA kernels and dynamic batching)
-- cached model weights for fast vertical scaling and high availability (No huggingface hub dependency at runtime)
+- *lowest-latency inference** across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)
+- highest-throughput inference** across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels and dynamic batching. 
+- high parallism: up to 1400 client embeddings per second
+- cached model weights for fast vertical scaling and *high availability* - no huggingface hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -442,6 +444,11 @@ You can find the following deployments in this repository:
 
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
+
+```
+* measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
+** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+```
 """
     (Path(__file__).parent / "README.md").write_text(readme)
     print(readme)
