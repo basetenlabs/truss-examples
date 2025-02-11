@@ -137,7 +137,7 @@ requirements: []
 resources:
   accelerator: L4
   cpu: '1'
-  memory: 2Gi
+  memory: 14Gi
   use_gpu: true
 secrets: {}
 system_packages: []

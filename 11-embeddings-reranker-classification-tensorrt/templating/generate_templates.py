@@ -299,6 +299,7 @@ def generate_bei_deployment(dp: Deployment):
         resources=Resources(
             accelerator=dp.accelerator,
             use_gpu=True,
+            memory="14Gi",
         ),
         model_name=model_nickname,
     )
