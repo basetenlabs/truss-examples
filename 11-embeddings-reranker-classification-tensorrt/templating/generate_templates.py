@@ -402,13 +402,14 @@ DEPLOYMENTS_BEI = [
         Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
     ),
-    Deployment(
-        "Linq-AI-Research/Linq-Embed-Mistral",
-        "Linq-AI-Research/Linq-Embed-Mistral",
-        Accelerator.H100_40GB,
-        Embedder(),
-        is_fp8=True,
-    ),
+    # Deployment( # no slidig window support for >4096
+    # this PR needs to be merged first: or use this revision https://huggingface.co/Linq-AI-Research/Linq-Embed-Mistral/discussions/7
+    #     "Linq-AI-Research/Linq-Embed-Mistral",
+    #     "Linq-AI-Research/Linq-Embed-Mistral",
+    #     Accelerator.H100_40GB,
+    #     Embedder(),
+    #     is_fp8=True,
+    # ),
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
@@ -433,7 +434,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "intfloat/e5-mistral-7b-instruct-embedding",
         "intfloat/e5-mistral-7b-instruct",
-        Accelerator.H100_40GB,
+        Accelerator.H100,
         Embedder(),
         is_fp8=True,
     ),
