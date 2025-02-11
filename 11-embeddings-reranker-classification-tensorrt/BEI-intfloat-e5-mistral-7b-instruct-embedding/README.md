@@ -151,7 +151,7 @@ trt_llm:
       source: HF
     max_num_tokens: 32768
     max_seq_len: 1000001
-    num_builder_gpus: 2
+    num_builder_gpus: 1
     quantization_type: fp8
 
 ```

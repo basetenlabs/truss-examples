@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model
+# Baseten-Embeddings-Inference with papluca/xlm-roberta-base-language-detection-classification
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with papluca/xlm-roberta-base-language-detection-classification. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -9,13 +9,12 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2](https://huggingface.co/Skywork/Skywork-Reward-Llama-3.1-8B-v0.2).
-It will also work for fine-tuned models that have the architecture of LlamaForSequenceClassification specified in their Hugging Face transformers config.
+This deployment is specifically designed for the Hugging Face model [papluca/xlm-roberta-base-language-detection](https://huggingface.co/papluca/xlm-roberta-base-language-detection).
+It will also work for fine-tuned models that have the architecture of XLMRobertaForSequenceClassification specified in their Hugging Face transformers config.
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
-Skywork/Skywork-Reward-Llama-3.1-8B-v0.2  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
+papluca/xlm-roberta-base-language-detection  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
-This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -28,15 +27,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model
+cd 11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-example was successfully pushed ✨
+# ✨ Model BEI-papluca-xlm-roberta-base-language-detection-classification-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -86,11 +85,11 @@ model_metadata:
   example_model_input:
     input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
-model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-example
+model_name: BEI-papluca-xlm-roberta-base-language-detection-classification-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: L4
   cpu: '1'
   memory: 15Gi
   use_gpu: true
@@ -100,13 +99,11 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Skywork/Skywork-Reward-Llama-3.1-8B-v0.2
+      repo: papluca/xlm-roberta-base-language-detection
       revision: main
       source: HF
-    max_num_tokens: 131072
+    max_num_tokens: 16384
     max_seq_len: 1000001
-    num_builder_gpus: 1
-    quantization_type: fp8
 
 ```
 

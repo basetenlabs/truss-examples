@@ -289,7 +289,12 @@ def generate_bei_deployment(dp: Deployment):
                 **(
                     {
                         "quantization_type": TrussTRTLLMQuantizationType.FP8,
-                        "num_builder_gpus": 2,
+                        # give more resources / cpu ram + vram on build if the model uses not-mig
+                        "num_builder_gpus": (
+                            2
+                            if dp.accelerator in [Accelerator.H100, Accelerator.L4]
+                            else 1
+                        ),
                     }
                     if dp.is_fp8
                     else {}
@@ -427,7 +432,13 @@ DEPLOYMENTS_BEI = [
         Predictor(),
     ),
     Deployment(
-        "BAAI/bge-reranker-large",
+        "papluca/xlm-roberta-base-language-detection-classification",
+        "papluca/xlm-roberta-base-language-detection",
+        Accelerator.L4,
+        Predictor(),
+    ),
+    Deployment(
+        "BAAI/bge-reranker-large-classification",
         "BAAI/bge-reranker-large",
         Accelerator.L4,
         Reranker(),
