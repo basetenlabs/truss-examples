@@ -30,6 +30,7 @@ You can find the following deployments in this repository:
 ## Text Sequence Classification Deployments:
  - [SamLowe/roberta-base-go_emotions-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification)
  - [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model)
+ - [allenai/Llama-3.1-Tulu-3-8B-Reward-Model](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model)
  - [baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baseten-example-meta-llama-3-70b-instructforsequenceclassification)
  - [papluca/xlm-roberta-base-language-detection-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification)
 

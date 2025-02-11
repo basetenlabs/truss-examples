@@ -463,6 +463,13 @@ DEPLOYMENTS_BEI = [
         is_fp8=True,
     ),
     Deployment(
+        "allenai/Llama-3.1-Tulu-3-8B-Reward-Model",
+        "allenai/Llama-3.1-Tulu-3-8B-RM",
+        Accelerator.H100_40GB,
+        Predictor(),
+        is_fp8=True,
+    ),
+    Deployment(
         "baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification",
         "baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification",
         Accelerator.H100,

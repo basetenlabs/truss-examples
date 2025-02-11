@@ -1,0 +1,28 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
+      endpoint.
+model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 8Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: allenai/Llama-3.1-Tulu-3-8B-RM
+      revision: main
+      source: HF
+    max_num_tokens: 131072
+    max_seq_len: 1000001
+    num_builder_gpus: 1
+    quantization_type: fp8
