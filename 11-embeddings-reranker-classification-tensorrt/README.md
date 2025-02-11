@@ -21,7 +21,6 @@ You can find the following deployments in this repository:
  - [Snowflake/snowflake-arctic-embed-l-v2.0](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-snowflake-snowflake-arctic-embed-l-v2.0)
  - [WhereIsAI/UAE-Large-V1-embedding](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-whereisai-uae-large-v1-embedding)
  - [intfloat/e5-mistral-7b-instruct-embedding](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-intfloat-e5-mistral-7b-instruct-embedding)
- - [intfloat/multilingual-e5-large-instruct-embedding](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-intfloat-multilingual-e5-large-instruct-embedding)
 
 ## Reranker Deployments:
  - [BAAI/bge-reranker-large](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-large)

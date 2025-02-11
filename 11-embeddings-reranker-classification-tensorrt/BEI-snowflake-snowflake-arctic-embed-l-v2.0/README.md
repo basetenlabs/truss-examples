@@ -135,9 +135,9 @@ model_name: BEI-snowflake-snowflake-arctic-embed-l-v2.0-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
-  memory: 14Gi
+  memory: 15Gi
   use_gpu: true
 secrets: {}
 system_packages: []
