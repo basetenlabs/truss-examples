@@ -45,7 +45,7 @@ class Embedder(Task):
     )
     client_usage: str = r"""
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
 ```json
 {
   "encoding_format": "float", # or base64
@@ -75,16 +75,19 @@ Returns:
   }
 }
 ```
-Advanced:
+The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
+
+#### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings
+
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### curl
 ```bash
 curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings \
         -H "Authorization: Api-Key YOUR_API_KEY" \
-        -d '{"input": "text string"}'
+        -d '{"input": "text string", "model": "model"}'
 ```
 
 ### OpenAI compatible client library
@@ -138,7 +141,7 @@ class Reranker(Task):
     )
     client_usage: str = r"""
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank:
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
 ```json
 {
   "query": "What is Baseten?",
@@ -166,7 +169,8 @@ The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environm
 
 #### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank
+
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/rerank`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### OpenAI compatible client library
@@ -193,7 +197,7 @@ class Predictor(Task):
     )
     client_usage: str = r"""
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/predict
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict`
 ```json
 {
   "inputs": "Baseten is a fast inference provider",
@@ -217,7 +221,9 @@ The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environm
 
 #### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync
+
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/predict`
+Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### OpenAI compatible client library
 OpenAI does not have a classification endpoint, therefore no client library is available.
@@ -261,7 +267,7 @@ def generate_bei_deployment(dp: Deployment):
 
     max_num_tokens = max(16384, max_position_embeddings)
     quantization_disclaimer = (
-        "\nThis model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40B or L4. "
+        "\nThis model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. "
         "Quantization is optional, but leads to higher efficiency."
         if dp.is_fp8
         else ""
@@ -307,10 +313,10 @@ def generate_bei_deployment(dp: Deployment):
 This is a Deployment for BEI (Baseten-Embeddings-Inference) with {dp.name}. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
-- high parallelism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
+- *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
+- *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
+- High parallelism: up to 1400 client embeddings per second
+- Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 This deployment is specifically designed for the Hugging Face model [{dp.hf_model_id}](https://huggingface.co/{dp.hf_model_id}).
@@ -477,13 +483,13 @@ if __name__ == "__main__":
     readme = f"""
 # BEI with Baseten
 
-This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a collection of BEI (Baseten Embeddings Inference) model implementations for deployment to Baseten. BEI is Baseten's solution for production-grade embeddings/re-ranking and classification inference using TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
-- high parallelism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
+- *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
+- *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
+- High parallelism: up to 1400 client embeddings per second
+- Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -497,8 +503,8 @@ You can find the following deployments in this repository:
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
 
-* measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
-** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+<sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
+<sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
 """
     (Path(__file__).parent.parent / "README.md").write_text(readme)
     print(readme)

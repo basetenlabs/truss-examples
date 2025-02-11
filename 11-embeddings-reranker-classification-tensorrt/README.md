@@ -1,13 +1,13 @@
 
 # BEI with Baseten
 
-This is a collection of BEI deployments with Baseten. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a collection of BEI (Baseten Embeddings Inference) model implementations for deployment to Baseten. BEI is Baseten's solution for production-grade embeddings/re-ranking and classification inference using TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
-- high parallelism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
+- *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
+- *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
+- High parallelism: up to 1400 client embeddings per second
+- Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 You can find the following deployments in this repository:
@@ -32,5 +32,5 @@ You can find the following deployments in this repository:
  - [SamLowe/roberta-base-go_emotions-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification)
  - [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model)
 
-* measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
-** measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+<sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
+<sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)

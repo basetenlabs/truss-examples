@@ -3,10 +3,10 @@
 This is a Deployment for BEI (Baseten-Embeddings-Inference) with Snowflake/snowflake-arctic-embed-l-v2.0. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
-- *lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)*1
-- *highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.*2
-- high parallelism: up to 1400 client embeddings per second
-- cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
+- *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
+- *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
+- High parallelism: up to 1400 client embeddings per second
+- Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
 This deployment is specifically designed for the Hugging Face model [Snowflake/snowflake-arctic-embed-l-v2.0](https://huggingface.co/Snowflake/snowflake-arctic-embed-l-v2.0).
@@ -43,7 +43,7 @@ truss push --publish
 ## Call your model
 
 ### API-Schema:
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
 ```json
 {
   "encoding_format": "float", # or base64
@@ -73,16 +73,19 @@ Returns:
   }
 }
 ```
-Advanced:
+The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
+
+#### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
-POST-Route: https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings
+
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### curl
 ```bash
 curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings \
         -H "Authorization: Api-Key YOUR_API_KEY" \
-        -d '{"input": "text string"}'
+        -d '{"input": "text string", "model": "model"}'
 ```
 
 ### OpenAI compatible client library
