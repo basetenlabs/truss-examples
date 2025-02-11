@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with ProsusAI/finbert-classification
+# Baseten-Embeddings-Inference with ncbi/MedCPT-Cross-Encoder-reranker
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with ProsusAI/finbert-classification. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with ncbi/MedCPT-Cross-Encoder-reranker. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -9,11 +9,11 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert).
+This deployment is specifically designed for the Hugging Face model [ncbi/MedCPT-Cross-Encoder](https://huggingface.co/ncbi/MedCPT-Cross-Encoder).
 It will also work for fine-tuned models that have the architecture of BertForSequenceClassification specified in their Hugging Face transformers config.
-Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
+Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Reranker models may have at most one label, which contains the score of the reranking.
 
-ProsusAI/finbert  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
+ncbi/MedCPT-Cross-Encoder  is a reranker model, used to re-rank a list of items, given a query. \nIt is frequently used in search engines, recommendation systems, and more.
 
 
 ## Deployment with Truss
@@ -27,26 +27,30 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification
+cd 11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-prosusai-finbert-classification-truss-example was successfully pushed ✨
+# ✨ Model BEI-ncbi-medcpt-cross-encoder-reranker-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
 ## Call your model
 
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict`
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
 ```json
 {
-  "inputs": "Baseten is a fast inference provider",
+  "query": "What is Baseten?",
   "raw_scores": false,
+  "return_text": false,
+  "texts": [
+    "Deep Learning is ...", "Baseten is a fast inference provider"
+  ],
   "truncate": false,
   "truncation_direction": "right"
 }
@@ -56,22 +60,22 @@ Returns:
 ```json
 [
   {
-    "label": "excitement",
-    "score": 0.99
+    "index": 0,
+    "score": 1,
+    "text": "Deep Learning is ..."
   }
 ]
 ```
-Important, this is different from the `predict` route: https://model-xxxxxx.api.baseten.co/environments/production/predict
 The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
 
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/predict`
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/rerank`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
 ### OpenAI compatible client library
-OpenAI does not have a classification endpoint, therefore no client library is available.
+OpenAI.com does not have a rerank endpoint, therefore no client library is available.
 
 
 ## Config.yaml
@@ -83,9 +87,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
-      endpoint.
-model_name: BEI-prosusai-finbert-classification-truss-example
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /rerank
+model_name: BEI-ncbi-medcpt-cross-encoder-reranker-truss-example
 python_version: py39
 requirements: []
 resources:
@@ -99,7 +102,7 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: ProsusAI/finbert
+      repo: ncbi/MedCPT-Cross-Encoder
       revision: main
       source: HF
     max_num_tokens: 16384

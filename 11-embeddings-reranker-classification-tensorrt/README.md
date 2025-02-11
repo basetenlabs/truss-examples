@@ -25,12 +25,13 @@ You can find the following deployments in this repository:
 
 ## Reranker Deployments:
  - [BAAI/bge-reranker-large](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-large)
- - [cross-encoder/ms-marco-MiniLM-L-6-v2-reranker](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-cross-encoder-ms-marco-minilm-l-6-v2-reranker)
+ - [BAAI/bge-reranker-v2-m3-multilingual](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-v2-m3-multilingual)
+ - [ncbi/MedCPT-Cross-Encoder-reranker](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker)
 
 ## Text Sequence Classification Deployments:
- - [ProsusAI/finbert-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-prosusai-finbert-classification)
  - [SamLowe/roberta-base-go_emotions-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification)
  - [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model)
+ - [baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baseten-example-meta-llama-3-70b-instructforsequenceclassification)
 
 <sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 <sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)

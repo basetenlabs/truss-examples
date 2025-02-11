@@ -1,0 +1,28 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
+      endpoint.
+model_name: BEI-baseten-example-meta-llama-3-70b-instructforsequenceclassification-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 14Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+    max_seq_len: 1000001
+    num_builder_gpus: 2
+    quantization_type: fp8
