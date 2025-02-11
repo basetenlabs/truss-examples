@@ -412,9 +412,9 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
-        Accelerator.H100_40GB,
+        Accelerator.A10G,
         Embedder(),
-        # no fp8 support
+        # no fp8 support for Gemma in ModelOPT quant, but requires 18GB+ RAM -> A10G or A100
     ),
     Deployment(
         "Salesforce/SFR-Embedding-Mistral",

@@ -10,7 +10,7 @@ model_name: BEI-baai-bge-multilingual-gemma2-multilingual-embedding-truss-exampl
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: A10G
   cpu: '1'
   memory: 8Gi
   use_gpu: true
