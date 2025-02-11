@@ -386,12 +386,6 @@ DEPLOYMENTS_BEI = [
         Embedder(),
     ),
     Deployment(
-        "intfloat/multilingual-e5-large-instruct-embedding",
-        "intfloat/multilingual-e5-large-instruct",
-        Accelerator.L4,
-        Embedder(),
-    ),
-    Deployment(
         "Linq-AI-Research/Linq-Embed-Mistral",
         "Linq-AI-Research/Linq-Embed-Mistral",
         Accelerator.H100_40GB,
