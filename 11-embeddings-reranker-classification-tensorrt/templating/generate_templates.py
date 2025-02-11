@@ -385,8 +385,20 @@ DEPLOYMENTS_BEI = [
         Embedder(),
     ),
     Deployment(
+        "mixedbread-ai/mxbai-embed-large-v1-embedding",
+        "mixedbread-ai/mxbai-embed-large-v1",
+        Accelerator.L4,
+        Embedder(),
+    ),
+    Deployment(
         "Snowflake/snowflake-arctic-embed-l-v2.0",
         "Snowflake/snowflake-arctic-embed-l-v2.0",
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
+        Embedder(),
+    ),
+    Deployment(
+        "BAAI/bge-m3-embedding-dense",
+        "BAAI/bge-m3",
         Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
     ),
