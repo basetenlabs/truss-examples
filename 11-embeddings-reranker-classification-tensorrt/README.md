@@ -25,7 +25,7 @@ You can find the following deployments in this repository:
  - [mixedbread-ai/mxbai-embed-large-v1-embedding](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-embed-large-v1-embedding)
 
 ## Reranker Deployments:
- - [BAAI/bge-reranker-large-classification](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-large-classification)
+ - [BAAI/bge-reranker-large](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-large)
  - [BAAI/bge-reranker-v2-m3-multilingual](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-v2-m3-multilingual)
  - [ncbi/MedCPT-Cross-Encoder-reranker](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker)
 

@@ -412,9 +412,9 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
-        Accelerator.A10G,
+        Accelerator.H100_40GB,
         Embedder(),
-        # no fp8 support for Gemma in ModelOPT quant, but requires 18GB+ RAM -> A10G or A100
+        # no fp8 support for Gemma in ModelOPT quant, but requires 18GB+ RAM -> A100 or H100Mig
     ),
     Deployment(
         "Salesforce/SFR-Embedding-Mistral",
@@ -450,7 +450,7 @@ DEPLOYMENTS_BEI = [
         Predictor(),
     ),
     Deployment(
-        "BAAI/bge-reranker-large-classification",
+        "BAAI/bge-reranker-large",
         "BAAI/bge-reranker-large",
         Accelerator.L4,
         Reranker(),
