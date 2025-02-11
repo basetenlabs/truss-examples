@@ -92,9 +92,9 @@ model_name: BEI-baai-bge-reranker-v2-m3-multilingual-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: A10G
+  accelerator: A100
   cpu: '1'
-  memory: 15Gi
+  memory: 8Gi
   use_gpu: true
 secrets: {}
 system_packages: []

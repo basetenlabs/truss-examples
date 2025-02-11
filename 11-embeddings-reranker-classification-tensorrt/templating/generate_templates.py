@@ -304,7 +304,7 @@ def generate_bei_deployment(dp: Deployment):
         resources=Resources(
             accelerator=dp.accelerator,
             use_gpu=True,
-            memory="15Gi",
+            memory="8Gi",
         ),
         model_name=model_nickname,
     )
@@ -387,7 +387,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Snowflake/snowflake-arctic-embed-l-v2.0",
         "Snowflake/snowflake-arctic-embed-l-v2.0",
-        Accelerator.A10G,  # had issues on L4
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
     ),
     Deployment(
@@ -446,7 +446,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-reranker-v2-m3-multilingual",
         "BAAI/bge-reranker-v2-m3",
-        Accelerator.A10G,
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Reranker(),
     ),
     Deployment(
