@@ -136,7 +136,7 @@ model_name: BEI-baai-bge-en-icl-embedding-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -151,7 +151,7 @@ trt_llm:
       source: HF
     max_num_tokens: 32768
     max_seq_len: 1000001
-    num_builder_gpus: 1
+    num_builder_gpus: 2
     quantization_type: fp8
 
 ```

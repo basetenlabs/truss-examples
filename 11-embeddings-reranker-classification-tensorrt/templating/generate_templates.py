@@ -427,7 +427,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-en-icl-embedding",
         "BAAI/bge-en-icl",
-        Accelerator.H100_40GB,
+        Accelerator.H100,
         Embedder(),
         is_fp8=True,
     ),
