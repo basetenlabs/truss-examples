@@ -31,7 +31,7 @@ def retry(max_retries=3, delay=2):
                         f"Error in {func.__name__}: {e}. "
                         f"Retrying in {delay} seconds (attempt {attempt}/{max_retries})"
                     )
-                    time.sleep(delay)
+                    time.sleep(delay + max_retries * delay)
             # If all attempts fail, raise the last exception.
             raise last_exception
 
@@ -73,7 +73,7 @@ def delete_all_truss_example_deployments():
     print("Deleted all truss example deployments")
 
 
-@retry(max_retries=3, delay=10)
+@retry(max_retries=3, delay=5)
 def deploy_config(path: Path) -> None:
     import truss
     import yaml
