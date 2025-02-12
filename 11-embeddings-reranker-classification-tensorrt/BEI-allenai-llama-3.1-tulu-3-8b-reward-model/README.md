@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with SamLowe/roberta-base-go_emotions-classification
+# Baseten-Embeddings-Inference with allenai/Llama-3.1-Tulu-3-8B-Reward-Model
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with SamLowe/roberta-base-go_emotions-classification. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with allenai/Llama-3.1-Tulu-3-8B-Reward-Model. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -9,12 +9,13 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [SamLowe/roberta-base-go_emotions](https://huggingface.co/SamLowe/roberta-base-go_emotions).
-It will also work for fine-tuned models that have the architecture of RobertaForSequenceClassification specified in their Hugging Face transformers config.
+This deployment is specifically designed for the Hugging Face model [allenai/Llama-3.1-Tulu-3-8B-RM](https://huggingface.co/allenai/Llama-3.1-Tulu-3-8B-RM).
+It will also work for fine-tuned models that have the architecture of LlamaForSequenceClassification specified in their Hugging Face transformers config.
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
-SamLowe/roberta-base-go_emotions  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
+allenai/Llama-3.1-Tulu-3-8B-RM  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
+This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -27,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification
+cd 11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-samlowe-roberta-base-go_emotions-classification-truss-example was successfully pushed ✨
+# ✨ Model BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -85,11 +86,11 @@ model_metadata:
   example_model_input:
     input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
-model_name: BEI-samlowe-roberta-base-go_emotions-classification-truss-example
+model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -99,11 +100,13 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: SamLowe/roberta-base-go_emotions
+      repo: allenai/Llama-3.1-Tulu-3-8B-RM
       revision: main
       source: HF
-    max_num_tokens: 16384
+    max_num_tokens: 131072
     max_seq_len: 1000001
+    num_builder_gpus: 1
+    quantization_type: fp8
 
 ```
 

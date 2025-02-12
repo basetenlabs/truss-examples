@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with Linq-AI-Research/Linq-Embed-Mistral
+# Baseten-Embeddings-Inference with mixedbread-ai/mxbai-embed-large-v1-embedding
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with Linq-AI-Research/Linq-Embed-Mistral. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with mixedbread-ai/mxbai-embed-large-v1-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -9,14 +9,13 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Linq-AI-Research/Linq-Embed-Mistral](https://huggingface.co/Linq-AI-Research/Linq-Embed-Mistral).
-It will also work for fine-tuned models that have the architecture of MistralModel specified in their Hugging Face transformers config.
+This deployment is specifically designed for the Hugging Face model [mixedbread-ai/mxbai-embed-large-v1](https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1).
+It will also work for fine-tuned models that have the architecture of BertModel specified in their Hugging Face transformers config.
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-Linq-AI-Research/Linq-Embed-Mistral  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+mixedbread-ai/mxbai-embed-large-v1  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
-This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -29,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-linq-ai-research-linq-embed-mistral
+cd 11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-embed-large-v1-embedding
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-linq-ai-research-linq-embed-mistral` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-embed-large-v1-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-linq-ai-research-linq-embed-mistral-truss-example was successfully pushed ✨
+# ✨ Model BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -132,13 +131,13 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-linq-ai-research-linq-embed-mistral-truss-example
+model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: L4
   cpu: '1'
-  memory: 15Gi
+  memory: 8Gi
   use_gpu: true
 secrets: {}
 system_packages: []
@@ -146,13 +145,11 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Linq-AI-Research/Linq-Embed-Mistral
+      repo: mixedbread-ai/mxbai-embed-large-v1
       revision: main
       source: HF
-    max_num_tokens: 32768
+    max_num_tokens: 16384
     max_seq_len: 1000001
-    num_builder_gpus: 1
-    quantization_type: fp8
 
 ```
 

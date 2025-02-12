@@ -304,7 +304,7 @@ def generate_bei_deployment(dp: Deployment):
         resources=Resources(
             accelerator=dp.accelerator,
             use_gpu=True,
-            memory="15Gi",
+            memory="8Gi",
         ),
         model_name=model_nickname,
     )
@@ -385,24 +385,37 @@ DEPLOYMENTS_BEI = [
         Embedder(),
     ),
     Deployment(
-        "Snowflake/snowflake-arctic-embed-l-v2.0",
-        "Snowflake/snowflake-arctic-embed-l-v2.0",
-        Accelerator.A10G,  # had issues on L4
+        "mixedbread-ai/mxbai-embed-large-v1-embedding",
+        "mixedbread-ai/mxbai-embed-large-v1",
+        Accelerator.L4,
         Embedder(),
     ),
     Deployment(
-        "Linq-AI-Research/Linq-Embed-Mistral",
-        "Linq-AI-Research/Linq-Embed-Mistral",
-        Accelerator.H100_40GB,
+        "Snowflake/snowflake-arctic-embed-l-v2.0",
+        "Snowflake/snowflake-arctic-embed-l-v2.0",
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
-        is_fp8=True,
     ),
+    Deployment(
+        "BAAI/bge-m3-embedding-dense",
+        "BAAI/bge-m3",
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
+        Embedder(),
+    ),
+    # Deployment( # no slidig window support for >4096
+    # this PR needs to be merged first: or use this revision https://huggingface.co/Linq-AI-Research/Linq-Embed-Mistral/discussions/7
+    #     "Linq-AI-Research/Linq-Embed-Mistral",
+    #     "Linq-AI-Research/Linq-Embed-Mistral",
+    #     Accelerator.H100_40GB,
+    #     Embedder(),
+    #     is_fp8=True,
+    # ),
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
         Accelerator.H100_40GB,
         Embedder(),
-        # no fp8 support
+        # no fp8 support for Gemma in ModelOPT quant, but requires 18GB+ RAM -> A100 or H100Mig
     ),
     Deployment(
         "Salesforce/SFR-Embedding-Mistral",
@@ -414,14 +427,14 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-en-icl-embedding",
         "BAAI/bge-en-icl",
-        Accelerator.H100_40GB,
+        Accelerator.H100,
         Embedder(),
         is_fp8=True,
     ),
     Deployment(
         "intfloat/e5-mistral-7b-instruct-embedding",
         "intfloat/e5-mistral-7b-instruct",
-        Accelerator.H100_40GB,
+        Accelerator.H100,
         Embedder(),
         is_fp8=True,
     ),
@@ -438,7 +451,7 @@ DEPLOYMENTS_BEI = [
         Predictor(),
     ),
     Deployment(
-        "BAAI/bge-reranker-large-classification",
+        "BAAI/bge-reranker-large",
         "BAAI/bge-reranker-large",
         Accelerator.L4,
         Reranker(),
@@ -446,7 +459,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-reranker-v2-m3-multilingual",
         "BAAI/bge-reranker-v2-m3",
-        Accelerator.A10G,
+        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Reranker(),
     ),
     Deployment(
@@ -458,6 +471,13 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
+        Accelerator.H100_40GB,
+        Predictor(),
+        is_fp8=True,
+    ),
+    Deployment(
+        "allenai/Llama-3.1-Tulu-3-8B-Reward-Model",
+        "allenai/Llama-3.1-Tulu-3-8B-RM",
         Accelerator.H100_40GB,
         Predictor(),
         is_fp8=True,

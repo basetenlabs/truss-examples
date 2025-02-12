@@ -3,13 +3,14 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
-      endpoint.
-model_name: BEI-samlowe-roberta-base-go_emotions-classification-truss-example
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-baai-bge-m3-embedding-dense-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A100
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -19,7 +20,7 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: SamLowe/roberta-base-go_emotions
+      repo: BAAI/bge-m3
       revision: main
       source: HF
     max_num_tokens: 16384

@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with intfloat/e5-mistral-7b-instruct-embedding
+# Baseten-Embeddings-Inference with BAAI/bge-m3-embedding-dense
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with intfloat/e5-mistral-7b-instruct-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-m3-embedding-dense. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -9,14 +9,13 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [intfloat/e5-mistral-7b-instruct](https://huggingface.co/intfloat/e5-mistral-7b-instruct).
-It will also work for fine-tuned models that have the architecture of MistralModel specified in their Hugging Face transformers config.
+This deployment is specifically designed for the Hugging Face model [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3).
+It will also work for fine-tuned models that have the architecture of XLMRobertaModel specified in their Hugging Face transformers config.
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-intfloat/e5-mistral-7b-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+BAAI/bge-m3  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
-This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -29,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-intfloat-e5-mistral-7b-instruct-embedding
+cd 11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-m3-embedding-dense
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-intfloat-e5-mistral-7b-instruct-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-m3-embedding-dense` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-intfloat-e5-mistral-7b-instruct-embedding-truss-example was successfully pushed ✨
+# ✨ Model BEI-baai-bge-m3-embedding-dense-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -132,11 +131,11 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-intfloat-e5-mistral-7b-instruct-embedding-truss-example
+model_name: BEI-baai-bge-m3-embedding-dense-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: A100
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -146,13 +145,11 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: intfloat/e5-mistral-7b-instruct
+      repo: BAAI/bge-m3
       revision: main
       source: HF
-    max_num_tokens: 32768
+    max_num_tokens: 16384
     max_seq_len: 1000001
-    num_builder_gpus: 2
-    quantization_type: fp8
 
 ```
 
