@@ -5,10 +5,6 @@ model_metadata:
   example_model_input: {
     messages: [
       {
-        role: "system",
-        content: "You are a helpful and harmless assistant. You are Llama developed by Meta. You should think step-by-step."
-      },
-      {
         role: "user",
         content: "Which is heavier, a pound of bricks or a pound of feathers?"
       }
@@ -40,7 +36,7 @@ trt_llm:
       source: HF
     num_builder_gpus: 4
     quantization_type: fp8_kv
-    max_seq_len: 32768
+    max_seq_len: 131072
     tensor_parallel_count: 2
     plugin_configuration:
       use_paged_context_fmha: true
@@ -49,5 +45,4 @@ trt_llm:
   runtime:
     batch_scheduler_policy: max_utilization
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.85
-    request_default_max_tokens: 32768
+    request_default_max_tokens: 131072

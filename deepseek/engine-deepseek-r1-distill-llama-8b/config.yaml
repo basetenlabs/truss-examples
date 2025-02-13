@@ -5,27 +5,23 @@ model_metadata:
   example_model_input: {
     messages: [
       {
-        role: "system",
-        content: "You are a knowledgable, engaging, history teacher."
-      },
-      {
         role: "user",
-        content: "What was the role of Llamas in the Inca empire?"
+        content: "Which is heavier, a pound of bricks or a pound of feathers?"
       }
     ],
     stream: true,
-    max_tokens: 512,
+    max_tokens: 1024,
     temperature: 0.6,
     top_p: 1.0,
     top_k: 40,
     frequency_penalty: 1
   }
-  repo_id: meta-llama/Meta-Llama-3-8B-Instruct
-model_name: Llama 3.0 8B Instruct
+  repo_id: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+model_name: DeepSeek R1 Distill Llama 8B
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -36,9 +32,17 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Meta-Llama-3-8B-Instruct
+      repo: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
       source: HF
-    max_seq_len: 8192
     num_builder_gpus: 1
     quantization_type: no_quant
+    max_seq_len: 131072
     tensor_parallel_count: 1
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: false
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 131072

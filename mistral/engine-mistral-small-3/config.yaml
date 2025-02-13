@@ -6,41 +6,42 @@ model_metadata:
     messages: [
       {
         role: "system",
-        content: "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
+        content: "You are a knowledgable, engaging, meteorology teacher."
       },
       {
         role: "user",
-        content: "What does Tongyi Qianwen mean?"
+        content: "What is the impact of the Mistral wind on the French climate?"
       }
     ],
     stream: true,
-    max_tokens: 512,
-    temperature: 0.9
+    max_tokens: 1024,
+    temperature: 0.15
   }
-  repo_id: Qwen/Qwen2.5-3B-Instruct
-model_name: Qwen 2.5 3B Instruct
+  repo_id: mistralai/Mistral-Small-24B-Instruct-2501
+model_name: Mistral Small 3 Instruct FP8
 python_version: py39
 requirements: []
 resources:
-  accelerator: A10G
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: set token in baseten workspace
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: mistral
     checkpoint_repository:
-      repo: Qwen/Qwen2.5-3B-Instruct
+      repo: mistralai/Mistral-Small-24B-Instruct-2501
       source: HF
     num_builder_gpus: 1
-    quantization_type: no_quant
+    quantization_type: fp8_kv
     max_seq_len: 32768
     tensor_parallel_count: 1
     plugin_configuration:
       use_paged_context_fmha: true
-      use_fp8_context_fmha: false
+      use_fp8_context_fmha: true
       paged_kv_cache: true
   runtime:
     batch_scheduler_policy: max_utilization

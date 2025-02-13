@@ -5,24 +5,20 @@ model_metadata:
   example_model_input: {
     messages: [
       {
-        role: "system",
-        content: "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-      },
-      {
         role: "user",
-        content: "What does Tongyi Qianwen mean?"
+        content: "Which is heavier, a pound of bricks or a pound of feathers?"
       }
     ],
     stream: true,
-    max_tokens: 512,
-    temperature: 0.9
+    max_tokens: 1024,
+    temperature: 0.6
   }
-  repo_id: Qwen/Qwen2.5-3B-Instruct
-model_name: Qwen 2.5 3B Instruct
+  repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+model_name: DeepSeek R1 Distill Qwen 14B
 python_version: py39
 requirements: []
 resources:
-  accelerator: A10G
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -32,15 +28,15 @@ trt_llm:
   build:
     base_model: qwen
     checkpoint_repository:
-      repo: Qwen/Qwen2.5-3B-Instruct
+      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
       source: HF
     num_builder_gpus: 1
-    quantization_type: no_quant
+    quantization_type: fp8_kv
     max_seq_len: 32768
     tensor_parallel_count: 1
     plugin_configuration:
       use_paged_context_fmha: true
-      use_fp8_context_fmha: false
+      use_fp8_context_fmha: true
       paged_kv_cache: true
   runtime:
     batch_scheduler_policy: max_utilization

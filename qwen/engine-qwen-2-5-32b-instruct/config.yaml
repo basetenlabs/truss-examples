@@ -34,7 +34,15 @@ trt_llm:
     checkpoint_repository:
       repo: Qwen/Qwen2.5-32B-Instruct
       source: HF
-    max_seq_len: 8192
-    num_builder_gpus: 1
+    num_builder_gpus: 2
     quantization_type: fp8_kv
+    max_seq_len: 32768
     tensor_parallel_count: 1
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: true
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 32768
