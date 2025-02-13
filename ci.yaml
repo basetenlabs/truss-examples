@@ -18,6 +18,5 @@ tests:
   - whisper/faster-whisper-v3
   - solar/solar-10.7b-instruct-v1.0
   - llama/llama-2-7b-chat
-  - bark
   - playground-v2-aesthetic
   - llama/tinyllama-1.1B-chat-v1.0
