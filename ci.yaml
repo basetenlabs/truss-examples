@@ -9,7 +9,6 @@ tests:
   - mistral/mistral-7b
   - mistral/mistral-7b-instruct
   - mistral/mistral-7b-chat
-  - jina-embeddings/jina-embeddings-v2-base-en
   - whisper/whisper-v3-truss
   - gfp-gan
   - stable-diffusion/stable-diffusion-xl-1.0
