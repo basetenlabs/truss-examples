@@ -424,13 +424,18 @@ class TextGen(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
+            tags=["openai-compatible"],
             example_model_input=dict(
                 messages=[
-                    {"role": "user", "content": "Tell me everything about Baseten.co!"}
+                    {
+                        "role": "user",
+                        "content": "Tell me everything you know about optimized inference.",
+                    },
                 ],
-                temperature=0.3,
-                max_tokens=100,
-            )
+                temperature=0.5,
+                max_tokens=512,
+                stream=True,
+            ),
         )
     )
     client_usage: str = r"""
