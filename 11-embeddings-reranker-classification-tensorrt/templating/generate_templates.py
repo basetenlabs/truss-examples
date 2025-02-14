@@ -907,6 +907,15 @@ DEPLOYMENTS_BRITON = [
         is_gated=True,
     ),  # meta-llama/Llama-3.1-405B tp8
     Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="meta-llama/Llama-3.2-3B-Instruct")
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
         Accelerator.H100,
@@ -977,7 +986,7 @@ DEPLOYMENTS_BRITON = [
         Accelerator.L4,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="tiiuae/Falcon3-10B-Instruct")
+            trt_config=llamalike_config(repoid="tiiuae/Falcon3-10B-Instruct", tp=4)
         ),
         is_gated=True,
     ),
