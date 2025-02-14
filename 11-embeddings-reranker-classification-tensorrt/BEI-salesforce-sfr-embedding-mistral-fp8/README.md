@@ -1,6 +1,6 @@
-# BEI (Baseten-Embeddings-Inference) with BAAI/bge-en-icl-embedding
+# BEI (Baseten-Embeddings-Inference) with Salesforce/SFR-Embedding-Mistral
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-en-icl-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with Salesforce/SFR-Embedding-Mistral. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -10,10 +10,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [BAAI/bge-en-icl](https://huggingface.co/BAAI/bge-en-icl).
+This deployment is specifically designed for the Hugging Face model [Salesforce/SFR-Embedding-Mistral](https://huggingface.co/Salesforce/SFR-Embedding-Mistral).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-BAAI/bge-en-icl  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+Salesforce/SFR-Embedding-Mistral  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
@@ -29,15 +29,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-en-icl-embedding
+cd 11-embeddings-reranker-classification-tensorrt/BEI-salesforce-sfr-embedding-mistral-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-en-icl-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-salesforce-sfr-embedding-mistral-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-baai-bge-en-icl-embedding-truss-example was successfully pushed ✨
+# ✨ Model BEI-salesforce-sfr-embedding-mistral-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -132,11 +132,11 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-baai-bge-en-icl-embedding-truss-example
+model_name: BEI-salesforce-sfr-embedding-mistral-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100_40GB
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -146,12 +146,12 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: BAAI/bge-en-icl
+      repo: Salesforce/SFR-Embedding-Mistral
       revision: main
       source: HF
     max_num_tokens: 32768
     max_seq_len: 1000001
-    num_builder_gpus: 2
+    num_builder_gpus: 1
     quantization_type: fp8
 
 ```

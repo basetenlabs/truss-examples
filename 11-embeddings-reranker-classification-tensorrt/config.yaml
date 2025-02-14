@@ -1,0 +1,30 @@
+base_image:
+  image: baseten/text-embeddings-inference-mirror:89-1.6
+build_commands:
+- 'git clone https://huggingface.co/Alibaba-NLP/gte-multilingual-reranker-base /data/local-model
+  # optional step to download the weights of the model into the image, otherwise specify
+  the --model-id Alibaba-NLP/gte-multilingual-reranker-base directly `start_command`'
+docker_server:
+  liveness_endpoint: /health
+  predict_endpoint: /rerank
+  readiness_endpoint: /health
+  server_port: 7997
+  start_command: text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size
+    128 --max-concurrent-requests 40 --max-batch-tokens 16384
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /rerank
+model_name: -truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+runtime:
+  predict_concurrency: 40
+secrets: {}
+system_packages: []

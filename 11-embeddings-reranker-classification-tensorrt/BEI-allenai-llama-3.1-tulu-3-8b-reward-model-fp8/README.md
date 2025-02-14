@@ -28,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model
+cd 11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example was successfully pushed ✨
+# ✨ Model BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -86,7 +86,7 @@ model_metadata:
   example_model_input:
     input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
-model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example
+model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8-truss-example
 python_version: py39
 requirements: []
 resources:

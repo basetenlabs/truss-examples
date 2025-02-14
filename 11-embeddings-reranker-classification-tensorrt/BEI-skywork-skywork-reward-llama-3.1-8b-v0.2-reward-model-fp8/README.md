@@ -15,6 +15,7 @@ Suitable models can be identified by the `ForSequenceClassification` suffix in t
 
 Skywork/Skywork-Reward-Llama-3.1-8B-v0.2  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
+This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -27,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model
+cd 11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-example was successfully pushed ✨
+# ✨ Model BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -85,11 +86,11 @@ model_metadata:
   example_model_input:
     input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
-model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-example
+model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: L4
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -104,6 +105,8 @@ trt_llm:
       source: HF
     max_num_tokens: 131072
     max_seq_len: 1000001
+    num_builder_gpus: 2
+    quantization_type: fp8
 
 ```
 

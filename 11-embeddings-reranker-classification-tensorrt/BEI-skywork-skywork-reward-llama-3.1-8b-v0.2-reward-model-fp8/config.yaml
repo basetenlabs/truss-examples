@@ -3,14 +3,13 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    encoding_format: float
-    input: text string
-    model: model
-model_name: BEI-baai-bge-en-icl-embedding-truss-example
+    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
+      endpoint.
+model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: L4
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -20,10 +19,10 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: BAAI/bge-en-icl
+      repo: Skywork/Skywork-Reward-Llama-3.1-8B-v0.2
       revision: main
       source: HF
-    max_num_tokens: 32768
+    max_num_tokens: 131072
     max_seq_len: 1000001
     num_builder_gpus: 2
     quantization_type: fp8

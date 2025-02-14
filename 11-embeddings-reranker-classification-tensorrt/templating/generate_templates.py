@@ -391,6 +391,7 @@ class Deployment:
             self.solution.nickname
             + "-"
             + self.name.replace(" ", "-").replace("/", "-").lower()
+            + ("-fp8" * self.is_fp8)
         )
 
     @property
@@ -589,9 +590,17 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
-        Accelerator.H100_40GB,
+        Accelerator.L4,
         Predictor(),
         is_fp8=True,
+        solution=BEI(),
+    ),
+    Deployment(
+        "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
+        "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
+        Accelerator.H100_40GB,
+        Predictor(),
+        is_fp8=False,
         solution=BEI(),
     ),
     Deployment(

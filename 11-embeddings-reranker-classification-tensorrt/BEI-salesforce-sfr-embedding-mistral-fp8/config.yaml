@@ -6,11 +6,11 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-intfloat-e5-mistral-7b-instruct-embedding-truss-example
+model_name: BEI-salesforce-sfr-embedding-mistral-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100_40GB
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -20,10 +20,10 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: intfloat/e5-mistral-7b-instruct
+      repo: Salesforce/SFR-Embedding-Mistral
       revision: main
       source: HF
     max_num_tokens: 32768
     max_seq_len: 1000001
-    num_builder_gpus: 2
+    num_builder_gpus: 1
     quantization_type: fp8

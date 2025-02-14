@@ -5,11 +5,11 @@ model_metadata:
   example_model_input:
     input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
       endpoint.
-model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-truss-example
+model_name: BEI-baseten-example-meta-llama-3-70b-instructforsequenceclassification-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   cpu: '1'
   memory: 8Gi
   use_gpu: true
@@ -19,10 +19,10 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: allenai/Llama-3.1-Tulu-3-8B-RM
+      repo: baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification
       revision: main
       source: HF
-    max_num_tokens: 131072
+    max_num_tokens: 16384
     max_seq_len: 1000001
-    num_builder_gpus: 1
+    num_builder_gpus: 2
     quantization_type: fp8
