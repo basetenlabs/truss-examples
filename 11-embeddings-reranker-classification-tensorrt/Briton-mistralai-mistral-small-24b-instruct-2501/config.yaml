@@ -19,7 +19,8 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: null
 system_packages: []
 trt_llm:
   build:

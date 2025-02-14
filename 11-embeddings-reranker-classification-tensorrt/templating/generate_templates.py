@@ -212,9 +212,9 @@ Optionally, you can also enable:
             # fix: pass-through access token
             # TODO: remove need to the token at runtime
             secrets["hf_access_token"] = None
-
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
+            secrets=secrets,
             resources=Resources(
                 accelerator=AcceleratorSpec(
                     accelerator=dp.accelerator,
@@ -671,7 +671,7 @@ truss push --publish
 
 ## Config.yaml
 By default, the following configuration is used for this deployment.{quantization_removal}
-
+{is_gated_notice}
 ```yaml
 {config_yaml_as_str}
 ```
@@ -930,7 +930,7 @@ DEPLOYMENTS_BRITON = [
     Deployment(
         "meta-llama/Llama-3.2-3B-Instruct",
         "meta-llama/Llama-3.2-3B-Instruct",
-        Accelerator.L4,
+        Accelerator.A10G,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(

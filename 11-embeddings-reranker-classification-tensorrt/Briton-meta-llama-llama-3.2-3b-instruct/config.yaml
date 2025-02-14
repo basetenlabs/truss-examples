@@ -15,11 +15,12 @@ model_name: Briton-meta-llama-llama-3.2-3b-instruct-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: null
 system_packages: []
 trt_llm:
   build:
