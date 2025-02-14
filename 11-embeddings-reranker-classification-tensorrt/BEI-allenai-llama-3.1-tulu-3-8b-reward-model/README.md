@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with allenai/Llama-3.1-Tulu-3-8B-Reward-Model
+# BEI (Baseten-Embeddings-Inference) with allenai/Llama-3.1-Tulu-3-8B-Reward-Model
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with allenai/Llama-3.1-Tulu-3-8B-Reward-Model. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with allenai/Llama-3.1-Tulu-3-8B-Reward-Model. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -8,9 +8,9 @@ With BEI you get the following benefits:
 - High parallelism: up to 1400 client embeddings per second
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
+
 # Examples:
 This deployment is specifically designed for the Hugging Face model [allenai/Llama-3.1-Tulu-3-8B-RM](https://huggingface.co/allenai/Llama-3.1-Tulu-3-8B-RM).
-It will also work for fine-tuned models that have the architecture of LlamaForSequenceClassification specified in their Hugging Face transformers config.
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
 allenai/Llama-3.1-Tulu-3-8B-RM  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.

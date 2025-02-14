@@ -8,6 +8,8 @@ from pathlib import Path
 
 import requests
 
+REMOTE = "baseten"
+
 
 def retry(max_retries=3, delay=2):
     """
@@ -41,7 +43,7 @@ def retry(max_retries=3, delay=2):
 
 
 def matches_name(model: dict, key: str = "name") -> bool:
-    return model[key].startswith("BEI") and "-truss-example" in model[key]
+    return model[key].endswith("truss-example")
 
 
 @retry(max_retries=3, delay=2)

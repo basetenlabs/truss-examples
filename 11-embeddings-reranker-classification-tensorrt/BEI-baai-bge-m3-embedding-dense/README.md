@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with BAAI/bge-m3-embedding-dense
+# BEI (Baseten-Embeddings-Inference) with BAAI/bge-m3-embedding-dense
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-m3-embedding-dense. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-m3-embedding-dense. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -8,9 +8,9 @@ With BEI you get the following benefits:
 - High parallelism: up to 1400 client embeddings per second
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
+
 # Examples:
 This deployment is specifically designed for the Hugging Face model [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3).
-It will also work for fine-tuned models that have the architecture of XLMRobertaModel specified in their Hugging Face transformers config.
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
 BAAI/bge-m3  is a text-embeddings model, producing a 1D embeddings vector, given an input.

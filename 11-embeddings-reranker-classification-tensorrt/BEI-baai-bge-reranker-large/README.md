@@ -1,6 +1,6 @@
-# Baseten-Embeddings-Inference with BAAI/bge-reranker-large
+# BEI (Baseten-Embeddings-Inference) with BAAI/bge-reranker-large
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-reranker-large. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with BAAI/bge-reranker-large. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
@@ -8,9 +8,9 @@ With BEI you get the following benefits:
 - High parallelism: up to 1400 client embeddings per second
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
+
 # Examples:
 This deployment is specifically designed for the Hugging Face model [BAAI/bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large).
-It will also work for fine-tuned models that have the architecture of XLMRobertaForSequenceClassification specified in their Hugging Face transformers config.
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Reranker models may have at most one label, which contains the score of the reranking.
 
 BAAI/bge-reranker-large  is a reranker model, used to re-rank a list of items, given a query. \nIt is frequently used in search engines, recommendation systems, and more.
