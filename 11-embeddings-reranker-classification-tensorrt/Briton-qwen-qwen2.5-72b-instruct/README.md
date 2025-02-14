@@ -146,9 +146,9 @@ model_name: Briton-qwen-qwen2.5-72b-instruct-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100:4
   cpu: '1'
-  memory: 8Gi
+  memory: 2Gi
   use_gpu: true
 secrets: {}
 system_packages: []
@@ -160,10 +160,10 @@ trt_llm:
       revision: main
       source: HF
     max_seq_len: 32768
-    pipeline_parallel_count: 4
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
+    tensor_parallel_count: 4
   runtime:
     enable_chunked_context: true
 

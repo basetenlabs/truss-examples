@@ -14,7 +14,7 @@ from truss.base.trt_llm_config import (
     TrussTRTLLMQuantizationType,
     TrussTRTLLMRuntimeConfiguration,
 )
-from truss.base.truss_config import Accelerator, Resources, TrussConfig
+from truss.base.truss_config import Accelerator, AcceleratorSpec, Resources, TrussConfig
 
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
@@ -197,9 +197,11 @@ Optionally, you can also enable:
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
             resources=Resources(
-                accelerator=dp.accelerator,
+                accelerator=AcceleratorSpec(
+                    accelerator=dp.accelerator,
+                    count=max(1, self.trt_config.build.tensor_parallel_count),
+                ).to_str(),
                 use_gpu=True,
-                memory="8Gi",
             ),
             model_name=dp.model_nickname,
             trt_llm=self.trt_config,
@@ -851,7 +853,7 @@ def llamalike_config(
     build_kwargs = dict()
     if quant != TrussTRTLLMQuantizationType.NO_QUANT:
         if tp == 1:
-            build_kwargs["num_builder_gpus"] = 2
+            build_kwargs["num_builder_gpus"] = 4
     if quant == TrussTRTLLMQuantizationType.FP8_KV:
         build_kwargs["plugin_configuration"] = TrussTRTLLMPluginConfiguration(
             use_fp8_context_fmha=True
@@ -867,7 +869,7 @@ def llamalike_config(
             ),
             max_seq_len=1000001,  # dummy for now
             quantization_type=quant,
-            pipeline_parallel_count=tp,
+            tensor_parallel_count=tp,
             **build_kwargs,
         ),
         runtime=TrussTRTLLMRuntimeConfiguration(
@@ -887,13 +889,13 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
-        "meta-llama/Llama-3.3-70B-Instruct-tp8",
+        "meta-llama/Llama-3.3-70B-Instruct-tp2",
         "meta-llama/Llama-3.3-70B-Instruct",
         Accelerator.H100,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
-                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=8
+                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=2
             )
         ),
         is_gated=True,
@@ -976,10 +978,13 @@ DEPLOYMENTS_BRITON = [
     Deployment(
         "mistralai/Mistral-7B-Instruct-v0.3",
         "mistralai/Mistral-7B-Instruct-v0.3",
-        Accelerator.L4,
+        Accelerator.A10G,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="mistralai/Mistral-7B-Instruct-v0.3")
+            trt_config=llamalike_config(
+                repoid="mistralai/Mistral-7B-Instruct-v0.3",
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
         ),
     ),
 ]

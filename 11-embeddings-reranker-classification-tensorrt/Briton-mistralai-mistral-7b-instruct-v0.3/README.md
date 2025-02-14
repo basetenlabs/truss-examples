@@ -129,7 +129,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment.
 
 ```yaml
 build_commands: []
@@ -146,9 +146,9 @@ model_name: Briton-mistralai-mistral-7b-instruct-v0.3-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
-  memory: 8Gi
+  memory: 2Gi
   use_gpu: true
 secrets: {}
 system_packages: []
@@ -160,11 +160,8 @@ trt_llm:
       revision: main
       source: HF
     max_seq_len: 32768
-    num_builder_gpus: 2
-    pipeline_parallel_count: 1
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    quantization_type: no_quant
+    tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true
 

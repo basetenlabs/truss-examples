@@ -9,6 +9,7 @@ from pathlib import Path
 import requests
 
 REMOTE = "baseten"
+FILTER = "-"
 
 
 def retry(max_retries=3, delay=2):
@@ -43,7 +44,7 @@ def retry(max_retries=3, delay=2):
 
 
 def matches_name(model: dict, key: str = "name") -> bool:
-    return model[key].endswith("truss-example")
+    return model[key].endswith("truss-example") and FILTER in model[key]
 
 
 @retry(max_retries=3, delay=2)
@@ -68,7 +69,7 @@ def delete_all_truss_example_deployments():
     ]
 
     # Use a thread pool and map to delete concurrently.
-    with ThreadPoolExecutor(8) as executor:
+    with ThreadPoolExecutor(16) as executor:
         delete_func = partial(delete_model, api_key=API_KEY)
         list(executor.map(delete_func, to_delete))
 
@@ -96,7 +97,7 @@ def deploy_config(path: Path) -> None:
 def deploy_all():
     paths = list(Path(__file__).parent.parent.rglob("config.yaml"))
     # Use a thread pool and map to deploy concurrently.
-    with ThreadPoolExecutor(4) as executor:
+    with ThreadPoolExecutor(8) as executor:
         list(executor.map(deploy_config, paths))
 
 
@@ -111,8 +112,17 @@ if __name__ == "__main__":
         required=True,
         help="Action to perform: deploy or delete.",
     )
+    parser.add_argument(
+        "--filter",
+        type=str,
+        nargs="?",
+        default="-",
+        help="Filter names with `x in name` logic.",
+    )
 
     args = parser.parse_args()
+    if args.filter:
+        FILTER = args.filter
 
     if args.action == "deploy":
         deploy_all()
