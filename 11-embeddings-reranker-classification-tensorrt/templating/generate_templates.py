@@ -989,6 +989,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config(
                 repoid="mistralai/Mistral-7B-Instruct-v0.3",
                 quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                tp=2,
             )
         ),
     ),

@@ -149,7 +149,7 @@ model_name: Briton-mistralai-mistral-7b-instruct-v0.3-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: A10G
+  accelerator: A10G:2
   cpu: '1'
   memory: 2Gi
   use_gpu: true
@@ -164,7 +164,7 @@ trt_llm:
       source: HF
     max_seq_len: 32768
     quantization_type: no_quant
-    tensor_parallel_count: 1
+    tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
 
