@@ -27,7 +27,7 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`.
+
 
 First, clone this repository:
 ```sh
@@ -149,7 +149,7 @@ model_name: Briton-tiiuae-falcon3-10b-instruct-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4:4
+  accelerator: L4:2
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -166,7 +166,7 @@ trt_llm:
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    tensor_parallel_count: 4
+    tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
 

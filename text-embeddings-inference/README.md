@@ -1,7 +1,6 @@
 # Notice
 This section has moved to [jina-ai/jina-embeddings-v2-base-en-TEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt) with an overview over fast embeddings.
 
-
 # Text Embeddings Inference Truss
 
 This is a Trussless Customer Server example to deploy [text-embeddings-inference](https://github.com/huggingface/text-embeddings-inference), a high performance server that handles text-embeddings, ranranking and classification models as api.

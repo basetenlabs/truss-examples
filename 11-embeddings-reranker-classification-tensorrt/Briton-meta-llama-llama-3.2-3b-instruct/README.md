@@ -27,7 +27,7 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-
+Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 
 First, clone this repository:
 ```sh
@@ -129,7 +129,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment.
 
 ```yaml
 build_commands: []
@@ -162,11 +162,8 @@ trt_llm:
       repo: meta-llama/Llama-3.2-3B-Instruct
       revision: main
       source: HF
-    max_seq_len: 131072
-    num_builder_gpus: 4
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    max_seq_len: 4096
+    quantization_type: no_quant
     tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true

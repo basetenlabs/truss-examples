@@ -1,7 +1,9 @@
 from dataclasses import field
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
 
+import requests
 from pydantic import dataclasses
 from transformers import AutoConfig
 from truss.base.trt_llm_config import (
@@ -64,6 +66,13 @@ With BEI you get the following benefits:
         max_position_embeddings = hf_cfg.max_position_embeddings
 
         max_num_tokens = max(16384, max_position_embeddings)
+
+        num_builder_gpus = 1
+        if dp.accelerator in [Accelerator.H100]:
+            num_builder_gpus = 2
+        elif dp.accelerator in [Accelerator.L4]:
+            num_builder_gpus = 4
+
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
             trt_llm=TRTLLMConfiguration(
@@ -80,11 +89,7 @@ With BEI you get the following benefits:
                         {
                             "quantization_type": TrussTRTLLMQuantizationType.FP8,
                             # give more resources / cpu ram + vram on build if the model uses not-mig
-                            "num_builder_gpus": (
-                                2
-                                if dp.accelerator in [Accelerator.H100, Accelerator.L4]
-                                else 1
-                            ),
+                            "num_builder_gpus": num_builder_gpus,
                         }
                         if dp.is_fp8
                         else {}
@@ -192,7 +197,21 @@ Optionally, you can also enable:
         )  # make sure model is available
         max_position_embeddings = hf_cfg.max_position_embeddings
         assert self.trt_config is not None
-        self.trt_config.build.max_seq_len = max(max_position_embeddings, 512)
+        self.trt_config.build.max_seq_len = max_position_embeddings
+        assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
+        if (
+            dp.accelerator in [Accelerator.L4, Accelerator.A10G]
+            and self.trt_config.build.tensor_parallel_count == 1
+        ):
+            # limit context length on single small gpus as its hard to tune
+            self.trt_config.build.max_seq_len = min(
+                self.trt_config.build.max_seq_len, 4096
+            )
+        secrets = {}
+        if dp.is_gated:
+            # fix: pass-through access token
+            # TODO: remove need to the token at runtime
+            secrets["hf_access_token"] = None
 
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
@@ -530,7 +549,6 @@ class Deployment:
     accelerator: Accelerator
     task: Task
     solution: Solution
-    is_gated: bool = False
     is_fp8: bool = False
 
     def __init__(self, *args, **kwargs):
@@ -540,16 +558,26 @@ class Deployment:
                 "fp8" in self.solution.trt_config.build.quantization_type.value
             )
 
-        try:
-            AutoConfig.from_pretrained(self.hf_model_id, token="invalid")
-            self.is_gated = False
-        except Exception:
-            try:
-                # has only access with permissions
-                AutoConfig.from_pretrained(self.hf_model_id)
-                self.is_gated = True
-            except Exception:
-                raise
+    @cached_property
+    def hf_config(self):
+        return AutoConfig.from_pretrained(self.hf_model_id, trust_remote_code=True)
+
+    @cached_property
+    def is_gated(self):
+        # make sure the model is available via AutoConfig
+        assert self.hf_config is not None
+
+        # model_name = "unsloth/phi-4"
+        # Attempt to fetch the weights file rather than config.json
+        url = f"https://huggingface.co/{self.hf_model_id}/resolve/main/config.json"
+
+        response = requests.get(url)
+        if response.status_code == 200:
+            return False
+        elif response.status_code == 401:
+            return True
+        else:
+            raise ValueError(f"Received HTTP status code: {response.status_code}")
 
     @property
     def folder_name(self):
@@ -571,9 +599,10 @@ def generate_bei_deployment(dp: Deployment):
 
     folder_relative_path = SUBFOLDER / dp.folder_name
     full_folder_path = root / folder_relative_path
-    is_gated = (
+    is_gated_notice = (
         "Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). "
-        "Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`."
+        "Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. "
+        "Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store."
         if dp.is_gated
         else ""
     )
@@ -620,7 +649,7 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-{is_gated}
+{is_gated_notice}
 
 First, clone this repository:
 ```sh
@@ -759,7 +788,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "ncbi/MedCPT-Cross-Encoder-reranker",
         "ncbi/MedCPT-Cross-Encoder",
-        Accelerator.L4,
+        Accelerator.A10G,
         Reranker(),
         solution=BEI(),
     ),
@@ -815,7 +844,7 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
         name="sentence-transformers/all-MiniLM-L6-v2-embedding",
         hf_model_id="sentence-transformers/all-MiniLM-L6-v2",
-        accelerator=Accelerator.L4,
+        accelerator=Accelerator.A10G,
         task=Embedder(),
         solution=HFTEI(),
     ),
@@ -838,13 +867,6 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
         hf_model_id="intfloat/multilingual-e5-large-instruct",
         accelerator=Accelerator.L4,
         task=Embedder(),
-        solution=HFTEI(),
-    ),
-    Deployment(  #
-        name="Alibaba-NLP/gte-multilingual-reranker-base",
-        hf_model_id="Alibaba-NLP/gte-multilingual-reranker-base",
-        accelerator=Accelerator.L4,
-        task=Reranker(),
         solution=HFTEI(),
     ),
 ]
@@ -904,7 +926,6 @@ DEPLOYMENTS_BRITON = [
                 repoid="meta-llama/Llama-3.3-70B-Instruct", tp=2
             )
         ),
-        is_gated=True,
     ),  # meta-llama/Llama-3.1-405B tp8
     Deployment(
         "meta-llama/Llama-3.2-3B-Instruct",
@@ -912,7 +933,11 @@ DEPLOYMENTS_BRITON = [
         Accelerator.L4,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="meta-llama/Llama-3.2-3B-Instruct")
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
         ),
     ),
     Deployment(
@@ -923,7 +948,6 @@ DEPLOYMENTS_BRITON = [
         solution=Briton(
             trt_config=llamalike_config(repoid="meta-llama/Llama-3.1-405B", tp=8)
         ),
-        is_gated=True,
     ),
     Deployment(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
@@ -971,14 +995,13 @@ DEPLOYMENTS_BRITON = [
                 repoid="mistralai/Mistral-Small-24B-Instruct-2501"
             )
         ),
-        is_gated=True,
     ),  # unsloth/phi-4
     Deployment(
         "microsoft/phi-4",
         "unsloth/phi-4",
         Accelerator.L4,
         TextGen(),
-        solution=Briton(trt_config=llamalike_config(repoid="unsloth/phi-4")),
+        solution=Briton(trt_config=llamalike_config(repoid="unsloth/phi-4", tp=2)),
     ),
     Deployment(
         "tiiuae/Falcon3-10B-Instruct",
@@ -986,9 +1009,8 @@ DEPLOYMENTS_BRITON = [
         Accelerator.L4,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="tiiuae/Falcon3-10B-Instruct", tp=4)
+            trt_config=llamalike_config(repoid="tiiuae/Falcon3-10B-Instruct", tp=2)
         ),
-        is_gated=True,
     ),
     Deployment(
         "mistralai/Mistral-7B-Instruct-v0.3",

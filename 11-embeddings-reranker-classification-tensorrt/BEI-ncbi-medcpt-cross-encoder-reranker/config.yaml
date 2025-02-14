@@ -8,7 +8,7 @@ model_name: BEI-ncbi-medcpt-cross-encoder-reranker-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
   memory: 10Gi
   use_gpu: true

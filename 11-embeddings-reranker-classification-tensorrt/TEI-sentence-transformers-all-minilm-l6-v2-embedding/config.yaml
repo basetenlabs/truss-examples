@@ -1,5 +1,5 @@
 base_image:
-  image: baseten/text-embeddings-inference-mirror:89-1.6
+  image: baseten/text-embeddings-inference-mirror:86-1.6
 build_commands:
 - 'git clone https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2 /data/local-model
   # optional step to download the weights of the model into the image, otherwise specify
@@ -22,7 +22,7 @@ model_name: TEI-sentence-transformers-all-minilm-l6-v2-embedding-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
   memory: 2Gi
   use_gpu: true

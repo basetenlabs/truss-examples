@@ -44,7 +44,11 @@ def retry(max_retries=3, delay=2):
 
 
 def matches_name(model: dict, key: str = "name") -> bool:
-    return model[key].endswith("truss-example") and FILTER in model[key]
+    return (
+        model[key].endswith("truss-example")
+        and FILTER in model[key]
+        and (not "405b" in model[key])
+    )
 
 
 @retry(max_retries=3, delay=2)
