@@ -55,7 +55,7 @@ import os
 
 client = OpenAI(
     api_key=os.environ['BASETEN_API_KEY'],
-    api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync/v1"
 )
 
 # Default completion
@@ -151,7 +151,7 @@ requirements: []
 resources:
   accelerator: H100
   cpu: '1'
-  memory: 2Gi
+  memory: 10Gi
   use_gpu: true
 secrets: {}
 system_packages: []

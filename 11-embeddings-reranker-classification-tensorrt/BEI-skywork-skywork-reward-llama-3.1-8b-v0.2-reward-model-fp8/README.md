@@ -92,7 +92,7 @@ requirements: []
 resources:
   accelerator: L4
   cpu: '1'
-  memory: 8Gi
+  memory: 10Gi
   use_gpu: true
 secrets: {}
 system_packages: []

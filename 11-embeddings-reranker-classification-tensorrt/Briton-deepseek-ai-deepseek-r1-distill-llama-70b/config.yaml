@@ -17,7 +17,7 @@ requirements: []
 resources:
   accelerator: H100:2
   cpu: '1'
-  memory: 2Gi
+  memory: 10Gi
   use_gpu: true
 secrets: {}
 system_packages: []

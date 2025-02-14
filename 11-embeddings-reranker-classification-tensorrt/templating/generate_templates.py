@@ -94,7 +94,7 @@ With BEI you get the following benefits:
             resources=Resources(
                 accelerator=dp.accelerator,
                 use_gpu=True,
-                memory="8Gi",
+                memory="10Gi",
             ),
             model_name=dp.model_nickname,
         )
@@ -202,6 +202,7 @@ Optionally, you can also enable:
                     count=max(1, self.trt_config.build.tensor_parallel_count),
                 ).to_str(),
                 use_gpu=True,
+                memory="10Gi",
             ),
             model_name=dp.model_nickname,
             trt_llm=self.trt_config,
@@ -279,7 +280,7 @@ import os
 
 client = OpenAI(
     api_key=os.environ['BASETEN_API_KEY'],
-    api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync/v1"
 )
 
 embedding = client.embeddings.create(
@@ -448,7 +449,7 @@ import os
 
 client = OpenAI(
     api_key=os.environ['BASETEN_API_KEY'],
-    api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync/v1"
 )
 
 # Default completion
