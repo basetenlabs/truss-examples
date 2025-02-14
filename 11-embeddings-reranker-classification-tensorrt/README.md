@@ -50,3 +50,29 @@ You can find the following deployments in this repository:
 
 <sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 <sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+
+# Text-Generation - Briton
+Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Text-generation models. (e.g. LLama, Qwen, Mistral)
+
+With Briton you get the following benefits by default:
+- *Lowest-latency* latency, beating frameworks such as vllm
+- *Highest-throughput* inference - tensorrt-llm will automatically use XQA kernels, paged kv caching and inflight batching.
+- *distributed inference* run large models (such as LLama-3-405B) in tensor-parallel
+- *json-schema based structured output for any model*
+- *chunked prefilling* for long generation tasks
+
+Optionally, you can also enable:
+- *speculative decoding* using external draft models or lookahead decoding
+- *fp8 quantization* on new GPUS such as H100, H200 and L4 GPUs
+
+Examples:
+ - [Qwen/Qwen2.5-72B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct)
+ - [deepseek-ai/DeepSeek-R1-Distill-Llama-70B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-deepseek-ai-deepseek-r1-distill-llama-70b)
+ - [deepseek-ai/DeepSeek-R1-Distill-Qwen-32B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-deepseek-ai-deepseek-r1-distill-qwen-32b)
+ - [meta-llama/Llama-3.1-405B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.1-405b)
+ - [meta-llama/Llama-3.3-70B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct)
+ - [meta-llama/Llama-3.3-70B-Instruct-tp8-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp8)
+ - [microsoft/phi-4-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-microsoft-phi-4)
+ - [mistralai/Mistral-7B-Instruct-v0.3-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-mistralai-mistral-7b-instruct-v0.3)
+ - [mistralai/Mistral-Small-24B-Instruct-2501-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-mistralai-mistral-small-24b-instruct-2501)
+ - [tiiuae/Falcon3-10B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-tiiuae-falcon3-10b-instruct)

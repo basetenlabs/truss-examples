@@ -1,15 +1,18 @@
 from dataclasses import field
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import dataclasses
+from transformers import AutoConfig
 from truss.base.trt_llm_config import (
     CheckpointRepository,
     CheckpointSource,
     TRTLLMConfiguration,
     TrussTRTLLMBuildConfiguration,
     TrussTRTLLMModel,
+    TrussTRTLLMPluginConfiguration,
     TrussTRTLLMQuantizationType,
+    TrussTRTLLMRuntimeConfiguration,
 )
 from truss.base.truss_config import Accelerator, Resources, TrussConfig
 
@@ -31,6 +34,7 @@ class Solution:
     name: str
     benefits: str
     nickname: str
+    trt_config: Optional[TRTLLMConfiguration] = None
 
     def make_headline(self, dp: "Deployment"):
         # e.g. BEI (Baseten-Embeddings-Inference) with {dp.name}.
@@ -54,8 +58,6 @@ With BEI you get the following benefits:
 """
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
-        from transformers import AutoConfig
-
         hf_cfg = AutoConfig.from_pretrained(
             dp.hf_model_id, trust_remote_code=True
         )  # make sure model is available
@@ -119,8 +121,6 @@ Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
 """
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
-        from transformers import AutoConfig
-
         try:
             AutoConfig.from_pretrained(
                 dp.hf_model_id, trust_remote_code=True
@@ -165,6 +165,44 @@ Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
             runtime=dict(
                 predict_concurrency=40,
             ),
+        )
+
+
+@dataclasses.dataclass
+class Briton(Solution):
+    name: str = "TensorRT-LLM Briton"
+    nickname: str = "Briton"
+    benefits: str = """Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+
+With Briton you get the following benefits by default:
+- *Lowest-latency* latency, beating frameworks such as vllm
+- *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
+- *distributed inference* run large models (such as LLama-405B) tensor-parallel
+- *json-schema based structured output for any model*
+- *chunked prefilling* for long generation tasks
+
+Optionally, you can also enable:
+- *speculative decoding* using an external draft model or self-speculative decoding
+- *fp8 quantization* deployments on H100, H200 and L4 GPUs
+"""
+
+    def make_truss_config(self, dp):
+        hf_cfg = AutoConfig.from_pretrained(
+            dp.hf_model_id, trust_remote_code=True
+        )  # make sure model is available
+        max_position_embeddings = hf_cfg.max_position_embeddings
+        assert self.trt_config is not None
+        self.trt_config.build.max_seq_len = max(max_position_embeddings, 512)
+
+        return TrussConfig(
+            model_metadata=dp.task.model_metadata,
+            resources=Resources(
+                accelerator=dp.accelerator,
+                use_gpu=True,
+                memory="8Gi",
+            ),
+            model_name=dp.model_nickname,
+            trt_llm=self.trt_config,
         )
 
 
@@ -373,6 +411,111 @@ OpenAI does not have a classification endpoint, therefore no client library is a
 
 
 @dataclasses.dataclass
+class TextGen(Task):
+    purpose: str = (
+        " is a text-generation model, used to generate text given a prompt. \\n"
+        "It is frequently used in chatbots, text completion, structured output and more."
+    )
+    model_identification: str = (
+        "Suitable models can be identified by the `ForCausalLM` suffix in the model name. "
+        "Currently we support e.g. LLama, Qwen, Mistral models."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: dict(
+            example_model_input=dict(
+                messages=[
+                    {"role": "user", "content": "Tell me everything about Baseten.co!"}
+                ],
+                temperature=0.3,
+                max_tokens=100,
+            )
+        )
+    )
+    client_usage: str = r"""
+### OpenAI compatible inference
+Briton is OpenAI compatible, which means you can use the OpenAI client library to interact with the model.
+
+```python
+from openai import OpenAI
+import os
+
+client = OpenAI(
+    api_key=os.environ['BASETEN_API_KEY'],
+    api_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+
+# Default completion
+response_completion = client.completions.create(
+    model="not_required",
+    prompt="Q: Tell me everything about Baseten.co! A:",
+    temperature=0.3,
+    max_tokens=100,
+)
+
+# Chat completion
+response_chat = client.chat.completions.create(
+    model="",
+    messages=[
+        {"role": "user", "content": "Tell me everything about Baseten.co!"}
+    ],
+    temperature=0.3,
+    max_tokens=100,
+)
+
+# Structured output
+from pydantic import BaseModel
+
+class CalendarEvent(BaseModel):
+    name: str
+    date: str
+    participants: list[str]
+
+completion = client.beta.chat.completions.parse(
+    model="not_required",
+    messages=[
+        {"role": "system", "content": "Extract the event information."},
+        {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
+    ],
+    response_format=CalendarEvent,
+)
+
+event = completion.choices[0].message.parsed
+
+# If you model supports tool-calling, you can use the following example:
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "Get current temperature for a given location.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "City and country e.g. Bogotá, Colombia"
+                }
+            },
+            "required": [
+                "location"
+            ],
+            "additionalProperties": False
+        },
+        "strict": True
+    }
+}]
+
+completion = client.chat.completions.create(
+    model="not_required",
+    messages=[{"role": "user", "content": "What is the weather like in Paris today?"}],
+    tools=tools
+)
+
+print(completion.choices[0].message.tool_calls)
+```
+"""
+
+
+@dataclasses.dataclass
 class Deployment:
     name: str
     hf_model_id: str
@@ -384,6 +527,21 @@ class Deployment:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.solution.trt_config is not None:
+            self.is_fp8 = (
+                "fp8" in self.solution.trt_config.build.quantization_type.value
+            )
+
+        try:
+            AutoConfig.from_pretrained(self.hf_model_id, token="invalid")
+            self.is_gated = False
+        except Exception:
+            try:
+                # has only access with permissions
+                AutoConfig.from_pretrained(self.hf_model_id)
+                self.is_gated = True
+            except Exception:
+                raise
 
     @property
     def folder_name(self):
@@ -418,9 +576,19 @@ def generate_bei_deployment(dp: Deployment):
         if dp.is_fp8
         else ""
     )
-    quantization_removal = "If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16."
 
     config = dp.solution.make_truss_config(dp)
+    if (
+        config.trt_llm is not None
+        and config.trt_llm.build.quantization_type
+        != TrussTRTLLMQuantizationType.NO_QUANT
+    ):
+        quantization_removal = (
+            f" This config uses `quantization_type={config.trt_llm.build.quantization_type.value}`. "
+            "This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16."
+        )
+    else:
+        quantization_removal = ""
 
     # Writes
     full_folder_path.mkdir(parents=True, exist_ok=True)
@@ -465,7 +633,7 @@ truss push --publish
 {dp.task.client_usage}
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. {quantization_removal}
+By default, the following configuration is used for this deployment.{quantization_removal}
 
 ```yaml
 {config_yaml_as_str}
@@ -673,7 +841,151 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     ),
 ]
 
-ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_HFTEI
+
+def llamalike_config(
+    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
+    tp=1,
+    repoid="meta-llama/Llama-3.3-70B-Instruct",
+):
+    # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
+    build_kwargs = dict()
+    if quant != TrussTRTLLMQuantizationType.NO_QUANT:
+        if tp == 1:
+            build_kwargs["num_builder_gpus"] = 2
+    if quant == TrussTRTLLMQuantizationType.FP8_KV:
+        build_kwargs["plugin_configuration"] = TrussTRTLLMPluginConfiguration(
+            use_fp8_context_fmha=True
+        )
+
+    return TRTLLMConfiguration(
+        build=TrussTRTLLMBuildConfiguration(
+            base_model=TrussTRTLLMModel.LLAMA,
+            checkpoint_repository=CheckpointRepository(
+                repo=repoid,
+                revision="main",
+                source=CheckpointSource.HF,
+            ),
+            max_seq_len=1000001,  # dummy for now
+            quantization_type=quant,
+            pipeline_parallel_count=tp,
+            **build_kwargs,
+        ),
+        runtime=TrussTRTLLMRuntimeConfiguration(
+            enable_chunked_context=True,
+        ),
+    )
+
+
+DEPLOYMENTS_BRITON = [
+    Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="meta-llama/Llama-3.3-70B-Instruct")
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct-tp8",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=8
+            )
+        ),
+        is_gated=True,
+    ),  # meta-llama/Llama-3.1-405B tp8
+    Deployment(
+        "meta-llama/Llama-3.1-405B",
+        "meta-llama/Llama-3.1-405B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="meta-llama/Llama-3.1-405B", tp=8)
+        ),
+        is_gated=True,
+    ),
+    Deployment(
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+                quant=TrussTRTLLMQuantizationType.FP8,  # no KV quantization fgor Qwen
+            )
+        ),
+    ),
+    Deployment(
+        "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                tp=2,
+            )
+        ),
+    ),
+    # Qwen/Qwen2.5-72B-Instruct
+    Deployment(
+        "Qwen/Qwen2.5-72B-Instruct",
+        "Qwen/Qwen2.5-72B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="Qwen/Qwen2.5-72B-Instruct", tp=4)
+        ),
+    ),
+    # mistralai/Mistral-Small-24B-Instruct-2501
+    Deployment(
+        "mistralai/Mistral-Small-24B-Instruct-2501",
+        "mistralai/Mistral-Small-24B-Instruct-2501",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="mistralai/Mistral-Small-24B-Instruct-2501"
+            )
+        ),
+        is_gated=True,
+    ),  # unsloth/phi-4
+    Deployment(
+        "microsoft/phi-4",
+        "unsloth/phi-4",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(trt_config=llamalike_config(repoid="unsloth/phi-4")),
+    ),
+    Deployment(
+        "tiiuae/Falcon3-10B-Instruct",
+        "tiiuae/Falcon3-10B-Instruct",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="tiiuae/Falcon3-10B-Instruct")
+        ),
+        is_gated=True,
+    ),
+    Deployment(
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(repoid="mistralai/Mistral-7B-Instruct-v0.3")
+        ),
+    ),
+]
+
+
+ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_HFTEI + DEPLOYMENTS_BRITON
 
 if __name__ == "__main__":
     for dp in ALL_DEPLOYMENTS:
@@ -694,6 +1006,7 @@ if __name__ == "__main__":
     embedders_names_fmt = format_filter(ALL_DEPLOYMENTS, Embedder)
     rerankers_names_fmt = format_filter(ALL_DEPLOYMENTS, Reranker)
     predictors_names_fmt = format_filter(ALL_DEPLOYMENTS, Predictor)
+    generation_names_fmt = format_filter(ALL_DEPLOYMENTS, TextGen)
 
     readme = f"""
 # Performance Section
@@ -725,6 +1038,23 @@ You can find the following deployments in this repository:
 
 <sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 <sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
+
+# Text-Generation - Briton
+Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Text-generation models. (e.g. LLama, Qwen, Mistral)
+
+With Briton you get the following benefits by default:
+- *Lowest-latency* latency, beating frameworks such as vllm
+- *Highest-throughput* inference - tensorrt-llm will automatically use XQA kernels, paged kv caching and inflight batching.
+- *distributed inference* run large models (such as LLama-3-405B) in tensor-parallel
+- *json-schema based structured output for any model*
+- *chunked prefilling* for long generation tasks
+
+Optionally, you can also enable:
+- *speculative decoding* using external draft models or lookahead decoding
+- *fp8 quantization* on new GPUS such as H100, H200 and L4 GPUs
+
+Examples:
+{generation_names_fmt}
 """
     (Path(__file__).parent.parent / "README.md").write_text(readme)
     print(readme)

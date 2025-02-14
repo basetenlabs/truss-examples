@@ -1,0 +1,35 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    max_tokens: 100
+    messages:
+    - content: Tell me everything about Baseten.co!
+      role: user
+    temperature: 0.3
+model_name: Briton-mistralai-mistral-small-24b-instruct-2501-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 8Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: mistralai/Mistral-Small-24B-Instruct-2501
+      revision: main
+      source: HF
+    max_seq_len: 32768
+    num_builder_gpus: 2
+    pipeline_parallel_count: 1
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+  runtime:
+    enable_chunked_context: true

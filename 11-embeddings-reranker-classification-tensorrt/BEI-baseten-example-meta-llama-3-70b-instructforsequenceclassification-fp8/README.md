@@ -76,7 +76,7 @@ OpenAI does not have a classification endpoint, therefore no client library is a
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16.
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
 build_commands: []

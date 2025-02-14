@@ -127,7 +127,7 @@ print(resp.json())
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. If you want to remove the quantization, remove the `quantization_type` field or set it to `no_quant` for float16.
+By default, the following configuration is used for this deployment.
 
 ```yaml
 base_image:
