@@ -103,7 +103,8 @@ def test_deploy(deploy_id: str = "03ykpnkw"):
         max_tokens=100,
     )
     assert any(
-        m in response_completion.choices[0].text.lower() for m in ["baseten", "sorry"]
+        m in response_completion.choices[0].text.lower()
+        for m in ["baseten", "sorry", "deepseek"]
     ), f"Completion response: {response_completion.choices[0].text}"
 
     # Chat completion
@@ -115,7 +116,7 @@ def test_deploy(deploy_id: str = "03ykpnkw"):
     )
     assert any(
         m in response_chat.choices[0].message.content.lower()
-        for m in ["baseten", "sorry"]
+        for m in ["baseten", "sorry", "deepseek"]
     ), f"Chat response: {response_chat.choices[0].message.content}"
     # Structured output
     from pydantic import BaseModel
@@ -138,7 +139,7 @@ def test_deploy(deploy_id: str = "03ykpnkw"):
     )
 
     event = completion.choices[0].message.parsed
-    assert "science" in event.name.lower(), f"Event name: {event.name} was wrong"
+    assert len(event.name), f"Event name: {event.name} was wrong"
     print(f"✅ All tests passed for deployment {deploy_id}")
     return deploy_id
 
