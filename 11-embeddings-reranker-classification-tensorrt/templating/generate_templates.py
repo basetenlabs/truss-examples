@@ -844,14 +844,14 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
         name="sentence-transformers/all-MiniLM-L6-v2-embedding",
         hf_model_id="sentence-transformers/all-MiniLM-L6-v2",
-        accelerator=Accelerator.A10G,
+        accelerator=Accelerator.T4,
         task=Embedder(),
         solution=HFTEI(),
     ),
     Deployment(  #
         name="nomic-ai/nomic-embed-text-v1.5",
         hf_model_id="nomic-ai/nomic-embed-text-v1.5",
-        accelerator=Accelerator.L4,
+        accelerator=Accelerator.A10G,
         task=Embedder(),
         solution=HFTEI(),
     ),
