@@ -1,17 +1,14 @@
 import json
 import sys
-import time
+from typing import Any
 
+import packaging.version
 import requests
 import truss
-from tenacity import (
-    Retrying,
-    retry,
-    stop_after_attempt,
-    wait_fixed,
-    wait_random_exponential,
-)
+from tenacity import retry, stop_after_attempt, wait_fixed, wait_random_exponential
 from truss.cli.cli import _get_truss_from_directory
+from truss.remote.baseten import BasetenRemote
+from truss.remote.baseten.api import BasetenApi
 from truss.remote.remote_factory import RemoteConfig, RemoteFactory
 
 REMOTE_NAME = "ci"
@@ -76,15 +73,45 @@ def deploy_truss(target_directory: str) -> str:
     return model_deployment.model_id, model_deployment.model_deployment_id
 
 
+def delete_model_deployment(api: BasetenApi, model_id: str, deployment_id: str) -> Any:
+    url = f"{api._rest_api_url}/v1/models/{model_id}/deployments/{deployment_id}"
+    headers = api._auth_token.header()
+    resp = requests.delete(url, headers=headers)
+    if not resp.ok:
+        resp.raise_for_status()
+
+    deployment = resp.json()
+    return deployment
+
+
+def clean_up_deployments(model_name: str, model_id: str):
+    remote: BasetenRemote = RemoteFactory.create(REMOTE_NAME)
+    model = remote.api.get_model(model_name)
+    versions = [
+        (version["id"], version["semver"])
+        for version in model["model"]["versions"]
+        if not version["is_primary"]
+    ]
+    versions = sorted(versions, key=lambda x: packaging.version.Version(x[1]))
+    to_delete = versions[:-5]  # Keep the last 5 versions
+    for deployment_id, _ in to_delete:
+        print(f"Deleting {model_id}:{deployment_id}")
+        delete_model_deployment(remote.api, model_id, deployment_id)
+
+
 def main(api_key: str, target_directory: str):
     write_trussrc_file(api_key)
     truss_handle = _get_truss_from_directory(target_directory)
     model_id, model_version_id = deploy_truss(target_directory)
     print(f"Deployed Truss {model_version_id}")
-    attempt_inference(truss_handle, model_id, model_version_id, api_key)
+    try:
+        attempt_inference(truss_handle, model_id, model_version_id, api_key)
+    finally:  # If inference fails, still the last N versions are left deployed.
+        try:
+            clean_up_deployments(truss_handle.spec.config.model_name, model_id)
+        except Exception as e:
+            print(f"Error when deleting old deployments: {e}")
 
 
 if __name__ == "__main__":
-    api_key = sys.argv[1]
-    target_directory = sys.argv[2]
-    main(api_key, target_directory)
+    main(api_key=sys.argv[1], target_directory=sys.argv[2])
