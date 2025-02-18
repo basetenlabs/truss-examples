@@ -2,6 +2,7 @@ import json
 import sys
 from typing import Any
 
+import packaging.version
 import requests
 import truss
 from tenacity import retry, stop_after_attempt, wait_fixed, wait_random_exponential
@@ -91,7 +92,7 @@ def clean_up_deployments(model_name: str, model_id: str):
         for version in model["model"]["versions"]
         if not version["is_primary"]
     ]
-    versions = sorted(versions, key=lambda x: x[1])
+    versions = sorted(versions, key=lambda x: packaging.version.Version(x[1]))
     to_delete = versions[:-5]  # Keep the last 5 versions
     for deployment_id, _ in to_delete:
         print(f"Deleting {model_id}:{deployment_id}")
