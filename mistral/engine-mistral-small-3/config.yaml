@@ -7,32 +7,37 @@ model_metadata:
   example_model_input: {
     messages: [
       {
+        role: "system",
+        content: "You are a knowledgable, engaging, meteorology teacher."
+      },
+      {
         role: "user",
-        content: "Which is heavier, a pound of bricks or a pound of feathers?"
+        content: "What is the impact of the Mistral wind on the French climate?"
       }
     ],
     stream: true,
     max_tokens: 1024,
-    temperature: 0.6
+    temperature: 0.15
   }
-  repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-model_name: DeepSeek R1 Distill Qwen 32B
+  repo_id: mistralai/Mistral-Small-24B-Instruct-2501
+model_name: Mistral Small 3 Instruct FP8
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: set token in baseten workspace
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: mistral
     checkpoint_repository:
-      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+      repo: mistralai/Mistral-Small-24B-Instruct-2501
       source: HF
-    num_builder_gpus: 2
+    num_builder_gpus: 1
     quantization_type: fp8_kv
     max_seq_len: 32768
     tensor_parallel_count: 1
