@@ -149,7 +149,7 @@ model_name: Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-externa
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100:2
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -164,7 +164,6 @@ trt_llm:
       revision: main
       source: HF
     max_seq_len: 131072
-    num_builder_gpus: 4
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
@@ -175,7 +174,7 @@ trt_llm:
         source: HF
       num_draft_tokens: 10
       speculative_decoding_mode: DRAFT_TOKENS_EXTERNAL
-    tensor_parallel_count: 1
+    tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
 

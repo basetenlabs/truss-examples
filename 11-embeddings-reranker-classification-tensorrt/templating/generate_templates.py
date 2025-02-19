@@ -1077,6 +1077,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_spec_dec(
                 repoid="meta-llama/Llama-3.3-70B-Instruct",
                 spec_repo="meta-llama/Llama-3.2-1B-Instruct",
+                tp=2,
             )
         ),
     ),
