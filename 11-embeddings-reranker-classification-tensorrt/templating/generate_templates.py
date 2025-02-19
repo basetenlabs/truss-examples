@@ -1089,7 +1089,9 @@ DEPLOYMENTS_BRITON = [
         Accelerator.H100,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_lookahead(repoid="Qwen/Qwen2.5-7B-Instruct")
+            trt_config=llamalike_lookahead(
+                repoid="Qwen/Qwen2.5-7B-Instruct", quant=TrussTRTLLMQuantizationType.FP8
+            )
         ),
     ),
     Deployment(

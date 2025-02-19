@@ -129,7 +129,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
 build_commands: []
@@ -164,9 +164,7 @@ trt_llm:
       source: HF
     max_seq_len: 32768
     num_builder_gpus: 4
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    quantization_type: fp8
     speculator:
       lookahead_ngram_size: 5
       lookahead_verification_set_size: 5
