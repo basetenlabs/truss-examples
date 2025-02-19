@@ -66,11 +66,14 @@ Optionally, you can also enable:
 
 Examples:
  - [Qwen/Qwen2.5-72B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct)
+ - [Qwen/Qwen2.5-7B-Instruct-with-speculative-lookahead-decoding-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding)
  - [deepseek-ai/DeepSeek-R1-Distill-Llama-70B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-deepseek-ai-deepseek-r1-distill-llama-70b)
  - [deepseek-ai/DeepSeek-R1-Distill-Qwen-32B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-deepseek-ai-deepseek-r1-distill-qwen-32b)
  - [meta-llama/Llama-3.1-405B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.1-405b)
+ - [meta-llama/Llama-3.1-8B-Instruct-with-speculative-lookahead-decoding-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.1-8b-instruct-with-speculative-lookahead-decoding)
  - [meta-llama/Llama-3.2-3B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.2-3b-instruct)
  - [meta-llama/Llama-3.3-70B-Instruct-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct)
+ - [meta-llama/Llama-3.3-70B-Instruct-speculative-with-1B-external-draft-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft)
  - [meta-llama/Llama-3.3-70B-Instruct-tp2-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp2)
  - [microsoft/phi-4-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-microsoft-phi-4)
  - [mistralai/Mistral-7B-Instruct-v0.3-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-mistralai-mistral-7b-instruct-v0.3)

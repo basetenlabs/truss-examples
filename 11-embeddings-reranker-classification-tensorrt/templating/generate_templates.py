@@ -10,6 +10,7 @@ from truss.base.trt_llm_config import (
     CheckpointRepository,
     CheckpointSource,
     TRTLLMConfiguration,
+    TrussSpeculatorConfiguration,
     TrussTRTLLMBuildConfiguration,
     TrussTRTLLMModel,
     TrussTRTLLMPluginConfiguration,
@@ -460,7 +461,7 @@ class TextGen(Task):
     )
     client_usage: str = r"""
 ### OpenAI compatible inference
-Briton is OpenAI compatible, which means you can use the OpenAI client library to interact with the model.
+This solution is OpenAI compatible, which means you can use the OpenAI client library to interact with the model.
 
 ```python
 from openai import OpenAI
@@ -906,6 +907,48 @@ def llamalike_config(
     )
 
 
+def llamalike_lookahead(
+    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
+    tp=1,
+    repoid="meta-llama/Llama-3.3-70B-Instruct",
+):
+    config = llamalike_config(quant, tp, repoid)
+    config.build.speculator = TrussSpeculatorConfiguration(
+        # settings from https://arxiv.org/pdf/2402.02057
+        speculative_decoding_mode="LOOKAHEAD_DECODING",
+        lookahead_windows_size=7,
+        lookahead_ngram_size=5,
+        lookahead_verification_set_size=5,
+    )
+    return config
+
+
+def llamalike_spec_dec(
+    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
+    tp=1,
+    repoid="meta-llama/Llama-3.3-70B-Instruct",
+    spec_repo="meta-llama/Llama-3.2-1B-Instruct",
+):
+    config = llamalike_config(quant, tp, repoid)
+    config.build.speculator = TrussSpeculatorConfiguration(
+        speculative_decoding_mode="DRAFT_TOKENS_EXTERNAL",
+        num_draft_tokens=10,
+        checkpoint_repository=CheckpointRepository(
+            repo=spec_repo,
+            revision="main",
+            source=CheckpointSource.HF,
+        ),
+    )
+
+    config_regular_hf = AutoConfig.from_pretrained(repoid, trust_remote_code=True)
+    config_spec_hf = AutoConfig.from_pretrained(spec_repo, trust_remote_code=True)
+    # verify vocab size is the same
+    assert (
+        config_regular_hf.vocab_size == config_spec_hf.vocab_size
+    ), f"vocab size mismatch for spec-dec: {config_regular_hf.vocab_size} vs {config_spec_hf.vocab_size}"
+    return config
+
+
 DEPLOYMENTS_BRITON = [
     Deployment(
         "meta-llama/Llama-3.3-70B-Instruct",
@@ -1023,6 +1066,36 @@ DEPLOYMENTS_BRITON = [
                 quant=TrussTRTLLMQuantizationType.NO_QUANT,
                 tp=2,
             )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct-speculative-with-1B-external-draft",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_spec_dec(
+                repoid="meta-llama/Llama-3.3-70B-Instruct",
+                spec_repo="meta-llama/Llama-3.2-1B-Instruct",
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen2.5-7B-Instruct-with-speculative-lookahead-decoding",
+        "Qwen/Qwen2.5-7B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(repoid="Qwen/Qwen2.5-7B-Instruct")
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.1-8B-Instruct-with-speculative-lookahead-decoding",
+        "meta-llama/Llama-3.1-8B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(repoid="meta-llama/Llama-3.1-8B-Instruct")
         ),
     ),
 ]

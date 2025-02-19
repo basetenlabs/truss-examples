@@ -47,7 +47,7 @@ truss push --publish
 ## Call your model
 
 ### OpenAI compatible inference
-Briton is OpenAI compatible, which means you can use the OpenAI client library to interact with the model.
+This solution is OpenAI compatible, which means you can use the OpenAI client library to interact with the model.
 
 ```python
 from openai import OpenAI
