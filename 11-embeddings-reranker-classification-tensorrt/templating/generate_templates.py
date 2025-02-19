@@ -939,6 +939,8 @@ def llamalike_spec_dec(
             source=CheckpointSource.HF,
         ),
     )
+    # the draft model and its kv cache live in the free memory of the target model's left-over KV cache
+    config.runtime.kv_cache_free_gpu_mem_fraction = 0.55
 
     config_regular_hf = AutoConfig.from_pretrained(repoid, trust_remote_code=True)
     config_spec_hf = AutoConfig.from_pretrained(spec_repo, trust_remote_code=True)
