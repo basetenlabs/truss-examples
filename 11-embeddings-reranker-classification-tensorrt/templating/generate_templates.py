@@ -208,6 +208,15 @@ Optionally, you can also enable:
             self.trt_config.build.max_seq_len = min(
                 self.trt_config.build.max_seq_len, 4096
             )
+        if (
+            hf_cfg.model_type == "qwen2"
+            and self.trt_config.build.quantization_type
+            == TrussTRTLLMQuantizationType.FP8_KV
+        ):
+            raise ValueError(
+                f"Qwen2 models do not support FP8_KV quantization / have quality issues with this dtype - please use regular FP8 for now in the model library {dp.hf_model_id}"
+            )
+
         secrets = {}
         if dp.is_gated:
             # fix: pass-through access token
@@ -1026,7 +1035,11 @@ DEPLOYMENTS_BRITON = [
         Accelerator.H100,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="Qwen/Qwen2.5-72B-Instruct", tp=4)
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen2.5-72B-Instruct",
+                tp=4,
+                quant=TrussTRTLLMQuantizationType.FP8,
+            )
         ),
     ),
     # mistralai/Mistral-Small-24B-Instruct-2501

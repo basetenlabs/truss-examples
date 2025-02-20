@@ -29,9 +29,7 @@ trt_llm:
       revision: main
       source: HF
     max_seq_len: 32768
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    quantization_type: fp8
     tensor_parallel_count: 4
   runtime:
     enable_chunked_context: true
