@@ -222,8 +222,17 @@ Optionally, you can also enable:
             # fix: pass-through access token
             # TODO: remove need to the token at runtime
             secrets["hf_access_token"] = None
+
+        temp_fix_lookahead = (
+            dict(ENABLE_EXECUTOR_API=1)
+            if self.trt_config.build.speculator is not None
+            and self.trt_config.build.speculator.lookahead_ngram_size is not None
+            else {}
+        )
+
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
+            environment_variables=temp_fix_lookahead,
             secrets=secrets,
             resources=Resources(
                 accelerator=AcceleratorSpec(
@@ -949,7 +958,7 @@ def llamalike_spec_dec(
         ),
     )
     # the draft model and its kv cache live in the free memory of the target model's left-over KV cache
-    config.runtime.kv_cache_free_gpu_mem_fraction = 0.55
+    config.runtime.kv_cache_free_gpu_mem_fraction = 0.45
 
     config_regular_hf = AutoConfig.from_pretrained(repoid, trust_remote_code=True)
     config_spec_hf = AutoConfig.from_pretrained(spec_repo, trust_remote_code=True)

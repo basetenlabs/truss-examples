@@ -177,7 +177,7 @@ trt_llm:
     tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.55
+    kv_cache_free_gpu_mem_fraction: 0.45
 
 ```
 

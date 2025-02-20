@@ -6,18 +6,18 @@ model_metadata:
   example_model_input:
     max_tokens: 512
     messages:
-      - content: Tell me everything you know about optimized inference.
-        role: user
+    - content: Tell me everything you know about optimized inference.
+      role: user
     stream: true
     temperature: 0.5
   tags:
-    - openai-compatible
+  - openai-compatible
 model_name: Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-truss-example
 python_version: py39
 requirements: []
 resources:
   accelerator: H100
-  cpu: "1"
+  cpu: '1'
   memory: 10Gi
   use_gpu: true
 secrets: {}
