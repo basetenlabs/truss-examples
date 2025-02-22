@@ -9,7 +9,7 @@ model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-
 python_version: py39
 requirements: []
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -24,5 +24,5 @@ trt_llm:
       source: HF
     max_num_tokens: 131072
     max_seq_len: 1000001
-    num_builder_gpus: 4
+    num_builder_gpus: 1
     quantization_type: fp8

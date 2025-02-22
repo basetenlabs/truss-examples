@@ -832,7 +832,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         Predictor(),
         is_fp8=True,
         solution=BEI(),
@@ -840,7 +840,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
-        Accelerator.H100_40GB,
+        Accelerator.A10G,
         Predictor(),
         is_fp8=False,
         solution=BEI(),

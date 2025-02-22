@@ -9,7 +9,7 @@ model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-truss-exam
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: A10G
   cpu: '1'
   memory: 10Gi
   use_gpu: true
