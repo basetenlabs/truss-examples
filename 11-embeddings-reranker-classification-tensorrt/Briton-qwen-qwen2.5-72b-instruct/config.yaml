@@ -29,6 +29,9 @@ trt_llm:
       revision: main
       source: HF
     max_seq_len: 32768
+    quantization_config:
+      calib_max_seq_length: 4096
+      calib_size: 3072
     quantization_type: fp8
     tensor_parallel_count: 4
   runtime:

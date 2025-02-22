@@ -16,6 +16,7 @@ from truss.base.trt_llm_config import (
     TrussTRTLLMPluginConfiguration,
     TrussTRTLLMQuantizationType,
     TrussTRTLLMRuntimeConfiguration,
+    TrussTRTQuantizationConfiguration,
 )
 from truss.base.truss_config import Accelerator, AcceleratorSpec, Resources, TrussConfig
 
@@ -211,11 +212,28 @@ Optionally, you can also enable:
         if (
             hf_cfg.model_type == "qwen2"
             and self.trt_config.build.quantization_type
-            == TrussTRTLLMQuantizationType.FP8_KV
+            in [TrussTRTLLMQuantizationType.FP8_KV, TrussTRTLLMQuantizationType.FP8]
         ):
-            raise ValueError(
-                f"Qwen2 models do not support FP8_KV quantization / have quality issues with this dtype - please use regular FP8 for now in the model library {dp.hf_model_id}"
-            )
+            if (
+                self.trt_config.build.quantization_type
+                == TrussTRTLLMQuantizationType.FP8_KV
+            ):
+                raise ValueError(
+                    f"Qwen2 models do not support FP8_KV quantization / have quality issues with this dtype - please use regular FP8 for now in the model library {dp.hf_model_id}"
+                )
+            elif (
+                self.trt_config.build.quantization_type
+                == TrussTRTLLMQuantizationType.FP8
+            ):
+                # increase the quantization example size for qwen2 models
+                self.trt_config.build.quantization_config = (
+                    TrussTRTQuantizationConfiguration(
+                        calib_size=3072,
+                        calib_max_seq_length=min(
+                            4096, self.trt_config.build.max_seq_len
+                        ),
+                    )
+                )
 
         secrets = {}
         if dp.is_gated:

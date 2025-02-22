@@ -164,6 +164,9 @@ trt_llm:
       source: HF
     max_seq_len: 131072
     num_builder_gpus: 4
+    quantization_config:
+      calib_max_seq_length: 4096
+      calib_size: 3072
     quantization_type: fp8
     tensor_parallel_count: 1
   runtime:
