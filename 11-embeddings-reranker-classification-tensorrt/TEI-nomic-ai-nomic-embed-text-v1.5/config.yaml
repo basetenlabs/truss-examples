@@ -3,7 +3,9 @@ base_image:
 build_commands:
 - 'git clone https://huggingface.co/nomic-ai/nomic-embed-text-v1.5 /data/local-model
   # optional step to download the weights of the model into the image, otherwise specify
-  the --model-id nomic-ai/nomic-embed-text-v1.5 directly `start_command`'
+  `--model-id nomic-ai/nomic-embed-text-v1.5` directly in the section `start_command`
+  below -and remove the build_commands section.'
+- echo 'Model downloaded via git clone'
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings

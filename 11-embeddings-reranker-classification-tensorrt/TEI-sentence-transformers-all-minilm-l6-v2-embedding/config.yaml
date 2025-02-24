@@ -3,7 +3,9 @@ base_image:
 build_commands:
 - 'git clone https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2 /data/local-model
   # optional step to download the weights of the model into the image, otherwise specify
-  the --model-id sentence-transformers/all-MiniLM-L6-v2 directly `start_command`'
+  `--model-id sentence-transformers/all-MiniLM-L6-v2` directly in the section `start_command`
+  below -and remove the build_commands section.'
+- echo 'Model downloaded via git clone'
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings

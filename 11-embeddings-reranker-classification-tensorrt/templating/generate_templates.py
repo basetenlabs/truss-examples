@@ -115,7 +115,6 @@ class HFTEI(Solution):
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
-
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
 CPU	baseten/text-embeddings-inference-mirror:cpu-1.6
@@ -125,6 +124,9 @@ Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.6
 Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.6
 Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
 ```
+
+As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
+For larger models, we recommend downloading the weights at runtime for faster autoscaling, as the weights don't need to go through decompression of the docker image.
 """
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
@@ -154,6 +156,14 @@ Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
         return TrussConfig(
             base_image=dict(image=docker_image),
             model_metadata=dp.task.model_metadata,
+            build_commands=[
+                (
+                    f"git clone https://huggingface.co/{dp.hf_model_id} /data/local-model "
+                    f"# optional step to download the weights of the model into the image, otherwise specify `--model-id {dp.hf_model_id}` directly in the section `start_command` below -"
+                    "and remove the build_commands section."
+                ),
+                "echo 'Model downloaded via git clone'",
+            ],
             docker_server=dict(
                 start_command=f"text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size 128 --max-concurrent-requests 40 --max-batch-tokens 16384",
                 readiness_endpoint="/health",
@@ -166,9 +176,6 @@ Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
                 use_gpu=True,
             ),
             model_name=dp.model_nickname,
-            build_commands=[
-                f"git clone https://huggingface.co/{dp.hf_model_id} /data/local-model # optional step to download the weights of the model into the image, otherwise specify the --model-id {dp.hf_model_id} directly `start_command`",
-            ],
             runtime=dict(
                 predict_concurrency=40,
             ),

@@ -3,7 +3,9 @@ base_image:
 build_commands:
 - 'git clone https://huggingface.co/intfloat/multilingual-e5-large-instruct /data/local-model
   # optional step to download the weights of the model into the image, otherwise specify
-  the --model-id intfloat/multilingual-e5-large-instruct directly `start_command`'
+  `--model-id intfloat/multilingual-e5-large-instruct` directly in the section `start_command`
+  below -and remove the build_commands section.'
+- echo 'Model downloaded via git clone'
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings

@@ -3,7 +3,9 @@ base_image:
 build_commands:
 - 'git clone https://huggingface.co/jinaai/jina-embeddings-v2-base-code /data/local-model
   # optional step to download the weights of the model into the image, otherwise specify
-  the --model-id jinaai/jina-embeddings-v2-base-code directly `start_command`'
+  `--model-id jinaai/jina-embeddings-v2-base-code` directly in the section `start_command`
+  below -and remove the build_commands section.'
+- echo 'Model downloaded via git clone'
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
