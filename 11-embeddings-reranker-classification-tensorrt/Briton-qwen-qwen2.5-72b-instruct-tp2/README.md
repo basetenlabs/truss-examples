@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with Qwen/Qwen2.5-72B-Instruct
+# TensorRT-LLM Briton with Qwen/Qwen2.5-72B-Instruct-tp2
 
-This is a Deployment for TensorRT-LLM Briton with Qwen/Qwen2.5-72B-Instruct. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with Qwen/Qwen2.5-72B-Instruct-tp2. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -32,15 +32,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct
+cd 11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct-tp2
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct-tp2` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-qwen-qwen2.5-72b-instruct-truss-example was successfully pushed ✨
+# ✨ Model Briton-qwen-qwen2.5-72b-instruct-tp2-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -145,11 +145,11 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-qwen-qwen2.5-72b-instruct-truss-example
+model_name: Briton-qwen-qwen2.5-72b-instruct-tp2-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100:4
+  accelerator: H100:2
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -167,7 +167,7 @@ trt_llm:
       calib_max_seq_length: 4096
       calib_size: 3072
     quantization_type: fp8
-    tensor_parallel_count: 4
+    tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
 

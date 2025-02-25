@@ -11,7 +11,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-tp2-truss-example
+model_name: Briton-qwen-qwen2.5-72b-instruct-tp2-truss-example
 python_version: py39
 requirements: []
 resources:
@@ -19,20 +19,20 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets:
-  hf_access_token: null
+secrets: {}
 system_packages: []
 trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Llama-3.3-70B-Instruct
+      repo: Qwen/Qwen2.5-72B-Instruct
       revision: main
       source: HF
-    max_seq_len: 131072
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    max_seq_len: 32768
+    quantization_config:
+      calib_max_seq_length: 4096
+      calib_size: 3072
+    quantization_type: fp8
     tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true

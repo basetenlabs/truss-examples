@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-tp2
+# TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-tp4
 
-This is a Deployment for TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-tp2. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-tp4. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -32,15 +32,15 @@ Note: [This is a gated/private model] Retrieve your Hugging Face token from the 
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp2
+cd 11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp4
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp2` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-tp4` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-meta-llama-llama-3.3-70b-instruct-tp2-truss-example was successfully pushed ✨
+# ✨ Model Briton-meta-llama-llama-3.3-70b-instruct-tp4-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -145,11 +145,11 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-tp2-truss-example
+model_name: Briton-meta-llama-llama-3.3-70b-instruct-tp4-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100:2
+  accelerator: H100:4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -167,7 +167,7 @@ trt_llm:
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    tensor_parallel_count: 2
+    tensor_parallel_count: 4
   runtime:
     enable_chunked_context: true
 

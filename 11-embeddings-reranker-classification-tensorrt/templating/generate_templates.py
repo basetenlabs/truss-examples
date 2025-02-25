@@ -845,14 +845,6 @@ DEPLOYMENTS_BEI = [
         solution=BEI(),
     ),
     Deployment(
-        "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model",
-        "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
-        Accelerator.A10G,
-        Predictor(),
-        is_fp8=False,
-        solution=BEI(),
-    ),
-    Deployment(
         "allenai/Llama-3.1-Tulu-3-8B-Reward-Model",
         "allenai/Llama-3.1-Tulu-3-8B-RM",
         Accelerator.H100_40GB,
@@ -931,7 +923,7 @@ def llamalike_config(
             use_fp8_context_fmha=True
         )
 
-    return TRTLLMConfiguration(
+    config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
             base_model=TrussTRTLLMModel.LLAMA,
             checkpoint_repository=CheckpointRepository(
@@ -948,6 +940,16 @@ def llamalike_config(
             enable_chunked_context=True,
         ),
     )
+
+    if quant in [
+        TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT4,
+        TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT8,
+        TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
+    ]:
+        config.build.plugin_configuration.use_paged_context_fmha = False
+        config.build.plugin_configuration.use_fp8_context_fmha = False
+        config.runtime.enable_chunked_context = False
+    return config
 
 
 def llamalike_lookahead(
@@ -1005,16 +1007,17 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
-        "meta-llama/Llama-3.3-70B-Instruct-tp2",
+        "meta-llama/Llama-3.3-70B-Instruct-tp4",
         "meta-llama/Llama-3.3-70B-Instruct",
         Accelerator.H100,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
-                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=2
+                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=4
             )
         ),
-    ),  # meta-llama/Llama-3.1-405B tp8
+    ),
+    # meta-llama/Llama-3.1-405B tp8
     Deployment(
         "meta-llama/Llama-3.2-3B-Instruct",
         "meta-llama/Llama-3.2-3B-Instruct",
@@ -1064,14 +1067,14 @@ DEPLOYMENTS_BRITON = [
     ),
     # Qwen/Qwen2.5-72B-Instruct
     Deployment(
-        "Qwen/Qwen2.5-72B-Instruct",
+        "Qwen/Qwen2.5-72B-Instruct-tp2",
         "Qwen/Qwen2.5-72B-Instruct",
         Accelerator.H100,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
                 repoid="Qwen/Qwen2.5-72B-Instruct",
-                tp=4,
+                tp=2,
                 quant=TrussTRTLLMQuantizationType.FP8,
             )
         ),
@@ -1150,6 +1153,46 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_lookahead(repoid="meta-llama/Llama-3.1-8B-Instruct")
         ),
     ),
+    # INT8 legacy A100
+    # Deployment(
+    #     "meta-llama/Llama-3.2-1B-Instruct-weights_int4_kv_int8",
+    #     "meta-llama/Llama-3.2-1B-Instruct",
+    #     Accelerator.A100,
+    #     TextGen(),
+    #     solution=Briton(
+    #         trt_config=llamalike_config(
+    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
+    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
+    #             tp=1,
+    #         )
+    #     ),
+    # ),
+    # Deployment(
+    #     "meta-llama/Llama-3.2-1B-Instruct-smoothquant",
+    #     "meta-llama/Llama-3.2-1B-Instruct",
+    #     Accelerator.A100,
+    #     TextGen(),
+    #     solution=Briton(
+    #         trt_config=llamalike_config(
+    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
+    #             quant=TrussTRTLLMQuantizationType.SMOOTH_QUANT,
+    #             tp=1,
+    #         )
+    #     ),
+    # ),
+    # Deployment(
+    #     "meta-llama/Llama-3.2-1B-Instruct-int8",
+    #     "meta-llama/Llama-3.2-1B-Instruct",
+    #     Accelerator.A10G,
+    #     TextGen(),
+    #     solution=Briton(
+    #         trt_config=llamalike_config(
+    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
+    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT8,
+    #             tp=1,
+    #         )
+    #     ),
+    # ),
 ]
 
 
