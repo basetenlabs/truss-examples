@@ -1,0 +1,40 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-meta-llama-llama-3.2-1b-instruct-fp8-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: meta-llama/Llama-3.2-1B-Instruct
+      revision: main
+      source: HF
+    max_seq_len: 4096
+    num_builder_gpus: 4
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+    tensor_parallel_count: 1
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true

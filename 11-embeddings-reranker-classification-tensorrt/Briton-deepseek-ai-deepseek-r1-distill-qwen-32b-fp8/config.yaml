@@ -1,0 +1,39 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-deepseek-ai-deepseek-r1-distill-qwen-32b-fp8-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+      revision: main
+      source: HF
+    max_seq_len: 131072
+    num_builder_gpus: 4
+    quantization_config:
+      calib_max_seq_length: 4096
+      calib_size: 3072
+    quantization_type: fp8
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true

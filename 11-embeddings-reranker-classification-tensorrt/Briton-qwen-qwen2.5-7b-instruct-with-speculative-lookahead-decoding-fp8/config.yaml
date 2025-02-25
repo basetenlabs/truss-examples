@@ -1,0 +1,46 @@
+build_commands: []
+environment_variables:
+  ENABLE_EXECUTOR_API: 1
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-fp8-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: Qwen/Qwen2.5-7B-Instruct
+      revision: main
+      source: HF
+    max_seq_len: 32768
+    num_builder_gpus: 4
+    quantization_config:
+      calib_max_seq_length: 4096
+      calib_size: 3072
+    quantization_type: fp8
+    speculator:
+      lookahead_ngram_size: 5
+      lookahead_verification_set_size: 5
+      lookahead_windows_size: 7
+      num_draft_tokens: 47
+      speculative_decoding_mode: LOOKAHEAD_DECODING
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true

@@ -53,13 +53,13 @@ class BEI(Solution):
     name: str = "BEI (Baseten-Embeddings-Inference)"
     nickname: str = "BEI"
     benefits: str = """BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
-
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
 - High parallelism: up to 1400 client embeddings per second
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 """
+    make_fp8: bool = False
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
         hf_cfg = AutoConfig.from_pretrained(
@@ -93,7 +93,7 @@ With BEI you get the following benefits:
                             # give more resources / cpu ram + vram on build if the model uses not-mig
                             "num_builder_gpus": num_builder_gpus,
                         }
-                        if dp.is_fp8
+                        if self.make_fp8
                         else {}
                     ),
                 )
@@ -593,14 +593,15 @@ class Deployment:
     accelerator: Accelerator
     task: Task
     solution: Solution
-    is_fp8: bool = False
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    @cached_property
+    def is_fp8(self):
         if self.solution.trt_config is not None:
-            self.is_fp8 = (
-                "fp8" in self.solution.trt_config.build.quantization_type.value
-            )
+            return "fp8" in self.solution.trt_config.build.quantization_type.value
+        elif hasattr(self.solution, "make_fp8"):
+            return self.solution.make_fp8
+        else:
+            return False
 
     @cached_property
     def hf_config(self):
@@ -762,13 +763,6 @@ DEPLOYMENTS_BEI = [
         Embedder(),
         solution=BEI(),
     ),
-    # Deployment( # no slidig window support for >4096
-    # this PR needs to be merged first: or use this revision https://huggingface.co/Linq-AI-Research/Linq-Embed-Mistral/discussions/7
-    #     "Linq-AI-Research/Linq-Embed-Mistral",
-    #     "Linq-AI-Research/Linq-Embed-Mistral",
-    #     Accelerator.H100_40GB,
-    #     Embedder(),
-    #     is_fp8=True,
     Deployment(
         "BAAI/bge-multilingual-gemma2-multilingual-embedding",
         "BAAI/bge-multilingual-gemma2",
@@ -782,24 +776,21 @@ DEPLOYMENTS_BEI = [
         "Salesforce/SFR-Embedding-Mistral",
         Accelerator.H100_40GB,
         Embedder(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
     Deployment(
         "BAAI/bge-en-icl-embedding",
         "BAAI/bge-en-icl",
         Accelerator.H100,
         Embedder(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
     Deployment(
         "intfloat/e5-mistral-7b-instruct-embedding",
         "intfloat/e5-mistral-7b-instruct",
         Accelerator.H100,
         Embedder(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
     Deployment(
         "SamLowe/roberta-base-go_emotions-classification",
@@ -841,24 +832,21 @@ DEPLOYMENTS_BEI = [
         "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2",
         Accelerator.H100_40GB,
         Predictor(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
     Deployment(
         "allenai/Llama-3.1-Tulu-3-8B-Reward-Model",
         "allenai/Llama-3.1-Tulu-3-8B-RM",
         Accelerator.H100_40GB,
         Predictor(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
     Deployment(
         "baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification",
         "baseten/example-Meta-Llama-3-70B-InstructForSequenceClassification",
         Accelerator.H100,
         Predictor(),
-        is_fp8=True,
-        solution=BEI(),
+        solution=BEI(make_fp8=True),
     ),
 ]
 

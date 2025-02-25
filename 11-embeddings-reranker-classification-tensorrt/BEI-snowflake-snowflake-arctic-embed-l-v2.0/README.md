@@ -1,7 +1,6 @@
 # BEI (Baseten-Embeddings-Inference) with Snowflake/snowflake-arctic-embed-l-v2.0
 
 This is a Deployment for BEI (Baseten-Embeddings-Inference) with Snowflake/snowflake-arctic-embed-l-v2.0. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
-
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
