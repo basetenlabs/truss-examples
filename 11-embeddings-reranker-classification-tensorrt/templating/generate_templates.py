@@ -912,9 +912,11 @@ def llamalike_config(
     quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
     tp=1,
     repoid="meta-llama/Llama-3.3-70B-Instruct",
+    batch_scheduler_policy: None = None,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
+    runtime_kwargs = dict()
     if quant != TrussTRTLLMQuantizationType.NO_QUANT:
         if tp == 1:
             build_kwargs["num_builder_gpus"] = 4
@@ -922,6 +924,8 @@ def llamalike_config(
         build_kwargs["plugin_configuration"] = TrussTRTLLMPluginConfiguration(
             use_fp8_context_fmha=True
         )
+    if batch_scheduler_policy:
+        runtime_kwargs["batch_scheduler_policy"] = batch_scheduler_policy
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
@@ -938,6 +942,7 @@ def llamalike_config(
         ),
         runtime=TrussTRTLLMRuntimeConfiguration(
             enable_chunked_context=True,
+            **runtime_kwargs,
         ),
     )
 
@@ -1017,7 +1022,6 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
-    # meta-llama/Llama-3.1-405B tp8
     Deployment(
         "meta-llama/Llama-3.2-3B-Instruct",
         "meta-llama/Llama-3.2-3B-Instruct",
@@ -1028,6 +1032,20 @@ DEPLOYMENTS_BRITON = [
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-1B-Instruct",
+        "meta-llama/Llama-3.2-1B-Instruct",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.2-1B-Instruct",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                batch_scheduler_policy="max_utilization",
             )
         ),
     ),
