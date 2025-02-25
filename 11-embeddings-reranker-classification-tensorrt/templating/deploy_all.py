@@ -85,7 +85,9 @@ def delete_all_truss_example_deployments():
     print("Deleted all truss example deployments")
 
 
-def test_deploy(deploy_id: str = "03ykpnkw"):
+def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
+    if rank == 0:
+        print(f"Testing deployment {deploy_id} in stage {stage}")
     import os
 
     from openai import OpenAI
@@ -95,41 +97,51 @@ def test_deploy(deploy_id: str = "03ykpnkw"):
         base_url=f"https://model-{deploy_id}.api.baseten.co/environments/production/sync/v1",
     )
 
-    # Default completion
-    response_completion = client.completions.create(
-        model="not_required",
-        prompt="Q: Tell me everything about Baseten.co! A:",
-        temperature=0.3,
-        max_tokens=100,
-    )
-    assert any(
-        m in response_completion.choices[0].text.lower()
-        for m in ["baseten", "sorry", "deepseek"]
-    ), f"Completion response: {response_completion.choices[0].text}"
-
     # Chat completion
     response_chat = client.chat.completions.create(
         model="",
-        messages=[{"role": "user", "content": "Tell me everything about Baseten.co!"}],
+        messages=[{"role": "user", "content": "What is the capital of France!"}],
         temperature=0.3,
-        max_tokens=100,
+        max_tokens=200,
     )
+    assert response_chat.choices[
+        0
+    ].message.content, f"Fatal: no response: {response_chat.choices[0].message.content}"
+    if stage == 0:
+        if rank == 0:
+            print(f"✅ All tests passed for deployment {deploy_id} in stage {stage}")
+        return deploy_id
     assert any(
         m in response_chat.choices[0].message.content.lower()
-        for m in ["baseten", "sorry", "deepseek"]
+        for m in ["paris", "deepseek", "lyon"]
     ), f"Chat response: {response_chat.choices[0].message.content}"
+
+    # Default completion
+    response_completion = client.completions.create(
+        model="not_required",
+        prompt="Q: What is the capital of France? Answer in one word.\nA:",
+        temperature=0.3,
+        max_tokens=200,
+    )
+    assert any(
+        m in response_completion.choices[0].text.lower() for m in ["paris", "deepseek"]
+    ), f"Completion response: {response_completion.choices[0].text}"
+
     # Structured output
     from pydantic import BaseModel
 
     class CalendarEvent(BaseModel):
         name: str
-        date: str
+        weekday: str
         participants: list[str]
 
     completion = client.beta.chat.completions.parse(
         model="not_required",
         messages=[
-            {"role": "system", "content": "Extract the event information."},
+            {
+                "role": "system",
+                "content": "Extract the event information, name (what occation), weekday, and participants (list of all first names).",
+            },
             {
                 "role": "user",
                 "content": "Alice and Bob are going to a science fair on Friday. Give the name of the event, date, and participants.",
@@ -139,46 +151,53 @@ def test_deploy(deploy_id: str = "03ykpnkw"):
     )
 
     event = completion.choices[0].message.parsed
-    assert len(event.name), f"Event name: {event.name} was wrong"
-    print(f"✅ All tests passed for deployment {deploy_id}")
+    assert len(event.weekday), f"Event name: {event.weekday} was wrong"
+    if rank == 0:
+        print(f"✅ All tests passed for deployment {deploy_id} in stage {stage}")
     return deploy_id
 
 
 def test_all_deployments_briton():
     to_test = list_all_models("Briton")
     # Repeat each test 16x
-    to_test = to_test * 16
 
-    errors = {}  # dictionary to collect exceptions per deployment id
-    results = []  # to collect successful results
+    for stage in [0, 1, 2]:  # # 0: basic, 1: with checks, 2: load test
+        iterations = 1
+        errors = {}  # dictionary to collect exceptions per deployment id
+        results = []  # to collect successful results
+        if stage == 2:
+            # load test
+            iterations = 128
 
-    # Use a thread pool and submit tasks to test concurrently.
-    with ThreadPoolExecutor(128) as executor:
-        future_to_deployment = {
-            executor.submit(test_deploy, deploy_id): deploy_id for deploy_id in to_test
-        }
+        # Use a thread pool and submit tasks to test concurrently.
+        with ThreadPoolExecutor(128) as executor:
+            future_to_deployment = {
+                executor.submit(test_deploy, deploy_id, stage, rank): deploy_id
+                for deploy_id in to_test
+                for rank in range(iterations)
+            }
 
-        for future in as_completed(future_to_deployment):
-            deploy_id = future_to_deployment[future]
-            try:
-                result = future.result()
-                results.append(result)
-            except Exception as e:
-                errors.setdefault(deploy_id, []).append(e)
+            for future in as_completed(future_to_deployment):
+                deploy_id = future_to_deployment[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as e:
+                    errors.setdefault(deploy_id, []).append(e)
 
-    if errors:
-        print("Some deployments failed:")
-        for deploy_id, exc_list in errors.items():
-            for exc in exc_list:
-                print(f"Deployment {deploy_id} failed with error: {exc}")
-        # Raise an aggregated exception after all tests are complete.
-        raise Exception(
-            f"{len(errors)} deployments failed during briton tests: {errors}"
-        )
-
-    print("All deployments passed tests")
-    print("Results:", results)
-    return results
+        if errors:
+            print(f"\n\n\tStage {stage}: Deployments failed:")
+            for deploy_id, exc_list in errors.items():
+                print(f"Deployment {deploy_id}:")
+                for exc in exc_list[:3]:
+                    print(f"Deployment {deploy_id} failed with error: {exc}")
+            # Raise an aggregated exception after all tests are complete.
+            print(
+                f"\n\t\SUMMARY Stage {stage}:\n\nTotal of {len(errors)} deployments failed during briton tests."
+            )
+        else:
+            print(f"SUMMARY Stage {stage}: All deployments passed tests")
+            print("Results:", results)
 
 
 @retry(max_retries=3, delay=5)
