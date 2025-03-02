@@ -2,6 +2,8 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
+  tags:
+    - openai-compatible
   example_model_input: {
     messages: [
       {

@@ -8,38 +8,39 @@ model_metadata:
     messages: [
       {
         role: "system",
-        content: "Please reason step by step, and put your final answer within \\boxed{}."
+        content: "You are a knowledgable, engaging, meteorology teacher."
       },
       {
         role: "user",
-        content: "Find the value of $x$ that satisfies the equation $4x+5 = 6x+7$."
+        content: "What is the impact of the Mistral wind on the French climate?"
       }
     ],
     stream: true,
-    max_tokens: 512,
-    temperature: 0.9
+    max_tokens: 1024,
+    temperature: 0.15
   }
-  repo_id: Qwen/Qwen2.5-Math-72B-Instruct
-model_name: Qwen Math 2.5 72B Instruct
+  repo_id: mistralai/Mistral-Small-24B-Instruct-2501
+model_name: Mistral Small 3 Instruct FP8
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100:2
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
-secrets: {}
+secrets:
+  hf_access_token: set token in baseten workspace
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: mistral
     checkpoint_repository:
-      repo: Qwen/Qwen2.5-Math-72B-Instruct
+      repo: mistralai/Mistral-Small-24B-Instruct-2501
       source: HF
-    num_builder_gpus: 4
-    quantization_type: fp8
+    num_builder_gpus: 1
+    quantization_type: fp8_kv
     max_seq_len: 32768
-    tensor_parallel_count: 2
+    tensor_parallel_count: 1
     plugin_configuration:
       use_paged_context_fmha: true
       use_fp8_context_fmha: true
