@@ -37,7 +37,7 @@ trt_llm:
       repo: Qwen/Qwen2.5-Coder-14B-Instruct
       source: HF
     num_builder_gpus: 1
-    quantization_type: fp8_kv
+    quantization_type: fp8
     max_seq_len: 32768
     tensor_parallel_count: 1
     plugin_configuration:
