@@ -29,7 +29,7 @@ trt_llm:
       repo: meta-llama/Llama-3.2-3B-Instruct
       revision: main
       source: HF
-    max_seq_len: 4096
+    max_seq_len: 131072
     quantization_type: no_quant
     tensor_parallel_count: 1
   runtime:

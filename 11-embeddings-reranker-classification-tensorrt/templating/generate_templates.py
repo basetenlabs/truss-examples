@@ -209,14 +209,6 @@ Optionally, you can also enable:
         self.trt_config.build.max_seq_len = max_position_embeddings
         assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
         if (
-            dp.accelerator in [Accelerator.L4, Accelerator.A10G]
-            and self.trt_config.build.tensor_parallel_count == 1
-        ):
-            # limit context length on single small gpus as its hard to tune
-            self.trt_config.build.max_seq_len = min(
-                self.trt_config.build.max_seq_len, 4096
-            )
-        if (
             hf_cfg.model_type == "qwen2"
             and self.trt_config.build.quantization_type
             in [TrussTRTLLMQuantizationType.FP8_KV, TrussTRTLLMQuantizationType.FP8]

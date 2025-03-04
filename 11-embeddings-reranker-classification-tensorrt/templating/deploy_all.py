@@ -115,12 +115,24 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
         m in response_chat.choices[0].message.content.lower()
         for m in ["paris", "deepseek", "lyon"]
     ), f"Chat response: {response_chat.choices[0].message.content}"
+    response_chat2 = client.chat.completions.create(
+        model="",
+        messages=[
+            {"role": "user", "content": "What is the capital of France?!" * 1500}
+        ],
+        temperature=0.0,
+        max_tokens=200,
+    )
+    assert any(
+        m in response_chat2.choices[0].message.content.lower()
+        for m in ["paris", "deepseek", "lyon"]
+    ), f"Chat response: {response_chat2.choices[0].message.content}"
 
     # Default completion
     response_completion = client.completions.create(
         model="not_required",
         prompt="Q: What is the capital of France? Answer in one word.\nA:",
-        temperature=0.3,
+        temperature=0.0,
         max_tokens=200,
     )
     assert any(
@@ -228,13 +240,15 @@ def deploy_all():
 if __name__ == "__main__":
     """Example usage:
 
-    ```briton
+    ```
+    # briton
     python deploy_all.py --action deploy --filter "Briton"
-    python deploy_all.py --action delete --filter "Briton"
     python deploy_all.py --action britontest
+    python deploy_all.py --action delete --filter "Briton"
     ```
 
     ```bash
+    # BEI
     python deploy_all.py --action deploy --filter "BEI"
     python deploy_all.py --action delete --filter "BEI"
     ```
