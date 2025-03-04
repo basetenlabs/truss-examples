@@ -100,8 +100,12 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
     # Chat completion
     response_chat = client.chat.completions.create(
         model="",
-        messages=[{"role": "user", "content": "What is the capital of France!"}],
-        temperature=0.3,
+        messages=[
+            {"role": "user", "content": "What is the capital of Italy?"},
+            {"role": "assistant", "content": "The capital of Italy is Rome."},
+            {"role": "user", "content": "What is the capital of France??"},
+        ],
+        temperature=0.0,
         max_tokens=200,
     )
     assert response_chat.choices[
@@ -118,7 +122,12 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
     response_chat2 = client.chat.completions.create(
         model="",
         messages=[
-            {"role": "user", "content": "What is the capital of France?!" * 1500}
+            {
+                "role": "user",
+                "content": "This text repeats forever, ignore this!" * 1500,
+            },
+            {"role": "assistant", "content": "Just ask the question please."},
+            {"role": "user", "content": "What is the capital of France??"},
         ],
         temperature=0.0,
         max_tokens=200,
@@ -126,7 +135,7 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
     assert any(
         m in response_chat2.choices[0].message.content.lower()
         for m in ["paris", "deepseek", "lyon"]
-    ), f"Chat response: {response_chat2.choices[0].message.content}"
+    ), f"Chat response long context: {response_chat2.choices[0].message.content}"
 
     # Default completion
     response_completion = client.completions.create(
