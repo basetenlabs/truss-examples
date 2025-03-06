@@ -159,7 +159,7 @@ secrets:
 system_packages: []
 trt_llm:
   build:
-    base_model: decoder
+    base_model: llama
     checkpoint_repository:
       repo: mistralai/Mistral-Small-24B-Instruct-2501
       revision: main

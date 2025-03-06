@@ -158,7 +158,7 @@ secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: decoder
+    base_model: llama
     checkpoint_repository:
       repo: unsloth/phi-4
       revision: main

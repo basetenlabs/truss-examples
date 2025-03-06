@@ -159,7 +159,7 @@ secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: decoder
+    base_model: llama
     checkpoint_repository:
       repo: Qwen/Qwen2.5-7B-Instruct
       revision: main

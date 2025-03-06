@@ -909,7 +909,7 @@ def llamalike_config(
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
-            base_model=TrussTRTLLMModel.DECODER,
+            base_model=TrussTRTLLMModel.LLAMA,
             checkpoint_repository=CheckpointRepository(
                 repo=repoid,
                 revision="main",
@@ -1084,6 +1084,19 @@ DEPLOYMENTS_BRITON = [
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
+                repoid="Qwen/QwQ-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/QwQ-32B-reasoning-with-speculative",
+        "Qwen/QwQ-32B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
                 repoid="Qwen/QwQ-32B",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8,
