@@ -36,7 +36,7 @@ trt_llm:
     tensor_parallel_count: 1
     plugin_configuration:
       use_paged_context_fmha: true
-      use_fp8_context_fmha: true
+      use_fp8_context_fmha: false
       paged_kv_cache: true
   runtime:
     batch_scheduler_policy: max_utilization
