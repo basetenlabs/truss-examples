@@ -10,7 +10,8 @@ model_metadata:
       }
     ],
     stream: true,
-    max_tokens: 512
+    max_tokens: 512,
+    temperature: 0.6
   }
   repo_id: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
 model_name: Llama-3.1-Nemotron-70B-Instruct
@@ -29,7 +30,15 @@ trt_llm:
     checkpoint_repository:
       repo: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
       source: HF
-    max_seq_len: 8192
-    num_builder_gpus: 2
+    num_builder_gpus: 4
     quantization_type: fp8_kv
+    max_seq_len: 131072
     tensor_parallel_count: 2
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: true
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 131072

@@ -2,6 +2,8 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
+  tags:
+    - openai-compatible
   example_model_input: {
     messages: [
       {
@@ -49,5 +51,4 @@ trt_llm:
   runtime:
     batch_scheduler_policy: max_utilization
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.85
     request_default_max_tokens: 131072

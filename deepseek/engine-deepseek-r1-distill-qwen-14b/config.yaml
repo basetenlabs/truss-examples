@@ -7,24 +7,20 @@ model_metadata:
   example_model_input: {
     messages: [
       {
-        role: "system",
-        content: "Please reason step by step, and put your final answer within \\boxed{}."
-      },
-      {
         role: "user",
-        content: "Find the value of $x$ that satisfies the equation $4x+5 = 6x+7$."
+        content: "Which is heavier, a pound of bricks or a pound of feathers?"
       }
     ],
     stream: true,
-    max_tokens: 512,
-    temperature: 0.9
+    max_tokens: 1024,
+    temperature: 0.6
   }
-  repo_id: Qwen/Qwen2.5-Math-72B-Instruct
-model_name: Qwen Math 2.5 72B Instruct
+  repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+model_name: DeepSeek R1 Distill Qwen 14B
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100:2
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -34,12 +30,12 @@ trt_llm:
   build:
     base_model: qwen
     checkpoint_repository:
-      repo: Qwen/Qwen2.5-Math-72B-Instruct
+      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
       source: HF
-    num_builder_gpus: 4
+    num_builder_gpus: 1
     quantization_type: fp8
     max_seq_len: 32768
-    tensor_parallel_count: 2
+    tensor_parallel_count: 1
     plugin_configuration:
       use_paged_context_fmha: true
       use_fp8_context_fmha: true

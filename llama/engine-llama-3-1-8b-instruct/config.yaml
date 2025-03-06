@@ -2,6 +2,8 @@ build_commands: []
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
+  tags:
+    - openai-compatible
   example_model_input: {
     messages: [
       {
@@ -25,7 +27,7 @@ model_name: Llama 3.1 8B Instruct
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100_40GB
   cpu: '1'
   memory: 24Gi
   use_gpu: true
@@ -38,7 +40,7 @@ trt_llm:
     checkpoint_repository:
       repo: meta-llama/Llama-3.1-8B-Instruct
       source: HF
-    max_seq_len: 8192
+    max_seq_len: 131072
     num_builder_gpus: 1
     quantization_type: no_quant
     tensor_parallel_count: 1
@@ -49,5 +51,4 @@ trt_llm:
   runtime:
     batch_scheduler_policy: max_utilization
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.85
     request_default_max_tokens: 131072
