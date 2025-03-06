@@ -909,7 +909,7 @@ def llamalike_config(
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
-            base_model=TrussTRTLLMModel.LLAMA,
+            base_model=TrussTRTLLMModel.DECODER,
             checkpoint_repository=CheckpointRepository(
                 repo=repoid,
                 revision="main",

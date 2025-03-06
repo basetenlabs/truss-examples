@@ -159,7 +159,7 @@ secrets:
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: meta-llama/Llama-3.2-1B-Instruct
       revision: main
