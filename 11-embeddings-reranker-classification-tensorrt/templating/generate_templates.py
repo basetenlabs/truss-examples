@@ -1077,6 +1077,19 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
+    Deployment(
+        "Qwen/QwQ-32B-reasoning",
+        "Qwen/QwQ-32B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/QwQ-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8,
+            )
+        ),
+    ),
     # mistralai/Mistral-Small-24B-Instruct-2501
     Deployment(
         "mistralai/Mistral-Small-24B-Instruct-2501",
