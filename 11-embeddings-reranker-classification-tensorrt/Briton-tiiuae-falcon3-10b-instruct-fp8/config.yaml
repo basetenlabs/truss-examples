@@ -23,7 +23,7 @@ secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: tiiuae/Falcon3-10B-Instruct
       revision: main
