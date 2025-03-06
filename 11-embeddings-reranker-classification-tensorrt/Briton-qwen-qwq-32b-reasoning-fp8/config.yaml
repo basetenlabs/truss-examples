@@ -3,7 +3,7 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    max_tokens: 512
+    max_tokens: 2048
     messages:
     - content: Tell me everything you know about optimized inference.
       role: user
@@ -11,7 +11,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-qwen-qwq-32b-reasoning-fp8-truss-example
+model_name: Qwen QwQ 32B
 python_version: py39
 requirements: []
 resources:
