@@ -209,9 +209,8 @@ Optionally, you can also enable:
         self.trt_config.build.max_seq_len = max_position_embeddings
         assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
         if (
-            hf_cfg.model_type == "qwen2"
-            and self.trt_config.build.quantization_type
-            in [TrussTRTLLMQuantizationType.FP8_KV, TrussTRTLLMQuantizationType.FP8]
+            hf_cfg.model_type in ["qwen2", "qwen2_moe"]
+            and self.trt_config.build.quantization_type is not None
         ):
             if (
                 self.trt_config.build.quantization_type
@@ -220,19 +219,13 @@ Optionally, you can also enable:
                 raise ValueError(
                     f"Qwen2 models do not support FP8_KV quantization / have quality issues with this dtype - please use regular FP8 for now in the model library {dp.hf_model_id}"
                 )
-            elif (
-                self.trt_config.build.quantization_type
-                == TrussTRTLLMQuantizationType.FP8
-            ):
-                # increase the quantization example size for qwen2 models
-                self.trt_config.build.quantization_config = (
-                    TrussTRTQuantizationConfiguration(
-                        calib_size=3072,
-                        calib_max_seq_length=min(
-                            4096, self.trt_config.build.max_seq_len
-                        ),
-                    )
+            # increase the quantization example size for qwen2 models
+            self.trt_config.build.quantization_config = (
+                TrussTRTQuantizationConfiguration(
+                    calib_size=3072,
+                    calib_max_seq_length=min(4096, self.trt_config.build.max_seq_len),
                 )
+            )
 
         secrets = {}
         if dp.is_gated:
@@ -897,7 +890,7 @@ def llamalike_config(
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
     runtime_kwargs = dict()
-    if quant != TrussTRTLLMQuantizationType.NO_QUANT:
+    if quant != TrussTRTLLMQuantizationType.NO_QUANT and tp in [1, 2]:
         if tp == 1:
             build_kwargs["num_builder_gpus"] = 4
     if quant == TrussTRTLLMQuantizationType.FP8_KV:
@@ -927,8 +920,6 @@ def llamalike_config(
     )
 
     if quant in [
-        TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT4,
-        TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT8,
         TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
     ]:
         config.build.plugin_configuration.use_paged_context_fmha = False
@@ -1100,6 +1091,19 @@ DEPLOYMENTS_BRITON = [
                 repoid="Qwen/QwQ-32B",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen2-57B-A14B-MoE-int4",
+        "Qwen/Qwen2-57B-A14B-Instruct",
+        Accelerator.A100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen2-57B-A14B-Instruct",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT4,
             )
         ),
     ),
