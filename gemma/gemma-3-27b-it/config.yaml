@@ -1,0 +1,55 @@
+base_image:
+  image: google/gemma-3-27b-it
+model_metadata:
+  repo_id: google/gemma-3-27b-it
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  example_model_input: {
+    "model": "pixtral",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "Describe this image in one sentence."
+        },
+        {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://picsum.photos/id/237/200/300"
+        }
+        }
+      ]
+      }
+    ],
+    "stream": false,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve google/gemma-3-27b-it --served-model-name gemma --limit_mm_per_prompt 'image=4'"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: A100
+  use_gpu: true
+model_name: Pixtral Trussless
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  hf_access_token: null
+requirements:
+- huggingface_hub
+- hf_transfer
+- datasets
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 600      # Waits 10 minutes after deployment before starting health checks
+    restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
+    stop_traffic_threshold_seconds: 240  # Stops traffic if health checks fail for 4 minutes
+  predict_concurrency : 16
+model_name: Gemma 27B Instruct
