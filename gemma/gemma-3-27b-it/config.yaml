@@ -1,0 +1,54 @@
+base_image:
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-test-repo:d3286757f63d1baeccb34cb7dd272cfdc87e0952
+build_commands:
+  - pip install git+https://github.com/huggingface/transformers@994cad2790af71d87c1cdd459a8484dada2c7115
+model_metadata:
+  repo_id: google/gemma-3-27b-it
+  example_model_input: {
+    "model": "gemma",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "Describe this image in one sentence."
+        },
+        {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://picsum.photos/id/237/200/300"
+        }
+        }
+      ]
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+docker_server:
+  start_command: sh -c "VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm
+    serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len
+    16384 --limit_mm_per_prompt 'image=1' --gpu-memory-utilization 0.95"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+  hf_access_token: null
+requirements:
+- huggingface_hub
+- hf_transfer
+- datasets
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 300      # Waits 5 minutes after deployment before starting health checks
+    restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
+    stop_traffic_threshold_seconds: 120  # Stops traffic if health checks fail for 2 minutes
+  predict_concurrency : 8
+model_name: Gemma 27B Instruct
