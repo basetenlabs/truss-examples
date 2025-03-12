@@ -1,5 +1,5 @@
 base_image:
-  image: vllm/vllm-openai:v0.6.1.post1
+  image: vllm/vllm-openai:v0.7.3
 model_metadata:
   repo_id: mistralai/Pixtral-12B-2409
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
@@ -26,8 +26,12 @@ model_metadata:
     "max_tokens": 512,
     "temperature": 0.5
   }
+  tags:
+    - openai-compatible
+    - multimodal
+    - text-generation
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Pixtral-12B-2409 --served-model-name pixtral --tokenizer_mode mistral --limit_mm_per_prompt 'image=4'"
+  start_command: sh -c "VLLM_USE_V1=1 vllm serve mistral-community/pixtral-12b --served-model-name pixtral --tokenizer_mode mistral --max-model-len 65536 --limit_mm_per_prompt 'image=4' --gpu-memory-utilization 0.95"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -35,9 +39,8 @@ docker_server:
 runtime:
   predict_concurrency : 16
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
-model_name: Pixtral Trussless
+model_name: Pixtral 12B
 environment_variables:
-  VLLM_LOGGING_LEVEL: WARNING
-  hf_access_token: null
+  VLLM_LOGGING_LEVEL: INFO
