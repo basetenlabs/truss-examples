@@ -5,7 +5,7 @@ build_commands:
 model_metadata:
   repo_id: google/gemma-3-27b-it
   example_model_input: {
-    "model": "pixtral",
+    "model": "gemma",
     "messages": [
       {
       "role": "user",
@@ -33,10 +33,7 @@ docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
   server_port: 8000
-resources:
-  accelerator: A100
-  use_gpu: true
-model_name: Pixtral Trussless
+model_name: Gemma 27 Instruct
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   hf_access_token: null
@@ -52,5 +49,5 @@ runtime:
     restart_check_delay_seconds: 600      # Waits 10 minutes after deployment before starting health checks
     restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
     stop_traffic_threshold_seconds: 240  # Stops traffic if health checks fail for 4 minutes
-  predict_concurrency : 16
+  predict_concurrency : 64
 model_name: Gemma 27B Instruct
