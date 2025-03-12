@@ -1,7 +1,7 @@
 base_image:
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-test-repo:d3286757f63d1baeccb34cb7dd272cfdc87e0952
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:f5d3acd47466f094beb36f7a5d05520466713f93
 build_commands:
-  - pip install git+https://github.com/huggingface/transformers@994cad2790af71d87c1cdd459a8484dada2c7115
+  - pip install git+https://github.com/huggingface/transformers@071a161d3e38f56dbda2743b979f0afeed2cd4f1
 model_metadata:
   repo_id: google/gemma-3-27b-it
   example_model_input: {
