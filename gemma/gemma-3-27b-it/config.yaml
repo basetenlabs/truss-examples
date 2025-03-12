@@ -28,14 +28,15 @@ model_metadata:
     "temperature": 0.5
   }
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve google/gemma-3-27b-it --served-model-name gemma --limit_mm_per_prompt 'image=4'"
+  start_command: sh -c "VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm
+    serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len
+    16384 --limit_mm_per_prompt 'image=1' --gpu-memory-utilization 0.95"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
   server_port: 8000
-model_name: Gemma 27 Instruct
 environment_variables:
-  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_LOGGING_LEVEL: INFO
   hf_access_token: null
 requirements:
 - huggingface_hub
@@ -46,8 +47,8 @@ resources:
   use_gpu: true
 runtime:
   health_checks:
-    restart_check_delay_seconds: 600      # Waits 10 minutes after deployment before starting health checks
+    restart_check_delay_seconds: 300      # Waits 5 minutes after deployment before starting health checks
     restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
-    stop_traffic_threshold_seconds: 240  # Stops traffic if health checks fail for 4 minutes
-  predict_concurrency : 64
+    stop_traffic_threshold_seconds: 120  # Stops traffic if health checks fail for 2 minutes
+  predict_concurrency : 8
 model_name: Gemma 27B Instruct
