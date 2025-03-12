@@ -27,6 +27,8 @@ model_metadata:
     "max_tokens": 512,
     "temperature": 0.5
   }
+  tags:
+  - openai-compatible
 docker_server:
   start_command: sh -c "VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm
     serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len
