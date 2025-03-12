@@ -1,5 +1,5 @@
 base_image:
-  image: google/gemma-3-27b-it
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-test-repo:d3286757f63d1baeccb34cb7dd272cfdc87e0952
 model_metadata:
   repo_id: google/gemma-3-27b-it
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
