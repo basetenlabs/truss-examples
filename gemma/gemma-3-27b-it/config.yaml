@@ -45,6 +45,8 @@ requirements:
 resources:
   accelerator: H100
   use_gpu: true
+secrets:
+  hf_access_token: null
 runtime:
   health_checks:
     restart_check_delay_seconds: 300      # Waits 5 minutes after deployment before starting health checks
