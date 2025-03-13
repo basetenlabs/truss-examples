@@ -1,5 +1,5 @@
 base_image:
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:f5d3acd47466f094beb36f7a5d05520466713f93
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:8a4a2efc6fc32cdc30e4e35ba3f8c64dcd0aa1d0
 build_commands:
   - pip install git+https://github.com/huggingface/transformers@071a161d3e38f56dbda2743b979f0afeed2cd4f1
 model_metadata:
@@ -30,9 +30,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: sh -c "VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm
-    serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len
-    16384 --limit_mm_per_prompt 'image=1' --gpu-memory-utilization 0.95"
+  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --hf-overrides '{\\\"do_pan_and_scan\\\": true}' --gpu-memory-utilization 0.95\""
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
