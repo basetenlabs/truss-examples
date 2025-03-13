@@ -31,7 +31,7 @@ model_metadata:
     - multimodal
     - text-generation
 docker_server:
-  start_command: sh -c "VLLM_USE_V1=1 vllm serve mistral-community/pixtral-12b --served-model-name pixtral --tokenizer_mode mistral --max-model-len 65536 --limit_mm_per_prompt 'image=4' --gpu-memory-utilization 0.95"
+  start_command: sh -c "vllm serve mistral-community/pixtral-12b --served-model-name pixtral --max-model-len 65536 --chat-template /app/data/pixtral12b.jinja --chat-template-content-format string --limit_mm_per_prompt 'image=4' --gpu-memory-utilization 0.95"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

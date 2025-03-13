@@ -1,0 +1,90 @@
+{{- bos_token }}
+{%- for message in messages %}
+    {%- if message['role'] == 'user' %}
+        {{- '[INST]' }}
+        {%- if message['content'] is not string %}
+            {%- for chunk in message['content'] %}
+                {%- if chunk['type'] == 'text' %}
+                    {{- chunk['content'] }}
+                {%- elif chunk['type'] == 'image' %}
+                    {{- '[IMG]' }}
+                {%- else %}
+                    {{- raise_exception('Unrecognized content type!') }}
+                {%- endif %}
+            {%- endfor %}
+        {%- else %}
+            {{- message['content'] }}
+        {%- endif %}
+        {%- if tools is defined and tools is not none and loop.last %}
+            {{- '[AVAILABLE_TOOLS][' }}
+            {%- for tool in tools %}
+                {%- set tool = tool.function %}
+                {{- '{"type": "function", "function": {' }}
+                {%- for key, val in tool.items() if key != "return" %}
+                    {%- if val is string %}
+                        {{- '"' + key + '": "' + val + '"' }}
+                    {%- else %}
+                        {{- '"' + key + '": ' + val|tojson }}
+                    {%- endif %}
+                    {%- if not loop.last %}
+                        {{- ', ' }}
+                    {%- endif %}
+                {%- endfor %}
+                {{- '}}' }}
+                {%- if not loop.last %}
+                    {{- ', ' }}
+                {%- endif %}
+            {%- endfor %}
+            {{- ']' }}
+            {{- '[/AVAILABLE_TOOLS]' }}
+        {%- endif %}
+        {{- '[/INST]' }}
+    {%- elif message['role'] == 'system' %}
+        {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}
+    {%- elif message['role'] == 'assistant' %}
+        {%- if message['content'] is not string %}
+            {%- for chunk in message['content'] %}
+                {%- if chunk['type'] == 'text' %}
+                    {{- chunk['content']|trim }}
+                {%- elif chunk['type'] == 'image' %}
+                    {{- '[IMG]' }}
+                {%- else %}
+                    {{- raise_exception('Unrecognized content type!') }}
+                {%- endif %}
+            {%- endfor %}
+        {%- else %}
+            {{- message['content']|trim }}
+        {%- endif %}
+        {{- eos_token }}
+    {%- elif message['role'] == 'tool_results' or message['role'] == 'tool' %}
+        {%- if message.content is defined and message.content.content is defined %}
+            {%- set content = message.content.content %}
+        {%- else %}
+            {%- set content = message.content %}
+        {%- endif %}
+        {{- '[TOOL_RESULTS]{"content": ' + content|string + ', ' }}
+        {%- if message.content is mapping and 'image' in message.content %}
+            {{- '"image": "[IMG]", ' }}
+        {%- endif %}
+        {%- if not message.tool_call_id is defined or message.tool_call_id|length != 9 %}
+            {{- raise_exception("Tool call IDs should be alphanumeric strings with length 9!") }}
+        {%- endif %}
+        {{- '"call_id": "' + message.tool_call_id + '"}[/TOOL_RESULTS]' }}
+    {%- elif message.tool_calls is defined and message.tool_calls is not none %}
+        {{- '[TOOL_CALLS][' }}
+        {%- for tool_call in message.tool_calls %}
+            {%- set out = tool_call.function|tojson %}
+            {{- out[:-1] }}
+            {%- if not tool_call.id is defined or tool_call.id|length != 9 %}
+                {{- raise_exception("Tool call IDs should be alphanumeric strings with length 9!") }}
+            {%- endif %}
+            {{- ', "id": "' + tool_call.id + '"}' }}
+            {%- if not loop.last %}
+                {{- ', ' }}
+            {%- endif %}
+        {%- endfor %}
+        {{- ']' + eos_token }}
+    {%- else %}
+        {{- raise_exception('Only user, system, assistant, tool, and tool_results roles are supported!') }}
+    {%- endif %}
+{%- endfor %}
