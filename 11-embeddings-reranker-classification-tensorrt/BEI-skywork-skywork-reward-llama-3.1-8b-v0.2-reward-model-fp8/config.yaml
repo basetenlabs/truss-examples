@@ -3,8 +3,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
-      endpoint.
+    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
+      reach /sync/predict'
 model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example
 python_version: py39
 requirements: []

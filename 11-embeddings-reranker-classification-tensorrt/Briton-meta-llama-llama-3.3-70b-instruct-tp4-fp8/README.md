@@ -134,7 +134,8 @@ By default, the following configuration is used for this deployment. This config
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
 build_commands: []
-environment_variables: {}
+environment_variables:
+  ENABLE_EXECUTOR_API: 1
 external_package_dirs: []
 model_metadata:
   example_model_input:

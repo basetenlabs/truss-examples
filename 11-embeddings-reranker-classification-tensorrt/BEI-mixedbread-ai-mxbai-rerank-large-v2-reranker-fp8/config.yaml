@@ -5,7 +5,7 @@ model_metadata:
   example_model_input:
     input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
       reach /sync/predict'
-model_name: BEI-papluca-xlm-roberta-base-language-detection-classification-truss-example
+model_name: BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
@@ -19,8 +19,10 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: papluca/xlm-roberta-base-language-detection
+      repo: michaelfeil/mxbai-rerank-large-v2-seq
       revision: main
       source: HF
-    max_num_tokens: 16384
+    max_num_tokens: 32768
     max_seq_len: 1000001
+    num_builder_gpus: 4
+    quantization_type: fp8

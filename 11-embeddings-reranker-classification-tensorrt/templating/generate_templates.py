@@ -234,10 +234,12 @@ Optionally, you can also enable:
             secrets["hf_access_token"] = None
 
         temp_fix_lookahead = (
-            dict(ENABLE_EXECUTOR_API=1)
-            if self.trt_config.build.speculator is not None
-            and self.trt_config.build.speculator.lookahead_ngram_size is not None
-            else {}
+            {}
+            if (
+                self.trt_config.build.speculator
+                and self.trt_config.build.speculator.checkpoint_repository is not None
+            )
+            else dict(ENABLE_EXECUTOR_API=1)
         )
 
         return TrussConfig(
@@ -366,7 +368,7 @@ class Reranker(Task):
     model_metadata: dict = field(
         default_factory=lambda: dict(
             example_model_input=dict(
-                input="This redirects to the embedding endpoint. Use the /sync API to reach /rerank"
+                input="ERROR: This redirects to the embedding endpoint. Use the /sync API to reach /sync/rerank"
             )
         )
     )
@@ -375,17 +377,39 @@ class Reranker(Task):
 POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
 ```json
 {
-  "query": "What is Baseten?",
-  "raw_scores": false,
-  "return_text": false,
-  "texts": [
-    "Deep Learning is ...", "Baseten is a fast inference provider"
-  ],
-  "truncate": false,
-  "truncation_direction": "right"
+    "query": "What is Baseten?",
+    "raw_scores": true,
+    "return_text": false,
+    "texts": [
+        "Deep Learning is ...", "Baseten is a fast inference provider"
+    ],
+    "truncate": true,
+    "truncation_direction": "Right"
 }
 ```
 
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank",
+    json={
+    "query": "What is Baseten?",
+    "raw_scores": True,
+    "return_text": False,
+    "texts": [
+        "Deep Learning is ...", "Baseten is a fast inference provider"
+    ],
+    "truncate": True,
+    "truncation_direction": "Right"
+}
+```
 Returns:
 ```json
 [
@@ -422,7 +446,7 @@ class Predictor(Task):
     model_metadata: dict = field(
         default_factory=lambda: dict(
             example_model_input=dict(
-                input="This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict endpoint."
+                input="ERROR: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict"
             )
         )
     )
@@ -432,12 +456,31 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 ```json
 {
   "inputs": "Baseten is a fast inference provider",
-  "raw_scores": false,
-  "truncate": false,
-  "truncation_direction": "right"
+  "raw_scores": true,
+  "truncate": true,
+  "truncation_direction": "Right"
 }
 ```
 
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict",
+    json={
+        "inputs": "Baseten is a fast inference provider",
+        "raw_scores": True,
+        "truncate": True,
+        "truncation_direction": "Right"
+    }
+)
+```
 Returns:
 ```json
 [
@@ -447,7 +490,7 @@ Returns:
   }
 ]
 ```
-Important, this is different from the `predict` route: https://model-xxxxxx.api.baseten.co/environments/production/predict
+Important, this is different from the `predict` route that you usually call. (https://model-xxxxxx.api.baseten.co/environments/production/predict), it contains an additional `sync` before that.
 The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
@@ -823,6 +866,20 @@ DEPLOYMENTS_BEI = [
         "allenai/Llama-3.1-Tulu-3-8B-Reward-Model",
         "allenai/Llama-3.1-Tulu-3-8B-RM",
         Accelerator.H100_40GB,
+        Predictor(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "mixedbread-ai/mxbai-rerank-large-v2-reranker",
+        "michaelfeil/mxbai-rerank-large-v2-seq",
+        Accelerator.L4,
+        Predictor(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "mixedbread-ai/mxbai-rerank-base-v2-reranker",
+        "michaelfeil/mxbai-rerank-base-v2-seq",
+        Accelerator.L4,
         Predictor(),
         solution=BEI(make_fp8=True),
     ),

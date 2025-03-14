@@ -134,7 +134,8 @@ By default, the following configuration is used for this deployment. This config
 
 ```yaml
 build_commands: []
-environment_variables: {}
+environment_variables:
+  ENABLE_EXECUTOR_API: 1
 external_package_dirs: []
 model_metadata:
   example_model_input:
@@ -163,7 +164,7 @@ trt_llm:
       repo: Qwen/QwQ-32B
       revision: main
       source: HF
-    max_seq_len: 131072
+    max_seq_len: 40960
     num_builder_gpus: 4
     quantization_config:
       calib_max_seq_length: 4096

@@ -3,7 +3,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /rerank
+    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
+      reach /sync/rerank'
 model_name: BEI-baai-bge-reranker-large-truss-example
 python_version: py39
 requirements: []

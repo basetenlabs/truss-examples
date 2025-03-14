@@ -45,12 +45,31 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 ```json
 {
   "inputs": "Baseten is a fast inference provider",
-  "raw_scores": false,
-  "truncate": false,
-  "truncation_direction": "right"
+  "raw_scores": true,
+  "truncate": true,
+  "truncation_direction": "Right"
 }
 ```
 
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict",
+    json={
+        "inputs": "Baseten is a fast inference provider",
+        "raw_scores": True,
+        "truncate": True,
+        "truncation_direction": "Right"
+    }
+)
+```
 Returns:
 ```json
 [
@@ -60,7 +79,7 @@ Returns:
   }
 ]
 ```
-Important, this is different from the `predict` route: https://model-xxxxxx.api.baseten.co/environments/production/predict
+Important, this is different from the `predict` route that you usually call. (https://model-xxxxxx.api.baseten.co/environments/production/predict), it contains an additional `sync` before that.
 The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
@@ -82,8 +101,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict
-      endpoint.
+    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
+      reach /sync/predict'
 model_name: BEI-papluca-xlm-roberta-base-language-detection-classification-truss-example
 python_version: py39
 requirements: []

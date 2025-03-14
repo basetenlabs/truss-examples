@@ -44,17 +44,39 @@ truss push --publish
 POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
 ```json
 {
-  "query": "What is Baseten?",
-  "raw_scores": false,
-  "return_text": false,
-  "texts": [
-    "Deep Learning is ...", "Baseten is a fast inference provider"
-  ],
-  "truncate": false,
-  "truncation_direction": "right"
+    "query": "What is Baseten?",
+    "raw_scores": true,
+    "return_text": false,
+    "texts": [
+        "Deep Learning is ...", "Baseten is a fast inference provider"
+    ],
+    "truncate": true,
+    "truncation_direction": "Right"
 }
 ```
 
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank",
+    json={
+    "query": "What is Baseten?",
+    "raw_scores": True,
+    "return_text": False,
+    "texts": [
+        "Deep Learning is ...", "Baseten is a fast inference provider"
+    ],
+    "truncate": True,
+    "truncation_direction": "Right"
+}
+```
 Returns:
 ```json
 [
@@ -86,7 +108,8 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: This redirects to the embedding endpoint. Use the /sync API to reach /rerank
+    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
+      reach /sync/rerank'
 model_name: BEI-baai-bge-reranker-v2-m3-multilingual-truss-example
 python_version: py39
 requirements: []

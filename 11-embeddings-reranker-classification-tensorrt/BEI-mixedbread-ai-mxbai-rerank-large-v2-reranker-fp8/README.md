@@ -1,6 +1,6 @@
-# BEI (Baseten-Embeddings-Inference) with Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model
+# BEI (Baseten-Embeddings-Inference) with mixedbread-ai/mxbai-rerank-large-v2-reranker
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with mixedbread-ai/mxbai-rerank-large-v2-reranker. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
@@ -9,10 +9,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2](https://huggingface.co/Skywork/Skywork-Reward-Llama-3.1-8B-v0.2).
+This deployment is specifically designed for the Hugging Face model [michaelfeil/mxbai-rerank-large-v2-seq](https://huggingface.co/michaelfeil/mxbai-rerank-large-v2-seq).
 Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
-Skywork/Skywork-Reward-Llama-3.1-8B-v0.2  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
+michaelfeil/mxbai-rerank-large-v2-seq  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
 This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
@@ -27,15 +27,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8
+cd 11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example was successfully pushed ✨
+# ✨ Model BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -104,11 +104,11 @@ model_metadata:
   example_model_input:
     input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
       reach /sync/predict'
-model_name: BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8-truss-example
+model_name: BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: H100_40GB
+  accelerator: L4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -118,12 +118,12 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Skywork/Skywork-Reward-Llama-3.1-8B-v0.2
+      repo: michaelfeil/mxbai-rerank-large-v2-seq
       revision: main
       source: HF
-    max_num_tokens: 131072
+    max_num_tokens: 32768
     max_seq_len: 1000001
-    num_builder_gpus: 1
+    num_builder_gpus: 4
     quantization_type: fp8
 
 ```

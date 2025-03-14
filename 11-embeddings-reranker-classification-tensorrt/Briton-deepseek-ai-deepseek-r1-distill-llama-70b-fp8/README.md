@@ -134,7 +134,8 @@ By default, the following configuration is used for this deployment. This config
 
 ```yaml
 build_commands: []
-environment_variables: {}
+environment_variables:
+  ENABLE_EXECUTOR_API: 1
 external_package_dirs: []
 model_metadata:
   example_model_input:
