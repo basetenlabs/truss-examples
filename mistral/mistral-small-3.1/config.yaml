@@ -1,0 +1,57 @@
+#vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --limit_mm_per_prompt 'image=10' --tensor-parallel-size 2
+base_image:
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:c0efdd655b4ce9188f93b0030dcdebcf43858914
+build_commands:
+  - pip install git+https://github.com/huggingface/transformers@cbfb8d7b27b4724f60c4085842f5150dbd3b41f3
+model_metadata:
+  repo_id: mistralai/Mistral-Small-3.1-24B-Instruct-2503
+  example_model_input: {
+    "model": "mistral",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "Describe this image in one sentence."
+        },
+        {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://picsum.photos/id/237/200/300"
+        }
+        }
+      ]
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+  tags:
+  - openai-compatible
+docker_server:
+  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --served-model-name mistral --limit_mm_per_prompt 'image=10' --tensor-parallel-size 2 --gpu-memory-utilization 0.95\""
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+  hf_access_token: null
+requirements:
+- huggingface_hub
+- hf_transfer
+- datasets
+resources:
+  accelerator: H100:2
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 300      # Waits 5 minutes after deployment before starting health checks
+    restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
+    stop_traffic_threshold_seconds: 120  # Stops traffic if health checks fail for 2 minutes
+  predict_concurrency : 8
+model_name: Mistral Small 3.1
