@@ -31,7 +31,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --served-model-name mistral --limit_mm_per_prompt 'image=10' --tensor-parallel-size 2 --gpu-memory-utilization 0.95\""
+  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --served-model-name mistral --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --tensor-parallel-size 1 --gpu-memory-utilization 0.95\""
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -44,7 +44,7 @@ requirements:
 - hf_transfer
 - datasets
 resources:
-  accelerator: H100:2
+  accelerator: H100:1
   use_gpu: true
 secrets:
   hf_access_token: null
