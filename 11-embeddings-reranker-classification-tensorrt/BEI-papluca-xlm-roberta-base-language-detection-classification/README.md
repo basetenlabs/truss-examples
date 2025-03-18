@@ -101,8 +101,10 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
-      reach /sync/predict'
+    inputs: Baseten is a fast inference provider
+    raw_scores: true
+    truncate: true
+    truncation_direction: Right
 model_name: BEI-papluca-xlm-roberta-base-language-detection-classification-truss-example
 python_version: py39
 requirements: []
@@ -121,7 +123,8 @@ trt_llm:
       revision: main
       source: HF
     max_num_tokens: 16384
-    max_seq_len: 1000001
+  runtime:
+    webserver_default_route: /predict
 
 ```
 

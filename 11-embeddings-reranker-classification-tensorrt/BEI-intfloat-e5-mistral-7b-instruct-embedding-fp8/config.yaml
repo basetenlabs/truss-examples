@@ -24,6 +24,7 @@ trt_llm:
       revision: main
       source: HF
     max_num_tokens: 32768
-    max_seq_len: 1000001
     num_builder_gpus: 2
     quantization_type: fp8
+  runtime:
+    webserver_default_route: /v1/embeddings

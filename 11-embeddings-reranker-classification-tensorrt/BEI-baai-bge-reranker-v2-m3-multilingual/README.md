@@ -108,8 +108,14 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    input: 'ERROR: This redirects to the embedding endpoint. Use the /sync API to
-      reach /sync/rerank'
+    query: What is Baseten?
+    raw_scores: true
+    return_text: true
+    texts:
+    - Deep Learning is ...
+    - Baseten is a fast inference provider
+    truncate: true
+    truncation_direction: Right
 model_name: BEI-baai-bge-reranker-v2-m3-multilingual-truss-example
 python_version: py39
 requirements: []
@@ -128,7 +134,8 @@ trt_llm:
       revision: main
       source: HF
     max_num_tokens: 16384
-    max_seq_len: 1000001
+  runtime:
+    webserver_default_route: /rerank
 
 ```
 

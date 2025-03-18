@@ -74,7 +74,11 @@ With BEI you get the following benefits:
             num_builder_gpus = 2
         elif dp.accelerator in [Accelerator.L4]:
             num_builder_gpus = 4
-
+        endpoint = (
+            "/v1/embeddings"
+            if isinstance(dp.task, Embedder)
+            else "/predict" if isinstance(dp.task, Predictor) else "/rerank"
+        )
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
             trt_llm=TRTLLMConfiguration(
@@ -85,7 +89,6 @@ With BEI you get the following benefits:
                         revision="main",
                         source=CheckpointSource.HF,
                     ),
-                    max_seq_len=1000001,
                     max_num_tokens=max_num_tokens,
                     **(
                         {
@@ -96,7 +99,10 @@ With BEI you get the following benefits:
                         if self.make_fp8
                         else {}
                     ),
-                )
+                ),
+                runtime=TrussTRTLLMRuntimeConfiguration(
+                    webserver_default_route=endpoint,
+                ),
             ),
             resources=Resources(
                 accelerator=dp.accelerator,
@@ -367,9 +373,17 @@ class Reranker(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
-            example_model_input=dict(
-                input="ERROR: This redirects to the embedding endpoint. Use the /sync API to reach /sync/rerank"
-            )
+            example_model_input={
+                "query": "What is Baseten?",
+                "raw_scores": True,
+                "return_text": True,
+                "texts": [
+                    "Deep Learning is ...",
+                    "Baseten is a fast inference provider",
+                ],
+                "truncate": True,
+                "truncation_direction": "Right",
+            }
         )
     )
     client_usage: str = r"""
@@ -445,9 +459,12 @@ class Predictor(Task):
     )
     model_metadata: dict = field(
         default_factory=lambda: dict(
-            example_model_input=dict(
-                input="ERROR: This redirects to the embedding endpoint. Use the /sync API to reach /sync/predict"
-            )
+            example_model_input={
+                "inputs": "Baseten is a fast inference provider",
+                "raw_scores": True,
+                "truncate": True,
+                "truncation_direction": "Right",
+            }
         )
     )
     client_usage: str = r"""
