@@ -16,7 +16,7 @@ requirements:
 - hf_transfer==0.1.9
 - munch==4.0.0
 resources:
-  accelerator: L4
+  accelerator: T4
   use_gpu: true
 runtime:
   predict_concurrency: 1
