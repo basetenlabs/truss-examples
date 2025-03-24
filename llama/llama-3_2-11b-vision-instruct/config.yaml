@@ -34,6 +34,8 @@ resources:
   accelerator: A100
   use_gpu: true
 model_name: Llama 3.2 11B Vision Instruct
+secrets:
+  hf_access_token: null
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   hf_access_token: null
