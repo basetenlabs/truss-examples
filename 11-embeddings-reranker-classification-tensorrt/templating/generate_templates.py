@@ -460,7 +460,10 @@ class Predictor(Task):
     model_metadata: dict = field(
         default_factory=lambda: dict(
             example_model_input={
-                "inputs": "Baseten is a fast inference provider",
+                "inputs": [
+                    ["Baseten is a fast inference provider"],
+                    ["Classify this separately."],
+                ],
                 "raw_scores": True,
                 "truncate": True,
                 "truncation_direction": "Right",
@@ -491,7 +494,7 @@ requests.post(
     headers=headers,
     url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict",
     json={
-        "inputs": "Baseten is a fast inference provider",
+        "inputs": [["Baseten is a fast inference provider", ["classify this separately."]],
         "raw_scores": True,
         "truncate": True,
         "truncation_direction": "Right"
@@ -501,10 +504,18 @@ requests.post(
 Returns:
 ```json
 [
-  {
-    "label": "excitement",
-    "score": 0.99
-  }
+  [
+    {
+        "label": "excitement",
+        "score": 0.99
+    }
+  ],
+  [
+    {
+        "label": "excitement",
+        "score": 0.01
+    }
+  ]
 ]
 ```
 Important, this is different from the `predict` route that you usually call. (https://model-xxxxxx.api.baseten.co/environments/production/predict), it contains an additional `sync` before that.
@@ -1015,6 +1026,7 @@ def llamalike_lookahead(
         lookahead_ngram_size=5,
         lookahead_verification_set_size=5,
     )
+    config.build.max_batch_size = 64
     return config
 
 
@@ -1034,6 +1046,7 @@ def llamalike_spec_dec(
             source=CheckpointSource.HF,
         ),
     )
+    config.build.max_batch_size = 64
     # the draft model and its kv cache live in the free memory of the target model's left-over KV cache
     config.runtime.kv_cache_free_gpu_mem_fraction = 0.45
 

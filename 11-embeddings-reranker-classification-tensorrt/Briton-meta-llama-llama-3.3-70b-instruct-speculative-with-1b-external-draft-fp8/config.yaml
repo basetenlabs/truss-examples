@@ -29,6 +29,7 @@ trt_llm:
       repo: meta-llama/Llama-3.3-70B-Instruct
       revision: main
       source: HF
+    max_batch_size: 64
     max_seq_len: 131072
     plugin_configuration:
       use_fp8_context_fmha: true

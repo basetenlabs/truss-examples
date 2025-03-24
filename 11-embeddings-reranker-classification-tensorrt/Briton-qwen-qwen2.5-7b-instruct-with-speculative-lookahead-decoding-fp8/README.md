@@ -164,6 +164,7 @@ trt_llm:
       repo: Qwen/Qwen2.5-7B-Instruct
       revision: main
       source: HF
+    max_batch_size: 64
     max_seq_len: 32768
     num_builder_gpus: 4
     quantization_config:

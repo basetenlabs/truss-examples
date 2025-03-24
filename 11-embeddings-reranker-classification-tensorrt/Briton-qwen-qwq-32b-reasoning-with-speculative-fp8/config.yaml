@@ -29,6 +29,7 @@ trt_llm:
       repo: Qwen/QwQ-32B
       revision: main
       source: HF
+    max_batch_size: 64
     max_seq_len: 40960
     num_builder_gpus: 4
     quantization_config:

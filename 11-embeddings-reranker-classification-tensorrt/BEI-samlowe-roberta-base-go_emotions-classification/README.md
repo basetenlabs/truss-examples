@@ -101,7 +101,9 @@ environment_variables: {}
 external_package_dirs: []
 model_metadata:
   example_model_input:
-    inputs: Baseten is a fast inference provider
+    inputs:
+    - - Baseten is a fast inference provider
+    - - Classify this separately.
     raw_scores: true
     truncate: true
     truncation_direction: Right
