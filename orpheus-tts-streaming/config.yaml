@@ -1,7 +1,7 @@
 environment_variables: {}
 model_metadata:
   example_model_input: {"text": "Hello! What's new in your world?", "voice": "tara"}
-model_name: praktika-orpheus-tts
+model_name: orpheus-tts
 python_version: py310
 requirements:
   - orpheus-speech
