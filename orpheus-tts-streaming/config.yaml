@@ -1,0 +1,19 @@
+environment_variables: {}
+model_metadata:
+  example_model_input: {"text": "Hello! What's new in your world?", "voice": "tara"}
+model_name: praktika-orpheus-tts
+python_version: py310
+requirements:
+  - orpheus-speech
+  - vllm==0.7.3
+  - soundfile
+  - huggingface_hub[hf_transfer]
+  - hf_transfer==0.1.9
+resources:
+  accelerator: A100
+  # accelerator: H100_40GB
+  use_gpu: true
+runtime:
+  predict_concurrency: 16
+secrets:
+  hf_access_token: null
