@@ -1,0 +1,23 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    text: "Hello from Orpheus."
+model_name: orpheus_tts
+python_version: py310
+requirements:
+  - orpheus-speech
+  - vllm==0.7.3
+  - soundfile
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
+runtime:
+  is_websocket_endpoint: True
+  predict_concurrency: 16
