@@ -12,5 +12,5 @@ Source Code:
 
 # Performance
 - Use A100, H100+ GPUs as they give the optimal token/second performance
-- `dtype` overwritten from `dtype=torch.dfloat16` to `dtype=torch.float16` 
+- `dtype` overwritten from `dtype=torch.dfloat16` to `dtype=torch.float16`
 - According to [creators of Orpheus](https://github.com/canopyai/Orpheus-TTS/issues/53#issuecomment-2749433171), `The required generation speed for streaming is 83 toks/s as that is the number of tokens needed for 1s of audio. It seems like the A100 is generating faster than the necessary speed (~110 tok/s) as recorded in the logs (and the audio is generated in less time than its duration).`

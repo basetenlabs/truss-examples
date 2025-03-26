@@ -1,7 +1,8 @@
 import logging
 import os
-import torch
 import struct
+
+import torch
 from fastapi.responses import StreamingResponse
 
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
@@ -27,7 +28,9 @@ class Model:
     def load(self):
         # default dtype is torch.bfloat16
         # https://github.com/canopyai/Orpheus-Speech-PyPi/blob/main/orpheus_tts/engine_class.py#L10
-        self.model = OrpheusModel(model_name = "canopylabs/orpheus-tts-0.1-finetune-prod", dtype=torch.float16)
+        self.model = OrpheusModel(
+            model_name="canopylabs/orpheus-tts-0.1-finetune-prod", dtype=torch.float16
+        )
 
     def create_wav_header(self, sample_rate=24000, bits_per_sample=16, channels=1):
         byte_rate = sample_rate * channels * bits_per_sample // 8
@@ -36,11 +39,11 @@ class Model:
         data_size = 0
 
         header = struct.pack(
-            '<4sI4s4sIHHIIHH4sI',
-            b'RIFF',
+            "<4sI4s4sIHHIIHH4sI",
+            b"RIFF",
             36 + data_size,
-            b'WAVE',
-            b'fmt ',
+            b"WAVE",
+            b"fmt ",
             16,
             1,
             channels,
@@ -48,8 +51,8 @@ class Model:
             byte_rate,
             block_align,
             bits_per_sample,
-            b'data',
-            data_size
+            b"data",
+            data_size,
         )
         return header
 
@@ -64,7 +67,8 @@ class Model:
         top_p = model_input.get("top_p", 0.9)
 
         logger.info(
-            f"Generating audio from processed text ({len(text)} chars, voice {voice}): {text}")
+            f"Generating audio from processed text ({len(text)} chars, voice {voice}): {text}"
+        )
 
         def generate_audio_stream():
             yield self.create_wav_header()
@@ -77,12 +81,9 @@ class Model:
                 stop_token_ids=[128258],
                 max_tokens=max_tokens,
                 temperature=temperature,
-                top_p=top_p
+                top_p=top_p,
             )
             for chunk in audio_generator:
                 yield chunk
 
-        return StreamingResponse(
-            generate_audio_stream(),
-            media_type="audio/wav"
-        )
+        return StreamingResponse(generate_audio_stream(), media_type="audio/wav")
