@@ -63,7 +63,7 @@ requests.post(
     headers=headers,
     url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict",
     json={
-        "inputs": "Baseten is a fast inference provider",
+        "inputs": [["Baseten is a fast inference provider", ["classify this separately."]],
         "raw_scores": True,
         "truncate": True,
         "truncation_direction": "Right"
@@ -73,10 +73,18 @@ requests.post(
 Returns:
 ```json
 [
-  {
-    "label": "excitement",
-    "score": 0.99
-  }
+  [
+    {
+        "label": "excitement",
+        "score": 0.99
+    }
+  ],
+  [
+    {
+        "label": "excitement",
+        "score": 0.01
+    }
+  ]
 ]
 ```
 Important, this is different from the `predict` route that you usually call. (https://model-xxxxxx.api.baseten.co/environments/production/predict), it contains an additional `sync` before that.
