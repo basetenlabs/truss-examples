@@ -1,0 +1,4 @@
+.idea
+.venv
+data/
+.DS_Store
