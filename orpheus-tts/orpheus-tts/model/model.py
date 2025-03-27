@@ -1,5 +1,6 @@
 from huggingface_hub import login
-from orpheus_tts import OrpheusModel 
+from orpheus_tts import OrpheusModel
+
 
 class Model:
     def __init__(self, **kwargs):
