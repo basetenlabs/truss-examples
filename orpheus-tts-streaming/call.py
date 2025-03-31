@@ -46,7 +46,7 @@ async def stream_to_buffer(session, stream_label, payload):
         return buffer
 
 async def main():
-    n = 3 # number of streams to run in parallel
+    n = 1 # number of streams to run in parallel
     stream_labels = [f"Stream{chr(65+i)}" for i in range(n)]
     
     async with aiohttp.ClientSession() as session:
