@@ -808,14 +808,14 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "Snowflake/snowflake-arctic-embed-l-v2.0",
         "Snowflake/snowflake-arctic-embed-l-v2.0",
-        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
+        Accelerator.H100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
         solution=BEI(),
     ),
     Deployment(
         "BAAI/bge-m3-embedding-dense",
         "BAAI/bge-m3",
-        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
+        Accelerator.H100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Embedder(),
         solution=BEI(),
     ),
@@ -872,7 +872,7 @@ DEPLOYMENTS_BEI = [
     Deployment(
         "BAAI/bge-reranker-v2-m3-multilingual",
         "BAAI/bge-reranker-v2-m3",
-        Accelerator.A100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
+        Accelerator.H100,  # Bert has long-context issues (>8K tokens on 24Gb Ram machines. Using 80B therefore)
         Reranker(),
         solution=BEI(),
     ),
@@ -1184,7 +1184,7 @@ DEPLOYMENTS_BRITON = [
     Deployment(
         "Qwen/Qwen2-57B-A14B-MoE-int4",
         "Qwen/Qwen2-57B-A14B-Instruct",
-        Accelerator.A100,
+        Accelerator.H100,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(

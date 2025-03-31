@@ -16,7 +16,7 @@ model_name: Briton-qwen-qwen2-57b-a14b-moe-int4-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true
