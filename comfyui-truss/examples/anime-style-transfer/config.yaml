@@ -20,7 +20,7 @@ requirements:
   - accelerate==0.23.0
   - opencv-python
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 secrets: {}
 system_packages:

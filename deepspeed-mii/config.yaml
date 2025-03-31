@@ -18,7 +18,7 @@ python_version: py311
 requirements:
 - deepspeed-mii==0.1.1
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '3'
   memory: 14Gi
   use_gpu: true

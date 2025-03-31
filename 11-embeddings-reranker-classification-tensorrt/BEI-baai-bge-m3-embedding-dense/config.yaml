@@ -10,7 +10,7 @@ model_name: BEI-baai-bge-m3-embedding-dense-truss-example
 python_version: py39
 requirements: []
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true

@@ -10,7 +10,7 @@ requirements:
   - huggingface_hub[hf_transfer]
   - hf_transfer==0.1.9
 resources:
-  accelerator: A100
+  accelerator: H100
   # accelerator: H100_40GB
   use_gpu: true
 runtime:

@@ -7,7 +7,7 @@ requirements:
   - vllm==0.5.3post1
   - accelerate
 resources:
-  accelerator: A100:4
+  accelerator: H100:4
   use_gpu: true
 runtime:
   predict_concurrency: 128

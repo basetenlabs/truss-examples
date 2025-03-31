@@ -39,5 +39,5 @@ secrets:
 requirements:
   - vllm==0.6.1
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true

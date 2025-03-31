@@ -12,7 +12,7 @@ python_version: py311
 requirements:
 - tritonclient[all]
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 runtime:
   predict_concurrency: 256

@@ -9,7 +9,7 @@ requirements:
   - vllm==0.5.1
   - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.0.8/flashinfer-0.0.8+cu121torch2.3-cp311-cp311-linux_x86_64.whl
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 runtime:
   predict_concurrency: 128

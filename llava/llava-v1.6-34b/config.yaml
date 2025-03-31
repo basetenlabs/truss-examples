@@ -5,7 +5,7 @@ python_version: py311
 requirements:
 - git+https://github.com/haotian-liu/LLaVA.git
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 secrets: {}
 system_packages: []

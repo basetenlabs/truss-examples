@@ -5,7 +5,7 @@ python_version: py310
 requirements: []
 requirements_file: ./requirements.txt
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 runtime:
   predict_concurrency: 128
