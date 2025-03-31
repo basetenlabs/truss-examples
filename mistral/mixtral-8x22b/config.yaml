@@ -16,7 +16,7 @@ requirements:
   - transformers==4.42.3
   - torch==2.2.0
 resources:
-  accelerator: A100:4
+  accelerator: H100:4
   use_gpu: true
 secrets:
   hf_access_token: "ENTER HF ACCESS TOKEN HERE"

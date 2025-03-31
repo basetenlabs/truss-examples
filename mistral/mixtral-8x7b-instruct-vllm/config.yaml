@@ -5,7 +5,7 @@ python_version: py310
 requirements:
 - vllm==0.2.5
 resources:
-  accelerator: A100:2
+  accelerator: H100:2
   use_gpu: true
 runtime:
   predict_concurrency: 128

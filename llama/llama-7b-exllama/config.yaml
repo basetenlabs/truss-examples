@@ -8,7 +8,7 @@ python_version: py311
 requirements:
 - exllamav2==0.0.5
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '1'
   memory: 2Gi
   use_gpu: true

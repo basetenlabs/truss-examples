@@ -18,7 +18,7 @@ requirements:
 - xformers==0.0.22
 - accelerate==0.24.1
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 secrets: {}
 system_packages: []

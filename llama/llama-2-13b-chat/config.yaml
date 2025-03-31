@@ -34,7 +34,7 @@ requirements:
 - torch==2.0.1
 - transformers==4.32.1
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '3'
   memory: 14Gi
   use_gpu: true

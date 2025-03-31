@@ -15,7 +15,7 @@ requirements:
 - scipy==1.11.4
 - sentencepiece==0.1.99
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '3'
   memory: 20Gi
   use_gpu: true

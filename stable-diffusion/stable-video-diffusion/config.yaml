@@ -29,7 +29,7 @@ requirements:
 - hf_transfer==0.1.4
 - git+https://github.com/Stability-AI/generative-models.git@059d8e9cd9c55aea1ef2ece39abf605efb8b7cc9
 resources:
-  accelerator: A100
+  accelerator: H100
   cpu: '4'
   memory: 16Gi
   use_gpu: true
