@@ -1,0 +1,43 @@
+build_commands: []
+environment_variables:
+  ENABLE_EXECUTOR_API: 1
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    prompt: "Tell me everything you know about optimized inference."
+    stream: false
+    temperature: 0.5
+  tags:
+    - force-legacy-api-non-openai-compatible
+model_name: Orpheus
+python_version: py39
+requirements: 
+  - snac
+  - torch
+resources:
+  accelerator: H100_40GB
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      repo: canopylabs/orpheus-3b-0.1-ft
+      revision: main
+      source: HF
+    max_seq_len: 131072
+    num_builder_gpus: 1
+    max_batch_size: 128
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.80
+    predict_concurrency: 64
