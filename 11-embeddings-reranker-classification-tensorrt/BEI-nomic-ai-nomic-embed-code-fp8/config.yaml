@@ -1,0 +1,30 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-nomic-ai-nomic-embed-code-fp8-truss-example
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: nomic-ai/nomic-embed-code
+      revision: main
+      source: HF
+    max_num_tokens: 32768
+    num_builder_gpus: 1
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /v1/embeddings

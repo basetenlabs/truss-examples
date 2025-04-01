@@ -918,6 +918,13 @@ DEPLOYMENTS_BEI = [
         Predictor(),
         solution=BEI(make_fp8=True),
     ),
+    Deployment(
+        "nomic-ai/nomic-embed-code",
+        "nomic-ai/nomic-embed-code",
+        Accelerator.H100_40GB,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
