@@ -6,8 +6,6 @@ model_metadata:
   example_model_input:
     max_tokens: 512
     prompt: "Tell me everything you know about optimized inference."
-    stream: false
-    temperature: 0.5
   tags:
     - force-legacy-api-non-openai-compatible
 model_name: Orpheus
