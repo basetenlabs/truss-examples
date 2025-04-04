@@ -179,7 +179,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
                 ]
             ),
             docker_server=dict(
-                start_command=f"truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 40 --max-batch-tokens 16384",
+                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 40 --max-batch-tokens 16384"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,
