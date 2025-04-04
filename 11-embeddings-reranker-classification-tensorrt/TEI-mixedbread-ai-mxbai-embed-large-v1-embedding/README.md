@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with intfloat/multilingual-e5-large-instruct
+# Huggingface's text-embeddings-inference with mixedbread-ai/mxbai-embed-large-v1-embedding
 
-This is a Deployment for Huggingface's text-embeddings-inference with intfloat/multilingual-e5-large-instruct. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with mixedbread-ai/mxbai-embed-large-v1-embedding. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -19,10 +19,10 @@ For larger models, we recommend downloading the weights at runtime for faster au
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct).
+This deployment is specifically designed for the Hugging Face model [mixedbread-ai/mxbai-embed-large-v1](https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-intfloat/multilingual-e5-large-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+mixedbread-ai/mxbai-embed-large-v1  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -37,15 +37,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-intfloat-multilingual-e5-large-instruct
+cd 11-embeddings-reranker-classification-tensorrt/TEI-mixedbread-ai-mxbai-embed-large-v1-embedding
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-intfloat-multilingual-e5-large-instruct` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-mixedbread-ai-mxbai-embed-large-v1-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-intfloat-multilingual-e5-large-instruct-truss-example was successfully pushed ✨
+# ✨ Model TEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -143,7 +143,7 @@ docker_server:
     --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
     40 --max-batch-tokens 16384"
 model_cache:
-- repo_id: intfloat/multilingual-e5-large-instruct
+- repo_id: mixedbread-ai/mxbai-embed-large-v1
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -152,7 +152,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-intfloat-multilingual-e5-large-instruct-truss-example
+model_name: TEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
 python_version: py39
 resources:
   accelerator: L4

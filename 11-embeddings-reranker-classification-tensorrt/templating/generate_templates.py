@@ -976,6 +976,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
         task=Embedder(),
         solution=HFTEI(),
     ),
+    Deployment(
+        "mixedbread-ai/mxbai-embed-large-v1-embedding",
+        "mixedbread-ai/mxbai-embed-large-v1",
+        Accelerator.L4,
+        Embedder(),
+        solution=HFTEI(),
+    ),
 ]
 
 

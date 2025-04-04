@@ -5,14 +5,15 @@ docker_server:
   predict_endpoint: /v1/embeddings
   readiness_endpoint: /health
   server_port: 7997
-  start_command: truss-transfer-cli && text-embeddings-router --port 7997 --model-id
-    /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
-    40 --max-batch-tokens 16384
+  start_command:
+    bash -c "truss-transfer-cli && text-embeddings-router --port 7997
+    --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
+    40 --max-batch-tokens 16384"
 model_cache:
-- repo_id: jinaai/jina-embeddings-v2-base-en
-  revision: main
-  use_volume: true
-  volume_folder: cached_model
+  - repo_id: jinaai/jina-embeddings-v2-base-en
+    revision: 6e85f575bc273f1fd840a658067d0157933c83f0
+    use_volume: true
+    volume_folder: cached_model
 model_metadata:
   example_model_input:
     encoding_format: float
@@ -22,7 +23,7 @@ model_name: TEI-jina-ai-jina-embeddings-v2-base-en-truss-example
 python_version: py39
 resources:
   accelerator: L4
-  cpu: '1'
+  cpu: "1"
   memory: 2Gi
   use_gpu: true
 runtime:

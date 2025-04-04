@@ -5,9 +5,9 @@ docker_server:
   predict_endpoint: /v1/embeddings
   readiness_endpoint: /health
   server_port: 7997
-  start_command: truss-transfer-cli && text-embeddings-router --port 7997 --model-id
-    /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
-    40 --max-batch-tokens 16384
+  start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
+    --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
+    40 --max-batch-tokens 16384"
 model_cache:
 - repo_id: Alibaba-NLP/gte-Qwen2-1.5B-instruct
   revision: main
