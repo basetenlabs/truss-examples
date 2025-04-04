@@ -133,10 +133,8 @@ print(completion.choices[0].message.tool_calls)
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
-build_commands: []
 environment_variables:
-  ENABLE_EXECUTOR_API: 1
-external_package_dirs: []
+  ENABLE_EXECUTOR_API: '1'
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -149,14 +147,11 @@ model_metadata:
   - openai-compatible
 model_name: Briton-qwen-qwq-32b-reasoning-fp8-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: llama

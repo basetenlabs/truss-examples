@@ -1,7 +1,5 @@
-build_commands: []
 environment_variables:
-  ENABLE_EXECUTOR_API: 1
-external_package_dirs: []
+  ENABLE_EXECUTOR_API: '1'
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -14,7 +12,6 @@ model_metadata:
   - openai-compatible
 model_name: Briton-meta-llama-llama-3.2-1b-instruct-fp8-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: L4
   cpu: '1'
@@ -22,7 +19,6 @@ resources:
   use_gpu: true
 secrets:
   hf_access_token: null
-system_packages: []
 trt_llm:
   build:
     base_model: llama

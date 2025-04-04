@@ -122,9 +122,6 @@ print(resp.json())
 By default, the following configuration is used for this deployment.
 
 ```yaml
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     encoding_format: float
@@ -132,14 +129,11 @@ model_metadata:
     model: model
 model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: L4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: encoder

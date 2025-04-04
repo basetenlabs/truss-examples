@@ -123,9 +123,6 @@ print(resp.json())
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     encoding_format: float
@@ -133,14 +130,11 @@ model_metadata:
     model: model
 model_name: BEI-intfloat-e5-mistral-7b-instruct-embedding-fp8-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: encoder

@@ -133,9 +133,6 @@ print(completion.choices[0].message.tool_calls)
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -148,7 +145,6 @@ model_metadata:
   - openai-compatible
 model_name: Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: H100:2
   cpu: '1'
@@ -156,7 +152,6 @@ resources:
   use_gpu: true
 secrets:
   hf_access_token: null
-system_packages: []
 trt_llm:
   build:
     base_model: llama

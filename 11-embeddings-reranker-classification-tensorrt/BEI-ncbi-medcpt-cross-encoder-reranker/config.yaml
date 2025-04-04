@@ -1,6 +1,3 @@
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     query: What is Baseten?
@@ -13,14 +10,11 @@ model_metadata:
     truncation_direction: Right
 model_name: BEI-ncbi-medcpt-cross-encoder-reranker-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: A10G
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: encoder

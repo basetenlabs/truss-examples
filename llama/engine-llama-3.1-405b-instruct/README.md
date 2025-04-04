@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with Qwen/Qwen2.5-7B-Instruct-with-speculative-lookahead-decoding
+# TensorRT-LLM Briton with meta-llama/Llama-3.1-405B
 
-This is a Deployment for TensorRT-LLM Briton with Qwen/Qwen2.5-7B-Instruct-with-speculative-lookahead-decoding. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with meta-llama/Llama-3.1-405B. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -15,10 +15,10 @@ Optionally, you can also enable:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct).
+This deployment is specifically designed for the Hugging Face model [meta-llama/Llama-3.1-405B](https://huggingface.co/meta-llama/Llama-3.1-405B).
 Suitable models can be identified by the `ForCausalLM` suffix in the model name. Currently we support e.g. LLama, Qwen, Mistral models.
 
-Qwen/Qwen2.5-7B-Instruct  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
+meta-llama/Llama-3.1-405B  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
 
 This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
@@ -28,20 +28,20 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-
+Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-fp8
+cd 11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.1-405b-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.1-405b-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-fp8-truss-example was successfully pushed ✨
+# ✨ Model Briton-meta-llama-llama-3.1-405b-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -130,11 +130,13 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
-
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
+build_commands: []
 environment_variables:
-  ENABLE_EXECUTOR_API: '1'
+  ENABLE_EXECUTOR_API: 1
+external_package_dirs: []
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -145,34 +147,29 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-qwen-qwen2.5-7b-instruct-with-speculative-lookahead-decoding-fp8-truss-example
+model_name: Briton-meta-llama-llama-3.1-405b-fp8-truss-example
 python_version: py39
+requirements: []
 resources:
-  accelerator: H100
+  accelerator: H100:8
   cpu: '1'
   memory: 10Gi
   use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
 trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: Qwen/Qwen2.5-7B-Instruct
+      repo: meta-llama/Llama-3.1-405B
       revision: main
       source: HF
-    max_batch_size: 64
-    max_seq_len: 32768
-    num_builder_gpus: 4
-    quantization_config:
-      calib_max_seq_length: 4096
-      calib_size: 3072
-    quantization_type: fp8
-    speculator:
-      lookahead_ngram_size: 5
-      lookahead_verification_set_size: 5
-      lookahead_windows_size: 7
-      num_draft_tokens: 47
-      speculative_decoding_mode: LOOKAHEAD_DECODING
-    tensor_parallel_count: 1
+    max_seq_len: 131072
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+    tensor_parallel_count: 8
   runtime:
     enable_chunked_context: true
 

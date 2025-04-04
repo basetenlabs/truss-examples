@@ -18,7 +18,14 @@ from truss.base.trt_llm_config import (
     TrussTRTLLMRuntimeConfiguration,
     TrussTRTQuantizationConfiguration,
 )
-from truss.base.truss_config import Accelerator, AcceleratorSpec, Resources, TrussConfig
+from truss.base.truss_config import (
+    Accelerator,
+    AcceleratorSpec,
+    ModelCache,
+    ModelRepo,
+    Resources,
+    TrussConfig,
+)
 
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
@@ -106,7 +113,6 @@ With BEI you get the following benefits:
             ),
             resources=Resources(
                 accelerator=dp.accelerator,
-                use_gpu=True,
                 memory="10Gi",
             ),
             model_name=dp.model_nickname,
@@ -158,20 +164,22 @@ For larger models, we recommend downloading the weights at runtime for faster au
             if isinstance(dp.task, Embedder)
             else "/predict" if isinstance(dp.task, Predictor) else "/rerank"
         )
-
         return TrussConfig(
             base_image=dict(image=docker_image),
             model_metadata=dp.task.model_metadata,
-            build_commands=[
-                (
-                    f"git clone https://huggingface.co/{dp.hf_model_id} /data/local-model "
-                    f"# optional step to download the weights of the model into the image, otherwise specify `--model-id {dp.hf_model_id}` directly in the section `start_command` below -"
-                    "and remove the build_commands section."
-                ),
-                "echo 'Model downloaded via git clone'",
-            ],
+            model_cache=ModelCache(
+                [
+                    ModelRepo(
+                        revision="main",
+                        repo_id=dp.hf_model_id,
+                        use_volume=True,
+                        volume_folder="cached_model",
+                        # ignore_patterns=["*.pt", "*.ckpt"],
+                    )
+                ]
+            ),
             docker_server=dict(
-                start_command=f"text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size 128 --max-concurrent-requests 40 --max-batch-tokens 16384",
+                start_command=f"truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 40 --max-batch-tokens 16384",
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,
@@ -179,7 +187,6 @@ For larger models, we recommend downloading the weights at runtime for faster au
             ),
             resources=Resources(
                 accelerator=dp.accelerator,
-                use_gpu=True,
             ),
             model_name=dp.model_nickname,
             runtime=dict(
@@ -245,7 +252,7 @@ Optionally, you can also enable:
                 self.trt_config.build.speculator
                 and self.trt_config.build.speculator.checkpoint_repository is not None
             )
-            else dict(ENABLE_EXECUTOR_API=1)
+            else dict(ENABLE_EXECUTOR_API="1")
         )
 
         return TrussConfig(
@@ -256,8 +263,7 @@ Optionally, you can also enable:
                 accelerator=AcceleratorSpec(
                     accelerator=dp.accelerator,
                     count=max(1, self.trt_config.build.tensor_parallel_count),
-                ).to_str(),
-                use_gpu=True,
+                ),
                 memory="10Gi",
             ),
             model_name=dp.model_nickname,

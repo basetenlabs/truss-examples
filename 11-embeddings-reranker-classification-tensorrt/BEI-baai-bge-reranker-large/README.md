@@ -103,9 +103,6 @@ OpenAI.com does not have a rerank endpoint, therefore no client library is avail
 By default, the following configuration is used for this deployment.
 
 ```yaml
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     query: What is Baseten?
@@ -118,14 +115,11 @@ model_metadata:
     truncation_direction: Right
 model_name: BEI-baai-bge-reranker-large-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: L4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: encoder

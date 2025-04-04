@@ -105,9 +105,6 @@ OpenAI does not have a classification endpoint, therefore no client library is a
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   example_model_input:
     inputs:
@@ -118,14 +115,11 @@ model_metadata:
     truncation_direction: Right
 model_name: BEI-mixedbread-ai-mxbai-rerank-base-v2-reranker-fp8-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: L4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets: {}
-system_packages: []
 trt_llm:
   build:
     base_model: encoder

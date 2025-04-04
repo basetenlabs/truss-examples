@@ -134,21 +134,19 @@ By default, the following configuration is used for this deployment.
 ```yaml
 base_image:
   image: baseten/text-embeddings-inference-mirror:89-1.6
-build_commands:
-- 'git clone https://huggingface.co/jinaai/jina-embeddings-v2-base-en /data/local-model
-  # optional step to download the weights of the model into the image, otherwise specify
-  `--model-id jinaai/jina-embeddings-v2-base-en` directly in the section `start_command`
-  below -and remove the build_commands section.'
-- echo 'Model downloaded via git clone'
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
   readiness_endpoint: /health
   server_port: 7997
-  start_command: text-embeddings-router --port 7997 --model-id /data/local-model --max-client-batch-size
-    128 --max-concurrent-requests 40 --max-batch-tokens 16384
-environment_variables: {}
-external_package_dirs: []
+  start_command: truss-transfer-cli && text-embeddings-router --port 7997 --model-id
+    /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
+    40 --max-batch-tokens 16384
+model_cache:
+- repo_id: jinaai/jina-embeddings-v2-base-en
+  revision: main
+  use_volume: true
+  volume_folder: cached_model
 model_metadata:
   example_model_input:
     encoding_format: float
@@ -156,7 +154,6 @@ model_metadata:
     model: model
 model_name: TEI-jina-ai-jina-embeddings-v2-base-en-truss-example
 python_version: py39
-requirements: []
 resources:
   accelerator: L4
   cpu: '1'
@@ -164,8 +161,6 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 40
-secrets: {}
-system_packages: []
 
 ```
 
