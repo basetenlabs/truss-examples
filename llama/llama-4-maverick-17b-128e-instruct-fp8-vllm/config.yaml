@@ -1,0 +1,49 @@
+base_image:
+  image: basetenservice/vllm-openai:62e974401ae3cd4240a6eb109cb585c25a40da29
+build_commands: 
+  - pip install git+https://github.com/huggingface/transformers.git hf-xet
+model_metadata:
+  repo_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  example_model_input: {
+    "model": "llama",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "Describe this image in one sentence."
+        },
+        {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://picsum.photos/id/237/200/300"
+        }
+        }
+      ]
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+  tags:
+  - openai-compatible
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8 --served-model-name llama --max-model-len 430000 --tensor-parallel-size 8 --limit_mm_per_prompt 'image=1' --gpu-memory-utilization 0.9"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+  hf_access_token: null
+resources:
+  accelerator: H100:8
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  predict_concurrency : 256
+
+model_name: Llama 4 Maverick 17B 128E Instruct
