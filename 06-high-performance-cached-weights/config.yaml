@@ -5,15 +5,15 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "What is the meaning of life?"}
+  example_model_input: { "prompt": "What is the meaning of life?" }
 model_name: Llama with Cached Weights
 python_version: py39
 requirements:
-- accelerate==0.21.0
-- safetensors==0.3.2
-- torch==2.0.1
-- transformers==4.34.0
-- sentencepiece==0.1.99
+  - accelerate==0.21.0
+  - safetensors==0.3.2
+  - torch==2.0.1
+  - transformers==4.34.0
+  - sentencepiece==0.1.99
 # # Configuring the model_cache
 #
 # To cache model weights, set the `model_cache` key.
@@ -24,9 +24,12 @@ requirements:
 #
 # Check out the [guide](https://truss.baseten.co/guides/model-cache) for more info.
 model_cache:
-- repo_id: "NousResearch/Llama-2-7b-chat-hf"
-  ignore_patterns:
-  - "*.bin"
+  - repo_id: "NousResearch/Llama-2-7b-chat-hf"
+    revision: main
+    ignore_patterns:
+      - "*.bin"
+    use_volume: true
+    volume_folder: "llama-2-7b-chat-hf"
 
 # The remaining config options are again, similar to what you would
 # configure for the model without the weight caching.

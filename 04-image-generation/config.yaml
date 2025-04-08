@@ -5,16 +5,17 @@
 environment_variables: {}
 external_package_dirs: []
 model_metadata:
-  example_model_input: {"prompt": "A tree in a field under the night sky", "use_refiner": true}
+  example_model_input:
+    { "prompt": "A tree in a field under the night sky", "use_refiner": true }
 model_name: Stable Diffusion XL
 python_version: py39
 requirements:
-- transformers==4.34.0
-- accelerate==0.23.0
-- safetensors==0.4.0
-- git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
-- invisible-watermark>=0.2.0
-- xformers==0.0.22
+  - transformers==4.34.0
+  - accelerate==0.23.0
+  - safetensors==0.4.0
+  - git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
+  - invisible-watermark>=0.2.0
+  - xformers==0.0.22
 # ## Configuring resources for SDXL 1.0
 #
 # Note that we need an A10G to run this model.
@@ -29,9 +30,9 @@ secrets: {}
 # Running diffusers requires `ffmpeg` and a couple other system
 # packages.
 system_packages:
-- ffmpeg
-- libsm6
-- libxext6
+  - ffmpeg
+  - libsm6
+  - libxext6
 # ## Enabling Caching
 #
 # SDXL is a very large model, and downloading it could take up to 10 minutes. This means
@@ -44,19 +45,26 @@ system_packages:
 # ```yaml
 # model_cache:
 #   - repo_id: madebyollin/sdxl-vae-fp16-fix
+#     revision: main
 #     allow_patterns:
 #       - config.json
 #       - diffusion_pytorch_model.safetensors
+#     use_volume: true
+#     volumne_folder: "sdxl-vae-fp16-fix"
 #   - repo_id: stabilityai/stable-diffusion-xl-base-1.0
 #     allow_patterns:
 #       - "*.json"
 #       - "*.fp16.safetensors"
 #       - sd_xl_base_1.0.safetensors
+#     use_volume: true
+#     volumne_folder: "sdxl-base"
 #   - repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
 #     allow_patterns:
 #       - "*.json"
 #       - "*.fp16.safetensors"
 #       - sd_xl_refiner_1.0.safetensors
+#     use_volume: true
+#     volumne_folder: "sdxl-refiner"
 # ```
 # # Deploy the model
 #

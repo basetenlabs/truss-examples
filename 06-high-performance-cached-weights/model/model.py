@@ -17,7 +17,7 @@ DEFAULT_SYSTEM_PROMPT = "You are a helpful, respectful and honest assistant."
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-CHECKPOINT = "NousResearch/Llama-2-7b-chat-hf"
+CHECKPOINT = "/app/model_cache/llama-2-7b-chat-hf"
 
 
 def format_prompt(prompt: str, system_prompt: str = DEFAULT_SYSTEM_PROMPT) -> str:

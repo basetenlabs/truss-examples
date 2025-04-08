@@ -42,14 +42,7 @@ class Model:
         gc.freeze()
 
     def load(self):
-        # Download the compiled model from hugging face hub
-        snapshot_download(
-            "baseten/trtllm-whisper-a10g-large-v2-1",
-            local_dir=self._data_dir,
-            max_workers=4,
-        )
-
-        self._model = WhisperTRTLLM(f"{self._data_dir}")
+        self._model = WhisperTRTLLM("/app/model_cache/trtllm-whisper-a10g-large-v2-1")
         self._batcher = MlBatcher(
             model=self._model,
             max_batch_size=MAX_BATCH_SIZE,
