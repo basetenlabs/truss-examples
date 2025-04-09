@@ -141,7 +141,7 @@ docker_server:
   server_port: 7997
   start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
     --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
-    40 --max-batch-tokens 16384"
+    128 --max-batch-tokens 16384 --auto-truncate"
 model_cache:
 - repo_id: jinaai/jina-embeddings-v2-base-en
   revision: main
@@ -160,7 +160,7 @@ resources:
   memory: 2Gi
   use_gpu: true
 runtime:
-  predict_concurrency: 40
+  predict_concurrency: 32
 
 ```
 
