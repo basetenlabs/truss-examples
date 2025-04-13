@@ -25,11 +25,13 @@ def format_prompt(prompt: str, system_prompt: str = DEFAULT_SYSTEM_PROMPT) -> st
 
 
 class Model:
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, lazy_data_resolver, **kwargs) -> None:
         self.model = None
         self.tokenizer = None
+        self._lazy_data_resolver = lazy_data_resolver
 
     def load(self):
+        self._lazy_data_resolver.block_until_download_complete()
         self.model = LlamaForCausalLM.from_pretrained(
             CHECKPOINT, torch_dtype=torch.float16, device_map="auto"
         )
