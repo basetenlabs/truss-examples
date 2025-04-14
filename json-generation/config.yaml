@@ -1,0 +1,36 @@
+description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
+environment_variables: {}
+external_package_dirs: []
+model_cache:
+- allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.model'
+  repo_id: NousResearch/Hermes-2-Pro-Mistral-7B
+model_metadata:
+  example_model_input:
+    messages:
+    - content: What is the mistral wind?
+      role: user
+  model: NousResearch/Hermes-2-Pro-Mistral-7B
+  repo_id: NousResearch/Hermes-2-Pro-Mistral-7B
+  pretty_name: Hermes 2 Pro - Mistral 7B
+  tags:
+  - text-generation
+  - openai-compatible
+model_name: Hermes 2 Pro - Mistral 7B
+python_version: py311
+requirements:
+- accelerate
+- transformers
+- torch
+- sentencepiece
+- protobuf
+- jsonformer
+resources:
+  accelerator: A10G
+  memory: 25Gi
+  use_gpu: true
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
+system_packages: []
