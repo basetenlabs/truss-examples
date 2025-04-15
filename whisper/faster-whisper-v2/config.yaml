@@ -1,8 +1,6 @@
 description: Faster Whisper v2
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- repo_id: Systran/faster-whisper-large-v2
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png
@@ -12,16 +10,20 @@ model_metadata:
   pretty_name: Whisper
   tags:
   - speech-recognition
+model_cache:
+  - repo_id: Systran/faster-whisper-large-v2
 model_name: Faster Whisper v2
-python_version: py39
+python_version: py310
 requirements:
-- torch==2.1.1
-- faster-whisper==1.0.3
-- ctranslate2==4.4.0
+  - torch==2.4.1
+  - httpx==0.27.2
+  - faster-whisper@https://github.com/SYSTRAN/faster-whisper/archive/refs/heads/master.tar.gz
+  - ffmpeg-python==0.2.0
 resources:
-  accelerator: T4
+  accelerator: L4
   cpu: 500m
   memory: 512Mi
   use_gpu: true
 secrets: {}
-system_packages: []
+system_packages:
+  - ffmpeg
