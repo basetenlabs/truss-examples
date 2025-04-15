@@ -1,0 +1,35 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+      - content: detailed thinking on
+        role: system
+      - content: Tell me everything you know about optimized inference.
+        role: user
+    stream: true
+    temperature: 0.5
+  tags:
+    - openai-compatible
+model_name: Briton-nemotron-253b-tp8-fp8
+resources:
+  accelerator: H100:8
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: llama
+    checkpoint_repository:
+      # pre-quanitzed checkpoint in plain FP8
+      repo: michaelfeil/nemotron-251b-ultra-v2-tp8-fp8-tllm
+      source: HF
+    max_batch_size: 64
+    max_seq_len: 65536
+    quantization_type: fp8
+    tensor_parallel_count: 8
+    speculator:
+      lookahead_ngram_size: 5
+      lookahead_verification_set_size: 5
+      lookahead_windows_size: 7
+      num_draft_tokens: 47
+      speculative_decoding_mode: LOOKAHEAD_DECODING
