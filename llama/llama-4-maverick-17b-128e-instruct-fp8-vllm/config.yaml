@@ -1,5 +1,5 @@
 base_image:
-  image: basetenservice/vllm-openai:62e974401ae3cd4240a6eb109cb585c25a40da29
+  image: vllm/vllm-openai:v0.8.4
 build_commands: 
   - pip install git+https://github.com/huggingface/transformers.git hf-xet
 model_metadata:
@@ -9,18 +9,7 @@ model_metadata:
     "messages": [
       {
       "role": "user",
-      "content": [
-        {
-        "type": "text",
-        "text": "Describe this image in one sentence."
-        },
-        {
-        "type": "image_url",
-        "image_url": {
-          "url": "https://picsum.photos/id/237/200/300"
-        }
-        }
-      ]
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
       }
     ],
     "stream": true,
@@ -30,7 +19,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8 --served-model-name llama --max-model-len 430000 --tensor-parallel-size 8 --limit_mm_per_prompt 'image=1' --gpu-memory-utilization 0.9"
+  start_command: sh -c /app/data/do.sh
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -45,5 +34,4 @@ secrets:
   hf_access_token: null
 runtime:
   predict_concurrency : 256
-
-model_name: Llama 4 Maverick 17B 128E Instruct
+model_name: Llama 4 Maverick 17B 128E Instruct H100 TP8
