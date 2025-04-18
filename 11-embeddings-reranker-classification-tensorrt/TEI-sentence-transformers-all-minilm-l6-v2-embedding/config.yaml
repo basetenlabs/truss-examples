@@ -1,5 +1,5 @@
 base_image:
-  image: baseten/text-embeddings-inference-mirror:turing-1.6
+  image: baseten/text-embeddings-inference-mirror:turing-1.7
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
@@ -9,7 +9,11 @@ docker_server:
     --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
     128 --max-batch-tokens 16384 --auto-truncate"
 model_cache:
-- repo_id: sentence-transformers/all-MiniLM-L6-v2
+- ignore_patterns:
+  - '*.pt'
+  - '*.ckpt'
+  - '*.onnx'
+  repo_id: sentence-transformers/all-MiniLM-L6-v2
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -26,4 +30,7 @@ resources:
   memory: 2Gi
   use_gpu: true
 runtime:
+  is_websocket_endpoint: false
   predict_concurrency: 32
+  transport:
+    kind: http

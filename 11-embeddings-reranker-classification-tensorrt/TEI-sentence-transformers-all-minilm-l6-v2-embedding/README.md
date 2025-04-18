@@ -6,12 +6,12 @@ Supported models are tagged here: https://huggingface.co/models?other=text-embed
 
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.6
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.6
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.6
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.6
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.6
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
+CPU	baseten/text-embeddings-inference-mirror:cpu-1.7
+Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7
+Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7
+Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7
+Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7
+Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7
 ```
 
 As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
@@ -133,7 +133,7 @@ By default, the following configuration is used for this deployment.
 
 ```yaml
 base_image:
-  image: baseten/text-embeddings-inference-mirror:turing-1.6
+  image: baseten/text-embeddings-inference-mirror:turing-1.7
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
@@ -143,7 +143,11 @@ docker_server:
     --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
     128 --max-batch-tokens 16384 --auto-truncate"
 model_cache:
-- repo_id: sentence-transformers/all-MiniLM-L6-v2
+- ignore_patterns:
+  - '*.pt'
+  - '*.ckpt'
+  - '*.onnx'
+  repo_id: sentence-transformers/all-MiniLM-L6-v2
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -160,7 +164,10 @@ resources:
   memory: 2Gi
   use_gpu: true
 runtime:
+  is_websocket_endpoint: false
   predict_concurrency: 32
+  transport:
+    kind: http
 
 ```
 

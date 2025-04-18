@@ -129,12 +129,12 @@ Supported models are tagged here: https://huggingface.co/models?other=text-embed
 
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.6
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.6
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.6
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.6
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.6
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.6
+CPU	baseten/text-embeddings-inference-mirror:cpu-1.7
+Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7
+Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7
+Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7
+Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7
+Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7
 ```
 
 As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
@@ -148,15 +148,16 @@ For larger models, we recommend downloading the weights at runtime for faster au
             )  # make sure model is available
         except ImportError:
             pass
+        version = "1.7"
         docker_image = {
-            Accelerator.L4: "baseten/text-embeddings-inference-mirror:89-1.6",
-            Accelerator.A100: "baseten/text-embeddings-inference-mirror:1.6",
-            Accelerator.H100: "baseten/text-embeddings-inference-mirror:89-1.6",
-            Accelerator.H100_40GB: "baseten/text-embeddings-inference-mirror:hopper-1.6",
-            Accelerator.A10G: "baseten/text-embeddings-inference-mirror:86-1.6",
-            Accelerator.T4: "baseten/text-embeddings-inference-mirror:turing-1.6",
-            Accelerator.H200: "baseten/text-embeddings-inference-mirror:hopper-1.6",
-            Accelerator.V100: "baseten/text-embeddings-inference-mirror:1.6",
+            Accelerator.L4: f"baseten/text-embeddings-inference-mirror:89-{version}",
+            Accelerator.A100: f"baseten/text-embeddings-inference-mirror:{version}",
+            Accelerator.H100: f"baseten/text-embeddings-inference-mirror:89-{version}",
+            Accelerator.H100_40GB: f"baseten/text-embeddings-inference-mirror:hopper-{version}",
+            Accelerator.A10G: f"baseten/text-embeddings-inference-mirror:86-{version}",
+            Accelerator.T4: f"baseten/text-embeddings-inference-mirror:turing-{version}",
+            Accelerator.H200: f"baseten/text-embeddings-inference-mirror:hopper-{version}",
+            Accelerator.V100: f"baseten/text-embeddings-inference-mirror:{version}",
         }[dp.accelerator]
 
         predict_endpoint = (
@@ -174,7 +175,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
                         repo_id=dp.hf_model_id,
                         use_volume=True,
                         volume_folder="cached_model",
-                        # ignore_patterns=["*.pt", "*.ckpt"],
+                        ignore_patterns=["*.pt", "*.ckpt", "*.onnx"],
                     )
                 ]
             ),
@@ -934,6 +935,13 @@ DEPLOYMENTS_BEI = [
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
+    Deployment(  #
+        name="Alibaba-NLP/gte-modernbert-base-embedding",
+        hf_model_id="Alibaba-NLP/gte-modernbert-base",
+        accelerator=Accelerator.L4,
+        task=Embedder(),
+        solution=HFTEI(),
+    ),
     Deployment(  #
         name="jina-ai/jina-embeddings-v2-base-en",
         hf_model_id="jinaai/jina-embeddings-v2-base-en",

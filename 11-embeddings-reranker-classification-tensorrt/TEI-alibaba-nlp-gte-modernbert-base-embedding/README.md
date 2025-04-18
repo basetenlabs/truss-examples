@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with Alibaba-NLP/gte-Qwen2-7B-instruct-embedding
+# Huggingface's text-embeddings-inference with Alibaba-NLP/gte-modernbert-base-embedding
 
-This is a Deployment for Huggingface's text-embeddings-inference with Alibaba-NLP/gte-Qwen2-7B-instruct-embedding. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with Alibaba-NLP/gte-modernbert-base-embedding. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -19,10 +19,10 @@ For larger models, we recommend downloading the weights at runtime for faster au
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Alibaba-NLP/gte-Qwen2-7B-instruct](https://huggingface.co/Alibaba-NLP/gte-Qwen2-7B-instruct).
+This deployment is specifically designed for the Hugging Face model [Alibaba-NLP/gte-modernbert-base](https://huggingface.co/Alibaba-NLP/gte-modernbert-base).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-Alibaba-NLP/gte-Qwen2-7B-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+Alibaba-NLP/gte-modernbert-base  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -37,15 +37,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding
+cd 11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-modernbert-base-embedding
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-modernbert-base-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example was successfully pushed ✨
+# ✨ Model TEI-alibaba-nlp-gte-modernbert-base-embedding-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -133,7 +133,7 @@ By default, the following configuration is used for this deployment.
 
 ```yaml
 base_image:
-  image: baseten/text-embeddings-inference-mirror:hopper-1.7
+  image: baseten/text-embeddings-inference-mirror:89-1.7
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
@@ -147,7 +147,7 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: Alibaba-NLP/gte-Qwen2-7B-instruct
+  repo_id: Alibaba-NLP/gte-modernbert-base
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -156,10 +156,10 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example
+model_name: TEI-alibaba-nlp-gte-modernbert-base-embedding-truss-example
 python_version: py39
 resources:
-  accelerator: H100_40GB
+  accelerator: L4
   cpu: '1'
   memory: 2Gi
   use_gpu: true
