@@ -196,5 +196,5 @@ class MPTConfig(PretrainedConfig):
             )
         if not self.learned_pos_emb and (not self.attn_config["alibi"]):
             raise ValueError(
-                f"Positional information must be provided to the model using either learned_pos_emb or alibi."
+                "Positional information must be provided to the model using either learned_pos_emb or alibi."
             )

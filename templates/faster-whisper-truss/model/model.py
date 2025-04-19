@@ -1,6 +1,6 @@
 import base64
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict
+from typing import Dict
 
 import requests
 from faster_whisper import WhisperModel

@@ -50,7 +50,7 @@ from einops import rearrange
 from model.magicanimate.models.controlnet import ControlNetModel
 from model.magicanimate.models.mutual_self_attention import ReferenceAttentionControl
 from model.magicanimate.models.unet_controlnet import UNet3DConditionModel
-from model.magicanimate.pipelines.context import get_context_scheduler, get_total_steps
+from model.magicanimate.pipelines.context import get_context_scheduler
 from model.magicanimate.utils.util import get_tensor_interpolation_method
 from packaging import version
 from PIL import Image
@@ -127,9 +127,7 @@ class AnimationPipeline(DiffusionPipeline):
             unet.config, "_diffusers_version"
         ) and version.parse(
             version.parse(unet.config._diffusers_version).base_version
-        ) < version.parse(
-            "0.9.0.dev0"
-        )
+        ) < version.parse("0.9.0.dev0")
         is_unet_sample_size_less_64 = (
             hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
         )
@@ -528,7 +526,6 @@ class AnimationPipeline(DiffusionPipeline):
         for i, t in enumerate(
             tqdm(reversed(self.scheduler.timesteps), desc="DDIM Inversion")
         ):
-
             if (
                 num_actual_inference_steps is not None
                 and i >= num_actual_inference_steps

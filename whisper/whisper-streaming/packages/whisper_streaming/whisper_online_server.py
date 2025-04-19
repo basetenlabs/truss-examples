@@ -33,14 +33,8 @@ print(
 )
 
 if args.backend == "faster-whisper":
-    from faster_whisper import WhisperModel
-
     asr_cls = FasterWhisperASR
 else:
-    import whisper_timestamped
-
-    import whisper
-
     #    from whisper_timestamped_model import WhisperTimestampedASR
     asr_cls = WhisperTimestampedASR
 
@@ -58,7 +52,7 @@ else:
     tgt_language = language
 
 e = time.time()
-print(f"done. It took {round(e-t,2)} seconds.", file=sys.stderr)
+print(f"done. It took {round(e - t, 2)} seconds.", file=sys.stderr)
 
 if args.vad:
     print("setting VAD filter", file=sys.stderr)

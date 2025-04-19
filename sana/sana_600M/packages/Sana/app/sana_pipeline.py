@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 # SPDX-License-Identifier: Apache-2.0
-import argparse
 import warnings
 from dataclasses import dataclass, field
 from typing import Optional, Tuple
@@ -26,11 +25,6 @@ warnings.filterwarnings("ignore")  # ignore warning
 
 
 from diffusion import DPMS, FlowEuler
-from diffusion.data.datasets.utils import (
-    ASPECT_RATIO_512_TEST,
-    ASPECT_RATIO_1024_TEST,
-    ASPECT_RATIO_2048_TEST,
-)
 from diffusion.model.builder import (
     build_model,
     get_tokenizer_and_text_encoder,

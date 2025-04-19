@@ -35,9 +35,6 @@ warnings.filterwarnings("ignore")  # ignore warning
 
 from diffusion import DPMS, FlowEuler, SASolverSampler
 from diffusion.data.datasets.utils import (
-    ASPECT_RATIO_512_TEST,
-    ASPECT_RATIO_1024_TEST,
-    ASPECT_RATIO_2048_TEST,
     get_chunks,
 )
 from diffusion.model.builder import (
@@ -84,7 +81,6 @@ def set_env(seed=0, latent_size=256):
 
 @torch.inference_mode()
 def visualize(items, bs, sample_steps, cfg_scale, pag_scale=1.0):
-
     generator = torch.Generator(device=device).manual_seed(args.seed)
     tqdm_desc = f"{save_root.split('/')[-1]} Using GPU: {args.gpu_id}: {args.start_index}-{args.end_index}"
     assert bs == 1
@@ -95,7 +91,6 @@ def visualize(items, bs, sample_steps, cfg_scale, pag_scale=1.0):
         position=args.gpu_id,
         leave=True,
     ):
-
         prompt = data_dict[chunk[0]]["prompt"]
 
         # Generate images
@@ -321,7 +316,6 @@ class SanaInference(SanaConfig):
 
 
 if __name__ == "__main__":
-
     args = get_args()
     config = args = pyrallis.parse(config_class=SanaInference, config_path=args.config)
     # config = read_config(args.config)

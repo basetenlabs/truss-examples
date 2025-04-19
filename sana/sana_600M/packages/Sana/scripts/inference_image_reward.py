@@ -30,11 +30,6 @@ warnings.filterwarnings("ignore")  # ignore warning
 import pyrallis
 import torch
 from diffusion import DPMS, FlowEuler, SASolverSampler
-from diffusion.data.datasets.utils import (
-    ASPECT_RATIO_512_TEST,
-    ASPECT_RATIO_1024_TEST,
-    ASPECT_RATIO_2048_TEST,
-)
 from diffusion.model.builder import (
     build_model,
     get_tokenizer_and_text_encoder,
@@ -296,7 +291,6 @@ class SanaInference(SanaConfig):
 
 
 if __name__ == "__main__":
-
     args = get_args()
     config = args = pyrallis.parse(config_class=SanaInference, config_path=args.config)
 

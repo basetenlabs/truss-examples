@@ -6,7 +6,6 @@ import numpy as np
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
 BASE64_PREAMBLE = "data:image/png;base64,"
-import logging
 
 
 class Model:

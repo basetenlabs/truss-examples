@@ -15,16 +15,16 @@ repos:
       - id: debug-statements
         exclude: ^sana/
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.11.6
     hooks:
-      - id: isort
-
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        language_version: python3
+      # Run the linter.
+      - id: ruff
+        args: [--fix, --fix-only]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, pyi ]
 
   - repo: local
     hooks:

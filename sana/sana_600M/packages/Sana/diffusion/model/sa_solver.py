@@ -17,7 +17,6 @@
 import math
 
 import torch
-import torch.nn.functional as F
 from tqdm import tqdm
 
 
@@ -332,14 +331,16 @@ def model_wrapper(
         if model_type == "noise":
             return output
         elif model_type == "x_start":
-            alpha_t, sigma_t = noise_schedule.marginal_alpha(
-                t_continuous
-            ), noise_schedule.marginal_std(t_continuous)
+            alpha_t, sigma_t = (
+                noise_schedule.marginal_alpha(t_continuous),
+                noise_schedule.marginal_std(t_continuous),
+            )
             return (x - alpha_t[0] * output) / sigma_t[0]
         elif model_type == "v":
-            alpha_t, sigma_t = noise_schedule.marginal_alpha(
-                t_continuous
-            ), noise_schedule.marginal_std(t_continuous)
+            alpha_t, sigma_t = (
+                noise_schedule.marginal_alpha(t_continuous),
+                noise_schedule.marginal_std(t_continuous),
+            )
             return alpha_t[0] * output + sigma_t[0] * x
         elif model_type == "score":
             sigma_t = noise_schedule.marginal_std(t_continuous)
@@ -444,9 +445,10 @@ class SASolver:
         Return the data prediction model (with corrector).
         """
         noise = self.noise_prediction_fn(x, t)
-        alpha_t, sigma_t = self.noise_schedule.marginal_alpha(
-            t
-        ), self.noise_schedule.marginal_std(t)
+        alpha_t, sigma_t = (
+            self.noise_schedule.marginal_alpha(t),
+            self.noise_schedule.marginal_std(t),
+        )
         x0 = (x - sigma_t * noise) / alpha_t
         if self.correcting_x0_fn is not None:
             x0 = self.correcting_x0_fn(x0)
@@ -718,9 +720,9 @@ class SASolver:
         Calculate the coefficient of gradients.
         """
         assert order in [1, 2, 3, 4]
-        assert order == len(
-            lambda_list
-        ), "the length of lambda list must be equal to the order"
+        assert order == len(lambda_list), (
+            "the length of lambda list must be equal to the order"
+        )
         coefficients = []
         lagrange_coefficient = self.lagrange_polynomial_coefficient(
             order - 1, lambda_list
@@ -741,9 +743,9 @@ class SASolver:
                         order - 1 - j, interval_start, interval_end
                     )
             coefficients.append(coefficient)
-        assert (
-            len(coefficients) == order
-        ), "the length of coefficients does not match the order"
+        assert len(coefficients) == order, (
+            "the length of coefficients does not match the order"
+        )
         return coefficients
 
     def adams_bashforth_update(
@@ -757,7 +759,9 @@ class SASolver:
             2,
             3,
             4,
-        ], "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        ], (
+            "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        )
 
         # get noise schedule
         ns = self.noise_schedule
@@ -820,7 +824,9 @@ class SASolver:
             2,
             3,
             4,
-        ], "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        ], (
+            "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        )
 
         # get noise schedule
         ns = self.noise_schedule
@@ -884,7 +890,9 @@ class SASolver:
             2,
             3,
             4,
-        ], "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        ], (
+            "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        )
 
         # get noise schedule
         ns = self.noise_schedule
@@ -982,7 +990,9 @@ class SASolver:
             2,
             3,
             4,
-        ], "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        ], (
+            "order of stochastic adams bashforth method is only supported for 1, 2, 3 and 4"
+        )
 
         # get noise schedule
         ns = self.noise_schedule
@@ -1093,9 +1103,9 @@ class SASolver:
         ], "Predictor-corrector mode only supports PEC and PECE"
         t_0 = 1.0 / self.noise_schedule.total_N if t_end is None else t_end
         t_T = self.noise_schedule.T if t_start is None else t_start
-        assert (
-            t_0 > 0 and t_T > 0
-        ), "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        assert t_0 > 0 and t_T > 0, (
+            "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        )
 
         device = x.device
         intermediates = []
@@ -1133,7 +1143,6 @@ class SASolver:
 
             # determine the first several values
             for step in tqdm(range(1, max(predictor_order, corrector_order - 1))):
-
                 t = timesteps[step]
                 predictor_order_used = min(predictor_order, step)
                 corrector_order_used = min(corrector_order, step + 1)
@@ -1303,9 +1312,9 @@ class SASolver:
         ], "Predictor-corrector mode only supports PEC and PECE"
         t_0 = 1.0 / self.noise_schedule.total_N if t_end is None else t_end
         t_T = self.noise_schedule.T if t_start is None else t_start
-        assert (
-            t_0 > 0 and t_T > 0
-        ), "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        assert t_0 > 0 and t_T > 0, (
+            "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        )
 
         device = x.device
         intermediates = []
@@ -1343,7 +1352,6 @@ class SASolver:
 
             # determine the first several values
             for step in tqdm(range(1, max(predictor_order, corrector_order - 1))):
-
                 t = timesteps[step]
                 predictor_order_used = min(predictor_order, step)
                 corrector_order_used = min(corrector_order, step + 1)

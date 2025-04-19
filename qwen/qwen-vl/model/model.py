@@ -34,7 +34,7 @@ class Model:
         created_temp_file = False
         if not image.startswith("http") or not image.startswith("https"):
             image = self.b64_to_pil(image)
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".png")
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
             image.save(temp_file.name)
             temp_file.close()
             image = temp_file.name

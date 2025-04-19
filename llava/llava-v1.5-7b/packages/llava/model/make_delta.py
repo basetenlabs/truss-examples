@@ -37,7 +37,9 @@ def make_delta(base_model_path, target_model_path, delta_path, hub_repo_id):
             assert name in [
                 "model.embed_tokens.weight",
                 "lm_head.weight",
-            ], f"{name} dimension mismatch: {param.data.shape} vs {base.state_dict()[name].shape}"
+            ], (
+                f"{name} dimension mismatch: {param.data.shape} vs {base.state_dict()[name].shape}"
+            )
             bparam = base.state_dict()[name]
             param.data[: bparam.shape[0], : bparam.shape[1]] -= bparam
 

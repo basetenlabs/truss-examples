@@ -23,7 +23,6 @@ from termcolor import colored
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    BitsAndBytesConfig,
     T5EncoderModel,
     T5Tokenizer,
 )
@@ -65,9 +64,9 @@ def get_tokenizer_and_text_encoder(name="T5", device="cuda"):
         "Qwen2-0.5B-Instruct": "Qwen/Qwen2-0.5B-Instruct",
         "Qwen2-1.5B-Instruct": "Qwen/Qwen2-1.5B-Instruct",
     }
-    assert name in list(
-        text_encoder_dict.keys()
-    ), f"not support this text encoder: {name}"
+    assert name in list(text_encoder_dict.keys()), (
+        f"not support this text encoder: {name}"
+    )
     if "T5" in name:
         tokenizer = T5Tokenizer.from_pretrained(text_encoder_dict[name])
         text_encoder = T5EncoderModel.from_pretrained(

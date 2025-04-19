@@ -1,12 +1,10 @@
 import base64
 import gc
-import os
 import re
 from tempfile import NamedTemporaryFile
 
 import torch
 from async_batcher.batcher import AsyncBatcher
-from huggingface_hub import snapshot_download
 from run import WhisperTRTLLM
 from torch import Tensor
 from whisper_utils import log_mel_spectrogram

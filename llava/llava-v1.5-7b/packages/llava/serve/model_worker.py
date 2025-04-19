@@ -43,7 +43,6 @@ model_semaphore = None
 
 
 def heart_beat_worker(controller):
-
     while True:
         time.sleep(WORKER_HEART_BEAT_INTERVAL)
         controller.send_heart_beat()
@@ -234,13 +233,16 @@ class ModelWorker:
         )
 
         if max_new_tokens < 1:
-            yield json.dumps(
-                {
-                    "text": ori_prompt
-                    + "Exceeds max token length. Please start a new conversation, thanks.",
-                    "error_code": 0,
-                }
-            ).encode() + b"\0"
+            yield (
+                json.dumps(
+                    {
+                        "text": ori_prompt
+                        + "Exceeds max token length. Please start a new conversation, thanks.",
+                        "error_code": 0,
+                    }
+                ).encode()
+                + b"\0"
+            )
             return
 
         thread = Thread(

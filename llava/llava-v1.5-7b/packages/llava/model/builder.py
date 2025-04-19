@@ -176,7 +176,7 @@ def load_pretrained_model(
             )
             print(f"Loading LoRA weights from {model_path}")
             model = PeftModel.from_pretrained(model, model_path)
-            print(f"Merging weights")
+            print("Merging weights")
             model = model.merge_and_unload()
             print("Convert to FP16...")
             model.to(torch.float16)

@@ -55,7 +55,7 @@ parser.add_argument(
     "--num-workers",
     type=int,
     help=(
-        "Number of processes to use for data loading. " "Defaults to `min(8, num_cpus)`"
+        "Number of processes to use for data loading. Defaults to `min(8, num_cpus)`"
     ),
 )
 parser.add_argument(
@@ -65,23 +65,23 @@ parser.add_argument(
     "--real_flag",
     type=str,
     default="img",
-    help=("The modality of real path. " "Default to img"),
+    help=("The modality of real path. Default to img"),
 )
 parser.add_argument(
     "--fake_flag",
     type=str,
     default="txt",
-    help=("The modality of real path. " "Default to txt"),
+    help=("The modality of real path. Default to txt"),
 )
 parser.add_argument(
     "real_path",
     type=str,
-    help=("Paths to the generated images or " "to .npz statistic files"),
+    help=("Paths to the generated images or to .npz statistic files"),
 )
 parser.add_argument(
     "fake_path",
     type=str,
-    help=("Paths to the generated images or " "to .npz statistic files"),
+    help=("Paths to the generated images or to .npz statistic files"),
 )
 
 IMAGE_EXTENSIONS = {"bmp", "jpg", "jpeg", "pgm", "png", "ppm", "tif", "tiff", "webp"}
@@ -90,7 +90,6 @@ TEXT_EXTENSIONS = {"txt"}
 
 
 class DummyDataset(Dataset):
-
     FLAGS = ["img", "txt"]
 
     def __init__(
@@ -103,9 +102,9 @@ class DummyDataset(Dataset):
         tokenizer=None,
     ) -> None:
         super().__init__()
-        assert (
-            real_flag in self.FLAGS and fake_flag in self.FLAGS
-        ), f"CLIP Score only support modality of {self.FLAGS}. However, get {real_flag} and {fake_flag}"
+        assert real_flag in self.FLAGS and fake_flag in self.FLAGS, (
+            f"CLIP Score only support modality of {self.FLAGS}. However, get {real_flag} and {fake_flag}"
+        )
         self.real_folder = self._combine_without_prefix(real_path)
         self.real_flag = real_flag
         self.fake_foler = self._combine_without_prefix(fake_path)

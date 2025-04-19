@@ -49,7 +49,7 @@ def get_dtype(model: nn.Module) -> torch.dtype:
 
 
 def get_same_padding(
-    kernel_size: Union[int, tuple[int, ...]]
+    kernel_size: Union[int, tuple[int, ...]],
 ) -> Union[int, tuple[int, ...]]:
     if isinstance(kernel_size, tuple):
         return tuple([get_same_padding(ks) for ks in kernel_size])

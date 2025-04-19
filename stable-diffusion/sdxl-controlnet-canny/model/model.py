@@ -9,7 +9,6 @@ from diffusers import (
     ControlNetModel,
     StableDiffusionXLControlNetPipeline,
 )
-from diffusers.utils import load_image
 from PIL import Image
 
 BASE64_PREAMBLE = "data:image/png;base64,"

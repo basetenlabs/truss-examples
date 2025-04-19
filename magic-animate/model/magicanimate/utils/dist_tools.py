@@ -17,19 +17,18 @@ from torch import distributed as dist
 
 
 def distributed_init(args):
-
     if dist.is_initialized():
         warnings.warn("Distributed is already initialized, cannot initialize twice!")
         args.rank = dist.get_rank()
     else:
-        print(f"Distributed Init (Rank {args.rank}): " f"{args.init_method}")
+        print(f"Distributed Init (Rank {args.rank}): {args.init_method}")
         dist.init_process_group(
             backend="nccl",
             init_method=args.init_method,
             world_size=args.world_size,
             rank=args.rank,
         )
-        print(f"Initialized Host {socket.gethostname()} as Rank " f"{args.rank}")
+        print(f"Initialized Host {socket.gethostname()} as Rank {args.rank}")
 
         if "MASTER_ADDR" not in os.environ or "MASTER_PORT" not in os.environ:
             # Set for onboxdataloader support
@@ -40,9 +39,9 @@ def distributed_init(args):
             )
 
             split = split[1].split(":")
-            assert (
-                len(split) == 2
-            ), "host url should be of the form <host_url>:<host_port>"
+            assert len(split) == 2, (
+                "host url should be of the form <host_url>:<host_port>"
+            )
             os.environ["MASTER_ADDR"] = split[0]
             os.environ["MASTER_PORT"] = split[1]
 

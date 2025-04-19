@@ -1,4 +1,3 @@
-from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict
 

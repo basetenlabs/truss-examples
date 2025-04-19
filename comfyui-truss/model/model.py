@@ -56,7 +56,7 @@ class Model:
                     "ws://{}/ws?clientId={}".format(self.server_address, self.client_id)
                 )
                 socket_connected = True
-            except Exception as e:
+            except Exception:
                 print("Could not connect to comfyUI server. Trying again...")
                 time.sleep(5)
 

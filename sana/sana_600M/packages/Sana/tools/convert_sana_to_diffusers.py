@@ -226,7 +226,7 @@ def main(args):
             )
         )
         # VAE
-        dc_ae = DCAE_HF.from_pretrained(f"mit-han-lab/dc-ae-f32c32-sana-1.0")
+        dc_ae = DCAE_HF.from_pretrained("mit-han-lab/dc-ae-f32c32-sana-1.0")
         dc_ae_state_dict = dc_ae.state_dict()
         dc_ae = DCAE(
             in_channels=3,

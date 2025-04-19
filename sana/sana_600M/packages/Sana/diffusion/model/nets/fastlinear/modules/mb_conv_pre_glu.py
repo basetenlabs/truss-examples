@@ -19,8 +19,8 @@ from torch import nn
 
 from .nn.act import build_act, get_act_name
 from .nn.conv import ConvLayer
-from .nn.norm import build_norm, get_norm_name
-from .utils.model import get_same_padding, val2tuple
+from .nn.norm import get_norm_name
+from .utils.model import val2tuple
 
 
 class MBConvPreGLU(nn.Module):

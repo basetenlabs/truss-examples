@@ -53,7 +53,7 @@ class Model:
                 if res.status_code == 200:
                     self.torchserver_ready = True
                     logging.info("🔥Torchserve is ready!")
-            except Exception as e:
+            except Exception:
                 logging.info("⏳Torchserve is loading...")
                 time.sleep(5)
 

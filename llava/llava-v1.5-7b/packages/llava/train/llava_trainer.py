@@ -310,14 +310,14 @@ class LLaVATrainer(Trainer):
                                     p.data_ptr(): p.numel() for p in module.parameters()
                                 }.values()
                             )
-                            logger.info(f"skipped {module}: {skipped/2**20}M params")
+                            logger.info(f"skipped {module}: {skipped / 2**20}M params")
                             manager.register_module_override(
                                 module, "weight", {"optim_bits": 32}
                             )
                             logger.debug(
                                 f"bitsandbytes: will optimize {module} in fp32"
                             )
-                    logger.info(f"skipped: {skipped/2**20}M params")
+                    logger.info(f"skipped: {skipped / 2**20}M params")
 
         return self.optimizer
 
@@ -341,9 +341,7 @@ class LLaVATrainer(Trainer):
 
             if self.args.local_rank == 0 or self.args.local_rank == -1:
                 self.model.config.save_pretrained(output_dir)
-                torch.save(
-                    weight_to_save, os.path.join(output_dir, f"mm_projector.bin")
-                )
+                torch.save(weight_to_save, os.path.join(output_dir, "mm_projector.bin"))
         else:
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 

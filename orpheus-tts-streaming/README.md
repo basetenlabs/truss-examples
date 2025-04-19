@@ -1,6 +1,6 @@
-# orpheus-tts 
+# orpheus-tts
 
-This is an implementation of Orpheus TTS that supports streaming and concurrent requests. 
+This is an implementation of Orpheus TTS that supports streaming and concurrent requests.
 
 Source Code:
 - https://huggingface.co/canopylabs/orpheus-3b-0.1-ft

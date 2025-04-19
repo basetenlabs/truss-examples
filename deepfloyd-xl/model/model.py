@@ -2,7 +2,7 @@ import base64
 import gc
 import os
 from io import BytesIO
-from typing import Any, Dict, List
+from typing import Dict
 
 import huggingface_hub
 import torch

@@ -16,6 +16,7 @@
 """
 Functions for downloading pre-trained Sana models
 """
+
 import argparse
 import os
 
@@ -54,7 +55,7 @@ def download_model(model_name):
         if hf_endpoint is None:
             hf_endpoint = "https://huggingface.co"
         os.makedirs("output/pretrained_models", exist_ok=True)
-        web_path = f""
+        web_path = ""
         download_url(web_path, "output/pretrained_models/")
     model = torch.load(local_path, map_location=lambda storage, loc: storage)
     return model

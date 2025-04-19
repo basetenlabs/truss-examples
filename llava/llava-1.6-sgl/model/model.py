@@ -89,7 +89,7 @@ class Model:
         max_new_tokens = request.pop("max_new_tokens", 256)
         temperature = request.pop("temperature", 0.2)
 
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".png")
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
         image = self.b64_to_pil(image)
         image.save(temp_file.name)
 

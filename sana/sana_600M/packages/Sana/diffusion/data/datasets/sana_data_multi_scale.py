@@ -280,7 +280,6 @@ class DummyDatasetMS(SanaWebDatasetMS):
 
 
 if __name__ == "__main__":
-    from diffusion.data.datasets.utils import ASPECT_RATIO_1024
     from diffusion.data.transforms import get_transform
     from torch.utils.data import DataLoader
 

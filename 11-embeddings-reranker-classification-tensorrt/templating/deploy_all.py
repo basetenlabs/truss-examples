@@ -3,7 +3,6 @@ import functools
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from functools import partial
 from pathlib import Path
 
 import requests
@@ -48,7 +47,7 @@ def matches_name(model: dict, key: str = "name", filtered: str = "-") -> bool:
     return (
         model[key].endswith("truss-example")
         and filtered in model[key]
-        and (not "405b" in model[key])
+        and ("405b" not in model[key])
     )
 
 
@@ -108,9 +107,9 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
         temperature=0.0,
         max_tokens=200,
     )
-    assert response_chat.choices[
-        0
-    ].message.content, f"Fatal: no response: {response_chat.choices[0].message.content}"
+    assert response_chat.choices[0].message.content, (
+        f"Fatal: no response: {response_chat.choices[0].message.content}"
+    )
     if stage == 0:
         if rank == 0:
             print(f"✅ All tests passed for deployment {deploy_id} in stage {stage}")

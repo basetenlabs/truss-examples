@@ -9,10 +9,9 @@
 # without an express license agreement from ByteDance or
 # its affiliates is strictly prohibited.
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 import torch
-import torch.nn.functional as F
 from diffusers.models.attention import BasicTransformerBlock
 from diffusers.models.unet_2d_blocks import (
     CrossAttnDownBlock2D,

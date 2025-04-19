@@ -15,7 +15,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-import triton
 import triton.language as tl
 
 

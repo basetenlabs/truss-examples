@@ -1,10 +1,8 @@
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Dict
 
 import ffmpeg
 import numpy as np
-import requests
 import torch
 
 import whisper

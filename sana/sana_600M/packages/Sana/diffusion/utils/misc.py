@@ -18,15 +18,12 @@ import collections
 import datetime
 import os
 import random
-import subprocess
 import time
-from multiprocessing import JoinableQueue, Process
 
 import numpy as np
 import torch
 import torch.distributed as dist
 import yaml
-from diffusion.utils.dist_utils import get_rank
 from diffusion.utils.logger import get_root_logger
 from mmcv import Config
 from mmcv.runner import get_dist_info

@@ -14,7 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import math
 import os
 import random
 import re
@@ -28,7 +27,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
 from torch.utils.checkpoint import checkpoint, checkpoint_sequential
-from torchvision import transforms as T
 
 
 def _ntuple(n):
@@ -74,7 +72,6 @@ def auto_grad_checkpoint(module, *args, **kwargs):
 
 
 def checkpoint_sequential(functions, step, input, *args, **kwargs):
-
     # Hack for keyword-only parameter in a python 2.7-compliant way
     preserve = kwargs.pop("preserve_rng_state", True)
     if kwargs:
@@ -406,8 +403,8 @@ def init_processes(fn, args):
     """Initialize the distributed environment."""
     os.environ["MASTER_ADDR"] = args.master_address
     os.environ["MASTER_PORT"] = str(random.randint(2000, 6000))
-    print(f'MASTER_ADDR = {os.environ["MASTER_ADDR"]}')
-    print(f'MASTER_PORT = {os.environ["MASTER_PORT"]}')
+    print(f"MASTER_ADDR = {os.environ['MASTER_ADDR']}")
+    print(f"MASTER_PORT = {os.environ['MASTER_PORT']}")
     torch.cuda.set_device(args.local_rank)
     dist.init_process_group(
         backend="nccl",

@@ -22,7 +22,7 @@ class Model:
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
 
         generated_ids = self.model.generate(input_ids, max_length=500)
-        result = f"SELECT{self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)[len(prompt):]}"
+        result = f"SELECT{self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)[len(prompt) :]}"
 
         return {"result": result}
 

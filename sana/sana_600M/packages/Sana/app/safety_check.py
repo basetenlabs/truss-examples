@@ -14,14 +14,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # This file is copy from https://github.com/mit-han-lab/hart/blob/main/hart/utils/safety_check.py
-import json
-from functools import lru_cache
-from typing import Dict, Sequence
 
 import torch
-import transformers
 from torch.nn.functional import softmax
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 __all__ = ["is_dangerous"]
 

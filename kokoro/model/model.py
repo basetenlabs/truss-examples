@@ -163,6 +163,6 @@ class Model:
         wav_bytes = buffer.getvalue()
         duration_seconds = len(audio) / 24000
         logger.info(
-            f"Generation took {time.time()-start} seconds to generate {duration_seconds:.2f} seconds of audio"
+            f"Generation took {time.time() - start} seconds to generate {duration_seconds:.2f} seconds of audio"
         )
         return {"base64": base64.b64encode(wav_bytes).decode("utf-8")}

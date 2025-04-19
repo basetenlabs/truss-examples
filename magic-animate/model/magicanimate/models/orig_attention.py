@@ -146,12 +146,12 @@ class Transformer2DModel(ModelMixin, ConfigMixin):
                     in_channels, inner_dim, kernel_size=1, stride=1, padding=0
                 )
         elif self.is_input_vectorized:
-            assert (
-                sample_size is not None
-            ), "Transformer2DModel over discrete input must provide sample_size"
-            assert (
-                num_vector_embeds is not None
-            ), "Transformer2DModel over discrete input must provide num_embed"
+            assert sample_size is not None, (
+                "Transformer2DModel over discrete input must provide sample_size"
+            )
+            assert num_vector_embeds is not None, (
+                "Transformer2DModel over discrete input must provide num_embed"
+            )
 
             self.height = sample_size
             self.width = sample_size

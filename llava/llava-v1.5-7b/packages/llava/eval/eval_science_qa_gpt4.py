@@ -101,8 +101,8 @@ if __name__ == "__main__":
     total = results["correct"] + results["incorrect"]
     print(f"Total: {total}, Correct: {correct}, Accuracy: {correct / total * 100:.2f}%")
     print(
-        f'Total: {total}, Correct (upper): {results["correct_upperbound"]}, Accuracy: {results["correct_upperbound"] / total * 100:.2f}%'
+        f"Total: {total}, Correct (upper): {results['correct_upperbound']}, Accuracy: {results['correct_upperbound'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, GPT-4 NO-ANS (RANDOM): {results["gpt4_failed"]}, Percentage: {results["gpt4_failed"] / total * 100:.2f}%'
+        f"Total: {total}, GPT-4 NO-ANS (RANDOM): {results['gpt4_failed']}, Percentage: {results['gpt4_failed'] / total * 100:.2f}%"
     )

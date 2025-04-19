@@ -147,7 +147,7 @@ class StableDiffusionPipeline:
             self.scheduler = PNDMScheduler(device=self.device, **sched_opts)
         else:
             raise ValueError(
-                f"Scheduler should be either DDIM, DPM, EulerA, LMSD or PNDM"
+                "Scheduler should be either DDIM, DPM, EulerA, LMSD or PNDM"
             )
 
         self.stages = stages

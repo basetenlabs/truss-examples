@@ -49,7 +49,6 @@ class FlowEuler:
         for i, t in tqdm(
             list(enumerate(timesteps)), disable=os.getenv("DPM_TQDM", "False") == "True"
         ):
-
             # expand the latents if we are doing classifier free guidance
             latent_model_input = (
                 torch.cat([latents] * 2) if do_classifier_free_guidance else latents

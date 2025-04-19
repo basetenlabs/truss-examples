@@ -826,7 +826,7 @@ def _flash_attn_forward(q, k, v, bias=None, causal=False, softmax_scale=None):
         BLOCK_M=BLOCK,
         BLOCK_N=BLOCK,
         num_warps=num_warps,
-        num_stages=1
+        num_stages=1,
     )
     return (o, lse, softmax_scale)
 
@@ -931,7 +931,7 @@ def _flash_attn_backward(
         seqlen_k // 32,
         bias_type,
         causal,
-        BLOCK_HEADDIM
+        BLOCK_HEADDIM,
     )
     dq.copy_(dq_accum)
 
@@ -962,9 +962,9 @@ class FlashAttnQKVPackedFunc(torch.autograd.Function):
     @staticmethod
     def backward(ctx, do):
         (qkv, o, lse, bias) = ctx.saved_tensors
-        assert not ctx.needs_input_grad[
-            1
-        ], "FlashAttention does not support bias gradient yet"
+        assert not ctx.needs_input_grad[1], (
+            "FlashAttention does not support bias gradient yet"
+        )
         with torch.inference_mode():
             dqkv = torch.empty_like(qkv)
             _flash_attn_backward(
@@ -1014,9 +1014,9 @@ class FlashAttnKVPackedFunc(torch.autograd.Function):
     def backward(ctx, do):
         (q, kv, o, lse, bias) = ctx.saved_tensors
         if len(ctx.needs_input_grad) >= 3:
-            assert not ctx.needs_input_grad[
-                2
-            ], "FlashAttention does not support bias gradient yet"
+            assert not ctx.needs_input_grad[2], (
+                "FlashAttention does not support bias gradient yet"
+            )
         with torch.inference_mode():
             dq = torch.empty_like(q)
             dkv = torch.empty_like(kv)
@@ -1061,9 +1061,9 @@ class FlashAttnFunc(torch.autograd.Function):
     @staticmethod
     def backward(ctx, do):
         (q, k, v, o, lse, bias) = ctx.saved_tensors
-        assert not ctx.needs_input_grad[
-            3
-        ], "FlashAttention does not support bias gradient yet"
+        assert not ctx.needs_input_grad[3], (
+            "FlashAttention does not support bias gradient yet"
+        )
         with torch.inference_mode():
             dq = torch.empty_like(q)
             dk = torch.empty_like(k)

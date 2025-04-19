@@ -12,14 +12,13 @@ from ..apps.utils import (
     dump_config,
     get_dist_local_rank,
     get_dist_rank,
-    get_dist_size,
     init_modules,
     is_master,
     load_config,
     partial_update_config,
     zero_last_gamma,
 )
-from ..models.utils import build_kwargs_from_config, load_state_dict_from_file
+from ..models.utils import load_state_dict_from_file
 
 __all__ = [
     "save_exp_config",

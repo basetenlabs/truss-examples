@@ -32,7 +32,7 @@ import torch
 from app import safety_check
 from app.sana_pipeline import SanaPipeline
 from PIL import Image
-from torchvision.utils import make_grid, save_image
+from torchvision.utils import save_image
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MAX_SEED = np.iinfo(np.int32).max
@@ -319,7 +319,7 @@ def generate(
 
 
 model_size = "1.6" if "1600M" in args.model_path else "0.6"
-title = f"""
+title = """
     <div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
         <img src="https://raw.githubusercontent.com/NVlabs/Sana/refs/heads/main/asset/logo.png" width="50%" alt="logo"/>
     </div>

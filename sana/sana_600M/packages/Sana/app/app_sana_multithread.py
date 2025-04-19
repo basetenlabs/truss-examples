@@ -361,7 +361,7 @@ async def generate(
 
 TEST_TIMES = read_inference_count()
 model_size = "1.6" if "D20" in args.model_path else "0.6"
-title = f"""
+title = """
     <div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
         <img src="https://raw.githubusercontent.com/NVlabs/Sana/refs/heads/main/asset/logo.png" width="50%" alt="logo"/>
     </div>

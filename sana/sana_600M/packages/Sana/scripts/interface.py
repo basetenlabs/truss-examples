@@ -34,11 +34,6 @@ warnings.filterwarnings("ignore")  # ignore warning
 
 from asset.examples import examples
 from diffusion import DPMS, FlowEuler, SASolverSampler
-from diffusion.data.datasets.utils import (
-    ASPECT_RATIO_512_TEST,
-    ASPECT_RATIO_1024_TEST,
-    ASPECT_RATIO_2048_TEST,
-)
 from diffusion.model.builder import (
     build_model,
     get_tokenizer_and_text_encoder,
@@ -150,7 +145,7 @@ def generate_img(
     set_env(seed)
     base_ratios = eval(f"ASPECT_RATIO_{base_size}_TEST")
 
-    os.makedirs(f"output/demo/online_demo_prompts/", exist_ok=True)
+    os.makedirs("output/demo/online_demo_prompts/", exist_ok=True)
     save_promt_path = (
         f"output/demo/online_demo_prompts/tested_prompts{datetime.now().date()}.txt"
     )
@@ -303,7 +298,9 @@ if __name__ == "__main__":
         1024,
         2048,
         4096,
-    ], "We only provide pre-trained models for 256x256, 512x512, 1024x1024, 2048x2048 and 4096x4096 resolutions."
+    ], (
+        "We only provide pre-trained models for 256x256, 512x512, 1024x1024, 2048x2048 and 4096x4096 resolutions."
+    )
 
     # only support fixed latent size currently
     latent_size = config.model.image_size // config.vae.vae_downsample_rate
@@ -387,7 +384,7 @@ if __name__ == "__main__":
     )[0]
 
     model_size = "1.6" if "D20" in args.model_path else "0.6"
-    title = f"""
+    title = """
         <div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
             <img src="https://raw.githubusercontent.com/NVlabs/Sana/refs/heads/main/asset/logo.png" width="50%" alt="logo"/>
         </div>
@@ -413,7 +410,7 @@ if __name__ == "__main__":
             ),
             gr.Radio(
                 choices=["dpm-solver", "sa-solver", "flow_dpm-solver", "flow_euler"],
-                label=f"Sampler",
+                label="Sampler",
                 interactive=True,
                 value="flow_dpm-solver",
             ),
@@ -430,7 +427,7 @@ if __name__ == "__main__":
                     "classifier-free_PAG",
                     "classifier-free_PAG_seq",
                 ],
-                label=f"Guidance Type",
+                label="Guidance Type",
                 interactive=True,
                 value="classifier-free_PAG_seq",
             ),
@@ -444,7 +441,7 @@ if __name__ == "__main__":
             gr.Checkbox(label="Randomize seed", value=True),
             gr.Radio(
                 choices=[256, 512, 1024, 2048, 4096],
-                label=f"Base Size",
+                label="Base Size",
                 interactive=True,
                 value=args.image_size,
             ),

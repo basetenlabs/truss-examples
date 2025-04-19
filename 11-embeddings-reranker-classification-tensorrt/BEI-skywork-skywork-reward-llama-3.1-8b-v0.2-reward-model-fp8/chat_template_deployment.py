@@ -6,7 +6,7 @@ from functools import cache
 import requests
 
 MESSAGE_TYPE = list[dict]
-HEADERS = {f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"}
+HEADERS = {"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"}
 DEPLOYMENT_ID = "03y1d2v3"
 
 

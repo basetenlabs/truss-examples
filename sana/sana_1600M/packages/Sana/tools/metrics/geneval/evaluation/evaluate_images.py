@@ -126,7 +126,7 @@ def color_classification(image, bboxes, classname):
             [
                 f"a photo of a {{c}} {classname}",
                 f"a photo of a {{c}}-colored {classname}",
-                f"a photo of a {{c}} object",
+                "a photo of a {c} object",
             ],
             DEVICE,
         )

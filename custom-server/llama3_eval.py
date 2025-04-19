@@ -11,7 +11,6 @@ from dataclasses import dataclass
 import httpx
 import numpy as np
 import openai
-import transformers
 from datasets import load_dataset
 from openai import AsyncOpenAI
 from tenacity import (
@@ -192,7 +191,7 @@ TASK_TO_ANSWER_EXTRACTOR = {
 
 def get_dataset_from_task(task, response_path, model_size):
     ds_405b = load_dataset(
-        f"meta-llama/Llama-3.1-405B-Instruct-evals",
+        "meta-llama/Llama-3.1-405B-Instruct-evals",
         f"Llama-3.1-405B-Instruct-{task}",
     )
     ds_405b_hash_order = [x[0] for x in ds_405b["latest"]["input_final_prompts_hash"]]
@@ -200,12 +199,12 @@ def get_dataset_from_task(task, response_path, model_size):
     if "70b" in model_size or "8b" in model_size:
         if "70" in model_size:
             ref_model_ds = load_dataset(
-                f"meta-llama/Llama-3.1-70B-Instruct-evals",
+                "meta-llama/Llama-3.1-70B-Instruct-evals",
                 f"Llama-3.1-70B-Instruct-{task}",
             )
         else:
             ref_model_ds = load_dataset(
-                f"meta-llama/Llama-3.1-8B-Instruct-evals",
+                "meta-llama/Llama-3.1-8B-Instruct-evals",
                 f"Llama-3.1-8B-Instruct-{task}",
             )
 

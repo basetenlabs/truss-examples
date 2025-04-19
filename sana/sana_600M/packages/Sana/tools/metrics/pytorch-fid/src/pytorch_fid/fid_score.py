@@ -59,7 +59,7 @@ parser.add_argument(
     "--num-workers",
     type=int,
     help=(
-        "Number of processes to use for data loading. " "Defaults to `min(8, num_cpus)`"
+        "Number of processes to use for data loading. Defaults to `min(8, num_cpus)`"
     ),
 )
 parser.add_argument(
@@ -71,8 +71,7 @@ parser.add_argument(
     default=2048,
     choices=list(InceptionV3.BLOCK_INDEX_BY_DIM),
     help=(
-        "Dimensionality of Inception features to use. "
-        "By default, uses pool3 features"
+        "Dimensionality of Inception features to use. By default, uses pool3 features"
     ),
 )
 parser.add_argument(
@@ -87,7 +86,7 @@ parser.add_argument(
     "path",
     type=str,
     nargs=2,
-    help=("Paths to the generated images or " "to .npz statistic files"),
+    help=("Paths to the generated images or to .npz statistic files"),
 )
 
 IMAGE_EXTENSIONS = {"bmp", "jpg", "jpeg", "pgm", "png", "ppm", "tif", "tiff", "webp"}
@@ -201,12 +200,12 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     sigma1 = np.atleast_2d(sigma1)
     sigma2 = np.atleast_2d(sigma2)
 
-    assert (
-        mu1.shape == mu2.shape
-    ), "Training and test mean vectors have different lengths"
-    assert (
-        sigma1.shape == sigma2.shape
-    ), "Training and test covariances have different dimensions"
+    assert mu1.shape == mu2.shape, (
+        "Training and test mean vectors have different lengths"
+    )
+    assert sigma1.shape == sigma2.shape, (
+        "Training and test covariances have different dimensions"
+    )
 
     diff = mu1 - mu2
 

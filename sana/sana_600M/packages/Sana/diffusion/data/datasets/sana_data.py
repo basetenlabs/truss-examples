@@ -24,12 +24,11 @@ import random
 import numpy as np
 import torch
 import torch.distributed as dist
-from diffusion.data.builder import DATASETS, get_data_path
+from diffusion.data.builder import DATASETS
 from diffusion.data.wids import ShardListDataset, ShardListDatasetMulti, lru_json_load
 from diffusion.utils.logger import get_root_logger
 from PIL import Image
 from termcolor import colored
-from torch.utils.data import Dataset
 
 
 @DATASETS.register_module()
@@ -314,9 +313,9 @@ class SanaWebDataset(torch.utils.data.Dataset):
                     + ".wdsmeta.json",
                 )
 
-            assert osp.exists(
-                self.meta_path
-            ), f"meta path not found in [{self.meta_path}] or [{_local_meta_path}]"
+            assert osp.exists(self.meta_path), (
+                f"meta path not found in [{self.meta_path}] or [{_local_meta_path}]"
+            )
             self.logger.info(
                 f"[SimplyInternal] Loading meta information {self.meta_path}"
             )

@@ -39,7 +39,7 @@ def auto_scale_lr(effective_bs, optimizer_cfg, rule="linear", base_batch_size=25
         scale_ratio = effective_bs / base_batch_size
     optimizer_cfg["lr"] *= scale_ratio
     logger.info(
-        f'Automatically adapt lr to {optimizer_cfg["lr"]:.5f} (using {rule} scaling rule).'
+        f"Automatically adapt lr to {optimizer_cfg['lr']:.5f} (using {rule} scaling rule)."
     )
     return scale_ratio
 
@@ -230,7 +230,6 @@ class Lion(Optimizer):
 
     @torch.no_grad()
     def step(self, closure: Optional[Callable] = None):
-
         loss = None
         if self.exists(closure):
             with torch.enable_grad():
@@ -238,7 +237,6 @@ class Lion(Optimizer):
 
         for group in self.param_groups:
             for p in filter(lambda p: self.exists(p.grad), group["params"]):
-
                 grad, lr, wd, beta1, beta2, state = (
                     p.grad,
                     group["lr"],
@@ -261,5 +259,4 @@ class Lion(Optimizer):
 @OPTIMIZERS.register_module()
 class CAMEWrapper(CAME):
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)

@@ -16,21 +16,15 @@ from transformers.modeling_outputs import (
     CausalLMOutputWithPast,
 )
 
-from .adapt_tokenizer import AutoTokenizerForMOD, adapt_tokenizer_for_denoising
 from .attention import attn_bias_shape, build_attn_bias
 from .blocks import MPTBlock
 from .configuration_mpt import MPTConfig
 from .custom_embedding import SharedEmbedding
-from .hf_prefixlm_converter import (
-    add_bidirectional_mask_if_missing,
-    convert_hf_causal_lm_to_prefix_lm,
-)
-from .meta_init_context import init_empty_weights
 from .norm import NORM_CLASS_REGISTRY
-from .param_init_fns import MODEL_INIT_REGISTRY, generic_param_init_fn_
+from .param_init_fns import MODEL_INIT_REGISTRY
 
 try:
-    from .flash_attn_triton import flash_attn_func
+    pass
 except:
     pass
 Tokenizer = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
@@ -264,15 +258,15 @@ class MPTModel(MPTPreTrainedModel):
                 )
         if input_ids is not None:
             S = input_ids.size(1)
-            assert (
-                S <= self.config.max_seq_len
-            ), f"Cannot forward input with seq_len={S}, this model only supports seq_len<={self.config.max_seq_len}"
+            assert S <= self.config.max_seq_len, (
+                f"Cannot forward input with seq_len={S}, this model only supports seq_len<={self.config.max_seq_len}"
+            )
             tok_emb = self.wte(input_ids)
         else:
             assert inputs_embeds is not None
-            assert (
-                self.alibi
-            ), "inputs_embeds is not implemented for MPT unless for alibi."
+            assert self.alibi, (
+                "inputs_embeds is not implemented for MPT unless for alibi."
+            )
             S = inputs_embeds.size(1)
             tok_emb = inputs_embeds
         if self.alibi:
@@ -282,7 +276,7 @@ class MPTModel(MPTPreTrainedModel):
             if past_key_values is not None:
                 if len(past_key_values) != self.config.n_layers:
                     raise ValueError(
-                        f"past_key_values must provide a past_key_value for each attention "
+                        "past_key_values must provide a past_key_value for each attention "
                         + f"layer in the network (len(past_key_values)={len(past_key_values)!r}; self.config.n_layers={self.config.n_layers!r})."
                     )
                 past_position = past_key_values[0][0].size(1)

@@ -7,6 +7,7 @@
 """
 Functions for downloading pre-trained Sana models
 """
+
 import argparse
 import os
 
@@ -25,9 +26,9 @@ def find_model(model_name):
     ):  # Find/download our pre-trained G.pt checkpoints
         return download_model(model_name)
     else:  # Load a custom Sana checkpoint:
-        assert os.path.isfile(
-            model_name
-        ), f"Could not find Sana checkpoint at {model_name}"
+        assert os.path.isfile(model_name), (
+            f"Could not find Sana checkpoint at {model_name}"
+        )
         return torch.load(model_name, map_location=lambda storage, loc: storage)
 
 

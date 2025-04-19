@@ -4,14 +4,12 @@ It sends worker addresses to clients.
 """
 
 import argparse
-import asyncio
 import dataclasses
 import json
-import logging
 import threading
 import time
 from enum import Enum, auto
-from typing import List, Union
+from typing import List
 
 import numpy as np
 import requests
@@ -35,7 +33,7 @@ class DispatchMethod(Enum):
         elif name == "shortest_queue":
             return cls.SHORTEST_QUEUE
         else:
-            raise ValueError(f"Invalid dispatch method")
+            raise ValueError("Invalid dispatch method")
 
 
 @dataclasses.dataclass
@@ -215,7 +213,7 @@ class Controller:
             for chunk in response.iter_lines(decode_unicode=False, delimiter=b"\0"):
                 if chunk:
                     yield chunk + b"\0"
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             logger.info(f"worker timeout: {worker_addr}")
             ret = {
                 "text": server_error_msg,

@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 from packaging import version
-from torch import nn
 
 from .norm import LPLayerNorm
 
@@ -143,7 +142,7 @@ def flash_attn_fn(
         _s_k = max(0, attn_bias.size(3) - key.size(1))
         attn_bias = attn_bias[:, :, _s_q:, _s_k:]
     if attn_bias is not None:
-        raise NotImplementedError(f"attn_bias not implemented for flash attn.")
+        raise NotImplementedError("attn_bias not implemented for flash attn.")
     (batch_size, seqlen) = query.shape[:2]
     if key_padding_mask is None:
         key_padding_mask = torch.ones_like(key[:, :, 0], dtype=torch.bool)
@@ -228,9 +227,9 @@ def triton_flash_attn_fn(
         _s_k = max(0, attn_bias.size(3) - key.size(1))
         attn_bias = attn_bias[:, :, _s_q:, _s_k:]
     if dropout_p:
-        raise NotImplementedError(f"Dropout not implemented for attn_impl: triton.")
+        raise NotImplementedError("Dropout not implemented for attn_impl: triton.")
     if needs_weights:
-        raise NotImplementedError(f"attn_impl: triton cannot return attn weights.")
+        raise NotImplementedError("attn_impl: triton cannot return attn weights.")
     if key_padding_mask is not None:
         warnings.warn(
             "Propagating key_padding_mask to the attention module "

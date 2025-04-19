@@ -678,9 +678,9 @@ class AppearanceEncoderModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixi
         self.up_blocks[3].attentions[2].transformer_blocks[
             0
         ].attn1.to_v = _LoRACompatibleLinear()
-        self.up_blocks[3].attentions[2].transformer_blocks[0].attn1.to_out = (
-            nn.ModuleList([Identity(), Identity()])
-        )
+        self.up_blocks[3].attentions[2].transformer_blocks[
+            0
+        ].attn1.to_out = nn.ModuleList([Identity(), Identity()])
         self.up_blocks[3].attentions[2].transformer_blocks[0].norm2 = Identity()
         self.up_blocks[3].attentions[2].transformer_blocks[0].attn2 = None
         self.up_blocks[3].attentions[2].transformer_blocks[0].norm3 = Identity()

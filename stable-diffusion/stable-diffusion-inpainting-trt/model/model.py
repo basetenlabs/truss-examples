@@ -4,7 +4,7 @@ from io import BytesIO
 
 import tensorrt as trt
 from helpers.inpaint_pipeline import InpaintPipeline
-from helpers.utilities import TRT_LOGGER, add_arguments, download_image
+from helpers.utilities import TRT_LOGGER
 from huggingface_hub import snapshot_download
 from PIL import Image
 

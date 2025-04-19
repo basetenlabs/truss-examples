@@ -1,5 +1,3 @@
-import numpy as np
-import tensorrt as trt
 import torch
 from cuda import cudart
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
@@ -80,7 +78,7 @@ class TRTUnet:
 
         noerror = self._context.execute_async_v3(self._stream)
         if not noerror:
-            raise ValueError(f"ERROR: inference failed.")
+            raise ValueError("ERROR: inference failed.")
 
         # synchronize since above call is async.
         torch.cuda.synchronize()
