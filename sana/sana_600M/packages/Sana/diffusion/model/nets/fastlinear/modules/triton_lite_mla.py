@@ -16,13 +16,11 @@
 
 from typing import Optional
 
-import ipdb
 import torch
 from torch import nn
 from torch.nn import functional as F
 
 from .triton_lite_mla_kernels.linear_relu_fwd import linear_relu_fwd
-from .triton_lite_mla_kernels.mm import matmul  # for autocast
 from .triton_lite_mla_kernels.pad_vk_mm_fwd import pad_vk_mm_fwd
 from .triton_lite_mla_kernels.proj_divide_bwd import proj_divide_bwd
 from .triton_lite_mla_kernels.vk_mm_relu_bwd import vk_mm_relu_bwd
@@ -161,7 +159,7 @@ class TritonLiteMLA(nn.Module):
             eps,
         )
         if use_bias:
-            raise NotImplementedError(f"use_bias is not supported for TritonLiteMLA")
+            raise NotImplementedError("use_bias is not supported for TritonLiteMLA")
         self.qkv = nn.Linear(dim, dim * 3, bias=use_bias)
         self.proj = nn.Linear(dim, dim)
 

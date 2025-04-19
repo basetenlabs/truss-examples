@@ -46,7 +46,6 @@ class Model:
     # tasks, and helps improve the throughput of the Truss. See our [guide to concurrency](../guides/concurrency)
     # for more info.
     def preprocess(self, request: Dict) -> Dict:
-
         image = Image.open(requests.get(request.pop("url"), stream=True).raw)
         request["inputs"] = self._processor(
             text=[

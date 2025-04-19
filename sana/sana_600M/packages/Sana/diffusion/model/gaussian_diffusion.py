@@ -192,7 +192,6 @@ class GaussianDiffusion:
         flow=False,
         sigmas=None,
     ):
-
         self.model_mean_type = model_mean_type
         self.model_var_type = model_var_type
         self.loss_type = loss_type

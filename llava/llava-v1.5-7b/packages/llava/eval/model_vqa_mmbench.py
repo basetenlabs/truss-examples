@@ -21,7 +21,6 @@ from llava.mm_utils import (
 )
 from llava.model.builder import load_pretrained_model
 from llava.utils import disable_torch_init
-from PIL import Image
 from tqdm import tqdm
 
 all_options = ["A", "B", "C", "D"]

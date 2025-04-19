@@ -143,19 +143,13 @@ class SpacedDiffusion(GaussianDiffusion):
             kwargs["sigmas"] = np.array(new_sigmas)
             super().__init__(**kwargs)
 
-    def p_mean_variance(
-        self, model, *args, **kwargs
-    ):  # pylint: disable=signature-differs
+    def p_mean_variance(self, model, *args, **kwargs):  # pylint: disable=signature-differs
         return super().p_mean_variance(self._wrap_model(model), *args, **kwargs)
 
-    def training_losses(
-        self, model, *args, **kwargs
-    ):  # pylint: disable=signature-differs
+    def training_losses(self, model, *args, **kwargs):  # pylint: disable=signature-differs
         return super().training_losses(self._wrap_model(model), *args, **kwargs)
 
-    def training_losses_diffusers(
-        self, model, *args, **kwargs
-    ):  # pylint: disable=signature-differs
+    def training_losses_diffusers(self, model, *args, **kwargs):  # pylint: disable=signature-differs
         return super().training_losses_diffusers(
             self._wrap_model(model), *args, **kwargs
         )

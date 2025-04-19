@@ -58,7 +58,6 @@ from diffusion.utils.lr_scheduler import build_lr_scheduler
 from diffusion.utils.misc import (
     DebugUnderflowOverflow,
     init_random_seed,
-    read_config,
     set_random_seed,
 )
 from diffusion.utils.optimizer import auto_scale_lr, build_optimizer
@@ -113,9 +112,10 @@ def log_validation(
                 ),
                 map_location="cpu",
             )
-            caption_embs, emb_masks = embed["caption_embeds"].to(device), embed[
-                "emb_mask"
-            ].to(device)
+            caption_embs, emb_masks = (
+                embed["caption_embeds"].to(device),
+                embed["emb_mask"].to(device),
+            )
             # caption_embs = caption_embs[:, None]
             # emb_masks = emb_masks[:, None]
             model_kwargs = dict(
@@ -696,9 +696,22 @@ def train(
 
 @pyrallis.wrap()
 def main(cfg: SanaConfig) -> None:
-    global train_dataloader_len, start_epoch, start_step, vae, generator, num_replicas, rank, training_start_time
+    global \
+        train_dataloader_len, \
+        start_epoch, \
+        start_step, \
+        vae, \
+        generator, \
+        num_replicas, \
+        rank, \
+        training_start_time
     global load_vae_feat, load_text_feat, validation_noise, text_encoder, tokenizer
-    global max_length, validation_prompts, latent_size, valid_prompt_embed_suffix, null_embed_path
+    global \
+        max_length, \
+        validation_prompts, \
+        latent_size, \
+        valid_prompt_embed_suffix, \
+        null_embed_path
     global image_size, cache_file, total_steps
 
     config = cfg
@@ -1067,7 +1080,7 @@ def main(cfg: SanaConfig) -> None:
     if config.model.multi_scale:
         drop_last = True
         uuid = hashlib.sha256("-".join(config.data.data_dir).encode()).hexdigest()[:8]
-        cache_dir = osp.expanduser(f"~/.cache/_wids_batchsampler_cache")
+        cache_dir = osp.expanduser("~/.cache/_wids_batchsampler_cache")
         os.makedirs(cache_dir, exist_ok=True)
         base_pattern = (
             f"{cache_dir}/{getpass.getuser()}-{uuid}-sort_dataset{config.data.sort_dataset}"
@@ -1139,7 +1152,7 @@ def main(cfg: SanaConfig) -> None:
         config.train, optimizer, train_dataloader, lr_scale_ratio
     )
     logger.warning(
-        f"{colored(f'Basic Setting: ', 'green', attrs=['bold'])}"
+        f"{colored('Basic Setting: ', 'green', attrs=['bold'])}"
         f"lr: {config.train.optimizer['lr']:.5f}, bs: {config.train.train_batch_size}, gc: {config.train.grad_checkpointing}, "
         f"gc_accum_step: {config.train.gradient_accumulation_steps}, qk norm: {config.model.qk_norm}, "
         f"fp32 attn: {config.model.fp32_attention}, attn type: {config.model.attn_type}, ffn type: {config.model.ffn_type}, "
@@ -1237,5 +1250,4 @@ def main(cfg: SanaConfig) -> None:
 
 
 if __name__ == "__main__":
-
     main()

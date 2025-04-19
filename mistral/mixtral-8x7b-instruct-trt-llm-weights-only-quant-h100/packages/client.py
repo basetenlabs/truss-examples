@@ -2,13 +2,11 @@ import json
 import os
 import subprocess
 import time
-from functools import partial
 from pathlib import Path
 
 import numpy as np
 import tritonclient.grpc.aio as grpcclient
 import tritonclient.http as httpclient
-from tritonclient.utils import InferenceServerException
 from utils import (
     GRPC_SERVICE_PORT,
     HTTP_SERVICE_PORT,
@@ -145,9 +143,9 @@ class TritonClient:
         ]
 
         if not ignore_eos:
-            assert (
-                eos_token_id is not None
-            ), "eos_token_id must be provided if ignore_eos is False"
+            assert eos_token_id is not None, (
+                "eos_token_id must be provided if ignore_eos is False"
+            )
             end_id_data = np.array([[eos_token_id]], dtype=np.uint32)
             inputs.append(prepare_grpc_tensor("end_id", end_id_data))
 

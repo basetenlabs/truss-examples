@@ -14,7 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import ipdb
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -128,7 +127,7 @@ class TritonLiteMLAFwd(nn.Module):
             eps,
         )
         if use_bias:
-            raise NotImplementedError(f"use_bias is not supported for TritonLiteMLA")
+            raise NotImplementedError("use_bias is not supported for TritonLiteMLA")
         self.qkv = nn.Linear(dim, dim * 3, bias=use_bias)
         self.proj = nn.Linear(dim, dim)
 

@@ -17,11 +17,7 @@
 import argparse
 import json
 import os
-import random
-import re
-import sys
 import time
-from pathlib import Path
 
 import datasets
 import numpy as np
@@ -32,7 +28,7 @@ from PIL import Image
 from pytorch_lightning import seed_everything
 from torchvision.transforms import ToTensor
 from torchvision.utils import make_grid
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 _CITATION = """\
 @article{ghosh2024geneval,
@@ -57,7 +53,6 @@ def set_env(seed=0):
 
 @torch.inference_mode()
 def visualize():
-
     tqdm_desc = f"{save_root.split('/')[-1]} Using GPU: {args.gpu_id}: {args.start_index}-{args.end_index}"
     for index, metadata in tqdm(
         list(enumerate(metadatas)), desc=tqdm_desc, position=args.gpu_id, leave=True
@@ -128,7 +123,7 @@ def visualize():
                     .numpy()
                 )
                 grid = Image.fromarray(grid.astype(np.uint8))
-                grid.save(os.path.join(outpath, f"grid.png"))
+                grid.save(os.path.join(outpath, "grid.png"))
                 del grid
         del all_samples
 
@@ -200,7 +195,7 @@ if __name__ == "__main__":
         f"{batch_size} > 1 is not available in GenEval"
     )
 
-    from diffusers import DiffusionPipeline, StableDiffusionPipeline
+    from diffusers import DiffusionPipeline
 
     model = DiffusionPipeline.from_pretrained(
         args.model_path, torch_dtype=torch.float16, use_safetensors=True, variant="fp16"

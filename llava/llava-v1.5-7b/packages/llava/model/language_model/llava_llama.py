@@ -70,7 +70,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         images: Optional[torch.FloatTensor] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
-
         if inputs_embeds is None:
             (
                 input_ids,
@@ -104,7 +103,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             input_ids,
             past_key_values=past_key_values,
             inputs_embeds=inputs_embeds,
-            **kwargs
+            **kwargs,
         )
         if images is not None:
             _inputs["images"] = images

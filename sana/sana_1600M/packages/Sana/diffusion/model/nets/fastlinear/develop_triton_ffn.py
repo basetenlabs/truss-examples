@@ -18,7 +18,6 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-import ipdb
 import torch
 from modules.mb_conv_pre_glu import MBConvPreGLU
 from modules.triton_mb_conv_pre_glu import TritonMBConvPreGLU
@@ -27,7 +26,6 @@ from modules.utils.dtype import get_dtype_from_str
 from modules.utils.export_onnx import export_onnx
 from omegaconf import OmegaConf
 from torch import nn
-from torch.nn import functional as F
 from torchprofile import profile_macs
 
 
@@ -219,7 +217,7 @@ def main():
             if not torch.allclose(output_float, ref_output):
                 correct = False
                 max_error_pos = (output_float - ref_output).abs().view(-1).argmax()
-                print(f"comparing forward results")
+                print("comparing forward results")
                 print(
                     f"max error: {(output_float - ref_output).abs().max()}, mean error: {(output_float - ref_output).abs().mean()}"
                 )
@@ -232,7 +230,7 @@ def main():
                 ):
                     assert name == ref_name
                     compare_results(f"{name} grad", param.grad, ref_param.grad)
-                compare_results(f"x grad", x.grad, ref_x.grad)
+                compare_results("x grad", x.grad, ref_x.grad)
         if correct:
             print("correct!")
     elif cfg.use_cuda_graph:
@@ -275,12 +273,12 @@ def main():
             g.replay()
         torch.cuda.synchronize()
         end_time = time.time()
-        print(f"using cuda graph:")
+        print("using cuda graph:")
         print(
             f"each step takes {(end_time - start_time) * 1000 / cfg.iterations:.2f} ms"
         )
         print(
-            f"max memory allocated: {torch.cuda.max_memory_allocated() / 1024 ** 3:.4f} GB\n{'-' * 80}"
+            f"max memory allocated: {torch.cuda.max_memory_allocated() / 1024**3:.4f} GB\n{'-' * 80}"
         )
     else:
         x = torch.randn(
@@ -317,7 +315,7 @@ def main():
         )
         # ipdb.set_trace()
         print(
-            f"max memory allocated: {torch.cuda.max_memory_allocated() / 1024 ** 3:.4f} GB\n{'-' * 80}"
+            f"max memory allocated: {torch.cuda.max_memory_allocated() / 1024**3:.4f} GB\n{'-' * 80}"
         )
 
 

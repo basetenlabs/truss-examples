@@ -14,7 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import ipdb
 import torch
 import triton
 import triton.language as tl
@@ -147,9 +146,7 @@ def vk_q_mm_relu_bwd_kernel(
         )  # n, C1
         q = tl.load(
             q_ptr + q_offs, mask=c_mask[:, None] & n_mask[None, :], other=0.0
-        ).to(
-            tl.float32
-        )  # C, n
+        ).to(tl.float32)  # C, n
         q_relu_mask = tl.load(
             q_relu_mask_ptr + q_offs, mask=c_mask[:, None] & n_mask[None, :], other=0
         )  # C, n

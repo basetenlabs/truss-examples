@@ -17,8 +17,6 @@
 
 import time
 
-import numpy as np
-import nvtx
 import tensorrt as trt
 import torch
 from helpers.stable_diffusion_pipeline import StableDiffusionPipeline
@@ -40,7 +38,7 @@ class InpaintPipeline(StableDiffusionPipeline):
         """
 
         if scheduler != "PNDM":
-            raise ValueError(f"Inpainting only supports PNDM scheduler")
+            raise ValueError("Inpainting only supports PNDM scheduler")
 
         super(InpaintPipeline, self).__init__(
             *args,

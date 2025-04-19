@@ -1,5 +1,3 @@
-import numpy as np
-import tensorrt as trt
 import torch
 from cuda import cudart
 from polygraphy.backend.common import bytes_from_path
@@ -52,7 +50,7 @@ class TRTClip:
         self._tensors["input_ids"].copy_(text_input_ids)
         noerror = self._context.execute_async_v3(self._stream)
         if not noerror:
-            raise ValueError(f"ERROR: clip inference failed.")
+            raise ValueError("ERROR: clip inference failed.")
         torch.cuda.synchronize()
 
         # [HACK] We should rebuild the clip trt engine to get rid of below hack.

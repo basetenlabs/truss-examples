@@ -117,9 +117,9 @@ def prepare_dpg_data(args):
         if current_id == previous_id:
             question_dict[current_id]["qid2tuple"][qid] = line.tuple
             question_dict[current_id]["qid2dependency"][qid] = dependency_list_int
-            question_dict[current_id]["qid2question"][
-                qid
-            ] = line.question_natural_language
+            question_dict[current_id]["qid2question"][qid] = (
+                line.question_natural_language
+            )
         else:
             question_dict[current_id] = dict(
                 qid2tuple={qid: line.tuple},
@@ -218,7 +218,6 @@ def compute_dpg_one_sample(args, question_dict, image_path, vqa_model, resolutio
 
 
 def main():
-
     accelerator = Accelerator()
 
     question_dict = prepare_dpg_data(args)

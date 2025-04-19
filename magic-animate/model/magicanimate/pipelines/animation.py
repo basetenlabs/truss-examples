@@ -20,7 +20,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from accelerate.utils import set_seed
-from diffusers import AutoencoderKL, DDIMScheduler, UniPCMultistepScheduler
+from diffusers import AutoencoderKL, DDIMScheduler
 from einops import rearrange
 from model.magicanimate.models.appearance_encoder import AppearanceEncoderModel
 from model.magicanimate.models.controlnet import ControlNetModel
@@ -37,7 +37,6 @@ from transformers import CLIPTextModel, CLIPTokenizer
 
 
 def main(args):
-
     *_, func_args = inspect.getargvalues(inspect.currentframe())
     func_args = dict(func_args)
 
@@ -320,7 +319,6 @@ def distributed_main(device_id, args):
 
 
 def run(args):
-
     if args.dist:
         args.world_size = max(1, torch.cuda.device_count())
         assert args.world_size <= torch.cuda.device_count()

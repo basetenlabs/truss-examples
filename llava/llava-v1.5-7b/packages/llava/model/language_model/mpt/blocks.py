@@ -45,7 +45,7 @@ class MPTBlock(nn.Module):
         norm_type: str = "low_precision_layernorm",
         verbose: int = 0,
         device: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         del kwargs
         super().__init__()

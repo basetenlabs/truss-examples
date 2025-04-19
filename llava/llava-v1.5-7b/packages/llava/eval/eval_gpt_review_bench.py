@@ -107,9 +107,9 @@ if __name__ == "__main__":
         role = rule["role"]
         content = (
             f"[Context]\n{cap_str}\n\n"
-            f'[Question]\n{ques["text"]}\n\n'
-            f'[{role} 1]\n{ans1["text"]}\n\n[End of {role} 1]\n\n'
-            f'[{role} 2]\n{ans2["text"]}\n\n[End of {role} 2]\n\n'
+            f"[Question]\n{ques['text']}\n\n"
+            f"[{role} 1]\n{ans1['text']}\n\n[End of {role} 1]\n\n"
+            f"[{role} 2]\n{ans2['text']}\n\n[End of {role} 2]\n\n"
             f"[System]\n{prompt}\n\n"
         )
         cur_js = {

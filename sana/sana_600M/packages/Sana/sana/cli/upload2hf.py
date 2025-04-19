@@ -49,8 +49,6 @@ def compute_lfs_hash(filename):
 
 
 def main():
-    import os
-
     os.environ["CURL_CA_BUNDLE"] = ""
 
     parser = argparse.ArgumentParser()

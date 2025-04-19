@@ -17,7 +17,6 @@
 import torch
 from flash_attn import flash_attn_func
 from torch import nn
-from torch.nn import functional as F
 
 
 class FlashAttention(nn.Module):

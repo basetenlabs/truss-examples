@@ -81,7 +81,6 @@ class Model:
             return self.stream(model_inputs, generation_args)
 
         with torch.no_grad():
-
             results = self._model(text_inputs=model_inputs, **generation_args)
 
             if len(results) > 0:

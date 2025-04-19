@@ -7,7 +7,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 class Model:
     def __init__(self, **kwargs):
-
         self._data_dir: Path = kwargs["data_dir"]
         self._config = kwargs["config"]
         # self._secrets = kwargs["secrets"]

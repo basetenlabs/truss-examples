@@ -13,7 +13,7 @@ from .norm import NORM_CLASS_REGISTRY
 def torch_default_param_init_fn_(module: nn.Module, verbose: int = 0, **kwargs):
     del kwargs
     if verbose > 1:
-        warnings.warn(f"Initializing network using module's reset_parameters attribute")
+        warnings.warn("Initializing network using module's reset_parameters attribute")
     if hasattr(module, "reset_parameters"):
         module.reset_parameters()
 
@@ -21,7 +21,7 @@ def torch_default_param_init_fn_(module: nn.Module, verbose: int = 0, **kwargs):
 def fused_init_helper_(module: nn.Module, init_fn_):
     _fused = getattr(module, "_fused", None)
     if _fused is None:
-        raise RuntimeError(f"Internal logic error")
+        raise RuntimeError("Internal logic error")
     (dim, splits) = _fused
     splits = (0, *splits, module.weight.size(dim))
     for s, e in zip(splits[:-1], splits[1:]):
@@ -43,7 +43,7 @@ def generic_param_init_fn_(
 ):
     del kwargs
     if verbose > 1:
-        warnings.warn(f"If model has bias parameters they are initialized to 0.")
+        warnings.warn("If model has bias parameters they are initialized to 0.")
     init_div_is_residual = init_div_is_residual
     if init_div_is_residual is False:
         div_is_residual = 1.0
@@ -64,7 +64,7 @@ def generic_param_init_fn_(
         if verbose > 1:
             warnings.warn(
                 f"Initializing _is_residual layers then dividing them by {div_is_residual:.3f}. "
-                + f"Set `init_div_is_residual: false` in init config to disable this."
+                + "Set `init_div_is_residual: false` in init config to disable this."
             )
     if isinstance(module, nn.Linear):
         if hasattr(module, "_fused"):
@@ -80,7 +80,7 @@ def generic_param_init_fn_(
         if emb_init_std is not None:
             std = emb_init_std
             if std == 0:
-                warnings.warn(f"Embedding layer initialized to 0.")
+                warnings.warn("Embedding layer initialized to 0.")
             emb_init_fn_ = partial(torch.nn.init.normal_, mean=0.0, std=std)
             if verbose > 1:
                 warnings.warn(
@@ -97,7 +97,7 @@ def generic_param_init_fn_(
                     warnings.warn(f"Embedding layer initialized to {lim[0]}.")
             else:
                 if lim == 0:
-                    warnings.warn(f"Embedding layer initialized to 0.")
+                    warnings.warn("Embedding layer initialized to 0.")
                 lim = [-lim, lim]
             (a, b) = lim
             emb_init_fn_ = partial(torch.nn.init.uniform_, a=a, b=b)
@@ -111,7 +111,7 @@ def generic_param_init_fn_(
     elif isinstance(module, tuple(set(NORM_CLASS_REGISTRY.values()))):
         if verbose > 1:
             warnings.warn(
-                f"Norm weights are set to 1. If norm layer has a bias it is initialized to 0."
+                "Norm weights are set to 1. If norm layer has a bias it is initialized to 0."
             )
         if hasattr(module, "weight") and module.weight is not None:
             torch.nn.init.ones_(module.weight)
@@ -290,7 +290,7 @@ def kaiming_uniform_param_init_fn_(
     del kwargs
     if verbose > 1:
         warnings.warn(
-            f"Using nn.init.kaiming_uniform_ init fn with parameters: "
+            "Using nn.init.kaiming_uniform_ init fn with parameters: "
             + f"a={init_gain}, mode={fan_mode}, nonlinearity={init_nonlinearity}"
         )
     kaiming_uniform_ = partial(
@@ -327,7 +327,7 @@ def kaiming_normal_param_init_fn_(
     del kwargs
     if verbose > 1:
         warnings.warn(
-            f"Using nn.init.kaiming_normal_ init fn with parameters: "
+            "Using nn.init.kaiming_normal_ init fn with parameters: "
             + f"a={init_gain}, mode={fan_mode}, nonlinearity={init_nonlinearity}"
         )
     kaiming_normal_ = partial(
@@ -363,7 +363,7 @@ def xavier_uniform_param_init_fn_(
     xavier_uniform_ = partial(torch.nn.init.xavier_uniform_, gain=init_gain)
     if verbose > 1:
         warnings.warn(
-            f"Using torch.nn.init.xavier_uniform_ init fn with parameters: "
+            "Using torch.nn.init.xavier_uniform_ init fn with parameters: "
             + f"gain={init_gain}"
         )
     generic_param_init_fn_(
@@ -392,7 +392,7 @@ def xavier_normal_param_init_fn_(
     xavier_normal_ = partial(torch.nn.init.xavier_normal_, gain=init_gain)
     if verbose > 1:
         warnings.warn(
-            f"Using torch.nn.init.xavier_normal_ init fn with parameters: "
+            "Using torch.nn.init.xavier_normal_ init fn with parameters: "
             + f"gain={init_gain}"
         )
     generic_param_init_fn_(

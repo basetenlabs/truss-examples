@@ -40,9 +40,9 @@ class DummyDataset(Dataset):
         tokenizer=None,
     ) -> None:
         super().__init__()
-        assert (
-            real_flag in self.FLAGS and fake_flag in self.FLAGS
-        ), f"CLIP Score only support modality of {self.FLAGS}. However, get {real_flag} and {fake_flag}"
+        assert real_flag in self.FLAGS and fake_flag in self.FLAGS, (
+            f"CLIP Score only support modality of {self.FLAGS}. However, get {real_flag} and {fake_flag}"
+        )
         self.gen_img_path = gen_img_path
         print(f"images are from {gen_img_path}")
         self.real_folder = self._load_img_from_path(real_path)

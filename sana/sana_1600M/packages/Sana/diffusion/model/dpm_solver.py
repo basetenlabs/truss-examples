@@ -403,16 +403,18 @@ def model_wrapper(
         if model_type == "noise":
             return output
         elif model_type == "x_start":
-            alpha_t, sigma_t = noise_schedule.marginal_alpha(
-                t_continuous
-            ), noise_schedule.marginal_std(t_continuous)
+            alpha_t, sigma_t = (
+                noise_schedule.marginal_alpha(t_continuous),
+                noise_schedule.marginal_std(t_continuous),
+            )
             return (x - expand_dims(alpha_t, x.dim()) * output) / expand_dims(
                 sigma_t, x.dim()
             )
         elif model_type == "v":
-            alpha_t, sigma_t = noise_schedule.marginal_alpha(
-                t_continuous
-            ), noise_schedule.marginal_std(t_continuous)
+            alpha_t, sigma_t = (
+                noise_schedule.marginal_alpha(t_continuous),
+                noise_schedule.marginal_std(t_continuous),
+            )
             return (
                 expand_dims(alpha_t, x.dim()) * output
                 + expand_dims(sigma_t, x.dim()) * x
@@ -421,9 +423,10 @@ def model_wrapper(
             sigma_t = noise_schedule.marginal_std(t_continuous)
             return -expand_dims(sigma_t, x.dim()) * output
         elif model_type == "flow":
-            _, sigma_t = noise_schedule.marginal_alpha(
-                t_continuous
-            ), noise_schedule.marginal_std(t_continuous)
+            _, sigma_t = (
+                noise_schedule.marginal_alpha(t_continuous),
+                noise_schedule.marginal_std(t_continuous),
+            )
             try:
                 noise = (1 - expand_dims(sigma_t, x.dim()).to(x)) * output + x
             except:
@@ -747,9 +750,10 @@ class DPM_Solver:
         Return the data prediction model (with corrector).
         """
         noise = self.noise_prediction_fn(x, t)
-        alpha_t, sigma_t = self.noise_schedule.marginal_alpha(
-            t
-        ), self.noise_schedule.marginal_std(t)
+        alpha_t, sigma_t = (
+            self.noise_schedule.marginal_alpha(t),
+            self.noise_schedule.marginal_std(t),
+        )
         x0 = (x - sigma_t * noise) / alpha_t
         if self.correcting_x0_fn is not None:
             x0 = self.correcting_x0_fn(x0, t)
@@ -845,21 +849,15 @@ class DPM_Solver:
             if steps % 3 == 0:
                 orders = [
                     3,
-                ] * (
-                    K - 2
-                ) + [2, 1]
+                ] * (K - 2) + [2, 1]
             elif steps % 3 == 1:
                 orders = [
                     3,
-                ] * (
-                    K - 1
-                ) + [1]
+                ] * (K - 1) + [1]
             else:
                 orders = [
                     3,
-                ] * (
-                    K - 1
-                ) + [2]
+                ] * (K - 1) + [2]
         elif order == 2:
             if steps % 2 == 0:
                 K = steps // 2
@@ -870,9 +868,7 @@ class DPM_Solver:
                 K = steps // 2 + 1
                 orders = [
                     2,
-                ] * (
-                    K - 1
-                ) + [1]
+                ] * (K - 1) + [1]
         elif order == 1:
             K = 1
             orders = [
@@ -921,9 +917,10 @@ class DPM_Solver:
         dims = x.dim()
         lambda_s, lambda_t = ns.marginal_lambda(s), ns.marginal_lambda(t)
         h = lambda_t - lambda_s
-        log_alpha_s, log_alpha_t = ns.marginal_log_mean_coeff(
-            s
-        ), ns.marginal_log_mean_coeff(t)
+        log_alpha_s, log_alpha_t = (
+            ns.marginal_log_mean_coeff(s),
+            ns.marginal_log_mean_coeff(t),
+        )
         sigma_s, sigma_t = ns.marginal_std(s), ns.marginal_std(t)
         alpha_t = torch.exp(log_alpha_t)
 
@@ -1215,9 +1212,10 @@ class DPM_Solver:
             ns.marginal_lambda(t_prev_0),
             ns.marginal_lambda(t),
         )
-        log_alpha_prev_0, log_alpha_t = ns.marginal_log_mean_coeff(
-            t_prev_0
-        ), ns.marginal_log_mean_coeff(t)
+        log_alpha_prev_0, log_alpha_t = (
+            ns.marginal_log_mean_coeff(t_prev_0),
+            ns.marginal_log_mean_coeff(t),
+        )
         sigma_prev_0, sigma_t = ns.marginal_std(t_prev_0), ns.marginal_std(t)
         alpha_t = torch.exp(log_alpha_t)
 
@@ -1280,9 +1278,10 @@ class DPM_Solver:
             ns.marginal_lambda(t_prev_0),
             ns.marginal_lambda(t),
         )
-        log_alpha_prev_0, log_alpha_t = ns.marginal_log_mean_coeff(
-            t_prev_0
-        ), ns.marginal_log_mean_coeff(t)
+        log_alpha_prev_0, log_alpha_t = (
+            ns.marginal_log_mean_coeff(t_prev_0),
+            ns.marginal_log_mean_coeff(t),
+        )
         sigma_prev_0, sigma_t = ns.marginal_std(t_prev_0), ns.marginal_std(t)
         alpha_t = torch.exp(log_alpha_t)
 
@@ -1501,9 +1500,10 @@ class DPM_Solver:
         Returns:
             xt with shape `(t_size, batch_size, *shape)`.
         """
-        alpha_t, sigma_t = self.noise_schedule.marginal_alpha(
-            t
-        ), self.noise_schedule.marginal_std(t)
+        alpha_t, sigma_t = (
+            self.noise_schedule.marginal_alpha(t),
+            self.noise_schedule.marginal_std(t),
+        )
         if noise is None:
             noise = torch.randn((t.shape[0], *x.shape), device=x.device)
         x = x.reshape((-1, *x.shape))
@@ -1535,9 +1535,9 @@ class DPM_Solver:
         """
         t_0 = 1.0 / self.noise_schedule.total_N if t_start is None else t_start
         t_T = self.noise_schedule.T if t_end is None else t_end
-        assert (
-            t_0 > 0 and t_T > 0
-        ), "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        assert t_0 > 0 and t_T > 0, (
+            "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        )
         return self.sample(
             x,
             steps=steps,
@@ -1681,9 +1681,9 @@ class DPM_Solver:
         """
         t_0 = 1.0 / self.noise_schedule.total_N if t_end is None else t_end
         t_T = self.noise_schedule.T if t_start is None else t_start
-        assert (
-            t_0 > 0 and t_T > 0
-        ), "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        assert t_0 > 0 and t_T > 0, (
+            "Time range needs to be greater than 0. For discrete-time DPMs, it needs to be in [1 / N, 1], where N is the length of betas array"
+        )
         if return_intermediate:
             assert method in [
                 "multistep",

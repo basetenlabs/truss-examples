@@ -8,21 +8,16 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from ByteDance or
 # its affiliates is strictly prohibited.
-import argparse
-import csv
 import datetime
-import glob
 import inspect
-import math
 import os
 from collections import OrderedDict
-from pathlib import Path
 
 import numpy as np
 import torch
 from accelerate.utils import set_seed
-from diffusers import AutoencoderKL, DDIMScheduler, UniPCMultistepScheduler
-from einops import rearrange, repeat
+from diffusers import AutoencoderKL, DDIMScheduler
+from einops import rearrange
 from model.magicanimate.models.appearance_encoder import AppearanceEncoderModel
 from model.magicanimate.models.controlnet import ControlNetModel
 from model.magicanimate.models.mutual_self_attention import ReferenceAttentionControl
@@ -32,8 +27,6 @@ from model.magicanimate.utils.util import save_videos_grid
 from model.magicanimate.utils.videoreader import VideoReader
 from omegaconf import OmegaConf
 from PIL import Image
-from safetensors import safe_open
-from tqdm import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
 
 
@@ -234,7 +227,7 @@ class MagicAnimate:
         samples_per_video = torch.cat(samples_per_video)
 
         time_str = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        savedir = f"demo/outputs"
+        savedir = "demo/outputs"
         animation_path = f"{savedir}/{time_str}.mp4"
 
         os.makedirs(savedir, exist_ok=True)

@@ -12,7 +12,7 @@ from PIL import Image
 from pytorch_lightning import seed_everything
 from torchvision.transforms import ToTensor
 from torchvision.utils import make_grid
-from tqdm import tqdm, trange
+from tqdm import trange
 
 torch.set_grad_enabled(False)
 
@@ -164,7 +164,7 @@ def main(opt):
                 # to image
                 grid = 255.0 * rearrange(grid, "c h w -> h w c").cpu().numpy()
                 grid = Image.fromarray(grid.astype(np.uint8))
-                grid.save(os.path.join(outpath, f"grid.png"))
+                grid.save(os.path.join(outpath, "grid.png"))
                 del grid
         del all_samples
 

@@ -16,11 +16,9 @@
 # limitations under the License.
 #
 
-import math
 import os
 import random
 from collections import OrderedDict
-from copy import copy
 from io import BytesIO
 
 import numpy as np
@@ -289,7 +287,7 @@ class Engine:
                 # do inference before CUDA graph capture
                 noerror = self.context.execute_async_v3(stream.ptr)
                 if not noerror:
-                    raise ValueError(f"ERROR: inference failed.")
+                    raise ValueError("ERROR: inference failed.")
                 # capture cuda graph
                 CUASSERT(
                     cudart.cudaStreamBeginCapture(
@@ -305,7 +303,7 @@ class Engine:
         else:
             noerror = self.context.execute_async_v3(stream.ptr)
             if not noerror:
-                raise ValueError(f"ERROR: inference failed.")
+                raise ValueError("ERROR: inference failed.")
 
         return self.tensors
 
@@ -1271,9 +1269,7 @@ class PNDMScheduler:
             self.beta_cumprod_prev
         ) ** (0.5) + (
             self.alphas_cumprod * self.beta_cumprod * self.alphas_cumprod_prev
-        ) ** (
-            0.5
-        )
+        ) ** (0.5)
 
         timesteps = self.timesteps.cpu().long()
 
@@ -1369,7 +1365,7 @@ def save_image(images, image_path_dir, image_name_prefix):
             + str(random.randint(1000, 9999))
             + ".png",
         )
-        print(f"Saving image {i+1} / {images.shape[0]} to: {image_path}")
+        print(f"Saving image {i + 1} / {images.shape[0]} to: {image_path}")
         output_image_paths.append(image_path)
         Image.fromarray(images[i]).save(image_path)
     return output_image_paths

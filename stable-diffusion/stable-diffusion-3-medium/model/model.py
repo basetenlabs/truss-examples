@@ -5,8 +5,6 @@ from io import BytesIO
 import numpy as np
 import torch
 from diffusers import (
-    FlowMatchEulerDiscreteScheduler,
-    SD3Transformer2DModel,
     StableDiffusion3Pipeline,
 )
 from PIL import Image

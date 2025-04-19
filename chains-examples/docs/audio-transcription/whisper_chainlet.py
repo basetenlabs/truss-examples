@@ -15,7 +15,6 @@ def base64_to_wav(base64_string, output_file_path):
 
 @chains.mark_entrypoint
 class WhisperModel(chains.ChainletBase):
-
     remote_config = chains.RemoteConfig(
         docker_image=chains.DockerImage(
             base_image="baseten/truss-server-base:3.10-gpu-v0.9.0",

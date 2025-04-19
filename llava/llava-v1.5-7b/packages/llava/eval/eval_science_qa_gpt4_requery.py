@@ -125,7 +125,7 @@ if __name__ == "__main__":
             else:
                 print(
                     f"""
-Question ({args.options[prob['answer']]}): {our_predictions[prob_id]['prompt']}
+Question ({args.options[prob["answer"]]}): {our_predictions[prob_id]["prompt"]}
 Our ({our_answer}): {our_pred}
 GPT-4 ({gpt4_answer}): {gpt4_pred}
 Requery ({requery_answer}): {requery_pred}
@@ -138,22 +138,22 @@ print("=====================================")
 
     total = results["total"]
     print(
-        f'Total: {total}, Our-Correct: {results["our_correct"]}, Accuracy: {results["our_correct"] / total * 100:.2f}%'
+        f"Total: {total}, Our-Correct: {results['our_correct']}, Accuracy: {results['our_correct'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, GPT-4-Correct: {results["gpt4_correct"]}, Accuracy: {results["gpt4_correct"] / total * 100:.2f}%'
+        f"Total: {total}, GPT-4-Correct: {results['gpt4_correct']}, Accuracy: {results['gpt4_correct'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, GPT-4 NO-ANS (RANDOM): {results["gpt4_failed"]}, Percentage: {results["gpt4_failed"] / total * 100:.2f}%'
+        f"Total: {total}, GPT-4 NO-ANS (RANDOM): {results['gpt4_failed']}, Percentage: {results['gpt4_failed'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, GPT-4-OursVisual-Correct: {results["gpt4_ourvisual_correct"]}, Accuracy: {results["gpt4_ourvisual_correct"] / total * 100:.2f}%'
+        f"Total: {total}, GPT-4-OursVisual-Correct: {results['gpt4_ourvisual_correct']}, Accuracy: {results['gpt4_ourvisual_correct'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, Requery-Correct: {results["requery_correct"]}, Accuracy: {results["requery_correct"] / total * 100:.2f}%'
+        f"Total: {total}, Requery-Correct: {results['requery_correct']}, Accuracy: {results['requery_correct'] / total * 100:.2f}%"
     )
     print(
-        f'Total: {total}, Correct upper: {results["correct_upperbound"]}, Accuracy: {results["correct_upperbound"] / total * 100:.2f}%'
+        f"Total: {total}, Correct upper: {results['correct_upperbound']}, Accuracy: {results['correct_upperbound'] / total * 100:.2f}%"
     )
 
     sqa_results["acc"] = results["requery_correct"] / total * 100

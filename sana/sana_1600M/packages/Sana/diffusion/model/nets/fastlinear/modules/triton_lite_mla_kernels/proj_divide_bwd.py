@@ -14,7 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-import ipdb
 import torch
 import triton
 import triton.language as tl
@@ -381,9 +380,9 @@ def proj_divide_bwd(
 
     B_, N_, H_, C1_ = vk_q.shape
     C_ = C1_ - 1
-    assert (
-        C_ == 32
-    ), "currently only support C=32, to ensure reduction for C in each thread"
+    assert C_ == 32, (
+        "currently only support C=32, to ensure reduction for C in each thread"
+    )
 
     M, K, N = B_ * N_, H_ * C_, H_ * C_
 

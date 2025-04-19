@@ -24,10 +24,7 @@ import math
 import os
 import os.path as osp
 import random
-import re
 import sqlite3
-import sys
-import tempfile
 import uuid
 import warnings
 from functools import lru_cache, partial
@@ -140,7 +137,7 @@ def group_by_key(names):
             print(f"Warning: Ignoring file {fname} (no '.')")
             continue
         if fname == ".":
-            print(f"Warning: Ignoring the '.' file.")
+            print("Warning: Ignoring the '.' file.")
             continue
         key, ext = splitname(fname)
         if key not in kmaps:
@@ -298,9 +295,9 @@ class IndexedTarSamples:
 
         # check that the number of samples is correct
         if expected_size is not None:
-            assert (
-                len(self) == expected_size
-            ), f"Expected {expected_size} samples, got {len(self)}"
+            assert len(self) == expected_size, (
+                f"Expected {expected_size} samples, got {len(self)}"
+            )
 
         self.uuid = str(uuid.uuid4())
 
@@ -563,21 +560,19 @@ class ShardListDataset(Dataset[T]):
             self.cache_dir = None
             self.localname = localname
         else:
-            import getpass
-
             # when no cache dir or localname are given, use the cache from the environment
-            self.cache_dir = os.environ.get("WIDS_CACHE", f"~/.cache/_wids_cache")
+            self.cache_dir = os.environ.get("WIDS_CACHE", "~/.cache/_wids_cache")
             self.cache_dir = osp.expanduser(self.cache_dir)
             self.localname = default_localname(self.cache_dir)
 
         self.data_info = (
-            f"[WebShardedList] {str(shards)}, base: {self.base,}, name: {self.spec.get('name')}, "
+            f"[WebShardedList] {str(shards)}, base: {(self.base,)}, name: {self.spec.get('name')}, "
             f"nfiles: {str(len(self.shards))}"
         )
         if True or int(os.environ.get("WIDS_VERBOSE", 0)):
             nbytes = sum(shard.get("filesize", 0) for shard in self.shards)
             nsamples = sum(shard["nsamples"] for shard in self.shards)
-            self.data_info += f"nbytes: {str(nbytes)}, samples: {str(nsamples),}, cache: {self.cache_dir} "
+            self.data_info += f"nbytes: {str(nbytes)}, samples: {(str(nsamples),)}, cache: {self.cache_dir} "
             # print(
             #     "[WebShardedList]",
             #     str(shards),
@@ -779,21 +774,19 @@ class ShardListDatasetMulti(ShardListDataset):
             self.cache_dir = None
             self.localname = localname
         else:
-            import getpass
-
             # when no cache dir or localname are given, use the cache from the environment
-            self.cache_dir = os.environ.get("WIDS_CACHE", f"~/.cache/_wids_cache")
+            self.cache_dir = os.environ.get("WIDS_CACHE", "~/.cache/_wids_cache")
             self.cache_dir = osp.expanduser(self.cache_dir)
             self.localname = default_localname(self.cache_dir)
 
         self.data_info = (
-            f"[WebShardedList] {str(shards)}, base: {self.base,}, name: {self.spec.get('name')}, "
+            f"[WebShardedList] {str(shards)}, base: {(self.base,)}, name: {self.spec.get('name')}, "
             f"nfiles: {str(len(self.shards))}"
         )
         if True or int(os.environ.get("WIDS_VERBOSE", 0)):
             nbytes = sum(shard.get("filesize", 0) for shard in self.shards)
             nsamples = sum(shard["nsamples"] for shard in self.shards)
-            self.data_info += f"nbytes: {str(nbytes)}, samples: {str(nsamples),}, cache: {self.cache_dir} "
+            self.data_info += f"nbytes: {str(nbytes)}, samples: {(str(nsamples),)}, cache: {self.cache_dir} "
         self.transformations = interpret_transformations(transformations)
 
         if lru_size > 200:

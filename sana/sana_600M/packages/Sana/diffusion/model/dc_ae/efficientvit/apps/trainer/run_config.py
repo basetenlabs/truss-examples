@@ -60,15 +60,15 @@ class RunConfig:
             if hasattr(clas, "__annotations__"):
                 annotations.update(clas.__annotations__)
         for k, k_type in annotations.items():
-            assert hasattr(
-                self, k
-            ), f"Key {k} with type {k_type} required for initialization."
+            assert hasattr(self, k), (
+                f"Key {k} with type {k_type} required for initialization."
+            )
             attr = getattr(self, k)
             if k in self.none_allowed:
                 k_type = (k_type, type(None))
-            assert isinstance(
-                attr, k_type
-            ), f"Key {k} must be type {k_type}, provided={attr}."
+            assert isinstance(attr, k_type), (
+                f"Key {k} must be type {k_type}, provided={attr}."
+            )
 
         self.global_step = 0
         self.batch_per_epoch = 1

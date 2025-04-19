@@ -18,6 +18,7 @@
 This file contains primitives for multi-gpu communication.
 This is useful when doing distributed training.
 """
+
 import gc
 import os
 import pickle
@@ -70,9 +71,9 @@ def get_local_proc_group(group_size=8):
     world_size = get_world_size()
     if world_size <= group_size or group_size == 1:
         return None
-    assert (
-        world_size % group_size == 0
-    ), f"world size ({world_size}) should be evenly divided by group size ({group_size})."
+    assert world_size % group_size == 0, (
+        f"world size ({world_size}) should be evenly divided by group size ({group_size})."
+    )
     process_groups = getattr(get_local_proc_group, "process_groups", dict())
     if group_size not in process_groups:
         num_groups = dist.get_world_size() // group_size
@@ -311,9 +312,9 @@ def clip_grad_norm_(
 ) -> None:
     self._lazy_init()
     self._wait_for_previous_optim_step()
-    assert (
-        self._is_root
-    ), "clip_grad_norm should only be called on the root (parent) instance"
+    assert self._is_root, (
+        "clip_grad_norm should only be called on the root (parent) instance"
+    )
     self._assert_state(TrainingState_.IDLE)
 
     max_norm = float(max_norm)

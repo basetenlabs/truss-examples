@@ -42,13 +42,13 @@ class ASRBase:
         self.model = self.load_model(modelsize, cache_dir, model_dir)
 
     def load_model(self, modelsize, cache_dir):
-        raise NotImplemented("must be implemented in the child class")
+        raise NotImplementedError("must be implemented in the child class")
 
     def transcribe(self, audio, init_prompt=""):
-        raise NotImplemented("must be implemented in the child class")
+        raise NotImplementedError("must be implemented in the child class")
 
     def use_vad(self):
-        raise NotImplemented("must be implemented in the child class")
+        raise NotImplementedError("must be implemented in the child class")
 
 
 class WhisperTimestampedASR(ASRBase):
@@ -136,7 +136,6 @@ class FasterWhisperASR(ASRBase):
         return model
 
     def transcribe(self, audio, init_prompt=""):
-
         # tested: beam_size=5 is faster and better than 1 (on one 200 second document from En ESIC, min chunk 0.01)
         segments, info = self.model.transcribe(
             audio,
@@ -347,7 +346,7 @@ class OnlineASRProcessor:
             # while k>0 and self.commited[k][1] > l:
             #    k -= 1
             # t = self.commited[k][1]
-            print(f"chunking segment", file=self.logfile)
+            print("chunking segment", file=self.logfile)
             # self.chunk_at(t)
 
         print(
@@ -382,7 +381,6 @@ class OnlineASRProcessor:
         t = self.commited[-1][1]
 
         if len(ends) > 1:
-
             e = ends[-2] + self.buffer_time_offset
             while len(ends) > 2 and e > t:
                 ends.pop(-1)
@@ -391,9 +389,9 @@ class OnlineASRProcessor:
                 print(f"--- segment chunked at {e:2.2f}", file=self.logfile)
                 self.chunk_at(e)
             else:
-                print(f"--- last segment not within commited area", file=self.logfile)
+                print("--- last segment not within commited area", file=self.logfile)
         else:
-            print(f"--- not enough segments to chunk", file=self.logfile)
+            print("--- not enough segments to chunk", file=self.logfile)
 
     def chunk_at(self, time):
         """trims the hypothesis and audio buffer at "time" """
@@ -467,9 +465,10 @@ WHISPER_LANG_CODES = "af,am,ar,as,az,ba,be,bg,bn,bo,br,bs,ca,cs,cy,da,de,el,en,e
 def create_tokenizer(lan):
     """returns an object that has split function that works like the one of MosesTokenizer"""
 
-    assert (
-        lan in WHISPER_LANG_CODES
-    ), "language must be Whisper's supported lang code: " + " ".join(WHISPER_LANG_CODES)
+    assert lan in WHISPER_LANG_CODES, (
+        "language must be Whisper's supported lang code: "
+        + " ".join(WHISPER_LANG_CODES)
+    )
 
     if lan == "uk":
         import tokenize_uk
@@ -588,7 +587,6 @@ def add_shared_args(parser):
 ## main:
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser()

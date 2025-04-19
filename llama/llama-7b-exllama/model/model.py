@@ -1,5 +1,3 @@
-import os
-import sys
 import time
 
 from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Tokenizer

@@ -84,7 +84,9 @@ With BEI you get the following benefits:
         endpoint = (
             "/v1/embeddings"
             if isinstance(dp.task, Embedder)
-            else "/predict" if isinstance(dp.task, Predictor) else "/rerank"
+            else "/predict"
+            if isinstance(dp.task, Predictor)
+            else "/rerank"
         )
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
@@ -163,7 +165,9 @@ For larger models, we recommend downloading the weights at runtime for faster au
         predict_endpoint = (
             "/v1/embeddings"
             if isinstance(dp.task, Embedder)
-            else "/predict" if isinstance(dp.task, Predictor) else "/rerank"
+            else "/predict"
+            if isinstance(dp.task, Predictor)
+            else "/rerank"
         )
         return TrussConfig(
             base_image=dict(image=docker_image),
@@ -1088,9 +1092,9 @@ def llamalike_spec_dec(
     config_regular_hf = AutoConfig.from_pretrained(repoid, trust_remote_code=True)
     config_spec_hf = AutoConfig.from_pretrained(spec_repo, trust_remote_code=True)
     # verify vocab size is the same
-    assert (
-        config_regular_hf.vocab_size == config_spec_hf.vocab_size
-    ), f"vocab size mismatch for spec-dec: {config_regular_hf.vocab_size} vs {config_spec_hf.vocab_size}"
+    assert config_regular_hf.vocab_size == config_spec_hf.vocab_size, (
+        f"vocab size mismatch for spec-dec: {config_regular_hf.vocab_size} vs {config_spec_hf.vocab_size}"
+    )
     return config
 
 

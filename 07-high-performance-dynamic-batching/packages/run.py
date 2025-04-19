@@ -93,7 +93,6 @@ class WhisperEncoding:
         return session
 
     def get_audio_features(self, mel):
-
         input_lengths = torch.tensor(
             [mel.shape[2] // 2 for _ in range(mel.shape[0])],
             dtype=torch.int32,
@@ -128,7 +127,6 @@ class WhisperEncoding:
 
 class WhisperDecoding:
     def __init__(self, engine_dir, runtime_mapping, debug_mode=False):
-
         self.decoder_config = self.get_config(engine_dir)
         self.decoder_generation_session = self.get_session(
             engine_dir, runtime_mapping, debug_mode
@@ -424,15 +422,15 @@ if __name__ == "__main__":
             and args.dataset == "hf-internal-testing/librispeech_asr_dummy"
             and not args.input_file
         ):
-            assert (
-                total_error_rate <= 2.5
-            ), f"Word Error rate using whisper large-v3 model should be less than 2.5% but got {total_error_rate}"
+            assert total_error_rate <= 2.5, (
+                f"Word Error rate using whisper large-v3 model should be less than 2.5% but got {total_error_rate}"
+            )
 
     rtf = elapsed / total_duration
     s = f"RTF: {rtf:.4f}\n"
     s += f"total_duration: {total_duration:.3f} seconds\n"
-    s += f"({total_duration/3600:.2f} hours)\n"
-    s += f"processing time: {elapsed:.3f} seconds " f"({elapsed/3600:.2f} hours)\n"
+    s += f"({total_duration / 3600:.2f} hours)\n"
+    s += f"processing time: {elapsed:.3f} seconds ({elapsed / 3600:.2f} hours)\n"
     s += f"batch size: {args.batch_size}\n"
     s += f"num_beams: {args.num_beams}\n"
     print(s)

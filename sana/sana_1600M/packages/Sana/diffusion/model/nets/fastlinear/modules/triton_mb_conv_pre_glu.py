@@ -19,10 +19,9 @@ from torch import nn
 
 from .nn.act import build_act, get_act_name
 from .nn.conv import ConvLayer
-from .nn.norm import build_norm, get_norm_name
-from .triton_mb_conv_pre_glu_kernels.depthwise_conv_fwd import depthwise_conv_fwd
+from .nn.norm import get_norm_name
 from .triton_mb_conv_pre_glu_kernels.linear_glu_fwd import linear_glu_fwd
-from .utils.model import get_same_padding, val2tuple
+from .utils.model import val2tuple
 
 
 class TritonMBConvPreGLU(nn.Module):

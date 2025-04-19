@@ -1,7 +1,5 @@
-import json
 import subprocess
 import time
-from typing import Any, Dict, List
 
 import httpx  # Changed from aiohttp to httpx
 
@@ -55,7 +53,6 @@ class Model:
             )
 
     async def predict(self, model_input):
-
         # if the key metrics: true is present, let's return the vLLM /metrics endpoint
         if model_input.get("metrics", False):
             response = await self._client.get(f"{self.vllm_base_url}/metrics")

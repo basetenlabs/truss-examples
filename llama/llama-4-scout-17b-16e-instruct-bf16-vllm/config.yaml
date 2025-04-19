@@ -1,6 +1,6 @@
 base_image:
   image: vllm/vllm-openai:v0.8.4
-build_commands: 
+build_commands:
   - pip install git+https://github.com/huggingface/transformers.git hf-xet
 model_metadata:
   repo_id: meta-llama/Llama-4-Scout-17B-16E-Instruct

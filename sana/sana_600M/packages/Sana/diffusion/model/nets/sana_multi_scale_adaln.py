@@ -302,9 +302,10 @@ class SanaMSAdaLN(Sana):
         t = self.t_embedder(timestep)  # (N, D)
 
         if self.micro_conditioning:
-            c_size, ar = data_info["img_hw"].to(self.dtype), data_info[
-                "aspect_ratio"
-            ].to(self.dtype)
+            c_size, ar = (
+                data_info["img_hw"].to(self.dtype),
+                data_info["aspect_ratio"].to(self.dtype),
+            )
             csize = self.csize_embedder(c_size, bs)  # (N, D)
             ar = self.ar_embedder(ar, bs)  # (N, D)
             t = t + torch.cat([csize, ar], dim=1)

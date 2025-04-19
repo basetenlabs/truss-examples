@@ -128,7 +128,6 @@ class VideoReader:
         return float(self.container.streams.video[0].guessed_rate)
 
     def sample(self, debug=False):
-
         if self.container is None:
             raise RuntimeError("video stream not found")
         sample = dict()

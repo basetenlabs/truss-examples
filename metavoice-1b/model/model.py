@@ -16,7 +16,7 @@ from fam.llm.sample import (
     get_second_stage_path,
     sample_utterance,
 )
-from fam.llm.utils import check_audio_file, get_default_dtype, get_default_use_kv_cache
+from fam.llm.utils import get_default_dtype, get_default_use_kv_cache
 from huggingface_hub import snapshot_download
 from scipy.io import wavfile
 

@@ -18,8 +18,8 @@ import torch
 from torch import nn
 
 from ..utils.model import get_same_padding
-from .act import build_act, get_act_name
-from .norm import build_norm, get_norm_name
+from .act import build_act
+from .norm import build_norm
 
 
 class ConvLayer(nn.Module):

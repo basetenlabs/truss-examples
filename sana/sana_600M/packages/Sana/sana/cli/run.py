@@ -17,7 +17,6 @@
 import argparse
 import datetime
 import os
-import os.path as osp
 import subprocess
 
 from termcolor import colored
