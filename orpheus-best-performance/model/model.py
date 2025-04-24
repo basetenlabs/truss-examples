@@ -183,7 +183,7 @@ class Model:
         model_input["temperature"] = model_input.get("temperature", 0.6)
         model_input["top_p"] = model_input.get("top_p", 0.8)
         model_input["max_tokens"] = model_input.get("max_tokens", 10000)
-        model_input["end_id"] = model_input.get("end_id", [128258])
+        model_input["end_id"] = model_input.get("end_id", 128258)
         # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from Auttokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
