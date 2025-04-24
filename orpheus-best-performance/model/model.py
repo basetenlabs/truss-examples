@@ -212,11 +212,7 @@ class Model:
         model_input["top_p"] = model_input.get("top_p", 0.8)
         model_input["max_tokens"] = model_input.get("max_tokens", 10000)
         if model_input.get("end_id") is not None:
-            return fastapi.responses.JSONResponse(
-                content={
-                    "error": "end_id is not supported in this model, set to 128258"
-                }
-            )
+            print("Not using end_id from model_input:", model_input["end_id"])
         model_input["end_id"] = 128258
         # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
