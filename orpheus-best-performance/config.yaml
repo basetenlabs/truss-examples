@@ -1,14 +1,20 @@
+build_commands:
+  - apt-get update && apt-get install git git-lfs -y
+  - git lfs install
+  - git clone https://huggingface.co/hubertsiuzdak/snac_24khz /app/snac_24khz
 environment_variables:
-  ENABLE_EXECUTOR_API: 1
-external_package_dirs: []
+  ENABLE_EXECUTOR_API: "1"
 model_metadata:
   example_model_input:
-    prompt: "In todays fast-paced world, finding balance between work and personal life is more important than ever. With the constant demands of technology, remote communication, "
     max_tokens: 10000
-    voice: "tara"
+    prompt:
+      "In todays fast-paced world, finding balance between work and personal
+      life is more important than ever. With the constant demands of technology, remote
+      communication, "
+    voice: tara
   tags:
     - force-legacy-api-non-openai-compatible
-model_name: Orpheus
+model_name: Orpheus-3b
 python_version: py39
 requirements:
   - snac==1.2.1
@@ -21,11 +27,6 @@ resources:
   use_gpu: true
 secrets:
   hf_access_token: null
-build_commands: # snac model is ~80MB, so we can just download it
-  - "apt-get update && apt-get install git git-lfs -y"
-  - "git lfs install"
-  - "git clone https://huggingface.co/hubertsiuzdak/snac_24khz /app/snac_24khz"
-system_packages: []
 trt_llm:
   build:
     base_model: llama
@@ -33,19 +34,20 @@ trt_llm:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
       source: HF
-    max_seq_len: 32768
-    max_num_tokens: 16384
-    num_builder_gpus: 1
     max_batch_size: 64
+    max_num_tokens: 16384
+    max_seq_len: 32768
+    num_builder_gpus: 1
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    tensor_parallel_count: 1
     # speculator:
     #   lookahead_ngram_size: 3
     #   lookahead_verification_set_size: 3
     #   lookahead_windows_size: 3
+    #   num_draft_tokens: 11
     #   speculative_decoding_mode: LOOKAHEAD_DECODING
+    tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.70
+    kv_cache_free_gpu_mem_fraction: 0.7
