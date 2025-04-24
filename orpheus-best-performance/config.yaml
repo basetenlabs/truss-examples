@@ -30,8 +30,8 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: canopylabs/orpheus-3b-0.1-ft
-      revision: 6fc2550cf2e7236861b920e91769a4f93fd23283
+      repo: baseten/orpheus-3b-0.1-ft
+      revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
       source: HF
     max_seq_len: 32768
     max_num_tokens: 16384
