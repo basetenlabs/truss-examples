@@ -4,21 +4,24 @@ import torch
 import fastapi
 from snac import SNAC
 import struct
+from pathlib import Path
 import numpy as np
 from fastapi.responses import StreamingResponse
+
 model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
 snac_device = "cuda"
 model = model.to(snac_device)
+
 
 def turn_token_into_id(token_string, index):
     """Extract and convert the last custom token ID from a string."""
     token_string = token_string.strip()
     last_token_start = token_string.rfind("<custom_token_")
-    
+
     if last_token_start == -1:
         print("No token found in the string")
         return None
-    
+
     last_token = token_string[last_token_start:]
     if last_token.startswith("<custom_token_") and last_token.endswith(">"):
         try:
@@ -28,13 +31,14 @@ def turn_token_into_id(token_string, index):
             return None
     return None
 
+
 async def tokens_decoder(token_gen):
     """Corrected to handle both async and sync iterables."""
     buffer = []
     count = 0
 
     # Check if token_gen is an async iterable; if not, iterate synchronously.
-    if hasattr(token_gen, '__aiter__'):
+    if hasattr(token_gen, "__aiter__"):
         async for token_sim in token_gen:
             token = turn_token_into_id(token_sim, count)
             if token is not None and token > 0:
@@ -73,9 +77,9 @@ def convert_to_audio(multiframe, count):
     """Convert a list of token IDs into audio bytes efficiently."""
     if len(multiframe) < 7:
         return None
-    
+
     num_frames = len(multiframe) // 7
-    frame = multiframe[:num_frames * 7]
+    frame = multiframe[: num_frames * 7]
 
     codes_0 = torch.zeros(num_frames, device=snac_device, dtype=torch.int32)
     codes_1 = torch.zeros(2 * num_frames, device=snac_device, dtype=torch.int32)
@@ -93,14 +97,19 @@ def convert_to_audio(multiframe, count):
 
     codes = [codes_0.unsqueeze(0), codes_1.unsqueeze(0), codes_2.unsqueeze(0)]
 
-    if (torch.any(codes[0] < 0) or torch.any(codes[0] > 4096) or
-        torch.any(codes[1] < 0) or torch.any(codes[1] > 4096) or
-        torch.any(codes[2] < 0) or torch.any(codes[2] > 4096)):
+    if (
+        torch.any(codes[0] < 0)
+        or torch.any(codes[0] > 4096)
+        or torch.any(codes[1] < 0)
+        or torch.any(codes[1] > 4096)
+        or torch.any(codes[2] < 0)
+        or torch.any(codes[2] > 4096)
+    ):
         return None
 
     with torch.inference_mode():
         audio_hat = model.decode(codes)
-    
+
     audio_slice = audio_hat[:, :, 2048:4096]
     detached_audio = audio_slice.detach().cpu()
     audio_np = detached_audio.numpy()
@@ -113,37 +122,59 @@ class Model:
     def __init__(self, trt_llm, **kwargs) -> None:
         self._secrets = kwargs["secrets"]
         self._engine = trt_llm["engine"]
+        self._data_dir = kwargs["data_dir"]
         self._model = None
         self._tokenizer = None
 
     def load(self) -> None:
-        self._tokenizer = AutoTokenizer.from_pretrained("canopylabs/orpheus-tts-0.1-finetune-prod", token=self._secrets["hf_access_token"])
-    
+        self._tokenizer = AutoTokenizer.from_pretrained(
+            Path(self._data_dir) / "tokenization"
+        )
+
     def create_wav_header(self, sample_rate=24000, bits_per_sample=16, channels=1):
         """Create a WAV file header."""
         byte_rate = sample_rate * channels * bits_per_sample // 8
         block_align = channels * bits_per_sample // 8
         data_size = 0
         header = struct.pack(
-            '<4sI4s4sIHHIIHH4sI',
-            b'RIFF', 36 + data_size, b'WAVE', b'fmt ', 16, 1, channels,
-            sample_rate, byte_rate, block_align, bits_per_sample, b'data', data_size
+            "<4sI4s4sIHHIIHH4sI",
+            b"RIFF",
+            36 + data_size,
+            b"WAVE",
+            b"fmt ",
+            16,
+            1,
+            channels,
+            sample_rate,
+            byte_rate,
+            block_align,
+            bits_per_sample,
+            b"data",
+            data_size,
         )
         return header
-    
+
     def _format_prompt(self, prompt, voice="tara"):
         if voice:
             adapted_prompt = f"{voice}: {prompt}"
             prompt_tokens = self._tokenizer(adapted_prompt, return_tensors="pt")
             start_token = torch.tensor([[128259]], dtype=torch.int64)
-            end_tokens = torch.tensor([[128009, 128260, 128261, 128257]], dtype=torch.int64)
-            all_input_ids = torch.cat([start_token, prompt_tokens.input_ids, end_tokens], dim=1)
+            end_tokens = torch.tensor(
+                [[128009, 128260, 128261, 128257]], dtype=torch.int64
+            )
+            all_input_ids = torch.cat(
+                [start_token, prompt_tokens.input_ids, end_tokens], dim=1
+            )
             return self._tokenizer.decode(all_input_ids[0])
         else:
             prompt_tokens = self._tokenizer(prompt, return_tensors="pt")
             start_token = torch.tensor([[128259]], dtype=torch.int64)
-            end_tokens = torch.tensor([[128009, 128260, 128261, 128257]], dtype=torch.int64)
-            all_input_ids = torch.cat([start_token, prompt_tokens.input_ids, end_tokens], dim=1)
+            end_tokens = torch.tensor(
+                [[128009, 128260, 128261, 128257]], dtype=torch.int64
+            )
+            all_input_ids = torch.cat(
+                [start_token, prompt_tokens.input_ids, end_tokens], dim=1
+            )
             return self._tokenizer.decode(all_input_ids[0])
 
     async def predict(self, model_input: Any, request: fastapi.Request) -> Any:
@@ -152,7 +183,8 @@ class Model:
         model_input["temperature"] = model_input.get("temperature", 0.6)
         model_input["top_p"] = model_input.get("top_p", 0.8)
         model_input["max_tokens"] = model_input.get("max_tokens", 10000)
-        model_input["stop_token_ids"] = model_input.get("stop_token_ids", [128258])
+        model_input["end_id"] = model_input.get("end_id", [128258])
+        # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from Auttokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
         async def audio_stream():
@@ -161,10 +193,4 @@ class Model:
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
 
-        return StreamingResponse(
-            audio_stream(), 
-            media_type="audio/wav"
-        )
-        
-        
-        
+        return StreamingResponse(audio_stream(), media_type="audio/wav")
