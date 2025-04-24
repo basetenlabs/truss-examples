@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Iterator
 from transformers import AutoTokenizer
 import torch
 import fastapi
@@ -7,10 +7,17 @@ import struct
 from pathlib import Path
 import numpy as np
 from fastapi.responses import StreamingResponse
+import batched
 
-model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
+# force inference mode during the lifetime of the script
+inference_mode_raii_guard = torch._C._InferenceMode(True)
+
+model = SNAC.from_pretrained("/app/snac_24khz").eval()
 snac_device = "cuda"
 model = model.to(snac_device)
+# TODO(veer/michael): test decoder with bfloat16
+dtype_decoder = torch.float32
+# model.decoder = model.decoder.to(dtype_decoder)
 
 
 def turn_token_into_id(token_string, index):
@@ -19,7 +26,7 @@ def turn_token_into_id(token_string, index):
     last_token_start = token_string.rfind("<custom_token_")
 
     if last_token_start == -1:
-        print("No token found in the string")
+        print(f"No token found in the string '{token_string}' (terminatio of audio?)")
         return None
 
     last_token = token_string[last_token_start:]
@@ -32,21 +39,21 @@ def turn_token_into_id(token_string, index):
     return None
 
 
-async def tokens_decoder(token_gen):
+async def tokens_decoder(token_gen: Iterator):
     """Corrected to handle both async and sync iterables."""
     buffer = []
     count = 0
-
     # Check if token_gen is an async iterable; if not, iterate synchronously.
     if hasattr(token_gen, "__aiter__"):
         async for token_sim in token_gen:
+            # TODO(veer/michael): check if token_sim can be at most 1 token (e.g. via token_sim.split("<"))
             token = turn_token_into_id(token_sim, count)
             if token is not None and token > 0:
                 buffer.append(token)
                 count += 1
                 if count % 7 == 0 and count > 27:
                     buffer_to_proc = buffer[-28:]
-                    audio_samples = convert_to_audio(buffer_to_proc, count)
+                    audio_samples = await convert_to_audio(buffer_to_proc, count)
                     if audio_samples is not None:
                         yield audio_samples
     else:
@@ -57,7 +64,7 @@ async def tokens_decoder(token_gen):
                 count += 1
                 if count % 7 == 0 and count > 27:
                     buffer_to_proc = buffer[-28:]
-                    audio_samples = convert_to_audio(buffer_to_proc, count)
+                    audio_samples = await convert_to_audio(buffer_to_proc, count)
                     if audio_samples is not None:
                         yield audio_samples
 
@@ -68,12 +75,27 @@ async def tokens_decoder(token_gen):
         remaining = buffer
 
     if remaining:
-        audio_samples = convert_to_audio(remaining, count)
+        audio_samples = await convert_to_audio(remaining, count)
         if audio_samples is not None:
             yield audio_samples
 
 
-def convert_to_audio(multiframe, count):
+@batched.dynamically(batch_size=128, timeout_ms=2)
+def batch_snac_model(items: list[dict[str, list[torch.Tensor]]]) -> list[torch.Tensor]:
+    # Custom processing logic here
+    # return [model.decode(item["codes"]) for item in items]
+    with torch.inference_mode():
+        stacked_z_q = torch.cat(  # codes is list[torch.Tensor]
+            [model.quantizer.from_codes(codes["codes"]) for codes in items], dim=0
+        )
+        output_batched = model.decoder(stacked_z_q.to(dtype_decoder)).to(torch.float32)
+        return output_batched.split(
+            1, dim=0
+        )  # unbatch the output into len(items) tensors of shape (1, 1, 32768)
+
+
+@torch.inference_mode()
+async def convert_to_audio(multiframe, count):
     """Convert a list of token IDs into audio bytes efficiently."""
     if len(multiframe) < 7:
         return None
@@ -107,8 +129,7 @@ def convert_to_audio(multiframe, count):
     ):
         return None
 
-    with torch.inference_mode():
-        audio_hat = model.decode(codes)
+    audio_hat = await batch_snac_model.acall({"codes": codes})
 
     audio_slice = audio_hat[:, :, 2048:4096]
     detached_audio = audio_slice.detach().cpu()
@@ -179,18 +200,34 @@ class Model:
 
     async def predict(self, model_input: Any, request: fastapi.Request) -> Any:
         print("This is the custom predict function")
-        model_input["prompt"] = self._format_prompt(model_input["prompt"], voice="tara")
+        model_input["prompt"] = self._format_prompt(
+            model_input["prompt"], voice=model_input.get("voice", "tara")
+        )
         model_input["temperature"] = model_input.get("temperature", 0.6)
         model_input["top_p"] = model_input.get("top_p", 0.8)
         model_input["max_tokens"] = model_input.get("max_tokens", 10000)
-        model_input["end_id"] = model_input.get("end_id", [128258])
-        # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from Auttokenizer.from_file(..).pad_token
+        if model_input.get("end_id") is not None:
+            return fastapi.responses.JSONResponse(
+                content={
+                    "error": "end_id is not supported in this model, set to 128258"
+                }
+            )
+        model_input["end_id"] = 128258
+        # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
         async def audio_stream():
             yield self.create_wav_header()
             token_gen = await self._engine.predict(model_input, request)
+            if isinstance(token_gen, StreamingResponse):
+                token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
 
-        return StreamingResponse(audio_stream(), media_type="audio/wav")
+        try:
+            return StreamingResponse(audio_stream(), media_type="audio/wav")
+        except Exception as e:
+            print(f"Error in audio stream: {e}")
+            return fastapi.responses.JSONResponse(
+                content={"error": f"An error occurred during audio streaming: {e}"}
+            )
