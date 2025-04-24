@@ -190,6 +190,8 @@ class Model:
         async def audio_stream():
             yield self.create_wav_header()
             token_gen = await self._engine.predict(model_input, request)
+            if isinstance(token_gen, StreamingResponse):
+                token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
 
