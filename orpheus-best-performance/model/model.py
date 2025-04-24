@@ -224,10 +224,4 @@ class Model:
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
 
-        try:
-            return StreamingResponse(audio_stream(), media_type="audio/wav")
-        except Exception as e:
-            print(f"Error in audio stream: {e}")
-            return fastapi.responses.JSONResponse(
-                content={"error": f"An error occurred during audio streaming: {e}"}
-            )
+        return StreamingResponse(audio_stream(), media_type="audio/wav")
