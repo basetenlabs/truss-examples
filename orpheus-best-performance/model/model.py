@@ -47,6 +47,9 @@ async def tokens_decoder(token_gen: Iterator):
     if hasattr(token_gen, "__aiter__"):
         async for token_sim in token_gen:
             # TODO(veer/michael): check if token_sim can be at most 1 token (e.g. via token_sim.split("<"))
+            num_tokens = token_sim.count("<custom_token_")
+            if num_tokens > 1:
+                print(f"WARNING: Token string '{token_sim}' has more than one token.")
             token = turn_token_into_id(token_sim, count)
             if token is not None and token > 0:
                 buffer.append(token)
@@ -198,7 +201,9 @@ class Model:
             )
             return self._tokenizer.decode(all_input_ids[0])
 
-    async def predict(self, model_input: Any, request: fastapi.Request) -> Any:
+    async def predict(
+        self, model_input: Any, request: fastapi.Request
+    ) -> StreamingResponse:
         print("This is the custom predict function")
         model_input["prompt"] = self._format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
