@@ -37,9 +37,9 @@ trt_llm:
     max_num_tokens: 16384
     num_builder_gpus: 1
     max_batch_size: 64
-    # plugin_configuration:
-    #   use_fp8_context_fmha: true
-    # quantization_type: fp8_kv
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
     tensor_parallel_count: 1
     # speculator:
     #   lookahead_ngram_size: 3

@@ -83,7 +83,7 @@ async def tokens_decoder(token_gen: Iterator):
             yield audio_samples
 
 
-@batched.dynamically(batch_size=128, timeout_ms=2)
+@batched.dynamically(batch_size=128)
 def batch_snac_model(items: list[dict[str, list[torch.Tensor]]]) -> list[torch.Tensor]:
     # Custom processing logic here
     # return [model.decode(item["codes"]) for item in items]
