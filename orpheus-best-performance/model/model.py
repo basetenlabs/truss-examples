@@ -267,8 +267,8 @@ class Model:
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
-        uuid = str(model_input.get("request_id", uuid.uuid4()))
-        print(f"Starting request_id {uuid}")
+        req_id = str(model_input.get("request_id", uuid.uuid4()))
+        print(f"Starting request_id {req_id}")
         model_input["prompt"] = self.format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
@@ -281,13 +281,13 @@ class Model:
         # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
-        async def audio_stream():
+        async def audio_stream(req_id: str):
             yield self.create_wav_header()
             token_gen = await self._engine.predict(model_input, request)
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
-            print(f"Finished request_id {uuid}")
+            print(f"Finished request_id {req_id}")
 
-        return StreamingResponse(audio_stream(), media_type="audio/wav")
+        return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
