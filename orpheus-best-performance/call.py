@@ -2,14 +2,25 @@ import asyncio
 import aiohttp
 import uuid
 import time
+import os
 
-BASETEN_HOST = "https://model-7qkrmxd3.api.baseten.co/deployment/production/predict"
-BASETEN_API_KEY = "YOUR_API_KEY"
+MODEL = "5wodgkgq"  # 7qkrmxd3
+BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
+
+BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
+
+# Sample prompts of varying lengths
+prompts = [
+    # Short (1 sentence)
+    "Hi, how can I help you today?",
+    # Medium (2 sentences)
+    "",
+]
 
 base_request_payload = {
-    "prompt": "In todays fast-paced world, finding balance between work and personal life is more important than ever. With the constant demands of technology, remote communication, and a culture that often praises overworking, it's easy to feel overwhelmed and burned out. Creating healthy boundaries, both physically and mentally, can lead to greater productivity and improved well-being. Taking regular breaks, prioritizing sleep, and making time for activities that bring joy are essential practices. Even small habits, like stepping outside for fresh air or disconnecting from screens for a few minutes, can have a big impact.",
     "max_tokens": 10000,
     "voice": "tara",
+    "stop_token_ids": [128258, 128009],
 }
 
 
@@ -51,20 +62,24 @@ async def stream_to_buffer(session, stream_label, payload):
 
 
 async def main():
-    stream_labels = [f"Stream{chr(65 + i)}" for i in range(1)]
-
     async with aiohttp.ClientSession() as session:
-        tasks = [
-            stream_to_buffer(session, label, base_request_payload)
-            for label in stream_labels
-        ]
-        results = await asyncio.gather(*tasks)
+        for i, prompt in enumerate(prompts):
+            prompt_type = ["short", "medium", "long", "very_long", "super_long"][i]
+            print(f"\nProcessing {prompt_type} prompt: {prompt[:50]}...")
+            print(f"STOP TOKEN IDS: {base_request_payload['stop_token_ids']}")
 
-        for label, buffer in zip(stream_labels, results):
-            filename = f"output_{label}.wav"
-            with open(filename, "wb") as f:
-                f.write(buffer)
-            print(f"Saved {filename}")
+            # Run each prompt twice
+            for run in range(1, 2):
+                payload = base_request_payload.copy()
+                payload["prompt"] = prompt
+
+                stream_label = f"{prompt_type}_run{run}"
+                buffer = await stream_to_buffer(session, stream_label, payload)
+
+                filename = f"output_{prompt_type}_run{run}.wav"
+                with open(filename, "wb") as f:
+                    f.write(buffer)
+                print(f"Saved {filename}")
 
 
 if __name__ == "__main__":
