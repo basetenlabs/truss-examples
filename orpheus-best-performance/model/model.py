@@ -49,6 +49,12 @@ class SnacModelBatched:
     ) -> list[torch.Tensor]:
         # Custom processing logic here
         # return [model.decode(item["codes"]) for item in items]
+        if len(items) > 1:
+            assert items[0]["codes"][0].shape == items[1]["codes"][0].shape, (
+                f"items[0]['codes'][0].shape: {items[0]['codes'][0].shape}, items[1]['codes'][0].shape: {items[1]['codes'][0].shape}"
+            )
+            assert items[0]["codes"][1].shape == items[1]["codes"][1].shape
+            assert items[0]["codes"][2].shape == items[1]["codes"][2].shape
         with torch.inference_mode(), torch.cuda.stream(self.stream):
             stacked_z_q = torch.cat(  # codes is list[torch.Tensor]
                 [
@@ -59,7 +65,8 @@ class SnacModelBatched:
             )
             output_batched = self.snac_model.decoder(
                 stacked_z_q.to(self.dtype_decoder)
-            ).to(torch.float32)
+            )[:, :, 2048:4096].to(torch.float32)
+
             out = output_batched.split(
                 1, dim=0
             )  # unbatch the output into len(items) tensors of shape (1, 1, x)
@@ -116,48 +123,47 @@ async def tokens_decoder(token_gen: Iterator):
 
 @torch.inference_mode()
 async def convert_to_audio(multiframe, count):
+    """Convert a list of token IDs into audio bytes efficiently."""
+    if len(multiframe) < 7:
+        return None
+
+    num_frames = len(multiframe) // 7
+    frame = multiframe[: num_frames * 7]
+
+    codes_0 = torch.zeros(num_frames, dtype=torch.int32)
+    codes_1 = torch.zeros(2 * num_frames, dtype=torch.int32)
+    codes_2 = torch.zeros(4 * num_frames, dtype=torch.int32)
+
+    for j in range(num_frames):
+        i = 7 * j
+        codes_0[j] = frame[i]
+        codes_1[2 * j] = frame[i + 1]
+        codes_1[2 * j + 1] = frame[i + 4]
+        codes_2[4 * j] = frame[i + 2]
+        codes_2[4 * j + 1] = frame[i + 3]
+        codes_2[4 * j + 2] = frame[i + 5]
+        codes_2[4 * j + 3] = frame[i + 6]
+
+    if (
+        torch.any(codes_0 < 0)
+        or torch.any(codes_0 > 4096)
+        or torch.any(codes_1 < 0)
+        or torch.any(codes_1 > 4096)
+        or torch.any(codes_2 < 0)
+        or torch.any(codes_2 > 4096)
+    ):
+        return None
     with torch.cuda.stream(non_default_stream):
-        """Convert a list of token IDs into audio bytes efficiently."""
-        if len(multiframe) < 7:
-            return None
-
-        num_frames = len(multiframe) // 7
-        frame = multiframe[: num_frames * 7]
-
-        codes_0 = torch.zeros(num_frames, device=snac_device, dtype=torch.int32)
-        codes_1 = torch.zeros(2 * num_frames, device=snac_device, dtype=torch.int32)
-        codes_2 = torch.zeros(4 * num_frames, device=snac_device, dtype=torch.int32)
-
-        for j in range(num_frames):
-            i = 7 * j
-            codes_0[j] = frame[i]
-            codes_1[2 * j] = frame[i + 1]
-            codes_1[2 * j + 1] = frame[i + 4]
-            codes_2[4 * j] = frame[i + 2]
-            codes_2[4 * j + 1] = frame[i + 3]
-            codes_2[4 * j + 2] = frame[i + 5]
-            codes_2[4 * j + 3] = frame[i + 6]
-
-        codes = [codes_0.unsqueeze(0), codes_1.unsqueeze(0), codes_2.unsqueeze(0)]
-
-        if (
-            torch.any(codes[0] < 0)
-            or torch.any(codes[0] > 4096)
-            or torch.any(codes[1] < 0)
-            or torch.any(codes[1] > 4096)
-            or torch.any(codes[2] < 0)
-            or torch.any(codes[2] > 4096)
-        ):
-            return None
+        codes = [
+            codes_0.unsqueeze(0).to(snac_device),
+            codes_1.unsqueeze(0).to(snac_device),
+            codes_2.unsqueeze(0).to(snac_device),
+        ]
         non_default_stream.synchronize()  # only queue codes that are ready
-        audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
-
-        audio_slice = audio_hat[:, :, 2048:4096]
-        detached_audio = audio_slice.detach().cpu()
-        audio_np = detached_audio.numpy()
-        audio_int16 = (audio_np * 32767).astype(np.int16)
-        audio_bytes = audio_int16.tobytes()
-        return audio_bytes
+    audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
+    audio_np = audio_hat.numpy(force=True)
+    audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
+    return audio_bytes
 
 
 class Model:
