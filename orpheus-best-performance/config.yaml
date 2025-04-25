@@ -41,12 +41,6 @@ trt_llm:
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    speculator:
-      lookahead_ngram_size: 3
-      lookahead_verification_set_size: 3
-      lookahead_windows_size: 3
-      num_draft_tokens: 11
-      speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true
