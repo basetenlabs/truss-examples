@@ -43,31 +43,18 @@ async def tokens_decoder(token_gen: Iterator):
     buffer: list[int] = []
     count = 0
     # Check if token_gen is an async iterable; if not, iterate synchronously.
-    if hasattr(token_gen, "__aiter__"):
-        async for token_sim in token_gen:
-            split_tokens = split_custom_tokens(token_sim)
-            for token_string in split_tokens:
-                token = turn_token_into_id(token_string, count)
-                buffer.append(token)
-                count += 1
-                if count % 7 == 0 and count > 27:
-                    buffer_to_proc = buffer[-28:]
-                    audio_samples = await convert_to_audio(buffer_to_proc, count)
-                    if audio_samples is not None:
-                        yield audio_samples
-    else:
-        for token_sim in token_gen:
-            split_tokens = split_custom_tokens(token_sim)
-            for token_string in split_tokens:
-                token = turn_token_into_id(token_string, count)
-                if token is not None and token > 0:
-                    buffer.append(token)
-                    count += 1
-                    if count % 7 == 0 and count > 27:
-                        buffer_to_proc = buffer[-28:]
-                        audio_samples = await convert_to_audio(buffer_to_proc, count)
-                        if audio_samples is not None:
-                            yield audio_samples
+    assert hasattr(token_gen, "__aiter__")
+    async for token_sim in token_gen:
+        split_tokens = split_custom_tokens(token_sim)
+        for token_string in split_tokens:
+            token = turn_token_into_id(token_string, count)
+            buffer.append(token)
+            count += 1
+            if count % 7 == 0 and count > 27:
+                buffer_to_proc = buffer[-28:]
+                audio_samples = await convert_to_audio(buffer_to_proc, count)
+                if audio_samples is not None:
+                    yield audio_samples
 
     # After the stream ends, yield any remaining tokens if buffer has leftovers
     if count > 27:
