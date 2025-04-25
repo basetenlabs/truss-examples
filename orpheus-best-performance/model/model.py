@@ -10,21 +10,25 @@ from fastapi.responses import StreamingResponse
 import batched
 import re
 from typing import List
+import time
+import uuid
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
+# torch.backends.cuda.matmul.allow_tf32 = True
 
 # TODO(veer/michael): test decoder with bfloat16
 snac_device = "cuda"
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 snac_device = "cuda"
+snac_max_batch_size = 32
 
 
 class SnacModelBatched:
     def __init__(self):
         self.dtype_decoder = torch.float32
-        snac_torch_compile = False
+        snac_torch_compile = True
 
         model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
         model = model.to(snac_device)
@@ -33,36 +37,63 @@ class SnacModelBatched:
         if snac_torch_compile:
             model.decoder = torch.compile(model.decoder, dynamic=True)
             model.quantizer = torch.compile(model.quantizer, dynamic=True)
-        for bs_size in [1, 256]:
-            audio = torch.randn(bs_size, 1, 4096).to(snac_device)
+        t = time.time()
+        for bs_size in range(1, max(snac_max_batch_size, 1)):
+            codes = [
+                torch.randint(1, 4096, (bs_size, 4)).to(snac_device),
+                torch.randint(1, 4096, (bs_size, 8)).to(snac_device),
+                torch.randint(1, 4096, (bs_size, 16)).to(snac_device),
+            ]
             with torch.inference_mode():
-                codes = model.encode(audio)
                 intermed = model.quantizer.from_codes(codes)
                 model.decoder(intermed.to(self.dtype_decoder))
-        # model.encoder = torch.nn.Identity()
+        print("time for torch.compile/warmup:", time.time() - t)
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=256, timeout_ms=10)
+    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=8)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
         # Custom processing logic here
         # return [model.decode(item["codes"]) for item in items]
         with torch.inference_mode(), torch.cuda.stream(self.stream):
-            stacked_z_q = torch.cat(  # codes is list[torch.Tensor]
-                [
-                    self.snac_model.quantizer.from_codes(codes["codes"])
-                    for codes in items
-                ],
-                dim=0,
+            all_codes = [codes["codes"] for codes in items]
+            can_be_batched = len(items) > 1 and all(
+                codes[0].shape == all_codes[0][0].shape for codes in all_codes
             )
-            output_batched = self.snac_model.decoder(
-                stacked_z_q.to(self.dtype_decoder)
-            ).to(torch.float32)
-            out = output_batched.split(
-                1, dim=0
-            )  # unbatch the output into len(items) tensors of shape (1, 1, x)
+            if can_be_batched:
+                # stacked_codes = [(b,4), (b,8), (b,16)]
+                stacked_codes = [
+                    torch.cat(  # codes is list[torch.Tensor]
+                        [item[i] for item in all_codes], dim=0
+                    )
+                    for i in range(3)
+                ]
+                stacked_z_q = self.snac_model.quantizer.from_codes(stacked_codes)
+                output_batched = self.snac_model.decoder(
+                    stacked_z_q.to(self.dtype_decoder)
+                )[:, :, 2048:4096].to(torch.float32)
+
+                out = output_batched.split(
+                    1, dim=0
+                )  # unbatch the output into len(items) tensors of shape (1, 1, x)
+            else:
+                # items can't be batched
+                if len(items) > 1:
+                    # items can't cant be concatenated (no padding)
+                    print(f"running unbatched at size {len(items)}")
+                # if we have a single item, we need to do the same thing as above
+                # but without concatenating
+                output_batched = []
+                for codes in all_codes:
+                    stacked_z_q = self.snac_model.quantizer.from_codes(codes)
+                    output_batched.append(
+                        self.snac_model.decoder(stacked_z_q.to(self.dtype_decoder))[
+                            :, :, 2048:4096
+                        ].to(torch.float32)
+                    )
+                out = output_batched
             self.stream.synchronize()  # make sure the results are ready
             return out
 
@@ -98,66 +129,66 @@ async def tokens_decoder(token_gen: Iterator):
             count += 1
             if count % 7 == 0 and count > 27:
                 buffer_to_proc = buffer[-28:]
-                audio_samples = await convert_to_audio(buffer_to_proc, count)
+                audio_samples = await convert_to_audio(buffer_to_proc)
                 if audio_samples is not None:
                     yield audio_samples
 
     # After the stream ends, yield any remaining tokens if buffer has leftovers
-    if count > 27:
-        remaining = buffer[-28:]
-    else:
-        remaining = buffer
-
-    if remaining:
-        audio_samples = await convert_to_audio(remaining, count)
+    if buffer:
+        audio_samples = await convert_to_audio(buffer[-28:])
         if audio_samples is not None:
             yield audio_samples
 
 
 @torch.inference_mode()
-async def convert_to_audio(multiframe, count):
+async def convert_to_audio(multiframe: list[int]) -> bytes | None:
+    """Convert a list of token IDs into audio bytes efficiently.
+
+    multiframe:
+    - list of token IDS (phonemes) of length 28 or less.
+    - 7 tokens = 1 frame
+    """
+    if len(multiframe) < 7:
+        # if not even enough tokens for 1 phoneme, return None
+        return None
+
+    num_frames = len(multiframe) // 7
+    frame = multiframe[: num_frames * 7]  # drop up to 6 tokens at the end
+
+    codes_0 = torch.zeros(num_frames, dtype=torch.int32)
+    codes_1 = torch.zeros(2 * num_frames, dtype=torch.int32)
+    codes_2 = torch.zeros(4 * num_frames, dtype=torch.int32)
+    #
+    for j in range(num_frames):
+        i = 7 * j
+        codes_0[j] = frame[i]
+        codes_1[2 * j] = frame[i + 1]
+        codes_1[2 * j + 1] = frame[i + 4]
+        codes_2[4 * j] = frame[i + 2]
+        codes_2[4 * j + 1] = frame[i + 3]
+        codes_2[4 * j + 2] = frame[i + 5]
+        codes_2[4 * j + 3] = frame[i + 6]
+
+    if (
+        torch.any(codes_0 < 0)
+        or torch.any(codes_0 > 4096)
+        or torch.any(codes_1 < 0)
+        or torch.any(codes_1 > 4096)
+        or torch.any(codes_2 < 0)
+        or torch.any(codes_2 > 4096)
+    ):
+        return None
     with torch.cuda.stream(non_default_stream):
-        """Convert a list of token IDs into audio bytes efficiently."""
-        if len(multiframe) < 7:
-            return None
-
-        num_frames = len(multiframe) // 7
-        frame = multiframe[: num_frames * 7]
-
-        codes_0 = torch.zeros(num_frames, device=snac_device, dtype=torch.int32)
-        codes_1 = torch.zeros(2 * num_frames, device=snac_device, dtype=torch.int32)
-        codes_2 = torch.zeros(4 * num_frames, device=snac_device, dtype=torch.int32)
-
-        for j in range(num_frames):
-            i = 7 * j
-            codes_0[j] = frame[i]
-            codes_1[2 * j] = frame[i + 1]
-            codes_1[2 * j + 1] = frame[i + 4]
-            codes_2[4 * j] = frame[i + 2]
-            codes_2[4 * j + 1] = frame[i + 3]
-            codes_2[4 * j + 2] = frame[i + 5]
-            codes_2[4 * j + 3] = frame[i + 6]
-
-        codes = [codes_0.unsqueeze(0), codes_1.unsqueeze(0), codes_2.unsqueeze(0)]
-
-        if (
-            torch.any(codes[0] < 0)
-            or torch.any(codes[0] > 4096)
-            or torch.any(codes[1] < 0)
-            or torch.any(codes[1] > 4096)
-            or torch.any(codes[2] < 0)
-            or torch.any(codes[2] > 4096)
-        ):
-            return None
+        codes = [
+            codes_0.unsqueeze(0).to(snac_device),
+            codes_1.unsqueeze(0).to(snac_device),
+            codes_2.unsqueeze(0).to(snac_device),
+        ]
         non_default_stream.synchronize()  # only queue codes that are ready
-        audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
-
-        audio_slice = audio_hat[:, :, 2048:4096]
-        detached_audio = audio_slice.detach().cpu()
-        audio_np = detached_audio.numpy()
-        audio_int16 = (audio_np * 32767).astype(np.int16)
-        audio_bytes = audio_int16.tobytes()
-        return audio_bytes
+    audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
+    audio_np = audio_hat.numpy(force=True)
+    audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
+    return audio_bytes
 
 
 class Model:
@@ -167,11 +198,21 @@ class Model:
         self._data_dir = kwargs["data_dir"]
         self._model = None
         self._tokenizer = None
+        self.start_id = [128259]
+        self.end_ids = [128009, 128260, 128261, 128257]
 
     def load(self) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(
             Path(self._data_dir) / "tokenization"
         )
+        self.start_tokenized = (
+            self._tokenizer.decode(self.start_id) + self._tokenizer.bos_token
+        )
+        self.end_tokenized = self._tokenizer.decode(self.end_ids)
+
+        self.use_fast_fmt = self._format_prompt_fast(
+            "hello world", "tara"
+        ) == self._format_prompt_slow("hello world", "tara")
 
     def create_wav_header(self, sample_rate=24000, bits_per_sample=16, channels=1):
         """Create a WAV file header."""
@@ -196,26 +237,39 @@ class Model:
         )
         return header
 
-    def _format_prompt(self, prompt, voice="tara"):
+    def _format_prompt_slow(self, prompt, voice="tara"):
         if voice:
             adapted_prompt = f"{voice}: {prompt}"
         else:
             adapted_prompt = prompt
-        # TODO: make this pure python lists
         input_ids = self._tokenizer.encode(
             adapted_prompt,
         )
-        start_id = 128259
-        end_ids = [128009, 128260, 128261, 128257]
-
-        full_ids = [start_id] + input_ids + end_ids
+        full_ids = self.start_id + input_ids + self.end_ids
         return self._tokenizer.decode(full_ids)
+
+    def _format_prompt_fast(self, prompt, voice="tara"):
+        token_stream = self.start_tokenized
+        if voice:
+            token_stream += f"{voice}: "
+        token_stream += prompt
+        token_stream += self.end_tokenized
+        return token_stream
+
+    def format_prompt(self, prompt: str, voice="tara"):
+        """Format the prompt for the model."""
+        if self.use_fast_fmt:
+            return self._format_prompt_fast(prompt, voice)
+        else:
+            print("Warn: Using slow format")
+            return self._format_prompt_slow(prompt, voice)
 
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
-        print("This is the custom predict function")
-        model_input["prompt"] = self._format_prompt(
+        req_id = str(model_input.get("request_id", uuid.uuid4()))
+        print(f"Starting request_id {req_id}")
+        model_input["prompt"] = self.format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
         model_input["temperature"] = model_input.get("temperature", 0.6)
@@ -227,12 +281,13 @@ class Model:
         # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
-        async def audio_stream():
+        async def audio_stream(req_id: str):
             yield self.create_wav_header()
             token_gen = await self._engine.predict(model_input, request)
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
+            print(f"Finished request_id {req_id}")
 
-        return StreamingResponse(audio_stream(), media_type="audio/wav")
+        return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
