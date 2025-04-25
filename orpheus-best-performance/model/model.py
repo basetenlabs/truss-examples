@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 import batched
 import re
 from typing import List
+import time
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -34,7 +35,8 @@ class SnacModelBatched:
         if snac_torch_compile:
             model.decoder = torch.compile(model.decoder, dynamic=True)
             model.quantizer = torch.compile(model.quantizer, dynamic=True)
-        for bs_size in [snac_max_batch_size, 1, 2, 3, 4]:
+        t = time.time()
+        for bs_size in range(1, max(snac_max_batch_size, 1)):
             codes = [
                 torch.randint(1, 4096, (bs_size, 4)).to(snac_device),
                 torch.randint(1, 4096, (bs_size, 8)).to(snac_device),
@@ -43,6 +45,7 @@ class SnacModelBatched:
             with torch.inference_mode():
                 intermed = model.quantizer.from_codes(codes)
                 model.decoder(intermed.to(self.dtype_decoder))
+        print("time for torch.compile/warmup:", time.time() - t)
         self.snac_model = model
         self.stream = torch.Stream()
 
@@ -58,6 +61,7 @@ class SnacModelBatched:
             )
             assert items[0]["codes"][1].shape == items[1]["codes"][1].shape
             assert items[0]["codes"][2].shape == items[1]["codes"][2].shape
+            print(f"using batch size {len(items)}")
         with torch.inference_mode(), torch.cuda.stream(self.stream):
             all_codes = [codes["codes"] for codes in items]
             # stacked_codes = [(b,4), (b,8), (b,16)]
@@ -225,7 +229,7 @@ class Model:
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
-        print("This is the custom predict function")
+        print("Starting new request")
         model_input["prompt"] = self._format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
