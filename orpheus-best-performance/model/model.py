@@ -8,6 +8,8 @@ from pathlib import Path
 import numpy as np
 from fastapi.responses import StreamingResponse
 import batched
+import re
+from typing import List
 
 # force inference mode during the lifetime of the script
 inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -20,38 +22,32 @@ dtype_decoder = torch.float32
 # model.decoder = model.decoder.to(dtype_decoder)
 
 
-def turn_token_into_id(token_string, index):
+def turn_token_into_id(token_string: int, index: int):
     """Extract and convert the last custom token ID from a string."""
-    token_string = token_string.strip()
-    last_token_start = token_string.rfind("<custom_token_")
+    return token_string - 10 - ((index % 7) * 4096)
 
-    if last_token_start == -1:
-        print(f"No token found in the string '{token_string}' (terminatio of audio?)")
-        return None
 
-    last_token = token_string[last_token_start:]
-    if last_token.startswith("<custom_token_") and last_token.endswith(">"):
-        try:
-            number_str = last_token[14:-1]
-            return int(number_str) - 10 - ((index % 7) * 4096)
-        except ValueError:
-            return None
-    return None
+_TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
+
+
+def split_custom_tokens(s: str) -> List[int]:
+    """
+    Extracts all substrings enclosed in <custom_token_…> from the input string.
+    """
+    matches = _TOKEN_RE.findall(s)
+    return [int(match) for match in matches if match != "0"]
 
 
 async def tokens_decoder(token_gen: Iterator):
     """Corrected to handle both async and sync iterables."""
-    buffer = []
+    buffer: list[int] = []
     count = 0
     # Check if token_gen is an async iterable; if not, iterate synchronously.
     if hasattr(token_gen, "__aiter__"):
         async for token_sim in token_gen:
-            # TODO(veer/michael): check if token_sim can be at most 1 token (e.g. via token_sim.split("<"))
-            num_tokens = token_sim.count("<custom_token_")
-            if num_tokens > 1:
-                print(f"WARNING: Token string '{token_sim}' has more than one token.")
-            token = turn_token_into_id(token_sim, count)
-            if token is not None and token > 0:
+            split_tokens = split_custom_tokens(token_sim)
+            for token_string in split_tokens:
+                token = turn_token_into_id(token_string, count)
                 buffer.append(token)
                 count += 1
                 if count % 7 == 0 and count > 27:
@@ -61,15 +57,17 @@ async def tokens_decoder(token_gen: Iterator):
                         yield audio_samples
     else:
         for token_sim in token_gen:
-            token = turn_token_into_id(token_sim, count)
-            if token is not None and token > 0:
-                buffer.append(token)
-                count += 1
-                if count % 7 == 0 and count > 27:
-                    buffer_to_proc = buffer[-28:]
-                    audio_samples = await convert_to_audio(buffer_to_proc, count)
-                    if audio_samples is not None:
-                        yield audio_samples
+            split_tokens = split_custom_tokens(token_sim)
+            for token_string in split_tokens:
+                token = turn_token_into_id(token_string, count)
+                if token is not None and token > 0:
+                    buffer.append(token)
+                    count += 1
+                    if count % 7 == 0 and count > 27:
+                        buffer_to_proc = buffer[-28:]
+                        audio_samples = await convert_to_audio(buffer_to_proc, count)
+                        if audio_samples is not None:
+                            yield audio_samples
 
     # After the stream ends, yield any remaining tokens if buffer has leftovers
     if count > 27:
