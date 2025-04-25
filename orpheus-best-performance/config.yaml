@@ -34,7 +34,7 @@ trt_llm:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
       source: HF
-    max_batch_size: 64
+    max_batch_size: 128
     max_num_tokens: 16384
     max_seq_len: 65536
     num_builder_gpus: 1
