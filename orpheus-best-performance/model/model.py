@@ -11,10 +11,11 @@ import batched
 import re
 from typing import List
 import time
+import uuid
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
-torch.backends.cuda.matmul.allow_tf32 = True
+# torch.backends.cuda.matmul.allow_tf32 = True
 
 # TODO(veer/michael): test decoder with bfloat16
 snac_device = "cuda"
@@ -266,7 +267,8 @@ class Model:
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
-        print("Starting new request")
+        uuid = str(model_input.get("request_id", uuid.uuid4()))
+        print(f"Starting request_id {uuid}")
         model_input["prompt"] = self.format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
@@ -286,5 +288,6 @@ class Model:
                 token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
                 yield chunk
+            print(f"Finished request_id {uuid}")
 
         return StreamingResponse(audio_stream(), media_type="audio/wav")
