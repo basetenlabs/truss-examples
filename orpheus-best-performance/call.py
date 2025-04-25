@@ -4,7 +4,7 @@ import uuid
 import time
 import os
 
-MODEL = "5wodgkgq"  # 7qkrmxd3
+MODEL = "zq8dv55w"  # 7qkrmxd3
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
 
 BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
@@ -83,7 +83,7 @@ async def main():
             print(f"STOP TOKEN IDS: {base_request_payload['stop_token_ids']}")
 
             # Run each prompt twice
-            for run in range(1, 4):
+            for run in range(1, 3):
                 print(f"\nRunning {prompt_type} prompt, run {run}...")
                 runs.append(run_session(session, prompt, prompt_type, run))
         await asyncio.gather(*runs)

@@ -14,7 +14,7 @@ model_metadata:
     voice: tara
   tags:
     - force-legacy-api-non-openai-compatible
-model_name: Orpheus-3b-regex
+model_name: Orpheus-3b
 python_version: py39
 requirements:
   - snac==1.2.1
