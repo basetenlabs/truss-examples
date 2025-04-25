@@ -18,11 +18,11 @@ _inference_mode_raii_guard = torch._C._InferenceMode(True)
 # torch.backends.cuda.matmul.allow_tf32 = True
 
 # TODO(veer/michael): test decoder with bfloat16
-snac_device = "cuda"
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
-snac_device = "cuda"
-snac_max_batch_size = 32
+SNAC_DEVICE = "cuda"
+SNAC_MAX_BATCH = 32
+PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 
 
 class SnacModelBatched:
@@ -31,32 +31,35 @@ class SnacModelBatched:
         snac_torch_compile = True
 
         model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
-        model = model.to(snac_device)
+        model = model.to(SNAC_DEVICE)
 
         model.decoder = model.decoder.to(self.dtype_decoder)
         if snac_torch_compile:
             model.decoder = torch.compile(model.decoder, dynamic=True)
             model.quantizer = torch.compile(model.quantizer, dynamic=True)
         t = time.time()
-        for bs_size in range(1, max(snac_max_batch_size, 1)):
+        print("starting torch.compile")
+        for bs_size in range(1, max(SNAC_MAX_BATCH, 1)):
             codes = [
-                torch.randint(1, 4096, (bs_size, 4)).to(snac_device),
-                torch.randint(1, 4096, (bs_size, 8)).to(snac_device),
-                torch.randint(1, 4096, (bs_size, 16)).to(snac_device),
+                torch.randint(1, 4096, (bs_size, 4)).to(SNAC_DEVICE),
+                torch.randint(1, 4096, (bs_size, 8)).to(SNAC_DEVICE),
+                torch.randint(1, 4096, (bs_size, 16)).to(SNAC_DEVICE),
             ]
             with torch.inference_mode():
                 intermed = model.quantizer.from_codes(codes)
                 model.decoder(intermed.to(self.dtype_decoder))
-        print("time for torch.compile/warmup:", time.time() - t)
+        print("finish time for torch.compile:", time.time() - t)
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=8)
+    @batched.dynamically(batch_size=SNAC_MAX_BATCH, timeout_ms=15)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
         # Custom processing logic here
         # return [model.decode(item["codes"]) for item in items]
+        if len(items) == SNAC_MAX_BATCH:
+            print("batch size is max:", len(items))
         with torch.inference_mode(), torch.cuda.stream(self.stream):
             all_codes = [codes["codes"] for codes in items]
             can_be_batched = len(items) > 1 and all(
@@ -99,7 +102,6 @@ class SnacModelBatched:
 
 
 model_snac = SnacModelBatched()
-non_default_stream = torch.Stream(snac_device)
 
 
 def turn_token_into_id(token_string: int, index: int):
@@ -141,50 +143,36 @@ async def tokens_decoder(token_gen: Iterator):
 
 
 @torch.inference_mode()
-async def convert_to_audio(multiframe: list[int]) -> bytes | None:
+async def convert_to_audio(frame_ids: list[int]) -> bytes | None:
     """Convert a list of token IDs into audio bytes efficiently.
 
-    multiframe:
+    frame_ids:
     - list of token IDS (phonemes) of length 28 or less.
     - 7 tokens = 1 frame
     """
-    if len(multiframe) < 7:
-        # if not even enough tokens for 1 phoneme, return None
+    n = len(frame_ids) // 7
+    if n == 0:
         return None
 
-    num_frames = len(multiframe) // 7
-    frame = multiframe[: num_frames * 7]  # drop up to 6 tokens at the end
-
-    codes_0 = torch.zeros(num_frames, dtype=torch.int32)
-    codes_1 = torch.zeros(2 * num_frames, dtype=torch.int32)
-    codes_2 = torch.zeros(4 * num_frames, dtype=torch.int32)
-    #
-    for j in range(num_frames):
-        i = 7 * j
-        codes_0[j] = frame[i]
-        codes_1[2 * j] = frame[i + 1]
-        codes_1[2 * j + 1] = frame[i + 4]
-        codes_2[4 * j] = frame[i + 2]
-        codes_2[4 * j + 1] = frame[i + 3]
-        codes_2[4 * j + 2] = frame[i + 5]
-        codes_2[4 * j + 3] = frame[i + 6]
-
+    arr = torch.tensor(frame_ids[: n * 7], dtype=torch.int32)
+    mat = arr.view(n, 7)
+    codes_0 = mat[:, 0]
+    codes_1 = mat[:, [1, 4]].reshape(-1)
+    codes_2 = mat[:, [2, 3, 5, 6]].reshape(-1)
     if (
-        torch.any(codes_0 < 0)
-        or torch.any(codes_0 > 4096)
-        or torch.any(codes_1 < 0)
-        or torch.any(codes_1 > 4096)
-        or torch.any(codes_2 < 0)
-        or torch.any(codes_2 > 4096)
+        ((codes_0 < 0) | (codes_0 > 4096)).any()
+        or ((codes_1 < 0) | (codes_1 > 4096)).any()
+        or ((codes_2 < 0) | (codes_2 > 4096)).any()
     ):
+        print("Warn: Invalid token IDs detected, skipping audio generation.")
         return None
-    with torch.cuda.stream(non_default_stream):
+    with torch.cuda.stream(PREPROCESS_STREAM):
         codes = [
-            codes_0.unsqueeze(0).to(snac_device),
-            codes_1.unsqueeze(0).to(snac_device),
-            codes_2.unsqueeze(0).to(snac_device),
+            codes_0.unsqueeze(0).to(SNAC_DEVICE),
+            codes_1.unsqueeze(0).to(SNAC_DEVICE),
+            codes_2.unsqueeze(0).to(SNAC_DEVICE),
         ]
-        non_default_stream.synchronize()  # only queue codes that are ready
+        PREPROCESS_STREAM.synchronize()  # only queue codes that are ready
     audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
     audio_np = audio_hat.numpy(force=True)
     audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
@@ -218,7 +206,7 @@ class Model:
         """Create a WAV file header."""
         byte_rate = sample_rate * channels * bits_per_sample // 8
         block_align = channels * bits_per_sample // 8
-        data_size = 0
+        data_size = 0  # cant know the size of the data in advance
         header = struct.pack(
             "<4sI4s4sIHHIIHH4sI",
             b"RIFF",
@@ -282,11 +270,14 @@ class Model:
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
         async def audio_stream(req_id: str):
-            yield self.create_wav_header()
             token_gen = await self._engine.predict(model_input, request)
+            header = self.create_wav_header()
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
             async for chunk in tokens_decoder(token_gen):
+                if header is not None:
+                    yield header
+                    header = None
                 yield chunk
             print(f"Finished request_id {req_id}")
 
