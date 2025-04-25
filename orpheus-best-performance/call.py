@@ -14,7 +14,7 @@ prompts = [
     # Short (1 sentence)
     "Hi, how can I help you today?",
     # Medium (2 sentences)
-    "",
+    "Man, the way social media has, um, completely changed how we interact is just wild, right? Like, we're all connected 24/7 but somehow people feel more alone than ever",
 ]
 
 base_request_payload = {
@@ -61,25 +61,33 @@ async def stream_to_buffer(session, stream_label, payload):
         return buffer
 
 
+async def run_session(session, prompt, prompt_type, run):
+    payload = base_request_payload.copy()
+    payload["prompt"] = prompt
+
+    stream_label = f"{prompt_type}_run{run}"
+    buffer = await stream_to_buffer(session, stream_label, payload)
+
+    filename = f"output_{prompt_type}_run{run}.wav"
+    with open(filename, "wb") as f:
+        f.write(buffer)
+    print(f"Saved {filename}")
+
+
 async def main():
     async with aiohttp.ClientSession() as session:
+        runs = []
         for i, prompt in enumerate(prompts):
             prompt_type = ["short", "medium", "long", "very_long", "super_long"][i]
             print(f"\nProcessing {prompt_type} prompt: {prompt[:50]}...")
             print(f"STOP TOKEN IDS: {base_request_payload['stop_token_ids']}")
 
             # Run each prompt twice
-            for run in range(1, 2):
-                payload = base_request_payload.copy()
-                payload["prompt"] = prompt
-
-                stream_label = f"{prompt_type}_run{run}"
-                buffer = await stream_to_buffer(session, stream_label, payload)
-
-                filename = f"output_{prompt_type}_run{run}.wav"
-                with open(filename, "wb") as f:
-                    f.write(buffer)
-                print(f"Saved {filename}")
+            for run in range(1, 4):
+                print(f"\nRunning {prompt_type} prompt, run {run}...")
+                runs.append(run_session(session, prompt, prompt_type, run))
+        await asyncio.gather(*runs)
+        print("All runs completed.")
 
 
 if __name__ == "__main__":
