@@ -5,6 +5,75 @@ import asyncio
 sem = asyncio.Semaphore(100)
 
 
+def example_2():
+    pass
+
+
+from snac import SNAC
+
+# force inference mode during the lifetime of the script
+inference_mode_raii_guard = torch._C._InferenceMode(True)
+
+snac_device = "cuda"
+
+
+class SnacModelBatched:
+    def __init__(self):
+        self.dtype_decoder = torch.float32
+        snac_torch_compile = False
+
+        model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
+        model = model.to(snac_device)
+
+        model.decoder = model.decoder.to(self.dtype_decoder)
+        if snac_torch_compile:
+            model.decoder = torch.compile(model.decoder, dynamic=True)
+            model.quantizer = torch.compile(model.quantizer, dynamic=True)
+        for bs_size in [1, 256]:
+            audio = torch.randn(bs_size, 1, 4096).to(snac_device)
+            with torch.inference_mode():
+                codes = model.encode(audio)
+                intermed = model.quantizer.from_codes(codes)
+                model.decoder(intermed.to(self.dtype_decoder))
+        # model.encoder = torch.nn.Identity()
+        self.snac_model = model
+        self.stream = torch.Stream()
+
+    @batched.dynamically(batch_size=256, timeout_ms=10)
+    def batch_snac_model(
+        self, items: list[dict[str, list[torch.Tensor]]]
+    ) -> list[torch.Tensor]:
+        # Custom processing logic here
+        # return [model.decode(item["codes"]) for item in items]
+        with torch.inference_mode(), torch.cuda.stream(self.stream):
+            stacked_z_q = torch.cat(  # codes is list[torch.Tensor]
+                [
+                    self.snac_model.quantizer.from_codes(codes["codes"])
+                    for codes in items
+                ],
+                dim=0,
+            )
+            output_batched = self.snac_model.decoder(
+                stacked_z_q.to(self.dtype_decoder)
+            ).to(torch.float32)
+            out = output_batched.split(
+                1, dim=0
+            )  # unbatch the output into len(items) tensors of shape (1, 1, x)
+            self.stream.synchronize()  # make sure the results are ready
+            return out
+
+
+model_snac = SnacModelBatched()
+
+dummy = torch.randn(1, 1, 4096).to(snac_device)
+
+a = model_snac.batch_snac_model(
+    {"codes": model_snac.snac_model.encode(dummy)}  # shape (1, 1, 4096)
+)
+
+print(a)
+
+
 def example_snac():
     from snac import SNAC
 

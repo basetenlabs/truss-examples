@@ -36,17 +36,11 @@ trt_llm:
       source: HF
     max_batch_size: 64
     max_num_tokens: 16384
-    max_seq_len: 32768
+    max_seq_len: 65536
     num_builder_gpus: 1
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    # speculator:
-    #   lookahead_ngram_size: 3
-    #   lookahead_verification_set_size: 3
-    #   lookahead_windows_size: 3
-    #   num_draft_tokens: 11
-    #   speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true
