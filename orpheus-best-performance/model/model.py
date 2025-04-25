@@ -14,13 +14,14 @@ import time
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
+torch.backends.cuda.matmul.allow_tf32 = True
 
 # TODO(veer/michael): test decoder with bfloat16
 snac_device = "cuda"
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 snac_device = "cuda"
-snac_max_batch_size = 64
+snac_max_batch_size = 16
 
 
 class SnacModelBatched:
@@ -49,36 +50,47 @@ class SnacModelBatched:
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=64, timeout_ms=10)
+    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=20)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
         # Custom processing logic here
         # return [model.decode(item["codes"]) for item in items]
-        if len(items) > 1:
-            assert items[0]["codes"][0].shape == items[1]["codes"][0].shape, (
-                f"items[0]['codes'][0].shape: {items[0]['codes'][0].shape}, items[1]['codes'][0].shape: {items[1]['codes'][0].shape}"
-            )
-            assert items[0]["codes"][1].shape == items[1]["codes"][1].shape
-            assert items[0]["codes"][2].shape == items[1]["codes"][2].shape
-            print(f"using batch size {len(items)}")
         with torch.inference_mode(), torch.cuda.stream(self.stream):
             all_codes = [codes["codes"] for codes in items]
-            # stacked_codes = [(b,4), (b,8), (b,16)]
-            stacked_codes = [
-                torch.cat(  # codes is list[torch.Tensor]
-                    [item[i] for item in all_codes], dim=0
-                )
-                for i in range(3)
-            ]
-            stacked_z_q = self.snac_model.quantizer.from_codes(stacked_codes)
-            output_batched = self.snac_model.decoder(
-                stacked_z_q.to(self.dtype_decoder)
-            )[:, :, 2048:4096].to(torch.float32)
+            can_be_batched = len(items) > 1 and all(
+                codes[0].shape == all_codes[0][0].shape for codes in all_codes
+            )
+            if can_be_batched:
+                # stacked_codes = [(b,4), (b,8), (b,16)]
+                print(f"running batched at size {len(items)}")
+                stacked_codes = [
+                    torch.cat(  # codes is list[torch.Tensor]
+                        [item[i] for item in all_codes], dim=0
+                    )
+                    for i in range(3)
+                ]
+                stacked_z_q = self.snac_model.quantizer.from_codes(stacked_codes)
+                output_batched = self.snac_model.decoder(
+                    stacked_z_q.to(self.dtype_decoder)
+                )[:, :, 2048:4096].to(torch.float32)
 
-            out = output_batched.split(
-                1, dim=0
-            )  # unbatch the output into len(items) tensors of shape (1, 1, x)
+                out = output_batched.split(
+                    1, dim=0
+                )  # unbatch the output into len(items) tensors of shape (1, 1, x)
+            else:
+                print(f"running unbatched at size {len(items)}")
+                # if we have a single item, we need to do the same thing as above
+                # but without concatenating
+                output_batched = []
+                for codes in all_codes:
+                    stacked_z_q = self.snac_model.quantizer.from_codes(codes)
+                    output_batched.append(
+                        self.snac_model.decoder(stacked_z_q.to(self.dtype_decoder))[
+                            :, :, 2048:4096
+                        ].to(torch.float32)
+                    )
+                out = output_batched
             self.stream.synchronize()  # make sure the results are ready
             return out
 
@@ -114,30 +126,31 @@ async def tokens_decoder(token_gen: Iterator):
             count += 1
             if count % 7 == 0 and count > 27:
                 buffer_to_proc = buffer[-28:]
-                audio_samples = await convert_to_audio(buffer_to_proc, count)
+                audio_samples = await convert_to_audio(buffer_to_proc)
                 if audio_samples is not None:
                     yield audio_samples
 
     # After the stream ends, yield any remaining tokens if buffer has leftovers
-    if count > 27:
-        remaining = buffer[-28:]
-    else:
-        remaining = buffer
-
-    if remaining:
-        audio_samples = await convert_to_audio(remaining, count)
+    if buffer:
+        audio_samples = await convert_to_audio(buffer[-28:])
         if audio_samples is not None:
             yield audio_samples
 
 
 @torch.inference_mode()
-async def convert_to_audio(multiframe, count):
-    """Convert a list of token IDs into audio bytes efficiently."""
+async def convert_to_audio(multiframe: list[int]) -> bytes | None:
+    """Convert a list of token IDs into audio bytes efficiently.
+
+    multiframe:
+    - list of token IDS (phonemes) of length 28 or less.
+    - 7 tokens = 1 frame
+    """
     if len(multiframe) < 7:
+        # if not even enough tokens for 1 phoneme, return None
         return None
 
     num_frames = len(multiframe) // 7
-    frame = multiframe[: num_frames * 7]
+    frame = multiframe[: num_frames * 7]  # drop up to 6 tokens at the end
 
     codes_0 = torch.zeros(num_frames, dtype=torch.int32)
     codes_1 = torch.zeros(2 * num_frames, dtype=torch.int32)
