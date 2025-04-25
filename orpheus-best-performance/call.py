@@ -3,8 +3,9 @@ import aiohttp
 import uuid
 import time
 import os
+import random
 
-MODEL = "zq8dv55w"  # 7qkrmxd3
+MODEL = "dq4rlnkw"  # 7qkrmxd3
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
 
 BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
@@ -12,7 +13,7 @@ BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
 # Sample prompts of varying lengths
 prompts = [
     # Short (1 sentence)
-    "Hi, how can I help you today?",
+    f"Chapter {random.randint(0, 99)}, Passage {random.randint(0, 99)}: A group of friends sat around a campfire, sharing stories and laughter.",
     # Medium (2 sentences)
     "Man, the way social media has, um, completely changed how we interact is just wild, right? Like, we're all connected 24/7 but somehow people feel more alone than ever",
 ]
@@ -67,11 +68,11 @@ async def run_session(session, prompt, prompt_type, run):
 
     stream_label = f"{prompt_type}_run{run}"
     buffer = await stream_to_buffer(session, stream_label, payload)
-
-    filename = f"output_{prompt_type}_run{run}.wav"
-    with open(filename, "wb") as f:
-        f.write(buffer)
-    print(f"Saved {filename}")
+    if run < 3:
+        filename = f"output_{prompt_type}_run{run}.wav"
+        with open(filename, "wb") as f:
+            f.write(buffer)
+        print(f"Saved {filename}")
 
 
 async def main():
@@ -83,7 +84,7 @@ async def main():
             print(f"STOP TOKEN IDS: {base_request_payload['stop_token_ids']}")
 
             # Run each prompt twice
-            for run in range(1, 3):
+            for run in range(1, 16):
                 print(f"\nRunning {prompt_type} prompt, run {run}...")
                 runs.append(run_session(session, prompt, prompt_type, run))
         await asyncio.gather(*runs)
