@@ -50,7 +50,7 @@ class SnacModelBatched:
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=10)
+    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=8)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
@@ -63,7 +63,6 @@ class SnacModelBatched:
             )
             if can_be_batched:
                 # stacked_codes = [(b,4), (b,8), (b,16)]
-                print(f"running batched at size {len(items)}")
                 stacked_codes = [
                     torch.cat(  # codes is list[torch.Tensor]
                         [item[i] for item in all_codes], dim=0
@@ -79,7 +78,9 @@ class SnacModelBatched:
                     1, dim=0
                 )  # unbatch the output into len(items) tensors of shape (1, 1, x)
             else:
-                if len(items > 1):
+                # items can't be batched
+                if len(items) > 1:
+                    # items can't cant be concatenated (no padding)
                     print(f"running unbatched at size {len(items)}")
                 # if we have a single item, we need to do the same thing as above
                 # but without concatenating
