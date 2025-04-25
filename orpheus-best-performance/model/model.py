@@ -19,12 +19,13 @@ snac_device = "cuda"
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 snac_device = "cuda"
+snac_max_batch_size = 64
 
 
 class SnacModelBatched:
     def __init__(self):
         self.dtype_decoder = torch.float32
-        snac_torch_compile = False
+        snac_torch_compile = True
 
         model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
         model = model.to(snac_device)
@@ -33,17 +34,19 @@ class SnacModelBatched:
         if snac_torch_compile:
             model.decoder = torch.compile(model.decoder, dynamic=True)
             model.quantizer = torch.compile(model.quantizer, dynamic=True)
-        for bs_size in [1, 256]:
-            audio = torch.randn(bs_size, 1, 4096).to(snac_device)
+        for bs_size in [snac_max_batch_size, 1, 2, 3, 4]:
+            codes = [
+                torch.randint(1, 4096, (bs_size, 4)).to(snac_device),
+                torch.randint(1, 4096, (bs_size, 8)).to(snac_device),
+                torch.randint(1, 4096, (bs_size, 16)).to(snac_device),
+            ]
             with torch.inference_mode():
-                codes = model.encode(audio)
                 intermed = model.quantizer.from_codes(codes)
                 model.decoder(intermed.to(self.dtype_decoder))
-        # model.encoder = torch.nn.Identity()
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=256, timeout_ms=10)
+    @batched.dynamically(batch_size=64, timeout_ms=10)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
@@ -56,13 +59,15 @@ class SnacModelBatched:
             assert items[0]["codes"][1].shape == items[1]["codes"][1].shape
             assert items[0]["codes"][2].shape == items[1]["codes"][2].shape
         with torch.inference_mode(), torch.cuda.stream(self.stream):
-            stacked_z_q = torch.cat(  # codes is list[torch.Tensor]
-                [
-                    self.snac_model.quantizer.from_codes(codes["codes"])
-                    for codes in items
-                ],
-                dim=0,
-            )
+            all_codes = [codes["codes"] for codes in items]
+            # stacked_codes = [(b,4), (b,8), (b,16)]
+            stacked_codes = [
+                torch.cat(  # codes is list[torch.Tensor]
+                    [item[i] for item in all_codes], dim=0
+                )
+                for i in range(3)
+            ]
+            stacked_z_q = self.snac_model.quantizer.from_codes(stacked_codes)
             output_batched = self.snac_model.decoder(
                 stacked_z_q.to(self.dtype_decoder)
             )[:, :, 2048:4096].to(torch.float32)
