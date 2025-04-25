@@ -21,7 +21,7 @@ snac_device = "cuda"
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 snac_device = "cuda"
-snac_max_batch_size = 16
+snac_max_batch_size = 32
 
 
 class SnacModelBatched:
@@ -50,7 +50,7 @@ class SnacModelBatched:
         self.snac_model = model
         self.stream = torch.Stream()
 
-    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=20)
+    @batched.dynamically(batch_size=snac_max_batch_size, timeout_ms=10)
     def batch_snac_model(
         self, items: list[dict[str, list[torch.Tensor]]]
     ) -> list[torch.Tensor]:
@@ -79,7 +79,8 @@ class SnacModelBatched:
                     1, dim=0
                 )  # unbatch the output into len(items) tensors of shape (1, 1, x)
             else:
-                print(f"running unbatched at size {len(items)}")
+                if len(items > 1):
+                    print(f"running unbatched at size {len(items)}")
                 # if we have a single item, we need to do the same thing as above
                 # but without concatenating
                 output_batched = []
@@ -195,11 +196,21 @@ class Model:
         self._data_dir = kwargs["data_dir"]
         self._model = None
         self._tokenizer = None
+        self.start_id = [128259]
+        self.end_ids = [128009, 128260, 128261, 128257]
 
     def load(self) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(
             Path(self._data_dir) / "tokenization"
         )
+        self.start_tokenized = (
+            self._tokenizer.decode(self.start_id) + self._tokenizer.bos_token
+        )
+        self.end_tokenized = self._tokenizer.decode(self.end_ids)
+
+        self.use_fast_fmt = self._format_prompt_fast(
+            "hello world", "tara"
+        ) == self._format_prompt_slow("hello world", "tara")
 
     def create_wav_header(self, sample_rate=24000, bits_per_sample=16, channels=1):
         """Create a WAV file header."""
@@ -224,26 +235,38 @@ class Model:
         )
         return header
 
-    def _format_prompt(self, prompt, voice="tara"):
+    def _format_prompt_slow(self, prompt, voice="tara"):
         if voice:
             adapted_prompt = f"{voice}: {prompt}"
         else:
             adapted_prompt = prompt
-        # TODO: make this pure python lists
         input_ids = self._tokenizer.encode(
             adapted_prompt,
         )
-        start_id = 128259
-        end_ids = [128009, 128260, 128261, 128257]
-
-        full_ids = [start_id] + input_ids + end_ids
+        full_ids = self.start_id + input_ids + self.end_ids
         return self._tokenizer.decode(full_ids)
+
+    def _format_prompt_fast(self, prompt, voice="tara"):
+        token_stream = self.start_tokenized
+        if voice:
+            token_stream += f"{voice}: "
+        token_stream += prompt
+        token_stream += self.end_tokenized
+        return token_stream
+
+    def format_prompt(self, prompt: str, voice="tara"):
+        """Format the prompt for the model."""
+        if self.use_fast_fmt:
+            return self._format_prompt_fast(prompt, voice)
+        else:
+            print("Warn: Using slow format")
+            return self._format_prompt_slow(prompt, voice)
 
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
         print("Starting new request")
-        model_input["prompt"] = self._format_prompt(
+        model_input["prompt"] = self.format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
         model_input["temperature"] = model_input.get("temperature", 0.6)
