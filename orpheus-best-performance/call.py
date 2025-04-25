@@ -5,7 +5,7 @@ import time
 import os
 import random
 
-MODEL = "dq4rlnkw"  # 7qkrmxd3
+MODEL = "owp4k9zw"  # 7qkrmxd3
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
 
 BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
@@ -15,7 +15,7 @@ prompts = [
     # Short (1 sentence)
     f"Chapter {random.randint(0, 99)}, Passage {random.randint(0, 99)}: A group of friends sat around a campfire, sharing stories and laughter.",
     # Medium (2 sentences)
-    "Man, the way social media has, um, completely changed how we interact is just wild, right? Like, we're all connected 24/7 but somehow people feel more alone than ever",
+    # "Man, the way social media has, um, completely changed how we interact is just wild, right? Like, we're all connected 24/7 but somehow people feel more alone than ever",
 ]
 
 base_request_payload = {
