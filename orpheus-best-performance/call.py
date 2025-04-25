@@ -3,93 +3,129 @@ import aiohttp
 import uuid
 import time
 import os
-import random
+from concurrent.futures import ProcessPoolExecutor
 
-MODEL = "owp4k9zw"  # 7qkrmxd3
+# Configuration
+MODEL = "5wod6ovq"
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
+BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
+PAYLOADS_PER_PROCESS = 500
+NUM_PROCESSES = 16
+MAX_REQUESTS_PER_PROCESS = 2
 
-BASETEN_API_KEY = os.environ.get("BASETEN_API_KEY")
-
-# Sample prompts of varying lengths
+# Sample prompts
 prompts = [
-    # Short (1 sentence)
-    f"Chapter {random.randint(0, 99)}, Passage {random.randint(0, 99)}: A group of friends sat around a campfire, sharing stories and laughter.",
-    # Medium (2 sentences)
-    # "Man, the way social media has, um, completely changed how we interact is just wild, right? Like, we're all connected 24/7 but somehow people feel more alone than ever",
+    """Hello there.
+Thank you for calling our support line.
+My name is Sarah and I'll be helping you today.
+Could you please provide your account number and tell me what issue you're experiencing?"""
 ]
+prompt_types = ["short", "medium", "long"]
 
 base_request_payload = {
-    "max_tokens": 10000,
+    "max_tokens": 10_000,
     "voice": "tara",
     "stop_token_ids": [128258, 128009],
 }
 
 
-async def stream_to_buffer(session, stream_label, payload):
-    """
-    Sends a streaming request and accumulates the response in a buffer.
-    """
-    unique_id = str(uuid.uuid4())
-    payload_with_id = payload.copy()
-    payload_with_id["request_id"] = unique_id
+async def stream_to_buffer(
+    session: aiohttp.ClientSession, label: str, payload: dict
+) -> bytes:
+    """Send one streaming request, accumulate into bytes, and log timings."""
+    req_id = str(uuid.uuid4())
+    payload = {**payload, "request_id": req_id}
 
-    print(f"[{stream_label}] Starting request with request_id: {unique_id}")
-    start_time = time.time()
+    t0 = time.perf_counter()
 
-    async with session.post(
-        BASETEN_HOST,
-        json=payload_with_id,
-        headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"},
-    ) as resp:
-        if resp.status != 200:
-            print(f"[{stream_label}] Error: Received status code {resp.status}")
-            return b""
-        buffer = b""
-        chunk_count = 0
-        async for chunk in resp.content.iter_chunked(4096):
-            chunk_count += 1
-            now = time.time()
-            execution_time_ms = (now - start_time) * 1000
-            print(
-                f"[{stream_label}] Received chunk {chunk_count} ({len(chunk)} bytes) after {execution_time_ms:.2f}ms"
-            )
-            buffer += chunk
+    try:
+        async with session.post(
+            BASETEN_HOST,
+            json=payload,
+            headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"},
+        ) as resp:
+            if resp.status != 200:
+                print(f"[{label}] ← HTTP {resp.status}")
+                return b""
 
-        total_time = time.time() - start_time
-        print(
-            f"[{stream_label}] Completed receiving stream. Total size: {len(buffer)} bytes in {total_time:.2f}s"
-        )
-        return buffer
+            buf = bytearray()
+            idx = 0
+            # *** CORRECTED: async for on the AsyncStreamIterator ***
+            async for chunk in resp.content.iter_chunked(4_096):
+                elapsed_ms = (time.perf_counter() - t0) * 1_000
+                if idx in [0, 1]:
+                    print(
+                        f"[{label}] ← chunk#{idx} ({len(chunk)} B) @ {elapsed_ms:.1f} ms"
+                    )
+                buf.extend(chunk)
+                idx += 1
 
+            total_s = time.perf_counter() - t0
+            print(f"[{label}] ← done {len(buf)} B in {total_s:.2f}s")
+            return bytes(buf)
 
-async def run_session(session, prompt, prompt_type, run):
-    payload = base_request_payload.copy()
-    payload["prompt"] = prompt
-
-    stream_label = f"{prompt_type}_run{run}"
-    buffer = await stream_to_buffer(session, stream_label, payload)
-    if run < 3:
-        filename = f"output_{prompt_type}_run{run}.wav"
-        with open(filename, "wb") as f:
-            f.write(buffer)
-        print(f"Saved {filename}")
+    except Exception as e:
+        print(f"[{label}] ⚠️ exception: {e!r}")
+        return b""
 
 
-async def main():
-    async with aiohttp.ClientSession() as session:
-        runs = []
+async def run_session(
+    session: aiohttp.ClientSession,
+    prompt: str,
+    ptype: str,
+    run_id: int,
+    semaphore: asyncio.Semaphore,
+) -> None:
+    """Wrap a single prompt run in its own error‐safe block."""
+    label = f"{ptype}_run{run_id}"
+    async with semaphore:
+        try:
+            payload = {**base_request_payload, "prompt": prompt}
+            buf = await stream_to_buffer(session, label, payload)
+            if run_id < 3 and buf:
+                fn = f"output_{ptype}_run{run_id}.wav"
+                with open(fn, "wb") as f:
+                    f.write(buf)
+                print(f"[{label}] ➔ saved {fn}")
+
+        except Exception as e:
+            print(f"[{label}] 🛑 failed: {e!r}")
+
+
+async def run_with_offset(offset: int) -> None:
+    semph = asyncio.Semaphore(MAX_REQUESTS_PER_PROCESS)
+    connector = aiohttp.TCPConnector(limit_per_host=128, limit=128)
+    async with aiohttp.ClientSession(connector=connector) as session:
+        # warmup once per worker
+        await run_session(session, "warmup", "warmup", 90 + offset, semph)
+
+        tasks = []
         for i, prompt in enumerate(prompts):
-            prompt_type = ["short", "medium", "long", "very_long", "super_long"][i]
-            print(f"\nProcessing {prompt_type} prompt: {prompt[:50]}...")
-            print(f"STOP TOKEN IDS: {base_request_payload['stop_token_ids']}")
+            ptype = prompt_types[i]
+            print(f"\nWorker@offset {offset} ▶ {ptype} prompt starts…")
+            for run_id in range(offset, offset + PAYLOADS_PER_PROCESS):
+                tasks.append(run_session(session, prompt, ptype, run_id, semph))
 
-            # Run each prompt twice
-            for run in range(1, 16):
-                print(f"\nRunning {prompt_type} prompt, run {run}...")
-                runs.append(run_session(session, prompt, prompt_type, run))
-        await asyncio.gather(*runs)
-        print("All runs completed.")
+        await asyncio.gather(*tasks)
+        print(f"Worker@offset {offset} ✅ all done.")
+
+
+def run_with_offset_sync(offset: int) -> None:
+    try:
+        # create and run a fresh event loop in each process
+        asyncio.run(run_with_offset(offset))
+    except Exception as e:
+        print(f"Worker@offset {offset} ❌ error: {e}")
+
+
+def main():
+    offsets = [i * PAYLOADS_PER_PROCESS for i in range(NUM_PROCESSES)]
+    with ProcessPoolExecutor() as exe:
+        # map each offset to its own process
+        exe.map(run_with_offset_sync, offsets)
+
+    print("🎉 All processes completed.")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
