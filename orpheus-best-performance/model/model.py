@@ -12,6 +12,7 @@ import re
 from typing import List
 import time
 import uuid
+import asyncio
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -118,28 +119,46 @@ def split_custom_tokens(s: str) -> List[int]:
 
 
 async def tokens_decoder(token_gen: Iterator):
-    """Corrected to handle both async and sync iterables."""
+    """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
     buffer: list[int] = []
     count = 0
-    # Check if token_gen is an async iterable; if not, iterate synchronously.
+
+    # queue of pending convert_to_audio tasks, in submission order
+    pending: list[asyncio.Task[bytes | None]] = []
+    next_yield_idx = 0
+
     assert hasattr(token_gen, "__aiter__")
     async for token_sim in token_gen:
-        split_tokens = split_custom_tokens(token_sim)
-        for token_string in split_tokens:
-            token = turn_token_into_id(token_string, count)
+        for tok_str in split_custom_tokens(token_sim):
+            token = turn_token_into_id(int(tok_str), count)
             buffer.append(token)
             count += 1
-            if count % 7 == 0 and count > 27:
-                buffer_to_proc = buffer[-28:]
-                audio_samples = await convert_to_audio(buffer_to_proc)
-                if audio_samples is not None:
-                    yield audio_samples
 
-    # After the stream ends, yield any remaining tokens if buffer has leftovers
+            # every 7 tokens → one frame; once we have at least 28 tokens, we extract the last 28
+            if count % 7 == 0 and count > 27:
+                buf_to_proc = buffer[-28:]
+
+                # schedule conversion immediately, but don't await it yet
+                task = asyncio.create_task(convert_to_audio(buf_to_proc))
+                pending.append(task)
+
+                # now drain any tasks at the front of the queue that have finished
+                while next_yield_idx < len(pending) and pending[next_yield_idx].done():
+                    audio = await pending[next_yield_idx]  # already done
+                    if audio:
+                        yield audio
+                    next_yield_idx += 1
+
+    # final flush after the token stream ends
     if buffer:
-        audio_samples = await convert_to_audio(buffer[-28:])
-        if audio_samples is not None:
-            yield audio_samples
+        task = asyncio.create_task(convert_to_audio(buffer[-28:]))
+        pending.append(task)
+
+    # await & yield any remaining in exact order
+    for i in range(next_yield_idx, len(pending)):
+        audio = await pending[i]
+        if audio:
+            yield audio
 
 
 @torch.inference_mode()
@@ -274,11 +293,14 @@ class Model:
             header = self.create_wav_header()
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
+
+            sent_header = False
             async for chunk in tokens_decoder(token_gen):
-                if header is not None:
-                    yield header
-                    header = None
-                yield chunk
+                if not sent_header:
+                    yield header + chunk
+                    sent_header = True
+                else:
+                    yield chunk
             print(f"Finished request_id {req_id}")
 
         return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
