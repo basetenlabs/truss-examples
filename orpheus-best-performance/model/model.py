@@ -281,7 +281,7 @@ class Model:
         )
         model_input["temperature"] = model_input.get("temperature", 0.6)
         model_input["top_p"] = model_input.get("top_p", 0.8)
-        model_input["max_tokens"] = model_input.get("max_tokens", 10000)
+        model_input["max_tokens"] = model_input.get("max_tokens", 6144)
         if model_input.get("end_id") is not None:
             print("Not using end_id from model_input:", model_input["end_id"])
         model_input["end_id"] = 128258
