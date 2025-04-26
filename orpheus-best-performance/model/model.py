@@ -13,6 +13,8 @@ from typing import List
 import time
 import uuid
 import asyncio
+from collections import deque
+from fastapi import HTTPException
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -207,6 +209,8 @@ class Model:
         self._tokenizer = None
         self.start_id = [128259]
         self.end_ids = [128009, 128260, 128261, 128257]
+        self._ttft_records: deque[tuple[float, float]] = deque()
+        self._ttft_lock = asyncio.Lock()
 
     def load(self) -> None:
         self._tokenizer = AutoTokenizer.from_pretrained(
@@ -265,15 +269,49 @@ class Model:
 
     def format_prompt(self, prompt: str, voice="tara"):
         """Format the prompt for the model."""
+        if len(prompt) > 32768:
+            raise HTTPException(
+                status_code=400,
+                detail="Prompt is too long. Please keep it under 32768 characters. Typically 512 characters or less are used.",
+            )
         if self.use_fast_fmt:
             return self._format_prompt_fast(prompt, voice)
         else:
             print("Warn: Using slow format")
             return self._format_prompt_slow(prompt, voice)
 
+    async def backoff_429(
+        self, backoff_ttft_s: int = 6, n_measurements: int = 3, window_size: int = 9
+    ) -> None:
+        now = time.time()
+        # prune old entries (>window_size s old) and pull a snapshot
+        async with self._ttft_lock:
+            # keep only those in last window_size seconds
+            while self._ttft_records and self._ttft_records[0][0] < now - window_size:
+                self._ttft_records.popleft()
+            recent = [ttft for (_, ttft) in self._ttft_records]
+        if recent:
+            # if we have enough measurements and all are >5 s, back off
+            if len(recent) >= n_measurements and all(
+                t > backoff_ttft_s for t in recent
+            ):
+                print(f"Backoff, recent ttft times: {recent}")
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Server is busy—please retry later. Recent ttft times: {recent}",
+                )
+            # else if low volume but mean of whatever we have >10 s, back off
+            elif (sum(recent) / len(recent)) > backoff_ttft_s * 2:
+                print(f"Backoff, high mean recent ttft times: {recent}")
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Server is busy—please retry later. Recent ttft times: {recent}",
+                )
+
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
+        await self.backoff_429()
         req_id = str(model_input.get("request_id", uuid.uuid4()))
         print(f"Starting request_id {req_id}")
         model_input["prompt"] = self.format_prompt(
@@ -289,6 +327,7 @@ class Model:
         model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
 
         async def audio_stream(req_id: str):
+            start_time = time.time()
             token_gen = await self._engine.predict(model_input, request)
             header = self.create_wav_header()
             if isinstance(token_gen, StreamingResponse):
@@ -297,8 +336,12 @@ class Model:
             sent_header = False
             async for chunk in tokens_decoder(token_gen):
                 if not sent_header:
+                    ttft = time.time() - start_time
+                    # TTFT
                     yield header + chunk
                     sent_header = True
+                    async with self._ttft_lock:
+                        self._ttft_records.append((time.time(), ttft))
                 else:
                     yield chunk
             print(f"Finished request_id {req_id}")
