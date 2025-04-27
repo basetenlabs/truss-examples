@@ -13,6 +13,7 @@ from typing import List
 import time
 import uuid
 import asyncio
+import threading
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -22,22 +23,35 @@ _inference_mode_raii_guard = torch._C._InferenceMode(True)
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 SNAC_DEVICE = "cuda"
-SNAC_MAX_BATCH = 32
+SNAC_MAX_BATCH = 48
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 
 
 class SnacModelBatched:
     def __init__(self):
         self.dtype_decoder = torch.float32
-        snac_torch_compile = True
-
+        compile_background = False
+        use_compile = True
         model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
         model = model.to(SNAC_DEVICE)
 
         model.decoder = model.decoder.to(self.dtype_decoder)
-        if snac_torch_compile:
-            model.decoder = torch.compile(model.decoder, dynamic=True)
-            model.quantizer = torch.compile(model.quantizer, dynamic=True)
+
+        self.snac_model = model
+        self.stream = torch.Stream()
+        if use_compile:
+            if compile_background:
+                # Compile the model in a separate thread, experimental.
+                threading.Thread(target=self.compile, daemon=True).start()
+            else:
+                # Compile the model in the main thread
+                self.compile()
+
+    def compile(self):
+        model = self.snac_model
+        # Compile the model with torch.compile
+        decoder = torch.compile(model.decoder, dynamic=True)
+        quantizer = torch.compile(model.quantizer, dynamic=True)
         t = time.time()
         print("starting torch.compile")
         for bs_size in range(1, max(SNAC_MAX_BATCH, 1)):
@@ -47,11 +61,11 @@ class SnacModelBatched:
                 torch.randint(1, 4096, (bs_size, 16)).to(SNAC_DEVICE),
             ]
             with torch.inference_mode():
-                intermed = model.quantizer.from_codes(codes)
-                model.decoder(intermed.to(self.dtype_decoder))
+                intermed = quantizer.from_codes(codes)
+                decoder(intermed.to(self.dtype_decoder))
         print("finish time for torch.compile:", time.time() - t)
-        self.snac_model = model
-        self.stream = torch.Stream()
+        self.snac_model.decoder = decoder
+        self.snac_model.quantizer = quantizer
 
     @batched.dynamically(batch_size=SNAC_MAX_BATCH, timeout_ms=15)
     def batch_snac_model(
