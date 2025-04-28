@@ -34,10 +34,16 @@ trt_llm:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
       source: HF
-    max_batch_size: 128
+    max_batch_size: 256
+    # set higher, so we can always use the max batch size in a single iter.
     max_num_tokens: 16384
+    # 65536 would be around 600s of audio, typically model produces max 120s.
     max_seq_len: 65536
     num_builder_gpus: 1
+    quantization_config:
+      # TODO: Generate a typical dataset (input + output tokens) in target language
+      # or disable quantization for other languages
+      calib_dataset: "cnn_dailymail"
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv

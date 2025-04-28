@@ -23,7 +23,7 @@ _inference_mode_raii_guard = torch._C._InferenceMode(True)
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 SNAC_DEVICE = "cuda"
-SNAC_MAX_BATCH = 48
+SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 
 
@@ -82,7 +82,7 @@ class SnacModelBatched:
             )
             if can_be_batched:
                 # stacked_codes = [(b,4), (b,8), (b,16)]
-                stacked_codes = [
+                stacked_codes: tuple[torch.Tensor, torch.Tensor, torch.Tensor] = [
                     torch.cat(  # codes is list[torch.Tensor]
                         [item[i] for item in all_codes], dim=0
                     )
@@ -103,15 +103,14 @@ class SnacModelBatched:
                     print(f"running unbatched at size {len(items)}")
                 # if we have a single item, we need to do the same thing as above
                 # but without concatenating
-                output_batched = []
+                out: list[torch.Tensor] = []
                 for codes in all_codes:
                     stacked_z_q = self.snac_model.quantizer.from_codes(codes)
-                    output_batched.append(
+                    out.append(
                         self.snac_model.decoder(stacked_z_q.to(self.dtype_decoder))[
                             :, :, 2048:4096
                         ].to(torch.float32)
                     )
-                out = output_batched
             self.stream.synchronize()  # make sure the results are ready
             return out
 
@@ -132,7 +131,7 @@ def split_custom_tokens(s: str) -> List[int]:
     return [int(match) for match in matches if match != "0"]
 
 
-async def tokens_decoder(token_gen: Iterator):
+async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[bytes]:
     """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
     buffer: list[int] = []
     count = 0
@@ -173,6 +172,7 @@ async def tokens_decoder(token_gen: Iterator):
         audio = await pending[i]
         if audio:
             yield audio
+    print(f"total tokens `{request_id}`: {count}")
 
 
 @torch.inference_mode()
@@ -309,7 +309,7 @@ class Model:
                 token_gen = token_gen.body_iterator
 
             sent_header = False
-            async for chunk in tokens_decoder(token_gen):
+            async for chunk in tokens_decoder(token_gen, req_id=req_id):
                 if not sent_header:
                     yield header + chunk
                     sent_header = True
