@@ -5,7 +5,7 @@ model_metadata:
         content: "You are a helpful assistant."
       - role: user
         content: "What does Tongyi Qianwen mean?"
-    stream: true
+    stream: false
     model: "Qwen/Qwen3-32B"
     max_tokens: 512
     temperature: 0.6
