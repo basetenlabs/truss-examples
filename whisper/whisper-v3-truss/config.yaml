@@ -16,7 +16,7 @@ requirements:
 - openai-whisper==20240930
 - ffmpeg-python==0.2.0
 resources:
-  accelerator: T4
+  accelerator: A10G
   cpu: '3'
   memory: 16Gi
   use_gpu: true
