@@ -9,11 +9,11 @@ from concurrent.futures import ProcessPoolExecutor
 MODEL = "dq4rlnkw"
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
 BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
-PAYLOADS_PER_PROCESS = 500
-NUM_PROCESSES = 16
-MAX_REQUESTS_PER_PROCESS = 2
+PAYLOADS_PER_PROCESS = 5000
+NUM_PROCESSES = 8
+MAX_REQUESTS_PER_PROCESS = 1
 
-# Sample prompts
+# Sample promptds
 prompts = [
     """Hello there.
 Thank you for calling our support line.
@@ -23,7 +23,7 @@ Could you please provide your account number and tell me what issue you're exper
 prompt_types = ["short", "medium", "long"]
 
 base_request_payload = {
-    "max_tokens": 10_000,
+    "max_tokens": 4096,
     "voice": "tara",
     "stop_token_ids": [128258, 128009],
 }
