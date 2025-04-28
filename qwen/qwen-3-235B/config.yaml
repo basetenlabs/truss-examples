@@ -6,7 +6,7 @@ model_metadata:
       - role: user
         content: "What does Tongyi Qianwen mean?"
     stream: true
-    model: "baseten-sglang"
+    model: "Qwen/Qwen3-235B-A22B"
     max_tokens: 512
     temperature: 0.6
   tags:
