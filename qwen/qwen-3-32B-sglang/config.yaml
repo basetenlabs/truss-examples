@@ -17,7 +17,7 @@ environment_variables:
 base_image:
   image: lmsysorg/sglang:v0.4.6.post1-cu124
 model_cache:
-  - repo_id: Qwen/Qwen3-30B-A3B-FP8
+  - repo_id: Qwen/Qwen3-32B-FP8
     revision: main
     use_volume: true
     volume_folder: "qwen3"
@@ -25,7 +25,7 @@ model_cache:
       - "original/*"
       - "*.pth"
 docker_server:
-  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3 --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-30B-A3B --tp 1 --reasoning-parser qwen3"
+  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3 --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-32B --tp 1 --reasoning-parser qwen3"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
