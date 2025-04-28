@@ -309,7 +309,7 @@ class Model:
                 token_gen = token_gen.body_iterator
 
             sent_header = False
-            async for chunk in tokens_decoder(token_gen, req_id=req_id):
+            async for chunk in tokens_decoder(token_gen, req_id):
                 if not sent_header:
                     yield header + chunk
                     sent_header = True
