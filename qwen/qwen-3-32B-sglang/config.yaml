@@ -11,7 +11,7 @@ model_metadata:
     temperature: 0.6
   tags:
     - openai-compatible
-model_name: Qwen 3 30B-A3 SGLang
+model_name: Qwen 3 32B SGLang
 environment_variables:
   hf_access_token: null
 base_image:
