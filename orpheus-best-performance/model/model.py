@@ -172,7 +172,7 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
         audio = await pending[i]
         if audio:
             yield audio
-    print(f"total tokens `{request_id}`: {count}")
+    print(f"Finished `{request_id}`, total tokens : {count}")
 
 
 @torch.inference_mode()
@@ -315,6 +315,5 @@ class Model:
                     sent_header = True
                 else:
                     yield chunk
-            print(f"Finished request_id {req_id}")
 
         return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
