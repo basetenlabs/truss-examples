@@ -18,7 +18,7 @@ base_image:
   image: lmsysorg/sglang:v0.4.6.post1-cu124
 model_cache:
   - repo_id: Qwen/Qwen3-32B-FP8
-    revision: main
+    revision: 30b8421510892303dc5ddd6cd0ac90ca2053478d
     use_volume: true
     volume_folder: "qwen3"
     ignore_patterns:
