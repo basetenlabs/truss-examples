@@ -18,14 +18,14 @@ base_image:
   image: lmsysorg/sglang:v0.4.6.post1-cu124
 model_cache:
   - repo_id: Qwen/Qwen3-235B-A22B-FP8
-    revision: 93980c7bab753a37eb95599eff19797d80a77fbc
+    revision: 57c8978fa7d601431cfd6750dd7355b5cdfa5a18
     use_volume: true
-    volume_folder: "qwen3-235B"
+    volume_folder: "qwen3"
     ignore_patterns:
       - "original/*"
       - "*.pth"
 docker_server:
-  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3-235B --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-235B-A22B --tp 4 --reasoning-parser qwen3"
+  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3 --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-235B-A22B --tp 4 --reasoning-parser qwen3"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
