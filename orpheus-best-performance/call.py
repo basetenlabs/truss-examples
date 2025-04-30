@@ -13,7 +13,7 @@ PAYLOADS_PER_PROCESS = 5000
 NUM_PROCESSES = 8
 MAX_REQUESTS_PER_PROCESS = 1
 
-# Sample promptds
+# Sample prompts
 prompts = [
     """Hello there.
 Thank you for calling our support line.
