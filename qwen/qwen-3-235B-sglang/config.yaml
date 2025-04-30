@@ -5,15 +5,13 @@ model_metadata:
         content: "You are a helpful assistant."
       - role: user
         content: "What does Tongyi Qianwen mean?"
-    stream: false
+    stream: true
     model: "Qwen/Qwen3-235B-A22B"
-    max_tokens: 512
+    max_tokens: 32768
     temperature: 0.6
   tags:
     - openai-compatible
 model_name: Qwen 3 235B SGLang
-environment_variables:
-  hf_access_token: null
 base_image:
   image: lmsysorg/sglang:v0.4.6.post1-cu124
 model_cache:
