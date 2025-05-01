@@ -5,8 +5,8 @@ import time
 import os
 
 # Configuration
-MODEL = "dq4rlnkw"
-WS_URL = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
+MODEL = "4q94y263"
+WS_URL = f"wss://model-{MODEL}.api.baseten.co/v1/websocket"
 BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
 
 base_request_payload = {
