@@ -1,5 +1,3 @@
-environment_variables:
-  ENABLE_EXECUTOR_API: '1'
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -26,8 +24,8 @@ trt_llm:
       source: HF
     max_seq_len: 32768
     quantization_config:
-      calib_max_seq_length: 4096
-      calib_size: 3072
+      calib_max_seq_length: 2048
+      calib_size: 2048
     quantization_type: fp8
     tensor_parallel_count: 2
   runtime:

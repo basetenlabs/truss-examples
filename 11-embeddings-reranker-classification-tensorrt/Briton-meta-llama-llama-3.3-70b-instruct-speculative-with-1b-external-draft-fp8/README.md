@@ -150,8 +150,6 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets:
-  hf_access_token: null
 trt_llm:
   build:
     base_model: llama

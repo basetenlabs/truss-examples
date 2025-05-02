@@ -133,8 +133,6 @@ print(completion.choices[0].message.tool_calls)
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
-environment_variables:
-  ENABLE_EXECUTOR_API: '1'
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -152,8 +150,6 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets:
-  hf_access_token: null
 trt_llm:
   build:
     base_model: llama

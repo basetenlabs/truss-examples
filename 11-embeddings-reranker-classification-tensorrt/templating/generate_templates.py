@@ -240,30 +240,13 @@ Optionally, you can also enable:
             # increase the quantization example size for qwen2 models
             self.trt_config.build.quantization_config = (
                 TrussTRTQuantizationConfiguration(
-                    calib_size=3072,
-                    calib_max_seq_length=min(4096, self.trt_config.build.max_seq_len),
+                    calib_size=2048,
+                    calib_max_seq_length=min(2048, self.trt_config.build.max_seq_len),
                 )
             )
 
-        secrets = {}
-        if dp.is_gated:
-            # fix: pass-through access token
-            # TODO: remove need to the token at runtime
-            secrets["hf_access_token"] = None
-
-        temp_fix_lookahead = (
-            {}
-            if (
-                self.trt_config.build.speculator
-                and self.trt_config.build.speculator.checkpoint_repository is not None
-            )
-            else dict(ENABLE_EXECUTOR_API="1")
-        )
-
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
-            environment_variables=temp_fix_lookahead,
-            secrets=secrets,
             resources=Resources(
                 accelerator=AcceleratorSpec(
                     accelerator=dp.accelerator,
@@ -1061,9 +1044,10 @@ def llamalike_lookahead(
     config.build.speculator = TrussSpeculatorConfiguration(
         # settings from https://arxiv.org/pdf/2402.02057
         speculative_decoding_mode="LOOKAHEAD_DECODING",
-        lookahead_windows_size=7,
-        lookahead_ngram_size=5,
-        lookahead_verification_set_size=5,
+        lookahead_windows_size=8,
+        lookahead_ngram_size=4,
+        lookahead_verification_set_size=4,
+        enable_b10_lookahead=True,
     )
     config.build.max_batch_size = 64
     return config
