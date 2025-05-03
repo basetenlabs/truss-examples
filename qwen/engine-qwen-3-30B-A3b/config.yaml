@@ -10,10 +10,12 @@ model_metadata:
       enable_thinking: true
   tags:
     - openai-compatible
+environment_variables:
+  B10LOOKAHEAD_ENABLED: "1"
 model_name: library-model-qwen3-30b-a3b-engine
 python_version: py39
 resources:
-  accelerator: H100
+  accelerator: H100:2
   cpu: "1"
   memory: 10Gi
   use_gpu: true
@@ -27,17 +29,19 @@ trt_llm:
       revision: main
       source: HF
     max_batch_size: 64
-    num_builder_gpus: 4
+    num_builder_gpus: 2
     max_seq_len: 40960
     # plugin_configuration:
     #   use_fp8_context_fmha: true
     quantization_type: fp8
+    quantization_config:
+      calib_size: 4096
     speculator:
       enable_b10_lookahead: true
-      lookahead_ngram_size: 4
-      lookahead_verification_set_size: 4
-      lookahead_windows_size: 4
+      lookahead_ngram_size: 8
+      lookahead_verification_set_size: 3
+      lookahead_windows_size: 3
       speculative_decoding_mode: LOOKAHEAD_DECODING
-    tensor_parallel_count: 1
+    tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
