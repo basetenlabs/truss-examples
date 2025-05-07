@@ -2,10 +2,12 @@ import requests
 import base64
 import os
 
+
 def image_file_to_base64(image_path: str) -> str:
     """Read an image file and return its base64-encoded string."""
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
+
 
 def save_base64_image(base64_string: str, output_path: str):
     """Decode a base64 string and save it as an image file."""
@@ -13,6 +15,7 @@ def save_base64_image(base64_string: str, output_path: str):
     with open(output_path, "wb") as f:
         f.write(image_data)
     print(f"Image saved to {output_path}")
+
 
 def main():
     model_id = "abcd1234"
@@ -31,7 +34,7 @@ def main():
         "height": 1024,
         "width": 1024,
         "delta": 0,
-        "lora_name": "gen_back_7000_1024"
+        "lora_name": "gen_back_7000_1024",
     }
 
     url = f"https://model-{model_id}.api.baseten.co/environments/production/predict"
@@ -54,6 +57,7 @@ def main():
     else:
         print(f"Error: HTTP {response.status_code}")
         print(response.text)
+
 
 if __name__ == "__main__":
     main()

@@ -2,7 +2,7 @@ base_image:
   image: fotographerai/zenapp:latest
 model_metadata: {}
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python -m uvicorn zenapp:app --host 0.0.0.0 --port 8000 --log-level debug" 
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python -m uvicorn zenapp:app --host 0.0.0.0 --port 8000 --log-level debug"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /generate

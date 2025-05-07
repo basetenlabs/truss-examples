@@ -1,6 +1,5 @@
 import base64
 import logging
-import os
 import tempfile
 from io import BytesIO
 from typing import Dict
