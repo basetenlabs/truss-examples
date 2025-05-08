@@ -7,11 +7,11 @@ from concurrent.futures import ProcessPoolExecutor
 
 # Configuration
 MODEL = "dq4rlnkw"
-BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/environments/production/predict"
+BASETEN_HOST = "https://model-dq4rlnkw.api.baseten.co/deployment/wl6pl1w/predict"
 BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
-PAYLOADS_PER_PROCESS = 5000
-NUM_PROCESSES = 8
-MAX_REQUESTS_PER_PROCESS = 1
+PAYLOADS_PER_PROCESS = 2000
+NUM_PROCESSES = 4
+MAX_REQUESTS_PER_PROCESS = 8
 
 # Sample prompts
 prompts = [
@@ -53,7 +53,7 @@ async def stream_to_buffer(
             # *** CORRECTED: async for on the AsyncStreamIterator ***
             async for chunk in resp.content.iter_chunked(4_096):
                 elapsed_ms = (time.perf_counter() - t0) * 1_000
-                if idx in [0]:
+                if idx in [0, 10]:
                     print(
                         f"[{label}] ← chunk#{idx} ({len(chunk)} B) @ {elapsed_ms:.1f} ms"
                     )
@@ -82,7 +82,10 @@ async def run_session(
         try:
             payload = {**base_request_payload, "prompt": f"Chapter {run_id}: {prompt}"}
             buf = await stream_to_buffer(session, label, payload)
-            if run_id < 3 and buf:
+            if not buf:
+                print(f"[{label}] 🛑 no data received")
+                return
+            elif run_id < 3:
                 fn = f"output_{ptype}_run{run_id}.wav"
                 with open(fn, "wb") as f:
                     f.write(buf)
