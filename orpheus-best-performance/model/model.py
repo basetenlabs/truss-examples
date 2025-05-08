@@ -9,7 +9,7 @@ import numpy as np
 from fastapi.responses import StreamingResponse
 import batched
 import re
-from typing import List
+from typing import List, Awaitable
 import time
 import uuid
 import asyncio
@@ -133,46 +133,40 @@ def split_custom_tokens(s: str) -> List[int]:
 
 async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[bytes]:
     """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
-    buffer: list[int] = []
-    count = 0
-
-    # queue of pending convert_to_audio tasks, in submission order
-    pending: list[asyncio.Task[bytes | None]] = []
-    next_yield_idx = 0
-
     assert hasattr(token_gen, "__aiter__")
-    async for token_sim in token_gen:
-        for tok_str in split_custom_tokens(token_sim):
-            token = turn_token_into_id(int(tok_str), count)
-            buffer.append(token)
-            count += 1
+    audio_queue = asyncio.Queue()
 
-            # every 7 tokens → one frame; once we have at least 28 tokens, we extract the last 28
-            if count % 7 == 0 and count > 27:
-                buf_to_proc = buffer[-28:]
+    async def producer(token_gen: Iterator):
+        buffer: list[int] = []
+        count = 0
+        async for token_sim in token_gen:
+            for tok_str in split_custom_tokens(token_sim):
+                token = turn_token_into_id(int(tok_str), count)
+                buffer.append(token)
+                count += 1
+                # every 7 tokens → one frame; once we have at least 28 tokens, we extract the last 28
+                if count % 7 == 0 and count > 27:
+                    buf_to_proc = buffer[-28:]
+                    task = asyncio.create_task(convert_to_audio(buf_to_proc))
+                    audio_queue.put_nowait(task)
+        audio_queue.put_nowait(None)
+        print(f"Finished `{request_id}`, total tokens : {count}")
 
-                # schedule conversion immediately, but don't await it yet
-                task = asyncio.create_task(convert_to_audio(buf_to_proc))
-                pending.append(task)
+    producer_task = asyncio.create_task(producer(token_gen))
 
-                # now drain any tasks at the front of the queue that have finished
-                while next_yield_idx < len(pending) and pending[next_yield_idx].done():
-                    audio = await pending[next_yield_idx]  # already done
-                    if audio:
-                        yield audio
-                    next_yield_idx += 1
-
-    # final flush after the token stream ends
-    if buffer:
-        task = asyncio.create_task(convert_to_audio(buffer[-28:]))
-        pending.append(task)
-
-    # await & yield any remaining in exact order
-    for i in range(next_yield_idx, len(pending)):
-        audio = await pending[i]
-        if audio:
-            yield audio
-    print(f"Finished `{request_id}`, total tokens : {count}")
+    while True:
+        # wait for the next audio conversion to finish
+        task: None | Awaitable[bytes | None] = await audio_queue.get()
+        if task is None:
+            break
+        audio_bytes = await task
+        if audio_bytes is not None:
+            yield audio_bytes
+        audio_queue.task_done()
+    assert audio_queue.empty(), (
+        f"audio queue is not empty: e.g. {audio_queue.get_nowait()}"
+    )
+    await producer_task
 
 
 @torch.inference_mode()
