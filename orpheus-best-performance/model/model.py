@@ -229,29 +229,6 @@ class Model:
             "hello world", "tara"
         ) == self._format_prompt_slow("hello world", "tara")
 
-    def create_wav_header(self, sample_rate=24000, bits_per_sample=16, channels=1):
-        """Create a WAV file header."""
-        byte_rate = sample_rate * channels * bits_per_sample // 8
-        block_align = channels * bits_per_sample // 8
-        data_size = 0  # cant know the size of the data in advance
-        header = struct.pack(
-            "<4sI4s4sIHHIIHH4sI",
-            b"RIFF",
-            36 + data_size,
-            b"WAVE",
-            b"fmt ",
-            16,
-            1,
-            channels,
-            sample_rate,
-            byte_rate,
-            block_align,
-            bits_per_sample,
-            b"data",
-            data_size,
-        )
-        return header
-
     def _format_prompt_slow(self, prompt, voice="tara"):
         if voice:
             adapted_prompt = f"{voice}: {prompt}"
@@ -298,16 +275,11 @@ class Model:
 
         async def audio_stream(req_id: str):
             token_gen = await self._engine.predict(model_input, request)
-            header = self.create_wav_header()
+            
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
 
-            sent_header = False
             async for chunk in tokens_decoder(token_gen, req_id):
-                if not sent_header:
-                    yield header + chunk
-                    sent_header = True
-                else:
-                    yield chunk
+                yield chunk
 
         return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
