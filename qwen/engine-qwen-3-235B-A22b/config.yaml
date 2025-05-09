@@ -10,19 +10,19 @@ model_metadata:
       enable_thinking: true
   tags:
     - openai-compatible
-model_name: library-model-qwen3-235B-a22b-engine
+model_name: library-model-qwen3-235B-a22b-bf16-engine
 environment_variables:
   B10LOOKAHEAD_ENABLED: "1"
 python_version: py39
 resources:
-  accelerator: H100:4
+  accelerator: H100:8
   cpu: "1"
   memory: 10Gi
   use_gpu: true
 trt_llm:
-  # version_overrides:
-  # engine_builder_version: 0.18.1.post6
-  # briton_version: 0.18.1-ad2909f
+  version_overrides:
+    engine_builder_version: 0.18.1.post6.dev3.b200
+    briton_version: 0.18.1-ffb120c
   build:
     checkpoint_repository:
       repo: Qwen/Qwen3-235B-A22B
@@ -33,14 +33,14 @@ trt_llm:
     max_seq_len: 40960
     # plugin_configuration:
     #   use_fp8_context_fmha: true
-    quantization_type: fp8
+    # squantization_type: fp8
     quantization_config:
       calib_size: 4096
     speculator:
       enable_b10_lookahead: true
-      lookahead_ngram_size: 8
-      lookahead_verification_set_size: 3
-      lookahead_windows_size: 3
+      lookahead_ngram_size: 16
+      lookahead_verification_set_size: 1
+      lookahead_windows_size: 1
       speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 4
   runtime:
