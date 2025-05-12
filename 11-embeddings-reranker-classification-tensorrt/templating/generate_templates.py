@@ -1044,10 +1044,10 @@ def llamalike_lookahead(
     config.build.speculator = TrussSpeculatorConfiguration(
         # settings from https://arxiv.org/pdf/2402.02057
         speculative_decoding_mode="LOOKAHEAD_DECODING",
-        lookahead_windows_size=8,
-        lookahead_ngram_size=4,
-        lookahead_verification_set_size=4,
-        enable_b10_lookahead=True,
+        lookahead_windows_size=3,
+        lookahead_ngram_size=8,
+        lookahead_verification_set_size=3,
+        enable_b10_lookahead=True,  #
     )
     config.build.max_batch_size = 64
     return config

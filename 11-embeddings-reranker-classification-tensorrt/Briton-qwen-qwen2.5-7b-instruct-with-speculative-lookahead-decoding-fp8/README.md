@@ -166,10 +166,10 @@ trt_llm:
     quantization_type: fp8
     speculator:
       enable_b10_lookahead: true
-      lookahead_ngram_size: 4
-      lookahead_verification_set_size: 4
-      lookahead_windows_size: 8
-      num_draft_tokens: 35
+      lookahead_ngram_size: 8
+      lookahead_verification_set_size: 3
+      lookahead_windows_size: 3
+      num_draft_tokens: 41
       speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
