@@ -1,6 +1,4 @@
 import asyncio
-import wave
-import wave
 import aiohttp
 import uuid
 import time
@@ -8,7 +6,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 
 # Configuration
-MODEL = ""
+MODEL = "dq4rlnkw"
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/production/predict"
 BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
 PAYLOADS_PER_PROCESS = 2000
@@ -78,30 +76,20 @@ async def run_session(
     run_id: int,
     semaphore: asyncio.Semaphore,
 ) -> None:
-    """Wrap a single prompt run in its own error‐safe block and save audio as WAV."""
+    """Wrap a single prompt run in its own error‐safe block."""
     label = f"{ptype}_run{run_id}"
     async with semaphore:
         try:
-            # send the request
             payload = {**base_request_payload, "prompt": f"Chapter {run_id}: {prompt}"}
             buf = await stream_to_buffer(session, label, payload)
             if not buf:
                 print(f"[{label}] 🛑 no data received")
                 return
-
-            # ensure the Outputs directory exists
-            output_dir = os.path.join(os.path.dirname(__file__), "Outputs")
-            os.makedirs(output_dir, exist_ok=True)
-
-            # write the entire buffer into a WAV file inside Outputs/
-            fn = os.path.join(output_dir, f"output_{ptype}_run{run_id}.wav")
-            with wave.open(fn, "wb") as wf:
-                wf.setnchannels(1)        # mono
-                wf.setsampwidth(2)        # 16-bit samples
-                wf.setframerate(24000)    # 24 kHz sample rate
-                wf.writeframes(buf)
-
-            print(f"[{label}] ➔ saved {fn}")
+            elif run_id < 3:
+                fn = f"output_{ptype}_run{run_id}.wav"
+                with open(fn, "wb") as f:
+                    f.write(buf)
+                print(f"[{label}] ➔ saved {fn}")
 
         except Exception as e:
             print(f"[{label}] 🛑 failed: {e!r}")
