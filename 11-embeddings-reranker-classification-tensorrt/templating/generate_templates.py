@@ -2,7 +2,7 @@ from dataclasses import field
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
-
+import os
 import requests
 from pydantic import dataclasses
 from transformers import AutoConfig
@@ -17,6 +17,7 @@ from truss.base.trt_llm_config import (
     TrussTRTLLMQuantizationType,
     TrussTRTLLMRuntimeConfiguration,
     TrussTRTQuantizationConfiguration,
+    VersionsOverrides,
 )
 from truss.base.truss_config import (
     Accelerator,
@@ -244,6 +245,15 @@ Optionally, you can also enable:
                     calib_max_seq_length=min(2048, self.trt_config.build.max_seq_len),
                 )
             )
+
+        overrides_engine_builder = os.environ.get("ENGINE_BUILDER_OVERRIDES")
+        overrides_briton = os.environ.get("BRITON_OVERRIDES")
+
+        version_overrides = VersionsOverrides(
+            engine_builder_version=overrides_engine_builder,
+            briton_version=overrides_briton,
+        )
+        self.trt_config.version_overrides = version_overrides
 
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
