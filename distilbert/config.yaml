@@ -1,0 +1,6 @@
+
+model_name: DistilBert
+python_version: py310
+requirements_file: ./requirements.txt
+resources:
+  accelerator: T4
