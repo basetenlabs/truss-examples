@@ -5,6 +5,7 @@ build_commands:
 environment_variables:
   ENABLE_EXECUTOR_API: "1"
 model_metadata:
+  repo_id: canopylabs/orpheus-3b-0.1-ft
   example_model_input:
     max_tokens: 10000
     prompt:
