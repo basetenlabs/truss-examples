@@ -11,11 +11,11 @@ model_metadata:
             "content": [
                 {
                     "type": "text",
-                    "text": "For like Michigan,"
+                    "text": "Four score,"
                 },
                 {
                     "type": "audio_url",
-                    "audio_url": {"url": "http://study.aitech.ac.jp/tat/239977.mp3"}
+                    "audio_url": {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
                 }
             ]
         }
