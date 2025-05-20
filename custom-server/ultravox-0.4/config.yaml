@@ -1,5 +1,5 @@
 base_image:
-  image: vllm/vllm-openai:v0.5.5
+  image: vllm/vllm-openai:v0.8.5
 model_metadata:
   repo_id: fixie-ai/ultravox-v0.4
   avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/628d700fdb4cd1d1717c7d2f/m9n8O1Jk88UadmN6GoLNR.png
