@@ -276,7 +276,7 @@ class Model:
 
         async def audio_stream(req_id: str):
             token_gen = await self._engine.predict(model_input, request)
-            
+
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
 
