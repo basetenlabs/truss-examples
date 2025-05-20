@@ -6,7 +6,7 @@ model_metadata:
     raw_scores: true
     truncate: true
     truncation_direction: Right
-model_name: BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8-truss-example
+model_name: Tulu 3 8B Reward
 python_version: py39
 resources:
   accelerator: H100_40GB

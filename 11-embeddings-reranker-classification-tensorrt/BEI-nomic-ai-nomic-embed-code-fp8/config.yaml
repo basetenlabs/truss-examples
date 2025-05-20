@@ -3,7 +3,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-nomic-ai-nomic-embed-code-fp8-truss-example
+model_name: Nomic Embed Code
 python_version: py39
 resources:
   accelerator: H100_40GB
