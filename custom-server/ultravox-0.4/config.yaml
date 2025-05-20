@@ -22,7 +22,7 @@ model_metadata:
     ]
   }
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve fixie-ai/ultravox-v0_4 --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
+  start_command: sh -c "vllm serve fixie-ai/ultravox-v0_4 --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -35,4 +35,3 @@ runtime:
 model_name: Ultravox v0.4
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
-  hf_access_token: null
