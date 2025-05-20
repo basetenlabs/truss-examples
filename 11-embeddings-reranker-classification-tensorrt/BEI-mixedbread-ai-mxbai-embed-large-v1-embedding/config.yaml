@@ -3,7 +3,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
+model_name: Mixedbread Embed Large V1
 python_version: py39
 resources:
   accelerator: L4

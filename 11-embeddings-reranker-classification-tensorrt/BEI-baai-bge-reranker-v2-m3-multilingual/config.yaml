@@ -8,7 +8,7 @@ model_metadata:
     - Baseten is a fast inference provider
     truncate: true
     truncation_direction: Right
-model_name: BEI-baai-bge-reranker-v2-m3-multilingual-truss-example
+model_name: BGE Reranker M3
 python_version: py39
 resources:
   accelerator: H100
