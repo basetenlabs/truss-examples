@@ -23,6 +23,7 @@ trt_llm:
       source: HF
     num_builder_gpus: 2
     max_batch_size: 64
+    max_seq_len: 131072
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
