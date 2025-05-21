@@ -1,0 +1,37 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+      - content: Tell me everything you know about optimized inference.
+        role: user
+    stream: true
+    temperature: 0.5
+  tags:
+    - openai-compatible
+model_name: Mistral Devstral-Small-2505-engine
+python_version: py39
+resources:
+  accelerator: H100
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: mistralai/Devstral-Small-2505
+      revision: "refs/pr/8"
+      source: HF
+    num_builder_gpus: 2
+    max_batch_size: 64
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
+    tensor_parallel_count: 1
+    speculator: # optional: use speculative decoding
+      enable_b10_lookahead: true
+      lookahead_ngram_size: 8
+      lookahead_verification_set_size: 1
+      lookahead_windows_size: 1
+      speculative_decoding_mode: LOOKAHEAD_DECODING
+  runtime:
+    enable_chunked_context: true
