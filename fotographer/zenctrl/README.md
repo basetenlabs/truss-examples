@@ -1,4 +1,4 @@
-![Header Image](images/banner-1.png)
+![Header Image](images/banner_1.png)
 
 # Fotographer AI ZenCtrl
 
