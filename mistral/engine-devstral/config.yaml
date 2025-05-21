@@ -1,14 +1,12 @@
 model_metadata:
   example_model_input:
     max_tokens: 512
-    messages:
-      - content: Tell me everything you know about optimized inference.
-        role: user
-    stream: true
-    temperature: 0.5
+    prompt: "# hello_baseten.py\ndef hello_world(company: str"
+    stream: false
+    temperature: 0.2
   tags:
     - openai-compatible
-model_name: Mistral Devstral-Small-2505-engine
+model_name: library-model-Mistral Devstral-Small-2505-engine
 python_version: py39
 resources:
   accelerator: H100
