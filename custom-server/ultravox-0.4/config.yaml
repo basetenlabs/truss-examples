@@ -37,4 +37,3 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
 requirements:
   - vllm[audio]==0.8.5
-  
