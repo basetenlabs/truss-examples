@@ -2,60 +2,60 @@ import requests
 import base64
 import os
 
-
 def image_file_to_base64(image_path: str) -> str:
     """Read an image file and return its base64-encoded string."""
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
+    with open(image_path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
 
 
-def save_base64_image(base64_string: str, output_path: str):
-    """Decode a base64 string and save it as an image file."""
-    image_data = base64.b64decode(base64_string)
+def save_base64_image(b64_string: str, output_path: str):
+    """Decode a base64 string and write it to disk as an image."""
     with open(output_path, "wb") as f:
-        f.write(image_data)
-    print(f"Image saved to {output_path}")
+        f.write(base64.b64decode(b64_string))
+    print(f"✅  Image saved to {output_path}")
 
 
 def main():
-    model_id = "abcd1234"
-    baseten_api_key = os.environ["BASETEN_API_KEY"]
-    image_path = "images/speaker-input.png"
+    # ---------- Configuration ----------
+    model_id = ""
+    baseten_api_key = os.environ["BASETEN_API_KEY"]  # ← hard-coded
+    image_path = "images/camera.png"  # local test image
+    prompt_text = "a man holding a camera facing the objective."
 
+
+    # ---------- Encode input image ----------
     image_b64 = image_file_to_base64(image_path)
 
+    # ---------- Baseten payload ----------
     payload = {
         "image": image_b64,
-        "prompt": "sitting on a table, in front of a window with a beautiful rainy mountain forest landscape outside. Well built wooden table, wooden window, luxurious mountain cabin vibes.",
-        "steps": 6,
-        "strength": 1.0,
-        "harmonize": False,
-        "offset": 5,
-        "height": 1024,
-        "width": 1024,
-        "delta": 0,
-        "lora_name": "gen_back_7000_1024",
+        "prompt": prompt_text,
+        "steps": 10,
+        "strength_sub": 1.2,
+        "strength_spat": 1.2,
+        "size": 1024,
+        "lora_name": "zen2con_1024_10000",
     }
 
     url = f"https://model-{model_id}.api.baseten.co/environments/production/predict"
     headers = {"Authorization": f"Api-Key {baseten_api_key}"}
 
+    # ---------- Call Baseten ----------
+    print("🚀  Sending request to Baseten…")
     response = requests.post(url, headers=headers, json=payload)
 
+    # ---------- Handle response ----------
     if response.status_code == 200:
         result = response.json()
-        print("Generation successful.")
-
-        generated_b64 = result.get("generated_image")
-        if generated_b64:
-            output_path = "images/generated-output.png"
-            with open(output_path, "wb") as f:
-                f.write(base64.b64decode(generated_b64))
-            print(f"Image saved as {output_path}")
-        else:
-            print("No 'generated_image' key found in the response.")
+        images = result.get("data", {}).get("images")
+        if not images:
+            print("⚠️  No 'images' key found in response:")
+            print(result)
+            return
+        generated_b64 = images[-1]  # take the last / best image
+        save_base64_image(generated_b64, "baseten_output.png")
     else:
-        print(f"Error: HTTP {response.status_code}")
+        print(f"❌  Error: HTTP {response.status_code}")
         print(response.text)
 
 

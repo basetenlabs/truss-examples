@@ -1,3 +1,5 @@
+![Header Image](images/banner-1.png)
+
 # Fotographer AI ZenCtrl
 
 Image-to-image model for generating in-context product photography.
