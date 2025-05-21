@@ -11,11 +11,11 @@ model_metadata:
             "content": [
                 {
                     "type": "text",
-                    "text": "Four score,"
+                    "text": "What is Lydia like?"
                 },
                 {
                     "type": "audio_url",
-                    "audio_url": {"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}
+                    "audio_url": {"url": "https://audio-samples.github.io/samples/mp3/blizzard_tts_unbiased/sample-2/real.mp3"}
                 }
             ]
         }
@@ -35,3 +35,5 @@ runtime:
 model_name: Ultravox v0.4
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
+requirements:
+  - vllm[audio]==0.8.5
