@@ -1,6 +1,5 @@
 import asyncio
 import wave
-import wave
 import aiohttp
 import uuid
 import time
@@ -96,9 +95,9 @@ async def run_session(
             # write the entire buffer into a WAV file inside Outputs/
             fn = os.path.join(output_dir, f"output_{ptype}_run{run_id}.wav")
             with wave.open(fn, "wb") as wf:
-                wf.setnchannels(1)        # mono
-                wf.setsampwidth(2)        # 16-bit samples
-                wf.setframerate(24000)    # 24 kHz sample rate
+                wf.setnchannels(1)  # mono
+                wf.setsampwidth(2)  # 16-bit samples
+                wf.setframerate(24000)  # 24 kHz sample rate
                 wf.writeframes(buf)
 
             print(f"[{label}] ➔ saved {fn}")
