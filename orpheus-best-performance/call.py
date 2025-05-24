@@ -6,9 +6,9 @@ import struct
 from concurrent.futures import ProcessPoolExecutor
 
 # Configuration
-MODEL = "03yxn1lq"
+MODEL = "YOUR_MODEL_ID"
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/production/predict"
-BASETEN_API_KEY = "zcqOMgeU.xGJlLqKffJHr1ASqJ5qBC9QVP5wLV9Z8"
+BASETEN_API_KEY = os.getenv("BASETEN_API_KEY")
 PAYLOADS_PER_PROCESS = 1
 NUM_PROCESSES = 4
 MAX_REQUESTS_PER_PROCESS = 8
