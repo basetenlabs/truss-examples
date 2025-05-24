@@ -22,7 +22,7 @@ requirements:
   - torch==2.7.0
   - batched==0.1.4
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   cpu: "1"
   memory: 10Gi
   use_gpu: true

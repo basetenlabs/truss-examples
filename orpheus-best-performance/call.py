@@ -2,14 +2,14 @@ import asyncio
 import aiohttp
 import uuid
 import time
-import os
+import struct
 from concurrent.futures import ProcessPoolExecutor
 
 # Configuration
-MODEL = "dq4rlnkw"
+MODEL = "03yxn1lq"
 BASETEN_HOST = f"https://model-{MODEL}.api.baseten.co/production/predict"
-BASETEN_API_KEY = os.environ["BASETEN_API_KEY"]
-PAYLOADS_PER_PROCESS = 2000
+BASETEN_API_KEY = "zcqOMgeU.xGJlLqKffJHr1ASqJ5qBC9QVP5wLV9Z8"
+PAYLOADS_PER_PROCESS = 1
 NUM_PROCESSES = 4
 MAX_REQUESTS_PER_PROCESS = 8
 
@@ -87,9 +87,11 @@ async def run_session(
                 return
             elif run_id < 3:
                 fn = f"output_{ptype}_run{run_id}.wav"
+                # Convert raw PCM data to proper WAV format
+                wav_data = pcm_to_wav(buf)
                 with open(fn, "wb") as f:
-                    f.write(buf)
-                print(f"[{label}] ➔ saved {fn}")
+                    f.write(wav_data)
+                print(f"[{label}] ➔ saved {fn} (converted to WAV)")
 
         except Exception as e:
             print(f"[{label}] 🛑 failed: {e!r}")
@@ -128,6 +130,57 @@ def main():
         exe.map(run_with_offset_sync, offsets)
 
     print("🎉 All processes completed.")
+
+
+def pcm_to_wav(
+    pcm_data: bytes,
+    sample_rate: int = 24000,
+    channels: int = 1,
+    bits_per_sample: int = 16,
+) -> bytes:
+    """Convert raw PCM data to WAV format with proper headers."""
+    # WAV file header
+    # RIFF header
+    riff_header = b"RIFF"
+    # File size (will be calculated)
+    file_size = 36 + len(pcm_data)
+    file_size_bytes = struct.pack("<I", file_size)
+    # WAVE header
+    wave_header = b"WAVE"
+
+    # fmt subchunk
+    fmt_header = b"fmt "
+    fmt_size = struct.pack("<I", 16)  # PCM format size
+    audio_format = struct.pack("<H", 1)  # PCM format
+    num_channels = struct.pack("<H", channels)
+    sample_rate_bytes = struct.pack("<I", sample_rate)
+    byte_rate = struct.pack("<I", sample_rate * channels * bits_per_sample // 8)
+    block_align = struct.pack("<H", channels * bits_per_sample // 8)
+    bits_per_sample_bytes = struct.pack("<H", bits_per_sample)
+
+    # data subchunk
+    data_header = b"data"
+    data_size = struct.pack("<I", len(pcm_data))
+
+    # Combine all parts
+    wav_data = (
+        riff_header
+        + file_size_bytes
+        + wave_header
+        + fmt_header
+        + fmt_size
+        + audio_format
+        + num_channels
+        + sample_rate_bytes
+        + byte_rate
+        + block_align
+        + bits_per_sample_bytes
+        + data_header
+        + data_size
+        + pcm_data
+    )
+
+    return wav_data
 
 
 if __name__ == "__main__":
