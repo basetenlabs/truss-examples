@@ -249,11 +249,12 @@ Optionally, you can also enable:
         overrides_engine_builder = os.environ.get("ENGINE_BUILDER_OVERRIDES")
         overrides_briton = os.environ.get("BRITON_OVERRIDES")
 
-        version_overrides = VersionsOverrides(
-            engine_builder_version=overrides_engine_builder,
-            briton_version=overrides_briton,
-        )
-        self.trt_config.version_overrides = version_overrides
+        if overrides_engine_builder is not None or overrides_briton is not None:
+            version_overrides = VersionsOverrides(
+                engine_builder_version=overrides_engine_builder,
+                briton_version=overrides_briton,
+            )
+            self.trt_config.version_overrides = version_overrides
 
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
@@ -966,6 +967,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
         name="nomic-ai/nomic-embed-text-v1.5",
         hf_model_id="nomic-ai/nomic-embed-text-v1.5",
+        accelerator=Accelerator.A10G,
+        task=Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(  #
+        name="TaylorAI/bge-micro-v2",
+        hf_model_id="TaylorAI/bge-micro-v2",
         accelerator=Accelerator.A10G,
         task=Embedder(),
         solution=HFTEI(),
