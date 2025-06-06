@@ -15,10 +15,10 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Qwen/Qwen3-Embedding-8B
+      repo: michaelfeil/Qwen3-Embedding-8B-auto
       revision: refs/pr/1
       source: HF
-    max_num_tokens: 40960
+    max_num_tokens: 32768
     num_builder_gpus: 1
     quantization_type: fp8
   runtime:
