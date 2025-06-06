@@ -2,7 +2,7 @@
 model_metadata:
   example_model_input:
     encoding_format: float
-    input: text string
+    input: ["Instruct: {task_description}\nQuery:{query}", "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery:What is the capital of China?"]
     model: model
 model_name: BEI qwen3-embedding 0.6b
 python_version: py39
