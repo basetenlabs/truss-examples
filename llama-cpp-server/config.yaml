@@ -1,6 +1,6 @@
 base_image:
   image: alphatozeta/llama-cpp-server:0.4
-build_commands: 
+build_commands:
   - pip install git+https://github.com/huggingface/transformers.git hf-xet
 model_metadata:
   repo_id: google/gemma-3-27b-it-qat-q4_0-gguf

@@ -3,7 +3,6 @@ from transformers import AutoTokenizer
 import torch
 import fastapi
 from snac import SNAC
-import struct
 from pathlib import Path
 import numpy as np
 from fastapi.responses import StreamingResponse
@@ -276,7 +275,7 @@ class Model:
 
         async def audio_stream(req_id: str):
             token_gen = await self._engine.predict(model_input, request)
-            
+
             if isinstance(token_gen, StreamingResponse):
                 token_gen = token_gen.body_iterator
 
