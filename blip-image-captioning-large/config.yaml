@@ -1,0 +1,25 @@
+environment_variables: {}
+external_package_dirs: []
+description: Model Serving for Salesforce/blip-image-captioning-large
+model_metadata:
+  example_model_input: {"image_url": "https://storage.googleapis.com/sfr-vision-language-research/BLIP/demo.jpg"}
+  tags:
+  - image-to-text
+model_name: blip-image-captioning-large
+model_class_filename: model.py
+model_class_name: Model
+model_framework: custom
+model_module_dir: model
+python_version: py39
+requirements: 
+- torch==2.0.1
+- transformers==4.33.1
+- Pillow
+- hf_transfer
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: A10G
+secrets: {}
+system_packages: []
