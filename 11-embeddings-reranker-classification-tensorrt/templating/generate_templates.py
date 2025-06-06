@@ -89,42 +89,41 @@ With BEI you get the following benefits:
             if isinstance(dp.task, Predictor)
             else "/rerank"
         )
+
+        trt_llm = TRTLLMConfiguration(
+            build=TrussTRTLLMBuildConfiguration(
+                base_model=TrussTRTLLMModel.ENCODER,
+                checkpoint_repository=CheckpointRepository(
+                    repo=dp.hf_model_id,
+                    revision="main",
+                    source=CheckpointSource.HF,
+                ),
+                max_num_tokens=max_num_tokens,
+                **(
+                    {
+                        "quantization_type": TrussTRTLLMQuantizationType.FP8,
+                        # give more resources / cpu ram + vram on build if the model uses not-mig
+                        "num_builder_gpus": num_builder_gpus,
+                    }
+                    if self.make_fp8
+                    else {}
+                ),
+            ),
+            runtime=TrussTRTLLMRuntimeConfiguration(
+                webserver_default_route=endpoint,
+            ),
+        )
         overrides_engine_builder = os.environ.get("ENGINE_BUILDER_OVERRIDES")
         overrides_briton = os.environ.get("BEI_OVERRIDES")
-
         if overrides_engine_builder is not None or overrides_briton is not None:
-            version_overrides = VersionsOverrides(
+            trt_llm.version_overrides = VersionsOverrides(
                 engine_builder_version=overrides_engine_builder,
                 bei_version=overrides_briton,
             )
-        else:
-            version_overrides = None
+
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
-            trt_llm=TRTLLMConfiguration(
-                build=TrussTRTLLMBuildConfiguration(
-                    base_model=TrussTRTLLMModel.ENCODER,
-                    checkpoint_repository=CheckpointRepository(
-                        repo=dp.hf_model_id,
-                        revision="main",
-                        source=CheckpointSource.HF,
-                    ),
-                    max_num_tokens=max_num_tokens,
-                    **(
-                        {
-                            "quantization_type": TrussTRTLLMQuantizationType.FP8,
-                            # give more resources / cpu ram + vram on build if the model uses not-mig
-                            "num_builder_gpus": num_builder_gpus,
-                        }
-                        if self.make_fp8
-                        else {}
-                    ),
-                ),
-                runtime=TrussTRTLLMRuntimeConfiguration(
-                    webserver_default_route=endpoint,
-                ),
-                version_overrides=version_overrides,
-            ),
+            trt_llm=trt_llm,
             resources=Resources(
                 accelerator=dp.accelerator,
                 memory="10Gi",
@@ -946,47 +945,46 @@ DEPLOYMENTS_BEI = [
     ),
     Deployment(
         "Qwen/Qwen3-Embedding-8B",
-        "Qwen/Qwen3-Embedding-8B",
+        "michaelfeil/Qwen3-Embedding-8B-auto",
         Accelerator.H100_40GB,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
     Deployment(
         "Qwen/Qwen3-Embedding-4B",
-        "Qwen/Qwen3-Embedding-4B",
+        "michaelfeil/Qwen3-Embedding-4B-auto",
         Accelerator.H100_40GB,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
     Deployment(
         "Qwen/Qwen3-Embedding-0.6B",
-        "Qwen/Qwen3-Embedding-0.6B",
+        "michaelfeil/Qwen3-Embedding-0.6B-auto",
         Accelerator.L4,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
     Deployment(
         "Qwen/Qwen3-Reranker-0.6B",
-        "Qwen/Qwen3-Reranker-0.6B",
+        "michaelfeil/Qwen3-Reranker-0.6B-seq",
         Accelerator.L4,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
     Deployment(
         "Qwen/Qwen3-Reranker-4B",
-        "Qwen/Qwen3-Reranker-4B",
+        "michaelfeil/Qwen3-Reranker-4B-seq",
         Accelerator.H100_40GB,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
     Deployment(
         "Qwen/Qwen3-Reranker-8B",
-        "Qwen/Qwen3-Reranker-8B",
+        "michaelfeil/Qwen3-Reranker-8B-seq",
         Accelerator.H100_40GB,
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
-    
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
