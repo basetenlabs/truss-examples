@@ -58,7 +58,7 @@ class Model:
         Args:
             model_input: Dictionary containing:
                 - text: The text to convert to speech
-                - audio_prompt: Optional base64 encoded audio for voice cloning
+                - voice: Optional base64 encoded audio for voice cloning
                 
         Returns:
             Dict containing the generated audio as a base64 encoded string
@@ -68,12 +68,12 @@ class Model:
         """
             
         text = model_input["text"]
-        audio_prompt_b64 = model_input.get("audio_prompt")
+        voice_b64 = model_input.get("voice")
         
-        if audio_prompt_b64:
-            logger.info("Using audio prompt for voice cloning...")
-            with temp_audio_file(audio_prompt_b64) as audio_path:
-                wav = self._model.generate(text, audio_prompt_path=audio_path)
+        if voice_b64:
+            logger.info("Using voice audio for cloning...")
+            with temp_audio_file(voice_b64) as voice_path:
+                wav = self._model.generate(text, audio_prompt_path=voice_path)
         else:
             wav = self._model.generate(text)
         

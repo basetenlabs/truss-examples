@@ -15,16 +15,16 @@ output_audio_path = output_folder / f"output_{voice_clone_file_name}"
 input_text = "Hey Oliver! How are you doing?"
 
 with open(voice_clone_file_path, "rb") as f:
-    audio_data = f.read()
+    voice_data = f.read()
 
-audio_base64 = base64.b64encode(audio_data).decode("utf-8")
+voice_base64 = base64.b64encode(voice_data).decode("utf-8")
 
 start_time = time.time()
 predict_response = requests.post(
     api_url,
     headers={"Authorization": f"Bearer {api_key}"},
     json={
-        "audio_prompt": audio_base64,
+        "voice": voice_base64,
         "text": input_text,
     }
 )
