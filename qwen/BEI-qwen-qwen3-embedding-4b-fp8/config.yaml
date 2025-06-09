@@ -16,7 +16,7 @@ trt_llm:
     base_model: encoder
     checkpoint_repository:
       repo: michaelfeil/Qwen3-Embedding-4B-auto
-      revision: refs/pr/1
+      revision: main
       source: HF
     max_num_tokens: 32768
     num_builder_gpus: 1
