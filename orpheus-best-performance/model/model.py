@@ -272,7 +272,7 @@ class Model:
             print("Not using end_id from model_input:", model_input["end_id"])
         model_input["end_id"] = 128258
         # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
-        model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.3)
+        model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.0)
 
         async def audio_stream(req_id: str):
             token_gen = await self._engine.predict(model_input, request)
