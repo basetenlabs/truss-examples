@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies (if any)
         run: |
           python -m pip install --upgrade pip
-          pip install git+https://github.com/basetenlabs/truss.git requests tenacity --upgrade
+          pip install truss==0.9.103rc1 requests tenacity --upgrade
       - name: Test => (${{ matrix.test }}
         run: |
           python ./bin/test_example.py ${{secrets.BASETEN_API_KEY}} ${{matrix.test}}
