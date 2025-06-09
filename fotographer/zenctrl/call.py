@@ -2,6 +2,7 @@ import requests
 import base64
 import os
 
+
 def image_file_to_base64(image_path: str) -> str:
     """Read an image file and return its base64-encoded string."""
     with open(image_path, "rb") as f:
@@ -21,7 +22,6 @@ def main():
     baseten_api_key = os.environ["BASETEN_API_KEY"]  # ← hard-coded
     image_path = "images/camera.png"  # local test image
     prompt_text = "a man holding a camera facing the objective."
-
 
     # ---------- Encode input image ----------
     image_b64 = image_file_to_base64(image_path)
