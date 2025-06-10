@@ -3,7 +3,6 @@ from transformers import AutoTokenizer
 import torch
 import fastapi
 from snac import SNAC
-import struct
 from pathlib import Path
 import numpy as np
 from fastapi.responses import StreamingResponse

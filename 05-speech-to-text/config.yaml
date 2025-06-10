@@ -6,6 +6,7 @@ python_version: py39
 requirements:
 - openai-whisper==20230918
 - torch==2.0.1
+- numpy==1.26.4
 resources:
   cpu: "4"
   memory: 16Gi
