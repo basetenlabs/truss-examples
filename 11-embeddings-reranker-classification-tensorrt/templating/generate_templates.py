@@ -1204,6 +1204,20 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.L4,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
         Accelerator.H100,

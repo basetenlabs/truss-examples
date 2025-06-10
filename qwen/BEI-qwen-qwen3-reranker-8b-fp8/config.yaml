@@ -7,7 +7,7 @@ model_metadata:
     raw_scores: true
     truncate: true
     truncation_direction: Right
-model_name: BEI Qwen3 Reranker 8b fp8
+model_name: library-model-BEI Qwen3 Reranker 8b fp8
 python_version: py39
 resources:
   accelerator: H100_40GB

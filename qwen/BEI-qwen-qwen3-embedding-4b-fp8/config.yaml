@@ -4,7 +4,7 @@ model_metadata:
     encoding_format: float
     input: ["Instruct: {task_description}\nQuery:{query}", "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery:What is the capital of China?"]
     model: model
-model_name: BEI-qwen-qwen3-embedding-4b-fp8-truss-example
+model_name: library-model-BEI qwen3-embedding 4b
 python_version: py39
 resources:
   accelerator: H100_40GB
