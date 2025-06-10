@@ -7,6 +7,7 @@ import torch
 import whisper
 
 
+
 class Model:
     def __init__(self, **kwargs) -> None:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"

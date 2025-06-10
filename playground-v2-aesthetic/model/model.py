@@ -13,6 +13,7 @@ from diffusers import (
     PNDMScheduler,
 )
 
+
 MODEL_NAME = "playgroundai/playground-v2-1024px-aesthetic"
 DEFAULT_SCHEDULER = "DPMSolverMultistep"
 DEFAULT_NEGATIVE_PROMPT = None

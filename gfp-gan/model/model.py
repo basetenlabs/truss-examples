@@ -10,6 +10,7 @@ from gfpgan import GFPGANer
 from PIL import Image
 from realesrgan import RealESRGANer
 
+
 logger = logging.getLogger(__name__)
 
 bg_tile = 400  # Tile size for background sampler, 0 for no tile during testing

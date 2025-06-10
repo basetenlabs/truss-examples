@@ -18,6 +18,7 @@ from PIL import Image
 torch.backends.cuda.matmul.allow_tf32 = True
 
 
+
 # # Define the `Model` class and load function
 #
 # In the `load` function of the Truss, we implement logic involved in

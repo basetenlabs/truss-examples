@@ -4,6 +4,7 @@
 # # Step 1: Implementing the model
 #
 # Set up imports for this model. In this example, we simply use the HuggingFace transformers library.
+
 from transformers import pipeline
 
 
@@ -23,6 +24,7 @@ class Model:
     # the `text-classification` task, which uses BERT for text classification under the hood.
     #
     # Note that the load function runs once when the model starts.
+
     def load(self):
         self._model = pipeline("text-classification")
 
