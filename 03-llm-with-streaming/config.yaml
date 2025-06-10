@@ -14,6 +14,7 @@ requirements:
 - bitsandbytes==0.41.1
 - einops==0.6.1
 - transformers==4.31.0
+- numpy==1.26.4
 # ## Configure resources for Falcon
 #
 # Note that we need an A10G to run this model.

@@ -13,6 +13,7 @@ requirements:
 - sentencepiece==0.1.99
 - accelerate==0.23.0
 - torch==2.0.1
+- numpy==1.26.4
 # ## Configure resources for Mistral
 #
 # Note that we need an A10G to run this model.

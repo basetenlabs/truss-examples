@@ -18,6 +18,7 @@ requirements:
 - torch==2.1.1
 - faster-whisper==1.0.3
 - ctranslate2==4.4.0
+- numpy==1.26.4
 resources:
   accelerator: A10G
   cpu: 500m

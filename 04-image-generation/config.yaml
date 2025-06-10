@@ -16,6 +16,7 @@ requirements:
   - git+https://github.com/basetenlabs/diffusers.git@9a353290b1497023d4745a719ec02c50f680499a
   - invisible-watermark>=0.2.0
   - xformers==0.0.22
+  - numpy==1.26.4
 # ## Configuring resources for SDXL 1.0
 #
 # Note that we need an A10G to run this model.

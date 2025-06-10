@@ -23,6 +23,7 @@ model_metadata:
 requirements:
   - torch==2.0.1
   - transformers==4.33.2
+  - numpy==1.26.4
 
 # ### Configure the resources needed
 #
