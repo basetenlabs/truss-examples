@@ -3,7 +3,7 @@ base_image:
   image: baseten/text-embeddings-inference-mirror:89-1.7.1
 docker_server:
   liveness_endpoint: /health
-  predict_endpoint: /rerank
+  predict_endpoint: /v1/embeddings
   readiness_endpoint: /health
   server_port: 7997
   start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
@@ -14,21 +14,16 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: Alibaba-NLP/gte-reranker-modernbert-base
+  repo_id: nomic-ai/nomic-embed-text-v2-moe
   revision: main
   use_volume: true
   volume_folder: cached_model
 model_metadata:
   example_model_input:
-    query: What is Baseten?
-    raw_scores: true
-    return_text: true
-    texts:
-    - Deep Learning is ...
-    - Baseten is a fast inference provider
-    truncate: true
-    truncation_direction: Right
-model_name: TEI-alibaba-nlp-gte-reranker-modernbert-base-truss-example
+    encoding_format: float
+    input: text string
+    model: model
+model_name: TEI-nomic-ai-nomic-embed-text-v2-moe-truss-example
 python_version: py39
 resources:
   accelerator: L4

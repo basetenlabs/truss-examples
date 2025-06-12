@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with Alibaba-NLP/gte-reranker-modernbert-base
+# Huggingface's text-embeddings-inference with nomic-ai/nomic-embed-text-v2-moe
 
-This is a Deployment for Huggingface's text-embeddings-inference with Alibaba-NLP/gte-reranker-modernbert-base. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with nomic-ai/nomic-embed-text-v2-moe. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -19,10 +19,11 @@ For larger models, we recommend downloading the weights at runtime for faster au
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Alibaba-NLP/gte-reranker-modernbert-base](https://huggingface.co/Alibaba-NLP/gte-reranker-modernbert-base).
-Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Reranker models may have at most one label, which contains the score of the reranking.
+This deployment is specifically designed for the Hugging Face model [nomic-ai/nomic-embed-text-v2-moe](https://huggingface.co/nomic-ai/nomic-embed-text-v2-moe).
+Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-Alibaba-NLP/gte-reranker-modernbert-base  is a reranker model, used to re-rank a list of items, given a query. \nIt is frequently used in search engines, recommendation systems, and more.
+nomic-ai/nomic-embed-text-v2-moe  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
 ## Deployment with Truss
@@ -36,77 +37,95 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-reranker-modernbert-base
+cd 11-embeddings-reranker-classification-tensorrt/TEI-nomic-ai-nomic-embed-text-v2-moe
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-reranker-modernbert-base` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-nomic-ai-nomic-embed-text-v2-moe` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-alibaba-nlp-gte-reranker-modernbert-base-truss-example was successfully pushed ✨
+# ✨ Model TEI-nomic-ai-nomic-embed-text-v2-moe-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
 ## Call your model
 
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank`:
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
 ```json
 {
-    "query": "What is Baseten?",
-    "raw_scores": true,
-    "return_text": false,
-    "texts": [
-        "Deep Learning is ...", "Baseten is a fast inference provider"
-    ],
-    "truncate": true,
-    "truncation_direction": "Right"
+  "encoding_format": "float", # or base64
+  "input": "string", # can be list of strings for multiple embeddings
+  "model": "null",
+  "user": "null"
 }
 ```
 
-```python
-import requests
-import os
-
-headers = {
-    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
-}
-
-requests.post(
-    headers=headers,
-    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/rerank",
-    json={
-    "query": "What is Baseten?",
-    "raw_scores": True,
-    "return_text": False,
-    "texts": [
-        "Deep Learning is ...", "Baseten is a fast inference provider"
-    ],
-    "truncate": True,
-    "truncation_direction": "Right"
-}
-```
 Returns:
 ```json
-[
-  {
-    "index": 0,
-    "score": 1,
-    "text": "Deep Learning is ..."
+{
+  "data": [
+    {
+      "embedding": [
+        0
+      ],
+      "index": 0,
+      "object": "embedding"
+    }
+  ],
+  "model": "thenlper/gte-base",
+  "object": "list",
+  "usage": {
+    "prompt_tokens": 512,
+    "total_tokens": 512
   }
-]
+}
 ```
 The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
 
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/rerank`
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
+### curl
+```bash
+curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings \
+        -H "Authorization: Api-Key YOUR_API_KEY" \
+        -d '{"input": "text string", "model": "model"}'
+```
+
 ### OpenAI compatible client library
-OpenAI.com does not have a rerank endpoint, therefore no client library is available.
+```python
+from openai import OpenAI
+import os
+
+client = OpenAI(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync/v1"
+)
+
+embedding = client.embeddings.create(
+    input="Baseten Embeddings are fast",
+    model="model"
+)
+```
+### requests python library
+
+```python
+import os
+import requests
+
+resp = requests.post(
+    "https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings",
+    headers={"Authorization": "Api-Key " + str(os.environ['BASETEN_API_KEY'])},
+    json={"input": ["text string", "second string"]},
+)
+
+print(resp.json())
+```
 
 
 ## Config.yaml
@@ -117,7 +136,7 @@ base_image:
   image: baseten/text-embeddings-inference-mirror:89-1.7.1
 docker_server:
   liveness_endpoint: /health
-  predict_endpoint: /rerank
+  predict_endpoint: /v1/embeddings
   readiness_endpoint: /health
   server_port: 7997
   start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
@@ -128,21 +147,16 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: Alibaba-NLP/gte-reranker-modernbert-base
+  repo_id: nomic-ai/nomic-embed-text-v2-moe
   revision: main
   use_volume: true
   volume_folder: cached_model
 model_metadata:
   example_model_input:
-    query: What is Baseten?
-    raw_scores: true
-    return_text: true
-    texts:
-    - Deep Learning is ...
-    - Baseten is a fast inference provider
-    truncate: true
-    truncation_direction: Right
-model_name: TEI-alibaba-nlp-gte-reranker-modernbert-base-truss-example
+    encoding_format: float
+    input: text string
+    model: model
+model_name: TEI-nomic-ai-nomic-embed-text-v2-moe-truss-example
 python_version: py39
 resources:
   accelerator: L4

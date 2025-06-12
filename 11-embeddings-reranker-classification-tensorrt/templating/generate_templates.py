@@ -1062,6 +1062,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
         "Alibaba-NLP/gte-reranker-modernbert-base",
         "Alibaba-NLP/gte-reranker-modernbert-base",
         Accelerator.L4,
+        Reranker(),
+        solution=HFTEI(),
+    ),
+    Deployment(
+        "nomic-ai/nomic-embed-text-v2-moe",
+        "nomic-ai/nomic-embed-text-v2-moe",
+        Accelerator.L4,
         Embedder(),
         solution=HFTEI(),
     ),
