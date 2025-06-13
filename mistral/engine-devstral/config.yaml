@@ -1,12 +1,25 @@
 model_metadata:
-  example_model_input:
-    max_tokens: 512
-    prompt: "# hello_baseten.py\ndef hello_world(company: str"
-    stream: false
-    temperature: 0.2
+  example_model_input: {
+    messages: [
+      {
+        role: "system",
+        content: "<Load system prompt from Hugging Face>"
+      },
+      {
+        role: "user",
+        content: "<your-command>"
+      }
+    ],
+    stream: true,
+    max_tokens: 512,
+    temperature: 0.15,
+    top_p: 1.0,
+    top_k: 40,
+    frequency_penalty: 1
+  }
   tags:
     - openai-compatible
-model_name: library-model-Mistral Devstral-Small-2505-engine
+model_name: Devstral Small 2505
 python_version: py39
 resources:
   accelerator: H100
