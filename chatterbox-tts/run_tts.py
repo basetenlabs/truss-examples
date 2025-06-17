@@ -4,8 +4,8 @@ import requests
 import time
 from pathlib import Path
 
-api_url = # TODO: add your truss endpoint here
-api_key =  os.environ.get("BASETEN_API_KEY")
+api_url = ""  # TODO: add your truss endpoint here
+api_key = os.environ.get("BASETEN_API_KEY")
 
 voice_clone_file_name = "obama_8s.wav"
 input_folder = Path("input")
@@ -26,7 +26,7 @@ predict_response = requests.post(
     json={
         "voice": voice_base64,
         "text": input_text,
-    }
+    },
 )
 end_time = time.time()
 
