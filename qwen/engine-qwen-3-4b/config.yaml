@@ -20,7 +20,6 @@ resources:
 trt_llm:
   version_overrides:
     engine_builder_version: 0.18.1.post6.dev3.b200
-    briton_version: 0.18.1-ffb120c
   build:
     checkpoint_repository:
       repo: Qwen/Qwen3-4B
