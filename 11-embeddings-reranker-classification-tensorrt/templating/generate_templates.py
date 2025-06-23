@@ -31,6 +31,9 @@ from truss.base.truss_config import (
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
 ROOT_NAME = Path(REPO_URL.split("/")[-1])
+BEI_VERSION = os.environ.get("BEI")
+ENGINE_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER")
+BRITON_VERSION = os.environ.get("BRITON")
 
 
 @dataclasses.dataclass
@@ -113,12 +116,12 @@ With BEI you get the following benefits:
                 webserver_default_route=endpoint,
             ),
         )
-        overrides_engine_builder = os.environ.get("ENGINE_BUILDER_OVERRIDES")
-        overrides_briton = os.environ.get("BEI_OVERRIDES")
-        if overrides_engine_builder is not None or overrides_briton is not None:
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_bei = BEI_VERSION
+        if overrides_engine_builder is not None or overrides_bei is not None:
             trt_llm.version_overrides = VersionsOverrides(
                 engine_builder_version=overrides_engine_builder,
-                bei_version=overrides_briton,
+                bei_version=overrides_bei,
             )
 
         return TrussConfig(
@@ -256,8 +259,8 @@ Optionally, you can also enable:
                 )
             )
 
-        overrides_engine_builder = os.environ.get("ENGINE_BUILDER_OVERRIDES")
-        overrides_briton = os.environ.get("BRITON_OVERRIDES")
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_briton = BRITON_VERSION
 
         if overrides_engine_builder is not None or overrides_briton is not None:
             version_overrides = VersionsOverrides(
@@ -1217,20 +1220,20 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
-    Deployment(
-        "Qwen/Qwen3-32B",
-        "Qwen/Qwen3-32B",
-        Accelerator.L4,
-        TextGen(),
-        solution=Briton(
-            trt_config=llamalike_config(
-                repoid="Qwen/Qwen3-32B",
-                tp=1,
-                quant=TrussTRTLLMQuantizationType.FP8,
-                batch_scheduler_policy="max_utilization",
-            )
-        ),
-    ),
+    # Deployment(
+    #     "Qwen/Qwen3-32B",
+    #     "Qwen/Qwen3-32B",
+    #     Accelerator.L4,
+    #     TextGen(),
+    #     solution=Briton(
+    #         trt_config=llamalike_config(
+    #             repoid="Qwen/Qwen3-32B",
+    #             tp=1,
+    #             quant=TrussTRTLLMQuantizationType.FP8,
+    #             batch_scheduler_policy="max_utilization",
+    #         )
+    #     ),
+    # ),
     Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
