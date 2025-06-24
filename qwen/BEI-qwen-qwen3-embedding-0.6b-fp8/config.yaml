@@ -2,9 +2,11 @@
 model_metadata:
   example_model_input:
     encoding_format: float
-    input: ["Instruct: {task_description}\nQuery:{query}", "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery:What is the capital of China?"]
+    input: ["Baseten Embeddings are high throughput.", "Baseten Embeddings are low latency."]
     model: model
-model_name: library-model-BEI-qwen3-embedding-0.6b
+  tags:
+    - openai-compatible
+model_name: Qwen3 Embedding 0.6B
 python_version: py39
 resources:
   accelerator: L4
@@ -24,5 +26,5 @@ trt_llm:
   runtime:
     webserver_default_route: /v1/embeddings
   version_overrides:
-    bei_version: 0.0.23
-    engine_builder_version: 0.18.1.post10.dev1
+    bei_version: 0.0.25-b200-dev-v4
+    engine_builder_version: 0.20.0.dev1

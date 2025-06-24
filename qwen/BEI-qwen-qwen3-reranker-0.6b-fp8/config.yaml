@@ -7,7 +7,7 @@ model_metadata:
     raw_scores: true
     truncate: true
     truncation_direction: Right
-model_name: library-model-BEI Qwen3 Reranker 0.6b fp8
+model_name: Qwen3 Reranker 0.6B
 python_version: py39
 resources:
   accelerator: L4
@@ -27,5 +27,5 @@ trt_llm:
   runtime:
     webserver_default_route: /predict
   version_overrides:
-    bei_version: 0.0.23
-    engine_builder_version: 0.18.1.post10.dev1
+    bei_version: 0.0.25-b200-dev-v4
+    engine_builder_version: 0.20.0.dev1

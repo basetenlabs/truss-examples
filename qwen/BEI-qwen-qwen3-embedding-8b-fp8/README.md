@@ -9,10 +9,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Qwen/Qwen3-Embedding-8B](https://huggingface.co/Qwen/Qwen3-Embedding-8B).
+This deployment is specifically designed for the Hugging Face model [michaelfeil/Qwen3-Embedding-8B-auto](https://huggingface.co/michaelfeil/Qwen3-Embedding-8B-auto).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-Qwen/Qwen3-Embedding-8B  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+michaelfeil/Qwen3-Embedding-8B-auto  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
@@ -139,7 +139,7 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Qwen/Qwen3-Embedding-8B
+      repo: michaelfeil/Qwen3-Embedding-8B-auto
       revision: main
       source: HF
     max_num_tokens: 40960
@@ -147,6 +147,10 @@ trt_llm:
     quantization_type: fp8
   runtime:
     webserver_default_route: /v1/embeddings
+  version_overrides:
+    bei_version: 0.0.25-b200-dev-v4
+    engine_builder_version: 0.20.0.dev1
+
 ```
 
 ## Support
