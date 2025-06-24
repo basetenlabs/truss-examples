@@ -28,9 +28,6 @@ You can find the following deployments in this repository:
  - [Qwen/Qwen3-Embedding-0.6B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-0.6b-fp8)
  - [Qwen/Qwen3-Embedding-4B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-4b-fp8)
  - [Qwen/Qwen3-Embedding-8B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-8b-fp8)
- - [Qwen/Qwen3-Reranker-0.6B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-0.6b-fp8)
- - [Qwen/Qwen3-Reranker-4B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-4b-fp8)
- - [Qwen/Qwen3-Reranker-8B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-8b-fp8)
  - [Salesforce/SFR-Embedding-Mistral-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-salesforce-sfr-embedding-mistral-fp8)
  - [Snowflake/snowflake-arctic-embed-l-v2.0-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-snowflake-snowflake-arctic-embed-l-v2.0)
  - [TaylorAI/bge-micro-v2-TEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/TEI-taylorai-bge-micro-v2)
@@ -53,6 +50,9 @@ You can find the following deployments in this repository:
  - [ncbi/MedCPT-Cross-Encoder-reranker-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker)
 
 ## Text Sequence Classification Deployments:
+ - [Qwen/Qwen3-Reranker-0.6B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-0.6b-fp8)
+ - [Qwen/Qwen3-Reranker-4B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-4b-fp8)
+ - [Qwen/Qwen3-Reranker-8B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-reranker-8b-fp8)
  - [SamLowe/roberta-base-go_emotions-classification-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-samlowe-roberta-base-go_emotions-classification)
  - [Skywork/Skywork-Reward-Llama-3.1-8B-v0.2-Reward-Model-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8)
  - [allenai/Llama-3.1-Tulu-3-8B-Reward-Model-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8)
