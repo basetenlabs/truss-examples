@@ -180,7 +180,7 @@ trt_llm:
     webserver_default_route: /rerank
   version_overrides:
     bei_version: 0.0.25-b200-dev-v4
-    engine_builder_version: 0.20.0.dev1
+    engine_builder_version: 0.20.0.dev2
 
 ```
 
