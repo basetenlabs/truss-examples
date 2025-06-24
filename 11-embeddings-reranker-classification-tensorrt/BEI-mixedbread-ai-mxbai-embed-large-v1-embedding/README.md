@@ -87,6 +87,32 @@ curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1
         -d '{"input": "text string", "model": "model"}'
 ```
 
+### Baseten Performance Client
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+texts = ["Hello world", "Example text", "Another sample"]
+response = client.embed(
+    input=texts,
+    model="my_model",
+    batch_size=4,
+    max_concurrent_requests=32,
+    timeout_s=360
+)
+print(response.numpy())
+```
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
 ### OpenAI compatible client library
 ```python
 from openai import OpenAI

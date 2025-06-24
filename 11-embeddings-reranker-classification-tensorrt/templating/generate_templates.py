@@ -347,6 +347,32 @@ curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1
         -d '{"input": "text string", "model": "model"}'
 ```
 
+### Baseten Performance Client
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+texts = ["Hello world", "Example text", "Another sample"]
+response = client.embed(
+    input=texts,
+    model="my_model",
+    batch_size=4,
+    max_concurrent_requests=32,
+    timeout_s=360
+)
+print(response.numpy())
+```
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
 ### OpenAI compatible client library
 ```python
 from openai import OpenAI
@@ -419,6 +445,54 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/re
     "truncation_direction": "Right"
 }
 ```
+
+### Baseten Performance Client
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+response = client.rerank(
+    query="What is Baseten?",
+    texts=["Deep Learning is ...", "Baseten is a fast inference provider"],
+    raw_scores=True,
+    return_text=False,
+    truncate=True,
+)
+print(response.data)
+```
+
+Sometimes, you may want to apply a custom template to the texts before reranking them and call the predict endpoint instead:
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+def template(text: list[str]) -> list[str]:
+    # Custom template function to apply to the texts
+    # a popular template might be "{query}\n{document}"
+    # or also chat-style templates like "User: {query}\nDocument: {document}"
+    apply = lambda x: f"Custom template: {x}"
+    return [apply(t) for t in text]
+
+response = client.predict(
+    inputs=template(["What is baseten? A: Baseten is a fast inference provider", "Classify this separately."]),
+    raw_scores=True,
+    truncate=True,
+)
+print(response.data)
+```
+
+
+### Requests python library
 
 ```python
 import requests
@@ -500,6 +574,36 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 }
 ```
 
+
+### Baseten Performance Client
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+def template(text: list[str]) -> list[str]:
+    apply = lambda x: f"Custom template: {x}"
+    return [apply(t) for t in text]
+
+response = client.predict(
+    inputs=template(["Baseten is a fast inference provider", "Classify this separately."]),
+    raw_scores=True,
+    truncate=True,
+)
+print(response.data)
+```
+
+### Requests python library
 ```python
 import requests
 import os
