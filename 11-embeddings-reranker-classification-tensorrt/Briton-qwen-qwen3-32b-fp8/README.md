@@ -146,7 +146,7 @@ model_metadata:
 model_name: Briton-qwen-qwen3-32b-fp8-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -164,6 +164,9 @@ trt_llm:
   runtime:
     batch_scheduler_policy: max_utilization
     enable_chunked_context: true
+  version_overrides:
+    briton_version: 0.20.0-8a4ccb2
+    engine_builder_version: 0.20.0.dev2
 
 ```
 
