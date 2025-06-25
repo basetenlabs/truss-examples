@@ -132,7 +132,7 @@ def split_custom_tokens(s: str) -> List[int]:
     return [int(match) for match in matches if match != "0"]
 
 
-async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[bytes]:
+async def tokens_decoder(token_gen: Iterator, request_id: str, start_time: int) -> Iterator[bytes]:
     """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
     assert hasattr(token_gen, "__aiter__")
     audio_queue = asyncio.Queue()
@@ -140,7 +140,6 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
     async def producer(token_gen: Iterator):
         buffer: list[int] = []
         count = 0
-        start_time = time.time()
         tft = 0
         async for token_sim in token_gen:
             if tft == 0:
@@ -158,7 +157,7 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
         elapsed = time.time() - start_time
         time_to_first_token = tft - start_time
         time_of_generation = time.time() - tft
-        token_generation_speed = count / time_to_first_token
+        token_generation_speed = count / time_of_generation
         logging.info(
             f"Finished `{request_id}`, total tokens : {count}, time: {elapsed:.2f}s. "
             f"tokens/s generation: {token_generation_speed:.2f} (ttft: {time_to_first_token:.2f}s, generation time: {time_of_generation:.2f}s)"
@@ -301,6 +300,7 @@ class Model:
             model_input["repetition_penalty"] = model_input.get(
                 "repetition_penalty", 1.1
             )
+            start_time = time.time()
 
             async def audio_stream(req_id: str):
                 token_gen = await self._engine.predict(model_input, request)
@@ -308,7 +308,7 @@ class Model:
                 if isinstance(token_gen, StreamingResponse):
                     token_gen = token_gen.body_iterator
 
-                async for chunk in tokens_decoder(token_gen, req_id):
+                async for chunk in tokens_decoder(token_gen, req_id, start_time):
                     yield chunk
 
             return StreamingResponse(
