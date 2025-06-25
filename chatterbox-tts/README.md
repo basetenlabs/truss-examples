@@ -1,6 +1,6 @@
 # Chatterbox TTS Example
 ## Overview
-This is a basic example showing how to deploy [Chatterbox TTS](https://github.com/resemble-ai/chatterbox) on truss. 
+This is a basic example showing how to deploy [Chatterbox TTS](https://github.com/resemble-ai/chatterbox) on truss.
 
 ## Running the Example
 The truss endpoint is set up to accept text and an optional base64 wav string, and it returns that base64 string audio.

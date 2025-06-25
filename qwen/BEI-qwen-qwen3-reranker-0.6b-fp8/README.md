@@ -9,11 +9,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Qwen/Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B).
-Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
+This deployment is specifically designed for the Hugging Face model [michaelfeil/Qwen3-Reranker-0.6B-seq](https://huggingface.co/michaelfeil/Qwen3-Reranker-0.6B-seq).
+Suitable models can be identified by the `ForSequenceClassification` suffix in the model name. Prediction models may have one or more labels, which are returned with the prediction.
 
-Qwen/Qwen3-Reranker-0.6B  is a text-embeddings model, producing a 1D embeddings vector, given an input.
-It's frequently used for downstream tasks like clustering, used with vector databases.
+michaelfeil/Qwen3-Reranker-0.6B-seq  is a text-classification model, used to classify a text into a category. \nIt is frequently used in sentiment analysis, spam detection, and more. It's also used for deployment of chat rating models, e.g. RLHF reward models or toxicity detection models.
 
 This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
@@ -43,80 +42,63 @@ truss push --publish
 ## Call your model
 
 ### API-Schema:
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings`
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict`
 ```json
 {
-  "encoding_format": "float", # or base64
-  "input": "string", # can be list of strings for multiple embeddings
-  "model": "null",
-  "user": "null"
+  "inputs": "Baseten is a fast inference provider",
+  "raw_scores": true,
+  "truncate": true,
+  "truncation_direction": "Right"
 }
 ```
 
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict",
+    json={
+        "inputs": [["Baseten is a fast inference provider", ["classify this separately."]],
+        "raw_scores": True,
+        "truncate": True,
+        "truncation_direction": "Right"
+    }
+)
+```
 Returns:
 ```json
-{
-  "data": [
+[
+  [
     {
-      "embedding": [
-        0
-      ],
-      "index": 0,
-      "object": "embedding"
+        "label": "excitement",
+        "score": 0.99
     }
   ],
-  "model": "thenlper/gte-base",
-  "object": "list",
-  "usage": {
-    "prompt_tokens": 512,
-    "total_tokens": 512
-  }
-}
+  [
+    {
+        "label": "excitement",
+        "score": 0.01
+    }
+  ]
+]
 ```
+Important, this is different from the `predict` route that you usually call. (https://model-xxxxxx.api.baseten.co/environments/production/predict), it contains an additional `sync` before that.
 The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
 
 #### Advanced:
 You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
 
-POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/v1/embeddings`
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/predict`
 Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
 
-### curl
-```bash
-curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings \
-        -H "Authorization: Api-Key YOUR_API_KEY" \
-        -d '{"input": "text string", "model": "model"}'
-```
-
 ### OpenAI compatible client library
-```python
-from openai import OpenAI
-import os
-
-client = OpenAI(
-    api_key=os.environ['BASETEN_API_KEY'],
-    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync/v1"
-)
-
-embedding = client.embeddings.create(
-    input="Baseten Embeddings are fast",
-    model="model"
-)
-```
-### requests python library
-
-```python
-import os
-import requests
-
-resp = requests.post(
-    "https://model-xxxxxx.api.baseten.co/environments/production/sync/v1/embeddings",
-    headers={"Authorization": "Api-Key " + str(os.environ['BASETEN_API_KEY'])},
-    json={"input": ["text string", "second string"]},
-)
-
-print(resp.json())
-```
+OpenAI does not have a classification endpoint, therefore no client library is available.
 
 
 ## Config.yaml
@@ -125,9 +107,12 @@ By default, the following configuration is used for this deployment. This config
 ```yaml
 model_metadata:
   example_model_input:
-    encoding_format: float
-    input: text string
-    model: model
+    inputs:
+    - Baseten is a fast inference provider
+    - Classify this separately.
+    raw_scores: true
+    truncate: true
+    truncation_direction: Right
 model_name: BEI-qwen-qwen3-reranker-0.6b-fp8-truss-example
 python_version: py39
 resources:
@@ -139,17 +124,17 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: Qwen/Qwen3-Reranker-0.6B
+      repo: michaelfeil/Qwen3-Reranker-0.6B-seq
       revision: main
       source: HF
     max_num_tokens: 40960
     num_builder_gpus: 4
     quantization_type: fp8
   runtime:
-    webserver_default_route: /v1/embeddings
+    webserver_default_route: /predict
   version_overrides:
-    bei_version: 0.0.23
-    engine_builder_version: 0.18.1.post6.dev3.b200
+    bei_version: 0.0.25-b200-dev-v4
+    engine_builder_version: 0.20.0.dev1
 
 ```
 

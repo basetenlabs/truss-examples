@@ -2,12 +2,12 @@ model_metadata:
   example_model_input:
     inputs:
     # advanced formatting of the string needed:
-    - - "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n<Instruct>: {intruction}\n<Query>: {query}\n<Document>: {doc}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-    - - "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n<Instruct>: Given a web search query, retrieve relevant passages that answer the query\n<Query>: What is the capital of China?\n<Document>: The capital of China is Beijing.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    - "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n<Instruct>: {intruction}\n<Query>: {query}\n<Document>: {doc}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    - "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n<Instruct>: Given a web search query, retrieve relevant passages that answer the query\n<Query>: What is the capital of China?\n<Document>: The capital of China is Beijing.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
     raw_scores: true
     truncate: true
     truncation_direction: Right
-model_name: library-model-BEI Qwen3 Reranker 8b fp8
+model_name: Qwen3 Reranker 8B
 python_version: py39
 resources:
   accelerator: H100_40GB
@@ -27,5 +27,5 @@ trt_llm:
   runtime:
     webserver_default_route: /predict
   version_overrides:
-    bei_version: 0.0.23
-    engine_builder_version: 0.18.1.post10.dev1
+    bei_version: 0.0.25-b200-dev-v4
+    engine_builder_version: 0.20.0.dev1

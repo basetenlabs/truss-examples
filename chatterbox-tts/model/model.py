@@ -4,9 +4,8 @@ import logging
 from pathlib import Path
 import tempfile
 from contextlib import contextmanager
-from typing import Dict, Optional, Union
+from typing import Dict
 
-import torch
 import torchaudio as ta
 from chatterbox.tts import ChatterboxTTS
 
