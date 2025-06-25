@@ -5,7 +5,7 @@ import fastapi
 from snac import SNAC
 from pathlib import Path
 import numpy as np
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 import batched
 import re
 from typing import List, Awaitable
@@ -25,6 +25,7 @@ _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 SNAC_DEVICE = "cuda"
 SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
+MAX_CHARACTERS_INPUT = 6144
 
 
 class SnacModelBatched:
@@ -264,6 +265,15 @@ class Model:
         model_input["prompt"] = self.format_prompt(
             model_input["prompt"], voice=model_input.get("voice", "tara")
         )
+        input_length = len(model_input["prompt"])
+        if input_length > MAX_CHARACTERS_INPUT:
+            return Response(
+                (
+                    f"Your suggested prompt is too long (len: {input_length}), max length is {MAX_CHARACTERS_INPUT} characters."
+                    "To generate audio faster, please split your request into multiple prompts. "
+                ),
+                status_code=400,
+            )
         model_input["temperature"] = model_input.get("temperature", 0.6)
         model_input["top_p"] = model_input.get("top_p", 0.8)
         model_input["max_tokens"] = model_input.get("max_tokens", 6144)
@@ -282,4 +292,8 @@ class Model:
             async for chunk in tokens_decoder(token_gen, req_id):
                 yield chunk
 
-        return StreamingResponse(audio_stream(req_id), media_type="audio/wav")
+        return StreamingResponse(
+            audio_stream(req_id),
+            media_type="audio/wav",
+            headers={"X-Baseten-Input-Tokens": input_length},
+        )

@@ -22,6 +22,8 @@ requirements:
   - torch==2.7.0
   - batched==0.1.4
 resources:
+  # NOTE: Model is bottlenecked by CPU clock speed
+  # H100 upgrade is not really effective
   accelerator: H100_40GB
   cpu: "1"
   memory: 10Gi
@@ -38,8 +40,8 @@ trt_llm:
     max_batch_size: 256
     # set higher, so we can always use the max batch size in a single iter.
     max_num_tokens: 16384
-    # 65536 would be around 600s of audio, typically model produces max 120s.
-    max_seq_len: 65536
+    # 32768 would be around 300s of audio, typically model produces max 120s.
+    max_seq_len: 32768
     num_builder_gpus: 1
     quantization_config:
       # TODO: Generate a typical dataset (input + output tokens) in target language
@@ -51,4 +53,5 @@ trt_llm:
     tensor_parallel_count: 1
   runtime:
     enable_chunked_context: true
-    kv_cache_free_gpu_mem_fraction: 0.85
+    kv_cache_free_gpu_mem_fraction: 0.90
+    batch_scheduler_policy: max_utilization

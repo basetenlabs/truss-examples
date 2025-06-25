@@ -1,6 +1,7 @@
 import batched
 import torch
 import asyncio
+from transformers import AutoTokenizer
 
 sem = asyncio.Semaphore(100)
 
@@ -81,7 +82,6 @@ class SnacModelBatched:
 #     {"codes": model_snac.snac_model.encode(dummy)}  # shape (1, 1, 4096)
 # )
 
-from transformers import AutoTokenizer
 
 _tokenizer = AutoTokenizer.from_pretrained("baseten/orpheus-3b-0.1-ft")
 
@@ -117,7 +117,7 @@ _format_prompt("hello world", None)
 
 
 def example_snac():
-    from snac import SNAC
+    from snac import SNAC # noqa
 
     model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval().cuda()
     audio = torch.randn(
