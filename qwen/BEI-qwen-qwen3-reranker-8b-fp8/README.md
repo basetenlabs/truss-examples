@@ -108,8 +108,8 @@ By default, the following configuration is used for this deployment. This config
 model_metadata:
   example_model_input:
     inputs:
-    - - Baseten is a fast inference provider
-    - - Classify this separately.
+    - Baseten is a fast inference provider
+    - Classify this separately.
     raw_scores: true
     truncate: true
     truncation_direction: Right
