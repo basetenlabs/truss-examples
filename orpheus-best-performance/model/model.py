@@ -162,7 +162,7 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
         logging.info(
             f"Finished `{request_id}`, total tokens : {count}, time: {elapsed:.2f}s. "
             f"tokens/s generation: {token_generation_speed:.2f} (ttft: {time_to_first_token:.2f}s, generation time: {time_of_generation:.2f}s)"
-            f" real-time factor once streaming started: {(token_generation_speed/100):.2f} "
+            f" real-time factor once streaming started: {(token_generation_speed / 100):.2f} "
         )
 
     producer_task = asyncio.create_task(producer(token_gen))
@@ -278,7 +278,9 @@ class Model:
                 model_input["prompt"], voice=model_input.get("voice", "tara")
             )
             input_length = len(model_input["prompt"])
-            logging.info(f"Starting request_id {req_id} with input length {input_length}")
+            logging.info(
+                f"Starting request_id {req_id} with input length {input_length}"
+            )
             if input_length > MAX_CHARACTERS_INPUT:
                 return Response(
                     (
@@ -291,10 +293,14 @@ class Model:
             model_input["top_p"] = model_input.get("top_p", 0.8)
             model_input["max_tokens"] = model_input.get("max_tokens", 6144)
             if model_input.get("end_id") is not None:
-                logging.info("Not using end_id from model_input:", model_input["end_id"])
+                logging.info(
+                    "Not using end_id from model_input:", model_input["end_id"]
+                )
             model_input["end_id"] = 128258
             # model_input["pad_id"] = model_input.get("end_id", [128004]) automatically infered  from AutoTokenizer.from_file(..).pad_token
-            model_input["repetition_penalty"] = model_input.get("repetition_penalty", 1.1)
+            model_input["repetition_penalty"] = model_input.get(
+                "repetition_penalty", 1.1
+            )
 
             async def audio_stream(req_id: str):
                 token_gen = await self._engine.predict(model_input, request)

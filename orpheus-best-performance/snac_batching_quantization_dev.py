@@ -117,7 +117,7 @@ _format_prompt("hello world", None)
 
 
 def example_snac():
-    from snac import SNAC # noqa
+    from snac import SNAC  # noqa
 
     model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval().cuda()
     audio = torch.randn(
