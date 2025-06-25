@@ -18,8 +18,10 @@ model_metadata:
 model_name: Orpheus-3b
 python_version: py39
 requirements:
+  - "--index-url https://download.pytorch.org/whl/cu128"
+  - torch==2.7.1
+  - "--extra-index-url https://pypi.org/simple"
   - snac==1.2.1
-  - torch==2.7.0
   - batched==0.1.4
 resources:
   # NOTE: Model is bottlenecked by CPU clock speed
@@ -32,7 +34,7 @@ secrets:
   hf_access_token: null
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24

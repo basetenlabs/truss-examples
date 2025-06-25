@@ -22,7 +22,7 @@ _inference_mode_raii_guard = torch._C._InferenceMode(True)
 # TODO(veer/michael): test decoder with bfloat16
 
 _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
-SNAC_DEVICE = "cuda"
+SNAC_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 MAX_CHARACTERS_INPUT = 6144
