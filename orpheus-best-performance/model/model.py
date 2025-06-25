@@ -295,5 +295,5 @@ class Model:
         return StreamingResponse(
             audio_stream(req_id),
             media_type="audio/wav",
-            headers={"X-Baseten-Input-Tokens": input_length},
+            headers={"X-Baseten-Input-Tokens": str(input_length)},
         )
