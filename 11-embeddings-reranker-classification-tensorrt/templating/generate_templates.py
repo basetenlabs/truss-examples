@@ -119,7 +119,7 @@ With BEI you get the following benefits:
         overrides_engine_builder = ENGINE_BUILDER_VERSION
         overrides_bei = BEI_VERSION
         if overrides_engine_builder is not None or overrides_bei is not None:
-            trt_llm.version_overrides = VersionsOverrides(
+            trt_llm.root.version_overrides = VersionsOverrides(
                 engine_builder_version=overrides_engine_builder,
                 bei_version=overrides_bei,
             )
@@ -267,7 +267,7 @@ Optionally, you can also enable:
                 engine_builder_version=overrides_engine_builder,
                 briton_version=overrides_briton,
             )
-            self.trt_config.version_overrides = version_overrides
+            self.trt_config.root.version_overrides = version_overrides
 
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
@@ -1412,19 +1412,6 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
-    Deployment(
-        "Qwen/Qwen2-57B-A14B-MoE-int4",
-        "Qwen/Qwen2-57B-A14B-Instruct",
-        Accelerator.H100,
-        TextGen(),
-        solution=Briton(
-            trt_config=llamalike_config(
-                repoid="Qwen/Qwen2-57B-A14B-Instruct",
-                tp=1,
-                quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT4,
-            )
-        ),
-    ),
     # mistralai/Mistral-Small-24B-Instruct-2501
     Deployment(
         "mistralai/Mistral-Small-24B-Instruct-2501",
@@ -1499,46 +1486,6 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_lookahead(repoid="meta-llama/Llama-3.1-8B-Instruct")
         ),
     ),
-    # INT8 legacy A100
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-weights_int4_kv_int8",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A100,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-smoothquant",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A100,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.SMOOTH_QUANT,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-int8",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A10G,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT8,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
 ]
 
 
