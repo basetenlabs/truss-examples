@@ -145,12 +145,12 @@ Supported models are tagged here: https://huggingface.co/models?other=text-embed
 
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.7.1
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7.1
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7.1
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7.1
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7.1
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7.1
+CPU	baseten/text-embeddings-inference-mirror:cpu-1.7.2
+Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7.2
+Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7.2
+Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7.2
+Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7.2
+Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7.2
 ```
 
 As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
@@ -164,7 +164,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
             )  # make sure model is available
         except ImportError:
             pass
-        version = "1.7.1"
+        version = "1.7.2"
         docker_image = {
             Accelerator.L4: f"baseten/text-embeddings-inference-mirror:89-{version}",
             Accelerator.A100: f"baseten/text-embeddings-inference-mirror:{version}",
@@ -198,7 +198,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
                 ]
             ),
             docker_server=dict(
-                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 128 --max-batch-tokens 16384 --auto-truncate"',
+                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate --tokenization-workers 3"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,
@@ -1175,6 +1175,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(
         "nomic-ai/nomic-embed-text-v2-moe",
         "nomic-ai/nomic-embed-text-v2-moe",
+        Accelerator.L4,
+        Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(
+        "redis/langcache-embed-v2",
+        "redis/langcache-embed-v2",
         Accelerator.L4,
         Embedder(),
         solution=HFTEI(),
