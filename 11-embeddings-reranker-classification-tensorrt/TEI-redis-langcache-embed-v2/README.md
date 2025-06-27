@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with Alibaba-NLP/gte-modernbert-base-embedding
+# Huggingface's text-embeddings-inference with redis/langcache-embed-v2
 
-This is a Deployment for Huggingface's text-embeddings-inference with Alibaba-NLP/gte-modernbert-base-embedding. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with redis/langcache-embed-v2. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -19,10 +19,10 @@ For larger models, we recommend downloading the weights at runtime for faster au
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Alibaba-NLP/gte-modernbert-base](https://huggingface.co/Alibaba-NLP/gte-modernbert-base).
+This deployment is specifically designed for the Hugging Face model [redis/langcache-embed-v2](https://huggingface.co/redis/langcache-embed-v2).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-Alibaba-NLP/gte-modernbert-base  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+redis/langcache-embed-v2  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -37,15 +37,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-modernbert-base-embedding
+cd 11-embeddings-reranker-classification-tensorrt/TEI-redis-langcache-embed-v2
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-modernbert-base-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-redis-langcache-embed-v2` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-alibaba-nlp-gte-modernbert-base-embedding-truss-example was successfully pushed ✨
+# ✨ Model TEI-redis-langcache-embed-v2-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -173,7 +173,7 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: Alibaba-NLP/gte-modernbert-base
+  repo_id: redis/langcache-embed-v2
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -182,7 +182,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-alibaba-nlp-gte-modernbert-base-embedding-truss-example
+model_name: TEI-redis-langcache-embed-v2-truss-example
 python_version: py39
 resources:
   accelerator: L4

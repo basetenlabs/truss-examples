@@ -14,7 +14,7 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: nomic-ai/nomic-embed-text-v2-moe
+  repo_id: redis/langcache-embed-v2
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -23,7 +23,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-nomic-ai-nomic-embed-text-v2-moe-truss-example
+model_name: TEI-redis-langcache-embed-v2-truss-example
 python_version: py39
 resources:
   accelerator: L4
