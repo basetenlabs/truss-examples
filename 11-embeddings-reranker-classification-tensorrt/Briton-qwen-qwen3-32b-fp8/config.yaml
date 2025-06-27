@@ -25,11 +25,10 @@ trt_llm:
       source: HF
     max_seq_len: 40960
     num_builder_gpus: 4
-    quantization_type: fp8
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
     tensor_parallel_count: 1
   runtime:
     batch_scheduler_policy: max_utilization
     enable_chunked_context: true
-  version_overrides:
-    briton_version: 0.20.0-8a4ccb2
-    engine_builder_version: 0.20.0.dev2

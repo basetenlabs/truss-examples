@@ -173,9 +173,6 @@ trt_llm:
     quantization_type: fp8
   runtime:
     webserver_default_route: /v1/embeddings
-  version_overrides:
-    bei_version: 0.0.25-b200-dev-v4
-    engine_builder_version: 0.20.0.dev2
 
 ```
 

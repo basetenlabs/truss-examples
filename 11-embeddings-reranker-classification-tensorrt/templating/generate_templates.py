@@ -240,6 +240,18 @@ Optionally, you can also enable:
         assert self.trt_config is not None
         self.trt_config.build.max_seq_len = max_position_embeddings
         assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
+        if self.trt_config.build.speculator is not None:
+            self.trt_config.build.max_seq_len = min(
+                self.trt_config.build.max_seq_len,
+                32768
+            )
+            self.trt_config.build.max_num_tokens = (
+                self.trt_config.build.max_seq_len
+            )
+            self.trt_config.runtime.enable_chunked_context = False
+            
+             
+        
         if (
             hf_cfg.model_type in ["qwen2", "qwen2_moe"]
             and self.trt_config.build.quantization_type is not None

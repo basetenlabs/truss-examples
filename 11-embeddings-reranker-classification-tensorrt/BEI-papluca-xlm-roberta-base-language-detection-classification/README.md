@@ -159,9 +159,6 @@ trt_llm:
     max_num_tokens: 16384
   runtime:
     webserver_default_route: /predict
-  version_overrides:
-    bei_version: 0.0.25-b200-dev-v4
-    engine_builder_version: 0.20.0.dev2
 
 ```
 
