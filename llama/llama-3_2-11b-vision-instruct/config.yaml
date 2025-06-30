@@ -1,6 +1,9 @@
 base_image:
   image: vllm/vllm-openai:v0.6.3.post1
 model_metadata:
+  tags:
+    - openai-compatible
+  repo_id: meta-llama/Llama-3.2-11B-Vision-Instruct
   example_model_input: {
     model: "llama-3.2-11b-vision-instruct",
     messages: [
