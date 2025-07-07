@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package example;
+option go_package = "./example";
+
+service ExampleService {
+  rpc Example (ExampleRequest) returns (stream ExampleReply);
+}
+
+message ExampleRequest {
+  string message = 1;
+}
+
+message ExampleReply {
+  string reply = 1;
+}

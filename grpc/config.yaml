@@ -1,0 +1,12 @@
+base_image:
+  image: # TODO: add your image here
+docker_server:
+  start_command: /grpcserver
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8085
+model_name: grpc-test
+runtime:
+  transport:
+    kind: "grpc"
