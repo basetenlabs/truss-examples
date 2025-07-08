@@ -2,7 +2,7 @@ from dataclasses import field
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
-
+import os
 import requests
 from pydantic import dataclasses
 from transformers import AutoConfig
@@ -17,6 +17,7 @@ from truss.base.trt_llm_config import (
     TrussTRTLLMQuantizationType,
     TrussTRTLLMRuntimeConfiguration,
     TrussTRTQuantizationConfiguration,
+    VersionsOverrides,
 )
 from truss.base.truss_config import (
     Accelerator,
@@ -30,6 +31,9 @@ from truss.base.truss_config import (
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
 ROOT_NAME = Path(REPO_URL.split("/")[-1])
+BEI_VERSION = os.environ.get("BEI")
+ENGINE_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER")
+BRITON_VERSION = os.environ.get("BRITON")
 
 
 @dataclasses.dataclass
@@ -88,31 +92,41 @@ With BEI you get the following benefits:
             if isinstance(dp.task, Predictor)
             else "/rerank"
         )
-        return TrussConfig(
-            model_metadata=dp.task.model_metadata,
-            trt_llm=TRTLLMConfiguration(
-                build=TrussTRTLLMBuildConfiguration(
-                    base_model=TrussTRTLLMModel.ENCODER,
-                    checkpoint_repository=CheckpointRepository(
-                        repo=dp.hf_model_id,
-                        revision="main",
-                        source=CheckpointSource.HF,
-                    ),
-                    max_num_tokens=max_num_tokens,
-                    **(
-                        {
-                            "quantization_type": TrussTRTLLMQuantizationType.FP8,
-                            # give more resources / cpu ram + vram on build if the model uses not-mig
-                            "num_builder_gpus": num_builder_gpus,
-                        }
-                        if self.make_fp8
-                        else {}
-                    ),
+
+        trt_llm = TRTLLMConfiguration(
+            build=TrussTRTLLMBuildConfiguration(
+                base_model=TrussTRTLLMModel.ENCODER,
+                checkpoint_repository=CheckpointRepository(
+                    repo=dp.hf_model_id,
+                    revision="main",
+                    source=CheckpointSource.HF,
                 ),
-                runtime=TrussTRTLLMRuntimeConfiguration(
-                    webserver_default_route=endpoint,
+                max_num_tokens=max_num_tokens,
+                **(
+                    {
+                        "quantization_type": TrussTRTLLMQuantizationType.FP8,
+                        # give more resources / cpu ram + vram on build if the model uses not-mig
+                        "num_builder_gpus": num_builder_gpus,
+                    }
+                    if self.make_fp8
+                    else {}
                 ),
             ),
+            runtime=TrussTRTLLMRuntimeConfiguration(
+                webserver_default_route=endpoint,
+            ),
+        )
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_bei = BEI_VERSION
+        if overrides_engine_builder is not None or overrides_bei is not None:
+            trt_llm.root.version_overrides = VersionsOverrides(
+                engine_builder_version=overrides_engine_builder,
+                bei_version=overrides_bei,
+            )
+
+        return TrussConfig(
+            model_metadata=dp.task.model_metadata,
+            trt_llm=trt_llm,
             resources=Resources(
                 accelerator=dp.accelerator,
                 memory="10Gi",
@@ -131,12 +145,12 @@ Supported models are tagged here: https://huggingface.co/models?other=text-embed
 
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.7
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7
+CPU	baseten/text-embeddings-inference-mirror:cpu-1.7.2
+Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7.2
+Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7.2
+Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7.2
+Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7.2
+Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7.2
 ```
 
 As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
@@ -150,7 +164,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
             )  # make sure model is available
         except ImportError:
             pass
-        version = "1.7"
+        version = "1.7.2"
         docker_image = {
             Accelerator.L4: f"baseten/text-embeddings-inference-mirror:89-{version}",
             Accelerator.A100: f"baseten/text-embeddings-inference-mirror:{version}",
@@ -184,7 +198,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
                 ]
             ),
             docker_server=dict(
-                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 128 --max-batch-tokens 16384 --auto-truncate"',
+                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate --tokenization-workers 3"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,
@@ -226,6 +240,18 @@ Optionally, you can also enable:
         assert self.trt_config is not None
         self.trt_config.build.max_seq_len = max_position_embeddings
         assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
+        if self.trt_config.build.speculator is not None:
+            self.trt_config.build.max_seq_len = min(
+                self.trt_config.build.max_seq_len,
+                32768
+            )
+            self.trt_config.build.max_num_tokens = (
+                self.trt_config.build.max_seq_len
+            )
+            self.trt_config.runtime.enable_chunked_context = False
+            
+             
+        
         if (
             hf_cfg.model_type in ["qwen2", "qwen2_moe"]
             and self.trt_config.build.quantization_type is not None
@@ -240,30 +266,23 @@ Optionally, you can also enable:
             # increase the quantization example size for qwen2 models
             self.trt_config.build.quantization_config = (
                 TrussTRTQuantizationConfiguration(
-                    calib_size=3072,
-                    calib_max_seq_length=min(4096, self.trt_config.build.max_seq_len),
+                    calib_size=2048,
+                    calib_max_seq_length=min(2048, self.trt_config.build.max_seq_len),
                 )
             )
 
-        secrets = {}
-        if dp.is_gated:
-            # fix: pass-through access token
-            # TODO: remove need to the token at runtime
-            secrets["hf_access_token"] = None
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_briton = BRITON_VERSION
 
-        temp_fix_lookahead = (
-            {}
-            if (
-                self.trt_config.build.speculator
-                and self.trt_config.build.speculator.checkpoint_repository is not None
+        if overrides_engine_builder is not None or overrides_briton is not None:
+            version_overrides = VersionsOverrides(
+                engine_builder_version=overrides_engine_builder,
+                briton_version=overrides_briton,
             )
-            else dict(ENABLE_EXECUTOR_API="1")
-        )
+            self.trt_config.root.version_overrides = version_overrides
 
         return TrussConfig(
             model_metadata=dp.task.model_metadata,
-            environment_variables=temp_fix_lookahead,
-            secrets=secrets,
             resources=Resources(
                 accelerator=AcceleratorSpec(
                     accelerator=dp.accelerator,
@@ -340,6 +359,32 @@ curl -X POST https://model-xxxxxx.api.baseten.co/environments/production/sync/v1
         -d '{"input": "text string", "model": "model"}'
 ```
 
+### Baseten Performance Client
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+texts = ["Hello world", "Example text", "Another sample"]
+response = client.embed(
+    input=texts,
+    model="my_model",
+    batch_size=4,
+    max_concurrent_requests=32,
+    timeout_s=360
+)
+print(response.numpy())
+```
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
 ### OpenAI compatible client library
 ```python
 from openai import OpenAI
@@ -412,6 +457,54 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/re
     "truncation_direction": "Right"
 }
 ```
+
+### Baseten Performance Client
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+response = client.rerank(
+    query="What is Baseten?",
+    texts=["Deep Learning is ...", "Baseten is a fast inference provider"],
+    raw_scores=True,
+    return_text=False,
+    truncate=True,
+)
+print(response.data)
+```
+
+Sometimes, you may want to apply a custom template to the texts before reranking them and call the predict endpoint instead:
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+def template(text: list[str]) -> list[str]:
+    # Custom template function to apply to the texts
+    # a popular template might be "{query}\n{document}"
+    # or also chat-style templates like "User: {query}\nDocument: {document}"
+    apply = lambda x: f"Custom template: {x}"
+    return [apply(t) for t in text]
+
+response = client.predict(
+    inputs=template(["What is baseten? A: Baseten is a fast inference provider", "Classify this separately."]),
+    raw_scores=True,
+    truncate=True,
+)
+print(response.data)
+```
+
+
+### Requests python library
 
 ```python
 import requests
@@ -493,6 +586,36 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 }
 ```
 
+
+### Baseten Performance Client
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+def template(text: list[str]) -> list[str]:
+    apply = lambda x: f"Custom template: {x}"
+    return [apply(t) for t in text]
+
+response = client.predict(
+    inputs=template(["Baseten is a fast inference provider", "Classify this separately."]),
+    raw_scores=True,
+    truncate=True,
+)
+print(response.data)
+```
+
+### Requests python library
 ```python
 import requests
 import os
@@ -705,7 +828,7 @@ class Deployment:
         return self.folder_name + "-truss-example"
 
 
-def generate_bei_deployment(dp: Deployment):
+def generate_deployment(dp: Deployment):
     root = Path(__file__).parent.parent.parent
     assert root.name == ROOT_NAME.name, "This script has been moved"
 
@@ -741,8 +864,11 @@ def generate_bei_deployment(dp: Deployment):
 
     # Writes
     full_folder_path.mkdir(parents=True, exist_ok=True)
-    config.write_to_yaml_file(full_folder_path / "config.yaml", verbose=False)
-    config_yaml_as_str = Path(full_folder_path / "config.yaml").read_text()
+    config_yaml_path = full_folder_path / "config.yaml"
+    config.write_to_yaml_file(config_yaml_path, verbose=False)
+    config_yaml_as_str = Path(config_yaml_path).read_text()
+    header = "# this file was autogenerated by `generate_templates.py` - please do change via template only\n"
+    Path(config_yaml_path).write_text(header + config_yaml_as_str)
 
     README_SUBREPO = f"""# {dp.solution.make_headline(dp)}
 
@@ -936,6 +1062,48 @@ DEPLOYMENTS_BEI = [
         Embedder(),
         solution=BEI(make_fp8=True),
     ),
+    Deployment(
+        "Qwen/Qwen3-Embedding-8B",
+        "michaelfeil/Qwen3-Embedding-8B-auto",
+        Accelerator.H100_40GB,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Embedding-4B",
+        "michaelfeil/Qwen3-Embedding-4B-auto",
+        Accelerator.H100_40GB,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Embedding-0.6B",
+        "michaelfeil/Qwen3-Embedding-0.6B-auto",
+        Accelerator.L4,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Reranker-0.6B",
+        "michaelfeil/Qwen3-Reranker-0.6B-seq",
+        Accelerator.L4,
+        Predictor(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Reranker-4B",
+        "michaelfeil/Qwen3-Reranker-4B-seq",
+        Accelerator.H100_40GB,
+        Predictor(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Reranker-8B",
+        "michaelfeil/Qwen3-Reranker-8B-seq",
+        Accelerator.H100_40GB,
+        Predictor(),
+        solution=BEI(make_fp8=True),
+    ),
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
@@ -975,6 +1143,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
         solution=HFTEI(),
     ),
     Deployment(  #
+        name="TaylorAI/bge-micro-v2",
+        hf_model_id="TaylorAI/bge-micro-v2",
+        accelerator=Accelerator.A10G,
+        task=Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(  #
         name="Alibaba-NLP/gte-Qwen2-1.5B-instruct-embedding",
         hf_model_id="Alibaba-NLP/gte-Qwen2-1.5B-instruct",
         accelerator=Accelerator.L4,
@@ -998,6 +1173,27 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(
         "mixedbread-ai/mxbai-embed-large-v1-embedding",
         "mixedbread-ai/mxbai-embed-large-v1",
+        Accelerator.L4,
+        Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(
+        "Alibaba-NLP/gte-reranker-modernbert-base",
+        "Alibaba-NLP/gte-reranker-modernbert-base",
+        Accelerator.L4,
+        Reranker(),
+        solution=HFTEI(),
+    ),
+    Deployment(
+        "nomic-ai/nomic-embed-text-v2-moe",
+        "nomic-ai/nomic-embed-text-v2-moe",
+        Accelerator.L4,
+        Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(
+        "redis/langcache-embed-v2",
+        "redis/langcache-embed-v2",
         Accelerator.L4,
         Embedder(),
         solution=HFTEI(),
@@ -1061,9 +1257,10 @@ def llamalike_lookahead(
     config.build.speculator = TrussSpeculatorConfiguration(
         # settings from https://arxiv.org/pdf/2402.02057
         speculative_decoding_mode="LOOKAHEAD_DECODING",
-        lookahead_windows_size=7,
-        lookahead_ngram_size=5,
-        lookahead_verification_set_size=5,
+        lookahead_windows_size=3,
+        lookahead_ngram_size=8,
+        lookahead_verification_set_size=3,
+        enable_b10_lookahead=True,  #
     )
     config.build.max_batch_size = 64
     return config
@@ -1147,6 +1344,20 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
         Accelerator.H100,
@@ -1217,19 +1428,6 @@ DEPLOYMENTS_BRITON = [
                 repoid="Qwen/QwQ-32B",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8,
-            )
-        ),
-    ),
-    Deployment(
-        "Qwen/Qwen2-57B-A14B-MoE-int4",
-        "Qwen/Qwen2-57B-A14B-Instruct",
-        Accelerator.H100,
-        TextGen(),
-        solution=Briton(
-            trt_config=llamalike_config(
-                repoid="Qwen/Qwen2-57B-A14B-Instruct",
-                tp=1,
-                quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT4,
             )
         ),
     ),
@@ -1307,46 +1505,6 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_lookahead(repoid="meta-llama/Llama-3.1-8B-Instruct")
         ),
     ),
-    # INT8 legacy A100
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-weights_int4_kv_int8",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A100,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-smoothquant",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A100,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.SMOOTH_QUANT,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
-    # Deployment(
-    #     "meta-llama/Llama-3.2-1B-Instruct-int8",
-    #     "meta-llama/Llama-3.2-1B-Instruct",
-    #     Accelerator.A10G,
-    #     TextGen(),
-    #     solution=Briton(
-    #         trt_config=llamalike_config(
-    #             repoid="meta-llama/Llama-3.2-1B-Instruct",
-    #             quant=TrussTRTLLMQuantizationType.WEIGHTS_ONLY_INT8,
-    #             tp=1,
-    #         )
-    #     ),
-    # ),
 ]
 
 
@@ -1354,7 +1512,7 @@ ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_HFTEI + DEPLOYMENTS_BRITON
 
 if __name__ == "__main__":
     for dp in ALL_DEPLOYMENTS:
-        generate_bei_deployment(dp)
+        generate_deployment(dp)
 
     def format_filter(dps: list[Deployment], type_):
         sorted_filter = sorted(

@@ -133,8 +133,6 @@ print(completion.choices[0].message.tool_calls)
 By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
-environment_variables:
-  ENABLE_EXECUTOR_API: '1'
 model_metadata:
   example_model_input:
     max_tokens: 512
@@ -162,8 +160,8 @@ trt_llm:
     max_seq_len: 40960
     num_builder_gpus: 4
     quantization_config:
-      calib_max_seq_length: 4096
-      calib_size: 3072
+      calib_max_seq_length: 2048
+      calib_size: 2048
     quantization_type: fp8
     tensor_parallel_count: 1
   runtime:

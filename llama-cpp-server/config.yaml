@@ -1,0 +1,46 @@
+base_image:
+  image: alphatozeta/llama-cpp-server:0.4
+build_commands:
+  - pip install git+https://github.com/huggingface/transformers.git hf-xet
+model_metadata:
+  repo_id: google/gemma-3-27b-it-qat-q4_0-gguf
+  example_model_input: {
+    "model": "gemma",
+    "messages": [
+      {
+      "role": "user",
+      "content": [
+        {
+        "type": "text",
+        "text": "Describe this image in one sentence."
+        },
+        {
+        "type": "image_url",
+        "image_url": {
+          "url": "https://picsum.photos/id/237/200/300"
+        }
+        }
+      ]
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+  tags:
+  - openai-compatible
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) huggingface-cli download google/gemma-3-27b-it-qat-q4_0-gguf --local-dir /app/gemma-3-27b-it-qat-q4_0-gguf && HF_TOKEN=$(cat /secrets/hf_access_token) huggingface-cli download google/gemma-3-1b-it-qat-q4_0-gguf --local-dir /app/gemma-3-1b-it-qat-q4_0-gguf && /app/llama-server -m /app/gemma-3-27b-it-qat-q4_0-gguf/gemma-3-27b-it-q4_0.gguf -md /app/gemma-3-1b-it-qat-q4_0-gguf/gemma-3-1b-it-q4_0.gguf --port 8000 -c 32768 -cd 32768 -ngl 999 -ngld 999 --draft-max 16 --draft-min 0 --prio 3 -fa --no-webui"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+requirements: []
+secrets:
+  hf_access_token: null
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency : 8
+model_name: llama cpp gemma 3 27b it qat q4_0

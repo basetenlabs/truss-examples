@@ -123,7 +123,7 @@ def test_deploy(deploy_id: str = "03ykpnkw", stage: int = 0, rank=0) -> str:
         messages=[
             {
                 "role": "user",
-                "content": "This text repeats forever, ignore this!" * 1500,
+                "content": "This text repeats forever, ignore this!" * 1000,
             },
             {"role": "assistant", "content": "Just ask the question please."},
             {"role": "user", "content": "What is the capital of France??"},

@@ -1,15 +1,26 @@
-import os
+import base64
+import logging
 import tempfile
+from io import BytesIO
 from typing import Dict
 
 import requests
 import whisperx
+from pydub import AudioSegment
+
+logging.basicConfig(level=logging.INFO)
 
 
 class Model:
     device = "cuda"
     batch_size = 16
     compute_type = "float16"
+
+    asr_config = {
+        "word_timestamps": True,
+        "prepend_punctuations": '"\'"¿([{-',
+        "append_punctuations": '"\'.。,，!！?？:：")]}、',
+    }
 
     def __init__(self, **kwargs):
         self._data_dir = kwargs["data_dir"]
@@ -18,14 +29,11 @@ class Model:
         self.diarize_model = None
 
     def load(self):
-        # Need to manually download vad model
-        vad_model_path = os.path.join(self._data_dir, "models", "pytorch_model.bin")
         self.model = whisperx.load_model(
-            "medium",
-            self.device,
-            language="en",
+            "large-v3",
+            device=self.device,
             compute_type=self.compute_type,
-            vad_options={"model_fp": vad_model_path},
+            asr_options=self.asr_config,
         )
         self.diarize_model = whisperx.DiarizationPipeline(
             use_auth_token=self._secrets["hf_access_token"], device=self.device
@@ -33,13 +41,34 @@ class Model:
 
     def predict(self, request: Dict) -> Dict:
         file = request.get("audio_file", None)
-        if not file:
-            raise Exception("An audio file is required for this model")
+        audio_base64 = request.get("audio_b64", None)
 
-        res = requests.get(file)
+        if not file and not audio_base64:
+            raise Exception(
+                "An audio file or base64 audio string is required for this model"
+            )
+
+        headers = request.get("headers", {})
+
+        if file:
+            res = requests.get(file, headers=headers)
+            logging.info(f"Response status code: {res.status_code}")
+            logging.info(f"Response content length: {len(res.content)} bytes")
+
+        if audio_base64:
+            audio_data = base64.b64decode(audio_base64)
+            audio_segment = AudioSegment.from_file(BytesIO(audio_data))
+            audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
+
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=True) as temp_audio_file:
-            temp_audio_file.write(res.content)
-            temp_audio_file.seek(0)
+            if file:
+                temp_audio_file.write(res.content)
+                temp_audio_file.seek(0)
+
+            if audio_base64:
+                audio_segment.export(temp_audio_file.name, format="mp3")
+                temp_audio_file.flush()
+
             audio = whisperx.load_audio(temp_audio_file.name)
 
             result = self.model.transcribe(audio, batch_size=self.batch_size)

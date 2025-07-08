@@ -32,6 +32,7 @@ requirements:
 - sentencepiece==0.1.99
 - torch==2.0.1
 - transformers==4.32.1
+- numpy==1.26.4
 resources:
   accelerator: A10G
   cpu: '2'

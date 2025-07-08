@@ -52,6 +52,36 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 }
 ```
 
+
+### Baseten Performance Client
+
+Read more on the [Baseten Performance Client Blog](https://www.baseten.co/blog/your-client-code-matters-10x-higher-embedding-throughput-with-python-and-rust/)
+
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+def template(text: list[str]) -> list[str]:
+    apply = lambda x: f"Custom template: {x}"
+    return [apply(t) for t in text]
+
+response = client.predict(
+    inputs=template(["Baseten is a fast inference provider", "Classify this separately."]),
+    raw_scores=True,
+    truncate=True,
+)
+print(response.data)
+```
+
+### Requests python library
 ```python
 import requests
 import os

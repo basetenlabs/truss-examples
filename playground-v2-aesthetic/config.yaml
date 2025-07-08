@@ -24,6 +24,7 @@ requirements:
 - diffusers==0.24.0
 - accelerate==0.25.0
 - huggingface-hub==0.19.4
+- numpy==1.26.4
 resources:
   accelerator: A10G
   cpu: '2'

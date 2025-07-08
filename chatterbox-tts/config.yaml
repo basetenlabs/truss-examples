@@ -1,0 +1,14 @@
+model_name: Chatterbox TTS
+base_image:
+  image: jojobaseten/truss-numpy-1.26.0-gpu:0.4
+  python_executable_path: /usr/bin/python3
+python_version: py312
+requirements:
+  - chatterbox-tts
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 40Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null

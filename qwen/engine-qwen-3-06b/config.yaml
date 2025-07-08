@@ -1,0 +1,44 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+      - content: Tell me everything you know about optimized inference.
+        role: user
+    stream: true
+    temperature: 0.5
+    chat_template_kwargs:
+      enable_thinking: true
+  tags:
+    - openai-compatible
+environment_variables:
+  B10LOOKAHEAD_ENABLED: "1"
+model_name: library-model-qwen3-06b-engine
+python_version: py39
+resources:
+  accelerator: H100
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  version_overrides:
+    engine_builder_version: 0.18.1.post6.dev3.b200
+  build:
+    checkpoint_repository:
+      repo: Qwen/Qwen3-0.6B
+      revision: main
+      source: HF
+    max_batch_size: 64
+    num_builder_gpus: 1
+    max_seq_len: 40960
+    # plugin_configuration:
+    #   use_fp8_context_fmha: true
+    quantization_type: fp8
+    speculator:
+      enable_b10_lookahead: true
+      lookahead_ngram_size: 16
+      lookahead_verification_set_size: 1
+      lookahead_windows_size: 1
+      speculative_decoding_mode: LOOKAHEAD_DECODING
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true

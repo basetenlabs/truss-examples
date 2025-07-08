@@ -150,8 +150,6 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-secrets:
-  hf_access_token: null
 trt_llm:
   build:
     base_model: llama
@@ -160,7 +158,8 @@ trt_llm:
       revision: main
       source: HF
     max_batch_size: 64
-    max_seq_len: 131072
+    max_num_tokens: 32768
+    max_seq_len: 32768
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
@@ -173,7 +172,7 @@ trt_llm:
       speculative_decoding_mode: DRAFT_TOKENS_EXTERNAL
     tensor_parallel_count: 2
   runtime:
-    enable_chunked_context: true
+    enable_chunked_context: false
     kv_cache_free_gpu_mem_fraction: 0.45
 
 ```
