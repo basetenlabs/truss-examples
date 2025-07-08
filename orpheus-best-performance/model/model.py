@@ -132,7 +132,9 @@ def split_custom_tokens(s: str) -> List[int]:
     return [int(match) for match in matches if match != "0"]
 
 
-async def tokens_decoder(token_gen: Iterator, request_id: str, start_time: int) -> Iterator[bytes]:
+async def tokens_decoder(
+    token_gen: Iterator, request_id: str, start_time: int
+) -> Iterator[bytes]:
     """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
     assert hasattr(token_gen, "__aiter__")
     audio_queue = asyncio.Queue()
