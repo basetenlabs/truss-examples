@@ -1,16 +1,19 @@
 syntax = "proto3";
 
 package example;
-option go_package = "./example";
 
-service ExampleService {
-  rpc Example (ExampleRequest) returns (stream ExampleReply);
+// The greeting service definition
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
 
-message ExampleRequest {
+// The request message containing the user's name
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greeting
+message HelloReply {
   string message = 1;
-}
-
-message ExampleReply {
-  string reply = 1;
 }

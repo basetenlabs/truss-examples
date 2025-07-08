@@ -1,69 +1,74 @@
-# gRPC Truss Example
+# gRPC on Baseten
 
-This project demonstrates a gRPC service using Truss for model deployment.
+This example demonstrates how to deploy a gRPC model on Baseten using Truss.
 
-## Prerequisites
+# Prerequisites
 
-- Docker CLI installed
-- Go installed
-- Access to a container registry (Docker Hub, Google Container Registry, etc.)
+1. **Install Truss:**
+   ```bash
+   pip install --upgrade truss
+   ```
 
-## Setup
+2. **Install Protocol Buffer compiler:**
+   ```bash
+   # On macOS
+   brew install protobuf
 
-Get the repository with:
+   # On Ubuntu/Debian
+   sudo apt-get install protobuf-compiler
+
+   # On other systems, see: https://protobuf.dev/getting-started/
+   ```
+
+3. **Install gRPC tools:**
+   ```bash
+   pip install grpcio-tools
+   ```
+
+# Steps to Deploy
+
+### Step 1: Generate Protocol Buffer Code
+
+Generate the Python code from your `.proto` file:
+
 ```bash
-git clone https://github.com/basetenlabs/truss-grpc-example.git
+python -m grpc_tools.protoc --python_out=. --grpc_python_out=. --proto_path . example.proto
 ```
 
-Install Truss with:
-```bash
-pip install --upgrade truss
-```
+### Step 2: Build and Push Docker Image
 
-## Deployment
-
-### 0. Generate Protobuf files
-```bash
-protoc --go_out=. --go-grpc_out=. example.proto
-```
-For more information about Protobuf, refer to the [Protobuf documentation](https://protobuf.dev/reference/go/go-generated/).
-
-### 1. Build and Push Docker Image
-
-First, build the Docker image using the provided Dockerfile:
+Build and push your Docker image to a container registry:
 
 ```bash
 docker build -t your-registry/truss-grpc-demo:latest . --platform linux/amd64
 docker push your-registry/truss-grpc-demo:latest
 ```
 
-### 2. Update Configuration
+### Step 3: Configure your Truss
 
-Update the `config.yaml` file to use your newly built image:
+Update the `config.yaml` file with your model name and Docker image:
 
 ```yaml
+model_name: "gRPC Model Example"
 base_image:
-  image: your-registry/truss-grpc-demo:latest  # Replace with your image
-[...]
+    image: your-registry/truss-grpc-demo:latest
 ```
 
-### 3. Push Model with Truss
+### Step 4: Deploy with Truss
 
 Deploy your model using the Truss CLI:
 
 ```bash
-truss push . --promote
+truss push --promote
 ```
 
-For more detailed information about Truss deployment, refer to the [truss push documentation](https://docs.baseten.co/reference/cli/truss/push).
+### Step 5: Invoke the Model
 
-### 4. Call the Model
-Copy the model ID from the [Baseten Models page](https://app.baseten.co/models) into `client/main.go` as the `modelID` variable.
+Update the code in `client.py` to connect to your deployed model. Replace `{MODEL_ID}` with your actual model ID,
+and the API_KEY with your Baseten API key:
 
-Copy the API key from the [Baseten API keys page](https://app.baseten.co/settings/account/api_keys) into `client/main.go` as the `basetenApiKey` variable.
-
-Test the model by running the client:
+Run your client to test the deployed model:
 
 ```bash
-go run client/main.go
+python client.py
 ```

@@ -1,31 +1,17 @@
-FROM golang:1.24.0 AS builder
+FROM python:3.13-slim
 
-WORKDIR /
-
-COPY go.mod go.sum ./
-
-RUN go mod download
-
-COPY example /example
-COPY server /server
-
-RUN go build -o grpcserver server/main.go
-
-FROM debian:latest
-
-WORKDIR /
-
-# Install Python, pip, and venv
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a virtual environment
-RUN python3 -m venv /opt/venv
+WORKDIR /app
 
-# Activate the virtual environment
-ENV PATH="/opt/venv/bin:$PATH"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY --from=builder /grpcserver ./
+COPY model.py ./model.py
+COPY example_pb2.py example_pb2_grpc.py ./
+
+EXPOSE 8080
+
+CMD ["python", "model.py"]

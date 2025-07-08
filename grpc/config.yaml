@@ -1,12 +1,15 @@
+model_name: "gRPC Model Example"
 base_image:
-  image: # TODO: add your image here
+  image: sidbaseten/grpc-test:v2
 docker_server:
-  start_command: /grpcserver
+  start_command: python model.py
+  server_port: 8080
+  predict_endpoint: /
   readiness_endpoint: /health
   liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8085
-model_name: grpc-test
+resources:
+  accelerator: A10G  # or your preferred GPU
+  use_gpu: true
 runtime:
   transport:
     kind: "grpc"
