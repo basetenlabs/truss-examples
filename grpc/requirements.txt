@@ -1,3 +1,4 @@
 grpcio
+grpcio-health-checking
 grpcio-tools
 protobuf

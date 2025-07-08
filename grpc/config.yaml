@@ -1,6 +1,6 @@
 model_name: "gRPC Model Example"
 base_image:
-  image: sidbaseten/grpc-test:v2
+  image: your/repository:tag
 docker_server:
   start_command: python model.py
   server_port: 8080

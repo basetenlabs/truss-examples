@@ -4,8 +4,8 @@ import example_pb2_grpc
 
 
 def run():
-    channel = grpc.secure_channel(
-        "model-{MODEL_ID}.api.baseten.co:443", grpc.ssl_channel_credentials()
+    channel = grpc.insecure_channel(
+        "model-{MODEL_ID}.grpc.api.baseten.co:80",
     )
 
     stub = example_pb2_grpc.GreeterStub(channel)
@@ -13,7 +13,8 @@ def run():
     request = example_pb2.HelloRequest(name="World")
 
     metadata = [
-        ("authorization", "Api-Key YOUR_API_KEY"),
+        ("baseten-authorization", "Api-Key {API_KEY}"),
+        ("baseten-model-id", "{MODEL_ID}"),
     ]
 
     response = stub.SayHello(request, metadata=metadata)
