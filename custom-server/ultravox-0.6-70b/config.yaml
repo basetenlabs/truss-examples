@@ -1,0 +1,37 @@
+base_image:
+  image: vllm/vllm-openai:v0.9.2
+model_metadata:
+  repo_id: fixie-ai/ultravox-v0_6-llama-3_3-70b
+  avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/628d700fdb4cd1d1717c7d2f/m9n8O1Jk88UadmN6GoLNR.png
+  example_model_input: {
+    "model": "ultravox",
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "What is Lydia like?"
+                },
+                {
+                    "type": "audio_url",
+                    "audio_url": {"url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3"}
+                }
+            ]
+        }
+    ]
+  }
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve fixie-ai/ultravox-v0_6-llama-3_3-70b --dtype half --max-model-len 16384 --port 8000 --served-model-name ultravox --tensor-parallel-size 4 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:4
+  use_gpu: true
+runtime:
+  predict_concurrency : 16
+model_name: Ultravox v0.6 70b
+requirements:
+  - vllm[audio]==0.9.2
