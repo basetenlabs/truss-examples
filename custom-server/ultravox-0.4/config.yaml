@@ -16,7 +16,7 @@ model_metadata:
                 },
                 {
                     "type": "audio_url",
-                    "audio_url": {"url": "https://audio-samples.github.io/samples/mp3/blizzard_tts_unbiased/sample-2/real.mp3"}
+                    "audio_url": {"url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3"}
                 }
             ]
         }
@@ -25,7 +25,7 @@ model_metadata:
   tags:
     - openai-compatible
 docker_server:
-  start_command: sh -c "vllm serve fixie-ai/ultravox-v0_4 --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
+  start_command: sh -c "vllm serve fixie-ai/ultravox-v0_4 --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

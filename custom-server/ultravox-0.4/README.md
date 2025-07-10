@@ -4,17 +4,6 @@ Ultravox is a multimodal model that can consume both speech and text as input, g
 
 This is a [Truss](https://truss.baseten.co/) for Ultravox using the vLLM OpenAI Compatible server. This Truss bypasses the need for writing a `model.py` and instead runs `vllm serve` directly at startup and uses the HTTP endpoint provided by `vLLM` OpenAI Compatible Server to directly serve requests.
 
-## OpenAI Bridge Compatibility
-
-This Truss is compatible with a *custom* version of our [bridge endpoint for OpenAI ChatCompletion users](https://docs.baseten.co/api-reference/openai). This means you can easily integrate this model into your existing applications that use the OpenAI API format.
-
-```
-client = OpenAI(
-    api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/{model_id}/direct/v1"
-)
-```
-
 ## Deployment
 
 First, clone this repository:
@@ -34,7 +23,7 @@ Before deployment:
 With `ultravox-0.4` as your working directory, you can deploy the model with:
 
 ```sh
-truss push --publish --trusted
+truss push --publish
 ```
 
 Paste your Baseten API key if prompted.
@@ -58,34 +47,32 @@ model_id = "jwdp26kw" # Replace with your model ID
 
 client = OpenAI(
     api_key="YOUR-API-KEY",
-    base_url="https://bridge.baseten.co/v1/direct"
+    base_url=f"https://model-{model_id}.api.baseten.co/environments/production/sync/v1"
 )
 
 response = client.chat.completions.create(
   model="ultravox", # Replace with your model name
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": "What is Lydia like?"
-                },
-                {
-                    "type": "audio_url",
-                    "audio_url": {"url": "https://audio-samples.github.io/samples/mp3/blizzard_tts_unbiased/sample-2/real.mp3"}
-                }
-            ]
-        }
-    ],
-  extra_body={
-    "baseten": {
-      "model_id": model_id
-    }
-  }
+  messages=[
+      {
+          "role": "user",
+          "content": [
+              {
+                  "type": "text",
+                  "text": "What is Lydia like?"
+              },
+              {
+                  "type": "audio_url",
+                  "audio_url": {"url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3"}
+              }
+          ]
+      }
+  ],
+  stream=True
 )
 
-print(response.choices[0].message.content)
+for chunk in response:
+  content = chunk.choices[0].delta.content
+  print(content, end="", flush=True)
 ```
 
 ## Support
