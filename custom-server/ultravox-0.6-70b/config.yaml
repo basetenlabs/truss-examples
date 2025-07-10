@@ -22,6 +22,8 @@ model_metadata:
         }
     ]
   }
+  tags:
+    - openai-compatible
 docker_server:
   start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve fixie-ai/ultravox-v0_6-llama-3_3-70b --dtype half --max-model-len 16384 --port 8000 --served-model-name ultravox --tensor-parallel-size 4 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce --enforce-eager --trust-remote-code"
   readiness_endpoint: /health
