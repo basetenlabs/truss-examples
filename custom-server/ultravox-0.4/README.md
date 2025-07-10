@@ -1,5 +1,7 @@
 # Ultravox v0.4 vLLM Truss
 
+Ultravox is a multimodal model that can consume both speech and text as input, generating output text as usual.
+
 This is a [Truss](https://truss.baseten.co/) for Ultravox using the vLLM OpenAI Compatible server. This Truss bypasses the need for writing a `model.py` and instead runs `vllm serve` directly at startup and uses the HTTP endpoint provided by `vLLM` OpenAI Compatible Server to directly serve requests.
 
 ## OpenAI Bridge Compatibility
@@ -67,11 +69,11 @@ response = client.chat.completions.create(
             "content": [
                 {
                     "type": "text",
-                    "text": "Answer in one sentence. For lake Michigan,"
+                    "text": "What is Lydia like?"
                 },
                 {
                     "type": "audio_url",
-                    "audio_url": {"url": "http://study.aitech.ac.jp/tat/239977.mp3"}
+                    "audio_url": {"url": "https://audio-samples.github.io/samples/mp3/blizzard_tts_unbiased/sample-2/real.mp3"}
                 }
             ]
         }

@@ -1,4 +1,6 @@
-# Ultravox v0.4 vLLM Truss
+# Ultravox v0.5 8b vLLM Truss
+
+Ultravox is a multimodal model that can consume both speech and text as input, generating output text as usual.
 
 This is a [Truss](https://truss.baseten.co/) for Ultravox using the vLLM OpenAI Compatible server. This Truss bypasses the need for writing a `model.py` and instead runs `vllm serve` directly at startup and uses the HTTP endpoint provided by `vLLM` OpenAI Compatible Server to directly serve requests.
 
@@ -19,7 +21,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd custom-server/ultravox-0.4
+cd custom-server/ultravox-0.5-8b
 ```
 
 Before deployment:
@@ -29,7 +31,7 @@ Before deployment:
 3. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
 4. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`. Note that you will *not* be able to successfully deploy Ultravox without doing this.
 
-With `ultravox-0.4` as your working directory, you can deploy the model with:
+With `ultravox-0.5-8b` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish --trusted
@@ -67,11 +69,11 @@ response = client.chat.completions.create(
             "content": [
                 {
                     "type": "text",
-                    "text": "Answer in one sentence. For lake Michigan,"
+                    "text": "What is Lydia like?"
                 },
                 {
                     "type": "audio_url",
-                    "audio_url": {"url": "http://study.aitech.ac.jp/tat/239977.mp3"}
+                    "audio_url": {"url": "https://audio-samples.github.io/samples/mp3/blizzard_tts_unbiased/sample-2/real.mp3"}
                 }
             ]
         }
