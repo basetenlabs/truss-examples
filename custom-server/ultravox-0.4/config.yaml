@@ -1,3 +1,4 @@
+description: Take in audio and text as input, generating text as usual
 base_image:
   image: vllm/vllm-openai:v0.8.5
 model_metadata:
