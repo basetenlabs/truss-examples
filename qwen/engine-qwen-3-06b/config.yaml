@@ -10,8 +10,6 @@ model_metadata:
       enable_thinking: true
   tags:
     - openai-compatible
-environment_variables:
-  B10LOOKAHEAD_ENABLED: "1"
 model_name: library-model-qwen3-06b-engine
 python_version: py39
 resources:
@@ -20,8 +18,6 @@ resources:
   memory: 10Gi
   use_gpu: true
 trt_llm:
-  version_overrides:
-    engine_builder_version: 0.18.1.post6.dev3.b200
   build:
     checkpoint_repository:
       repo: Qwen/Qwen3-0.6B
