@@ -51,28 +51,28 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="ultravox", # Replace with your model name
-  messages=[
-      {
-          "role": "user",
-          "content": [
-              {
-                  "type": "text",
-                  "text": "What is Lydia like?"
-              },
-              {
-                  "type": "audio_url",
-                  "audio_url": {"url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3"}
-              }
-          ]
-      }
-  ],
-  stream=True
+    model="ultravox", # Replace with your model name
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "What is Lydia like?"
+                },
+                {
+                    "type": "audio_url",
+                    "audio_url": {"url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3"}
+                }
+            ]
+        }
+    ],
+    stream=True
 )
 
 for chunk in response:
-  content = chunk.choices[0].delta.content
-  print(content, end="", flush=True)
+    content = chunk.choices[0].delta.content
+    print(content, end="", flush=True)
 ```
 
 ## Support
