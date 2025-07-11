@@ -1,4 +1,4 @@
-# Ultravox v0.4 vLLM Truss
+# Ultravox v0.5 8b vLLM Truss
 
 Ultravox is a multimodal model that can consume both speech and text as input, generating output text as usual.
 
@@ -10,7 +10,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd custom-server/ultravox-0.4
+cd custom-server/ultravox-0.5-8b
 ```
 
 Before deployment:
@@ -20,7 +20,7 @@ Before deployment:
 3. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
 4. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`. Note that you will *not* be able to successfully deploy Ultravox without doing this.
 
-With `ultravox-0.4` as your working directory, you can deploy the model with:
+With `ultravox-0.5-8b` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
