@@ -35,7 +35,7 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency : 16
-model_name: Ultravox v0.5 8b
+model_name: Ultravox v0.5 8B
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
 requirements:

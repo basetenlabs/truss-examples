@@ -1,4 +1,4 @@
-# Ultravox v0.5 8b vLLM Truss
+# Ultravox v0.5 8B vLLM Truss
 
 Ultravox is a multimodal model that can consume both speech and text as input, generating output text as usual.
 
