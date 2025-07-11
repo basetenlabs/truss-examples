@@ -2,7 +2,7 @@ description: Take in audio and text as input, generating text as usual
 base_image:
   image: vllm/vllm-openai:v0.9.2
 model_metadata:
-  repo_id: fixie-ai/ultravox-v0_5-llama-3_1-8b
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
   avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/628d700fdb4cd1d1717c7d2f/m9n8O1Jk88UadmN6GoLNR.png
   example_model_input: {
     "model": "ultravox",
@@ -25,7 +25,7 @@ model_metadata:
   tags:
     - openai-compatible
 docker_server:
-  start_command: sh -c "vllm serve fixie-ai/ultravox-v0_5-llama-3_1-8b --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --trust-remote-code"
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve fixie-ai/ultravox-v0_5-llama-3_1-8b --dtype half --max-model-len 4096 --port 8000 --served-model-name ultravox --tensor-parallel-size 1 --gpu-memory-utilization 0.95 --distributed-executor-backend mp --disable-custom-all-reduce --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
