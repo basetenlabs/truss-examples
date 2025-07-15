@@ -6,7 +6,7 @@ model_metadata:
   avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/634c17653d11eaedd88b314d/9OgyfKstSZtbmsmuG8MbU.png
   example_model_input:
     {
-      "model": "mistralai/Voxtral-Mini-3B-2507",
+      "model": "voxtral-mini",
       "messages":
         [
           {
@@ -28,13 +28,13 @@ model_metadata:
   tags:
     - openai-compatible
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Voxtral-Mini-3B-2507 --tokenizer_mode mistral --config_format mistral --load_format mistral"
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Voxtral-Mini-3B-2507 --dtype half --max-model-len 16384 --port 8000 --served-model-name voxtral-mini --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce  --trust-remote-code --tokenizer_mode mistral --config_format mistral --load_format mistral"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
   server_port: 8000
 resources:
-  accelerator: H100:4
+  accelerator: H100
   use_gpu: true
 runtime:
   predict_concurrency: 16
