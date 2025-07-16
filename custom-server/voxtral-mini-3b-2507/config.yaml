@@ -32,7 +32,7 @@ build_commands:
   # - sh -c "git clone https://github.com/vllm-project/vllm.git && cd vllm && pip install -e ."
   # - uv pip install -U "vllm[audio]" --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly
 docker_server:
-  start_command: sh -c "uv pip install -U "vllm[audio]" --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly && HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Voxtral-Mini-3B-2507 --dtype half --max-model-len 16384 --port 8000 --served-model-name voxtral-mini --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce  --trust-remote-code --tokenizer_mode mistral --config_format mistral --load_format mistral"
+  start_command: sh -c "uv pip install -U 'vllm[audio]' --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly && HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Voxtral-Mini-3B-2507 --dtype half --max-model-len 16384 --port 8000 --served-model-name voxtral-mini --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce  --trust-remote-code --tokenizer_mode mistral --config_format mistral --load_format mistral"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
