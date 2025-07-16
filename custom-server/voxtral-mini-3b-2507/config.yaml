@@ -1,7 +1,7 @@
 description: Take in audio and text as input, generating text as usual
 base_image:
   # image: vllm/vllm-openai:v0.9.2
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:latest
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:18bdcf41135d5ce47d53b40b9f3dfe47c610f945
 model_metadata:
   repo_id: mistralai/Voxtral-Mini-3B-2507
   avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/634c17653d11eaedd88b314d/9OgyfKstSZtbmsmuG8MbU.png
