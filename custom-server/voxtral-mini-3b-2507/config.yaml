@@ -1,6 +1,5 @@
 description: Take in audio and text as input, generating text as usual
 base_image:
-  # image: vllm/vllm-openai:v0.9.2
   image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:18bdcf41135d5ce47d53b40b9f3dfe47c610f945
 model_metadata:
   repo_id: mistralai/Voxtral-Mini-3B-2507
@@ -28,16 +27,11 @@ model_metadata:
     }
   tags:
     - openai-compatible
-# build_commands:
-# - VLLM_USE_PRECOMPILED=1 pip install git+https://github.com/vllm-project/vllm.git
-# - sh -c "git clone https://github.com/vllm-project/vllm.git && cd vllm && pip install -e ."
-# - uv pip install -U "vllm[audio]" --torch-backend=auto --extra-index-url https://wheels.vllm.ai/nightly
 docker_server:
   start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Voxtral-Mini-3B-2507 --tokenizer_mode mistral --config_format mistral --load_format mistral --dtype half --max-model-len 16384 --port 8000 --served-model-name voxtral-mini --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --distributed-executor-backend mp --disable-custom-all-reduce  --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
-  # predict_endpoint: /v1/chat/completions
-  predict_endpoint: /v1/audio/transcriptions
+  predict_endpoint: /v1/chat/completions
   server_port: 8000
 resources:
   accelerator: H100_40GB
