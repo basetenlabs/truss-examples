@@ -13,13 +13,9 @@ model_metadata:
             "role": "user",
             "content":
               [
-                { "type": "text", "text": "What is Lydia like?" },
                 {
-                  "type": "audio_url",
-                  "audio_url":
-                    {
-                      "url": "https://baseten-public.s3.us-west-2.amazonaws.com/fred-audio-tests/real.mp3",
-                    },
+                  "type": "text",
+                  "text": "What is the name of the famous bicycle race in France?",
                 },
               ],
           },
