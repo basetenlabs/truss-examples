@@ -1,5 +1,4 @@
 import torch
-
 from transformers import AutoProcessor, VoxtralForConditionalGeneration
 
 repo_id = "mistralai/Voxtral-Small-24B-2507"
@@ -13,7 +12,6 @@ class Model:
         self._hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def load(self):
-
         self._model = VoxtralForConditionalGeneration.from_pretrained(
             repo_id,
             torch_dtype=torch.bfloat16,
