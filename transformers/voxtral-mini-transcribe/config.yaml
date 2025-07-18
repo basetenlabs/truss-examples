@@ -1,0 +1,24 @@
+model_name: voxtral-mini-transcribe
+python_version: py310
+model_metadata:
+  example_model_input:
+    {
+      "audio": "https://huggingface.co/datasets/hf-internal-testing/dummy-audio-samples/resolve/main/obama.mp3",
+    }
+
+requirements:
+  - torch
+  - git+https://github.com/huggingface/transformers.git
+  - mistral-common[audio]
+  - accelerate
+  - librosa
+
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+
+secrets:
+  hf_access_token: null
+system_packages: []
+environment_variables: {}
+external_package_dirs: []
