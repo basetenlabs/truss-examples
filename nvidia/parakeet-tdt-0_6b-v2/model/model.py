@@ -1,4 +1,5 @@
 import tempfile
+import time
 
 import nemo.collections.asr as nemo_asr
 import requests
@@ -70,11 +71,14 @@ class Model:
                     print(f"Download successful: {downloaded_bytes} bytes")
 
                     print("Transcribing audio...")
+                    start_time = time.perf_counter()
                     # transcribe audio
                     transcripts = self.model.transcribe(
                         [temp_file.name], timestamps=is_timestamps
                     )
-                    print("Transcription successful")
+                    print(
+                        f"Transcription successful in {time.perf_counter() - start_time:.2f} seconds"
+                    )
 
                     # print(f"{transcripts=}")
                     if not is_timestamps:
