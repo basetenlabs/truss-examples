@@ -1,4 +1,7 @@
+import tempfile
+
 import nemo.collections.asr as nemo_asr
+import requests
 import torch
 
 
@@ -38,10 +41,6 @@ class Model:
         is_timestamps = request.get("timestamps", False)
 
         # download audio temp file
-        import tempfile
-
-        import requests
-
         try:
             response = requests.get(audio_url)
 
