@@ -85,11 +85,22 @@ class Model:
                         return {"transcript": transcripts[0][0]}
 
                     # some latency penalty for json serialization
+
+                    # serialize full dict – very large
+                    # transcripts_json = json_serialize_recursive(
+                    #     transcripts[0][0].__dict__
+                    # )
+
+                    # serialize only essential fields
                     transcripts_json = json_serialize_recursive(
-                        transcripts[0][0].__dict__
+                        {
+                            "text": transcripts[0][0].text,
+                            "score": transcripts[0][0].score,
+                            "timestep": transcripts[0][0].timestep,
+                        }
                     )
 
                     return {"transcript": transcripts_json}
         except Exception as e:
-            print(e)
-            return f"Error transcribing audio for {audio_url}"
+            print(f"Error [{audio_url}]:\n{e}")
+            return f"Error: {e}"
