@@ -38,6 +38,49 @@ curl -X POST https://app.baseten.co/models/{MODEL_ID}/predict \
   }' | python show.py
 ```
 
+### Load Test
+Before running the load test, update `test_truss.py` with your actual endpoint URL and API key. Replace the placeholder values for `api_url` and `api_key` with your deployment's information (lines 43 and 44).
+
+```bash
+python test_truss.py --save-all-images --use-varied-prompts --concurrent --num-requests 30
+
+🚀 Starting Flux Truss API test...
+==================================================
+🎨 Using 30 varied prompts for load testing
+📝 First 3 prompts to be tested:
+   1. a beautiful photograph of Mt. Fuji during cherry blossom, photorealistic, high quality
+   2. a majestic dragon soaring through a mystical forest, digital art, detailed
+   3. a cozy coffee shop interior with warm lighting, people working on laptops, photorealistic
+   ... and 27 more
+🚀 Starting concurrent load test with 30 requests, max 5 workers
+============================================================
+📤 Sending request 1/30: 'a beautiful photograph of Mt. Fuji during cherry b...'
+Testing Truss API endpoint with prompt: 'a beautiful photograph of Mt. Fuji during cherry blossom, photorealistic, high quality'
+
+...
+
+============================================================
+📊 LOAD TEST SUMMARY
+============================================================
+Total requests: 30
+Successful: 30
+Failed: 0
+Success rate: 100.0%
+Total time: 74.72 seconds
+Average request time: 11.63 seconds
+Min request time: 2.91 seconds
+Max request time: 12.86 seconds
+Throughput: 0.40 requests/second
+
+==================================================
+
+💾 Saving 30 successful images...
+✅ Successfully saved 30/30 images to './output'
+📁 Opened output directory
+
+==================================================
+```
+
 ### Advanced Usage
 
 ```python
