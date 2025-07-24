@@ -41,7 +41,7 @@ class Model:
         # Download TensorRT engine files (with error handling for private repos)
         try:
             snapshot_download(
-                repo_id="baseten-admin/flux.1-dev-trt-10.11.0.33.engine-B200",
+                repo_id="baseten-admin/flux.1-dev-trt-10.13.0.35.engine-B200",
                 local_dir="/app/data",
             )
             print("[I] TensorRT engine files downloaded successfully")
