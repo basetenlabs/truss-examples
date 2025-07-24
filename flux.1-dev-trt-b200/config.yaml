@@ -2,25 +2,6 @@ base_image:
   image: nvcr.io/nvidia/pytorch:25.06-py3
 description: Generate high-quality images from text prompts using Black Forest Labs's Flux model with TensorRT optimization.
 external_package_dirs: []
-# model_cache:
-# - repo_id: baseten-admin/flux.1-dev-trt-10.11.0.33.engine-B200
-#   allow_patterns:
-#   - "*.trt"
-#   - "*.engine"
-#   - "*.plan"
-#   - "config.json"
-#   volume_folder: cached_model
-# model_metadata:
-#   avatar_url: https://cdn.baseten.co/production/static/stability.png
-#   cover_image_url: https://cdn.baseten.co/production/static/sd.png
-#   example_model_input:
-#     prompt: "A beautiful landscape with mountains and a lake, photorealistic, high quality"
-#   pretty_name: Flux 1.0 Dev - TensorRT
-#   tags:
-#   - image-generation
-#   - text-to-image
-#   - nvidia
-#   - flux
 model_name: Flux 1.0 Dev - TensorRT
 # python_version: py312
 requirements_file: ./requirements.txt
