@@ -2,12 +2,7 @@
 
 ## What is this Truss example doing
 
-This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
-
-## Two options
-
-### Vllm server via vllm serve
-This is a completely codeless solution that 99% of users should use when deploying with vLLM. The only work required to set up this vLLM server is to modify the configs in vLLM serve.
+This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html). We create this example to give you the most codeless experience, so you can configure all vLLM engine parameters in `config.yaml`, without making code changes in `model.py` for most of the use cases.
 
 ## Configure your Truss by modifying the config.yaml
 
