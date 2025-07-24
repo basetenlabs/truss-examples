@@ -32,6 +32,9 @@ class Model:
         self.model = nemo_asr.models.ASRModel.from_pretrained(
             model_name="nvidia/parakeet-tdt-0.6b-v2"
         )
+        self.model.change_attention_model("rel_pos_local_attn", [256, 256])
+        self.model.change_subsampling_conv_chunking_factor(1)
+        self.model.to(torch.bfloat16)
 
     def predict(self, request: dict):
         print(f"{request=}")
@@ -42,39 +45,47 @@ class Model:
 
         # download audio temp file
         try:
-            response = requests.get(audio_url)
+            with requests.get(audio_url, stream=True) as response:
+                response.raise_for_status()  # ensure HTTP errors are caught early
 
-            url_without_query = audio_url.split("?")[0]
+                url_without_query = audio_url.split("?")[0]
 
-            # if not .wav or .flac, reject for now
-            if not url_without_query.endswith(
-                ".wav"
-            ) and not url_without_query.endswith(".flac"):
-                return "Error: Only .wav and .flac files are supported"
+                if not url_without_query.endswith(
+                    ".wav"
+                ) and not url_without_query.endswith(".flac"):
+                    return "Error: Only .wav and .flac files are supported"
 
-            url_filetype = url_without_query.split(".")[-1]
+                url_filetype = url_without_query.split(".")[-1]
 
-            with tempfile.NamedTemporaryFile(
-                delete=True, suffix=f".{url_filetype}"
-            ) as temp_file:
-                temp_file.write(response.content)
-                temp_file_path = temp_file.name
+                with tempfile.NamedTemporaryFile(
+                    delete=True, suffix=f".{url_filetype}"
+                ) as temp_file:
+                    print("Downloading audio file...")
+                    downloaded_bytes = 0
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            downloaded_bytes += len(chunk)
+                            temp_file.write(chunk)
+                    temp_file.flush()
+                    print(f"Download successful: {downloaded_bytes} bytes")
 
-                # transcribe audio
-                transcripts = self.model.transcribe(
-                    [temp_file_path], timestamps=is_timestamps
-                )
-                print(f"{transcripts=}")
+                    print("Transcribing audio...")
+                    # transcribe audio
+                    transcripts = self.model.transcribe(
+                        [temp_file.name], timestamps=is_timestamps
+                    )
+                    print("Transcription successful")
 
-                if not is_timestamps:
-                    return {"transcript": transcripts[0][0]}
+                    print(f"{transcripts=}")
+                    if not is_timestamps:
+                        return {"transcript": transcripts[0][0]}
 
-                # some latency penalty for json serialization
-                transcripts_copy_json = json_serialize_recursive(
-                    transcripts[0][0].__dict__.copy()
-                )
+                    # some latency penalty for json serialization
+                    transcripts_json = json_serialize_recursive(
+                        transcripts[0][0].__dict__
+                    )
 
-                return {"transcript": transcripts_copy_json}
+                    return {"transcript": transcripts_json}
         except Exception as e:
             print(e)
             return "Error transcribing audio"

@@ -14,7 +14,7 @@ resources:
   accelerator: H100_40GB
   use_gpu: true
 runtime:
-  predict_concurrency: 16
+  predict_concurrency: 8
 model_name: Parakeet TDT 0.6B V2
 secrets:
   hf_access_token: null
