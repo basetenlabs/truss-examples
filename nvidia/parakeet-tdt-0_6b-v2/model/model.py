@@ -13,6 +13,8 @@ def json_serialize_recursive(obj):
         return obj
     elif isinstance(obj, torch.Tensor):
         return obj.tolist()
+    elif hasattr(obj, "__dict__"):
+        return json_serialize_recursive(obj.__dict__)
     else:
         return str(obj)
 
