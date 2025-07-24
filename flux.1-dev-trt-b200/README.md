@@ -15,7 +15,6 @@ This model provides high-quality text-to-image generation using [Flux.1-dev mode
 - TensorRT optimization for fast inference
 - Support for custom image dimensions (must be multiples of 8)
 - Configurable denoising steps and guidance scale
-- Batch processing support
 - CUDA graph optimization support
 
 ## Usage
@@ -89,28 +88,6 @@ The model returns a JSON response with the following structure:
     "data": "base64_encoded_image",
     "time": 2.34,
     "images_generated": 1
-}
-```
-
-Or for batch processing:
-
-```json
-{
-    "status": "success",
-    "data": ["base64_encoded_image_1", "base64_encoded_image_2"],
-    "time": 4.56,
-    "images_generated": 2
-}
-```
-
-## Error Handling
-
-The model returns error responses in the following format:
-
-```json
-{
-    "status": "error",
-    "error": "Error message describing the issue"
 }
 ```
 
