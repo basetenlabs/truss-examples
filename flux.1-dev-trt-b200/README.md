@@ -39,10 +39,10 @@ curl -X POST https://app.baseten.co/models/{MODEL_ID}/predict \
 ```
 
 ### Load Test
-Before running the load test, update `test_truss.py` with your actual endpoint URL and API key. Replace the placeholder values for `api_url` and `api_key` with your deployment's information (lines 43 and 44).
+Before running the load test, update `load_test.py` with your actual endpoint URL and API key. Replace the placeholder values for `api_url` and `api_key` with your deployment's information (lines 43 and 44).
 
 ```bash
-python test_truss.py --save-all-images --use-varied-prompts --concurrent --num-requests 30
+python load_test.py --save-all-images --use-varied-prompts --concurrent --num-requests 30
 
 🚀 Starting Flux Truss API test...
 ==================================================
