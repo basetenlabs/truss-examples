@@ -1,6 +1,6 @@
 # Flux 1.0 Dev - TensorRT
 
-This model provides high-quality text-to-image generation using (Flux.1-dev model)[https://huggingface.co/black-forest-labs/FLUX.1-dev] optimized with TensorRT for the B200 GPU.
+This model provides high-quality text-to-image generation using [Flux.1-dev model](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimized with TensorRT for the B200 GPU.
 
 ## Model Information
 
