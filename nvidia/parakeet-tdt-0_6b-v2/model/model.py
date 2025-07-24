@@ -76,7 +76,7 @@ class Model:
                     )
                     print("Transcription successful")
 
-                    print(f"{transcripts=}")
+                    # print(f"{transcripts=}")
                     if not is_timestamps:
                         return {"transcript": transcripts[0][0]}
 
@@ -88,4 +88,4 @@ class Model:
                     return {"transcript": transcripts_json}
         except Exception as e:
             print(e)
-            return "Error transcribing audio"
+            return f"Error transcribing audio for {audio_url}"
