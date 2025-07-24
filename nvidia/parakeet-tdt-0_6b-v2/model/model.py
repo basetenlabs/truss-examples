@@ -44,11 +44,15 @@ class Model:
         try:
             response = requests.get(audio_url)
 
+            url_without_query = audio_url.split("?")[0]
+
             # if not .wav or .flac, reject for now
-            if not audio_url.endswith(".wav") and not audio_url.endswith(".flac"):
+            if not url_without_query.endswith(
+                ".wav"
+            ) and not url_without_query.endswith(".flac"):
                 return "Error: Only .wav and .flac files are supported"
 
-            url_filetype = audio_url.split(".")[-1]
+            url_filetype = url_without_query.split(".")[-1]
 
             with tempfile.NamedTemporaryFile(
                 delete=True, suffix=f".{url_filetype}"
