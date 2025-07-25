@@ -2,7 +2,9 @@
 
 ## What is this Truss example doing
 
-This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html). We create this example to give you the most codeless experience, so you can configure all vLLM engine parameters in `config.yaml`, without making code changes in `model.py` for most of the use cases.
+Deploying vLLM using a truss server is only recommended for flexibility and custom inference logic. Otherwise, check out deploying using [vllm server](https://github.com/basetenlabs/truss-examples/tree/main/vllm/vllm_server), which is also OpenAI compatible.
+
+This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html). 
 
 ## Configure your Truss by modifying the config.yaml
 
@@ -58,10 +60,6 @@ runtime:
 secrets:
   hf_access_token: null
 ```
-
-### Use vLLM's OpenAI compatible server
-
-To use vLLM in [OpenAI compatible server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html) mode, simply set `openai_compatible: true` under `model_metadata`.
 
 ### Customize vLLM engine parameters
 
