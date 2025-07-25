@@ -85,6 +85,9 @@ Override any [vLLM engine argument](https://docs.vllm.ai/en/latest/models/engine
 
 #### Example: Model Quantization
 
+<details>
+<summary>Example</summary>
+
 ```yaml
 model_name: Mistral 7B v2 vLLM AWQ - T4
 model_metadata:
@@ -105,8 +108,12 @@ runtime:
 secrets:
   hf_access_token: null
 ```
+</details>
 
 #### Example: Custom Docker Image
+
+<details>
+<summary>Example</summary>
 
 ```yaml
 model_name: Ultravox v0.2
@@ -130,6 +137,7 @@ secrets:
 system_packages:
   - python3.10-venv
 ```
+</details>
 
 ---
 
@@ -142,7 +150,7 @@ system_packages:
    ```
 3. Deploy your model from the `vllm` directory:
    ```sh
-   truss push --trusted
+   truss push
    ```
    Enter your API key when prompted.
 

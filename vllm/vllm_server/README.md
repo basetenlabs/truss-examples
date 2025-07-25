@@ -30,7 +30,7 @@ If your model requires multiple GPUs, such as for tensor parallelism, you’ll n
   ```yaml
   accelerator: H100:4
   ```
-- tensor_parallel_size
-- distributed_executor_backend
+- `tensor_parallel_size`
+- `distributed_executor_backend`
 
 These last two are arguments for the `vllm serve` command within `config.yaml`. Add to the command as follows: `--tensor-parallel-size 4 --distributed-executor-backend mp`
