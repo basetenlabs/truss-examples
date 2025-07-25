@@ -86,7 +86,7 @@ Override any [vLLM engine argument](https://docs.vllm.ai/en/latest/models/engine
 #### Example: Model Quantization
 
 <details>
-<summary>Example</summary>
+<summary></summary>
 
 ```yaml
 model_name: Mistral 7B v2 vLLM AWQ - T4
@@ -113,7 +113,7 @@ secrets:
 #### Example: Custom Docker Image
 
 <details>
-<summary>Example</summary>
+<summary></summary>
 
 ```yaml
 model_name: Ultravox v0.2
