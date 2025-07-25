@@ -2,7 +2,7 @@
 
 ## What is this Truss example doing
 
-This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
+This is a codeless, easy OpenAI compatible solution to run a vllm server in a truss. Run a vllm server simply by modifying configurations, we'll handle the rest.
 
 ## Configure your Truss by modifying the config.yaml
 

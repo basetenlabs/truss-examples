@@ -4,7 +4,7 @@
 
 Deploying vLLM using a truss server is only recommended for flexibility and custom inference logic. Otherwise, check out deploying using [vllm server](https://github.com/basetenlabs/truss-examples/tree/main/vllm/vllm_server), which is also OpenAI compatible.
 
-This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/latest/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html). 
+This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/v0.6.5/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
 
 ## Configure your Truss by modifying the config.yaml
 
