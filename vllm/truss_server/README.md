@@ -142,24 +142,22 @@ system_packages:
 
 ## Deploy Your Truss
 
-1. [Sign up for Baseten](https://app.baseten.co/signup) and get an [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install Truss:  
-   ```sh
-   pip install --upgrade truss
-   ```
-3. Deploy your model from the `vllm` directory:
-   ```sh
-   truss push
-   ```
-   Enter your API key when prompted.
+First [sign up for Baseten](https://app.baseten.co/signup) and get an [API key](https://app.baseten.co/settings/account/api_keys).
 
-[Truss documentation →](https://truss.baseten.co)
+```sh
+# Install truss
+pip install --upgrade truss
+
+# Deploy your model from the `vllm` directory
+truss push
+
+```
 
 ---
 
 ## Call Your Model
 
-After deploying, invoke your model via [many methods](https://docs.baseten.co/invoke/quickstart).
+After deploying, invoke your model.
 
 ### Curl: Not OpenAI Compatible
 
@@ -223,8 +221,6 @@ response = client.chat.completions.create(
 )
 print(response.choices[0].message.content)
 ```
-
-[API Reference →](https://docs.baseten.co/api-reference/openai)
 
 ---
 
