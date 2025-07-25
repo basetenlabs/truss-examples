@@ -1,8 +1,12 @@
 # <- download is invoked before here.
-import torch # this line usually takes 2-5 seconds.
 import pathlib
+
+import torch  # this line usually takes 2-5 seconds.
+
+
 class Model:
     """example usage of `model_cache` in truss"""
+
     def __init__(self, *args, **kwargs):
         # `lazy_data_resolver` is passed as keyword-argument in init
         self._lazy_data_resolver = kwargs["lazy_data_resolver"]
@@ -18,11 +22,17 @@ class Model:
         #     "/app/model_cache/stable-diffusion-xl-base/vae_1_0/diffusion_pytorch_model.fp16.safetensors",
         #     weights_only=True
         # )
-        self.tensor_size = pathlib.Path("/app/model_cache/stable-diffusion-xl-base/vae_1_0/diffusion_pytorch_model.fp16.safetensors").stat().st_size
-        print("Model loaded successfully with size of {} bytes".format(
-            self.tensor_size
-        ))
-        
+        self.tensor_size = (
+            pathlib.Path(
+                "/app/model_cache/stable-diffusion-xl-base/vae_1_0/diffusion_pytorch_model.fp16.safetensors"
+            )
+            .stat()
+            .st_size
+        )
+        print(
+            "Model loaded successfully with size of {} bytes".format(self.tensor_size)
+        )
+
     def predict(self, input_data):
         # this method will be called by the serving container
         # you may use the model here, after the download is complete
