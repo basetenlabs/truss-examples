@@ -23,4 +23,6 @@ If you are using 4 GPUs for inference for example, you need to add the arguments
 
 ### Customize the vLLM server
 
+This container starts by calling the `vllm serve` command under `start_command` in `config.yaml`.
+
 See this [doc](https://docs.vllm.ai/en/v0.7.2/serving/engine_args.html) for all the ways you can customize the `vllm serve` command. These parameters give you control over the level of compilation, quantization, and much more.
