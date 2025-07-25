@@ -79,7 +79,7 @@ secrets:
 
 ---
 
-### Custom vLLM Engine Parameters
+### Customization
 
 Override any [vLLM engine argument](https://docs.vllm.ai/en/latest/models/engine_args.html) by adding it to `vllm_config` in `model_metadata`.
 
@@ -107,6 +107,9 @@ secrets:
   hf_access_token: null
 ```
 </details>
+
+
+You can even override with your own customized vLLM docker image to work with models that are not supported yet by vanilla vLLM.
 
 <details>
 <summary>Example: Custom Docker Image</summary>
