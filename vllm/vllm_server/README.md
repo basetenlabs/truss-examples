@@ -1,28 +1,36 @@
-# vLLM Truss to deploy chat completion model
+# vLLM Truss: Deploy a Chat Completion Model
 
-## What is this Truss example doing
+## Overview
 
-This is a codeless, easy OpenAI compatible solution to run a vllm server in a truss. Run a vllm server simply by modifying configurations, we'll handle the rest.
+This Truss example offers a **codeless, OpenAI-compatible solution** to run a vLLM server within a Truss container. With minimal configuration, you can deploy powerful language models on our cloud—just update your settings and Truss will handle the rest.
 
-## Configure your Truss by modifying the config.yaml
+---
 
-### Basic options using 1 GPU
+## Configuration Guide
 
-To deploy a model using 1 GPU, the only config parameters you need to change are:
+All deployment options are controlled via the `config.yaml` file. Follow the instructions below based on your GPU requirements:
+
+### 🚀 Basic: Single GPU Deployment
+
+To deploy a model using a single GPU, simply modify the following parameters in `config.yaml`:
 - `model_name`
 - `repo_id`
 - `accelerator`
 
-### Basic options using multiple GPUs
+No additional changes are required.
 
-If your model needs more than 1 GPU to run using tensor parallel, you will need to change `accelerator`, and to set `tensor_parallel_size` and `distributed_executor_backend` accordingly.
+---
 
-`tensor_parallel_size` and `distributed_executor_backend` are each arguments for the vllm serve command in the `config.yaml`.
+### 🖥️ Advanced: Multi-GPU Deployment (Tensor Parallelism)
 
-If you are using 4 GPUs for inference for example, you need to add the arguments `--tensor-parallel-size 4 --distributed-executor-backend mp` to the `vllm serve` command as well as indicating this new quantity under `accelerator: H100:4`.
+If your model requires multiple GPUs, such as for tensor parallelism, you’ll need to configure:
 
-### Customize the vLLM server
+- `accelerator`  
+  Example for 4 H100 GPUs:  
+  ```yaml
+  accelerator: H100:4
+  ```
+- tensor_parallel_size
+- distributed_executor_backend
 
-This container starts by calling the `vllm serve` command under `start_command` in `config.yaml`.
-
-See this [doc](https://docs.vllm.ai/en/v0.7.2/serving/engine_args.html) for all the ways you can customize the `vllm serve` command. These parameters give you control over the level of compilation, quantization, and much more.
+These last two are arguments for the `vllm serve` command within `config.yaml`. Add to the command as follows: `--tensor-parallel-size 4 --distributed-executor-backend mp`

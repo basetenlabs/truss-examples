@@ -1,22 +1,28 @@
-# vLLM Truss to deploy chat completion model
+# vLLM Truss: Deploy Chat Completion Models
 
-## What is this Truss example doing
+## Overview
 
-Deploying vLLM using a truss server is only recommended for flexibility and custom inference logic. Otherwise, check out deploying using [vllm server](https://github.com/basetenlabs/truss-examples/tree/main/vllm/vllm_server), which is also OpenAI compatible.
+This repository demonstrates how to deploy [vLLM](https://github.com/vllm-project/vllm) using a Truss server.  
+**Use this approach only if you need custom inference logic or flexibility.**  
+For most users, we recommend the easier [vLLM server example](https://github.com/basetenlabs/truss-examples/tree/main/vllm/vllm_server), which is also OpenAI-compatible.
 
-This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an asynchronous vLLM engine([AsyncLLMEngine](https://docs.vllm.ai/en/v0.6.5/dev/engine/async_llm_engine.html#asyncllmengine)) of any customized configuration with [all compatible chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
+This Truss works with asynchronous vLLM engines ([AsyncLLMEngine](https://docs.vllm.ai/en/v0.6.5/dev/engine/async_llm_engine.html#asyncllmengine)) and [all supported chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
 
-## Configure your Truss by modifying the config.yaml
+---
 
-### Basic options using 1 GPU
+## Configure Your Truss (`config.yaml`)
 
-Here is the minimum config file you will need to deploy a model using vLLM on 1 GPU.
-The only parameters you need to touch are:
+### Single GPU Example
+
+To deploy on a single GPU, update these fields:
 - `model_name`
 - `repo_id`
 - `accelerator`
 
-```
+<details>
+<summary>Minimal config example</summary>
+
+```yaml
 model_name: "Llama 3.1 8B Instruct VLLM"
 python_version: py311
 model_metadata:
@@ -34,12 +40,21 @@ runtime:
 secrets:
   hf_access_token: null
 ```
+</details>
 
-### Basic options using multiple GPUs
+---
 
-If your model needs more than 1 GPU to run using tensor parallel, you will need to change `accelerator`, and to set `tensor_parallel_size` and `distributed_executor_backend` accordingly.
+### Multi-GPU Example (Tensor Parallelism)
 
-```
+For multi-GPU deployments, set:
+- `accelerator` (e.g., `A10G:4`)
+- `model_metadata.vllm_config.tensor_parallel_size`
+- `model_metadata.vllm_config.distributed_executor_backend`
+
+<details>
+<summary>Multi-GPU config example</summary>
+
+```yaml
 model_name: "Llama 3.1 8B Instruct VLLM"
 python_version: py311
 model_metadata:
@@ -60,17 +75,18 @@ runtime:
 secrets:
   hf_access_token: null
 ```
+</details>
 
-### Customize vLLM engine parameters
+---
 
-For advanced users who want to override [vLLM engine arguments](https://docs.vllm.ai/en/latest/models/engine_args.html), you can add all arguments to `vllm_config` under `model_metadata`.
+### Custom vLLM Engine Parameters
 
-#### Example 1: using model quantization
+Override any [vLLM engine argument](https://docs.vllm.ai/en/latest/models/engine_args.html) by adding it to `vllm_config` in `model_metadata`.
 
-```
+#### Example: Model Quantization
+
+```yaml
 model_name: Mistral 7B v2 vLLM AWQ - T4
-environment_variables: {}
-external_package_dirs: []
 model_metadata:
   repo_id: TheBloke/Mistral-7B-Instruct-v0.2-AWQ
   vllm_config:
@@ -84,18 +100,15 @@ requirements:
 resources:
   accelerator: T4
   use_gpu: true
-secrets:
-  hf_access_token: null
-system_packages: []
 runtime:
   predict_concurrency: 128
+secrets:
+  hf_access_token: null
 ```
 
-#### Example 2: using customized vLLM image
+#### Example: Custom Docker Image
 
-You can even override with your own customized vLLM docker image to work with models that are not supported yet by vanilla vLLM.
-
-```
+```yaml
 model_name: Ultravox v0.2
 base_image:
   image: vshulman/vllm-openai-fixie:latest
@@ -104,54 +117,54 @@ model_metadata:
   repo_id: fixie-ai/ultravox-v0.2
   vllm_config:
     audio_token_id: 128002
-environment_variables: {}
-external_package_dirs: []
 python_version: py310
-runtime:
-  predict_concurrency: 512
 requirements:
   - httpx
 resources:
   accelerator: A100
   use_gpu: true
+runtime:
+  predict_concurrency: 512
 secrets:
   hf_access_token: null
 system_packages:
-- python3.10-venv
+  - python3.10-venv
 ```
 
-## Deploy your Truss
+---
 
-1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
-3. With `vllm` as your working directory, you can deploy the model with:
+## Deploy Your Truss
 
-    ```sh
-    truss push --trusted
-    ```
+1. [Sign up for Baseten](https://app.baseten.co/signup) and get an [API key](https://app.baseten.co/settings/account/api_keys).
+2. Install Truss:  
+   ```sh
+   pip install --upgrade truss
+   ```
+3. Deploy your model from the `vllm` directory:
+   ```sh
+   truss push --trusted
+   ```
+   Enter your API key when prompted.
 
-    Paste your Baseten API key if prompted.
+[Truss documentation →](https://truss.baseten.co)
 
-For more information, see [Truss documentation](https://truss.baseten.co).
+---
 
-## Call your model
+## Call Your Model
 
-Once your deployment is up, there are [many ways](https://docs.baseten.co/invoke/quickstart) to call your model.
+After deploying, invoke your model via [many methods](https://docs.baseten.co/invoke/quickstart).
 
-### curl command
+### Curl: Not OpenAI Compatible
 
-#### If you are NOT using OpenAI compatible server
-
-```
+```sh
 curl -X POST https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict \
      -H "Authorization: Api-Key $BASETEN_API_KEY" \
      -d '{"prompt": "what is the meaning of life"}'
 ```
 
+### Curl: OpenAI Compatible
 
-#### If you are using OpenAI compatible server
-
-```
+```sh
 curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {BASETEN_API_KEY}' \
@@ -161,25 +174,26 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
          }'
 ```
 
-To access [production metrics](https://docs.vllm.ai/en/latest/serving/metrics.html) reported by OpenAI compatible server, simply add `metrics: true` to the request.
+**Production Metrics:**  
+Add `"metrics": true` to your request for detailed metrics:
 
-```
+```sh
 curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {BASETEN_API_KEY}' \
-     -d '{
-           "metrics": true
-         }'
+     -d '{"metrics": true}'
 ```
 
-### OpenAI SDK (if you are using OpenAI compatible server)
+---
 
-```
+### OpenAI SDK (OpenAI-Compatible Only)
+
+```python
 from openai import OpenAI
 import os
 
-model_id = "abcd1234" # Replace with your model ID
-deployment_id = "4321cbda" # [Optional] Replace with your deployment ID
+model_id = "abcd1234"  # Replace with your model ID
+deployment_id = "4321cbda"  # [Optional]
 
 client = OpenAI(
     api_key=os.environ["BASETEN_API_KEY"],
@@ -201,11 +215,13 @@ response = client.chat.completions.create(
   }
 )
 print(response.choices[0].message.content)
-
 ```
 
-For more information, see [API reference](https://docs.baseten.co/api-reference/openai).
+[API Reference →](https://docs.baseten.co/api-reference/openai)
+
+---
 
 ## Support
 
-If you have any questions or need assistance, please open an issue in this repository or contact our support team.
+Need help?  
+Open an issue in this repository or [contact Baseten support](https://www.baseten.co/contact).
