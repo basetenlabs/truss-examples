@@ -6,8 +6,8 @@ This is a general purpose [Truss](https://truss.baseten.co/) that can deploy an 
 
 ## Two options
 
-### Vllm server via vllm serve
-This is an openai-compatible codeless solution that the large majority of users should use when deploying with vLLM. The only work required to set up this vLLM server is to modify the configs in the vllm serve command in `config.yaml`. See the 
+### Vllm server via vllm serve (Recommended)
+This is an openai-compatible codeless solution that the large majority of users should use when deploying with vLLM. The only work required to set up this vLLM server is to modify the configs in the vllm serve command in `config.yaml`.
 
 ### Vllm using truss server
 This solution is for a more custom deployment where you require flexibility such as custom logic in your predictions.
