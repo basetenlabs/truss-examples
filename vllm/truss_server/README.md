@@ -2,8 +2,8 @@
 
 ## Overview
 
-This repository demonstrates how to deploy [vLLM](https://github.com/vllm-project/vllm) using a Truss server.  
-**Use this approach only if you need custom inference logic or flexibility.**  
+This repository demonstrates how to deploy [vLLM](https://github.com/vllm-project/vllm) using a Truss server.
+**Use this approach only if you need custom inference logic or flexibility.**
 For most users, we recommend the easier [vLLM server example](https://github.com/basetenlabs/truss-examples/tree/main/vllm/vllm_server), which is also OpenAI-compatible.
 
 This Truss works with asynchronous vLLM engines ([AsyncLLMEngine](https://docs.vllm.ai/en/v0.6.5/dev/engine/async_llm_engine.html#asyncllmengine)) and [all supported chat completion models](https://docs.vllm.ai/en/latest/models/supported_models.html).
@@ -179,7 +179,7 @@ curl -X POST "https://model-<YOUR_MODEL_ID>.api.baseten.co/development/predict" 
          }'
 ```
 
-**Production Metrics:**  
+**Production Metrics:**
 Add `"metrics": true` to your request for detailed metrics:
 
 ```sh

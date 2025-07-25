@@ -8,7 +8,7 @@ This repository provides two approaches for deploying OpenAI-compatible chat com
 
 ### 1. **vLLM Server via `vllm serve` (Strongly Recommended)**
 
-**Overview:**  
+**Overview:**
 Leverage the built-in vLLM server for an OpenAI-compatible, codeless deployment. This is the recommended method for most users who want a fast, production-ready setup.
 
 **How to Use:**
@@ -22,7 +22,7 @@ Leverage the built-in vLLM server for an OpenAI-compatible, codeless deployment.
 
 ### 2. **vLLM with Truss Server**
 
-**Overview:**  
+**Overview:**
 For advanced users who need custom inference logic, additional pre/post-processing, or further flexibility.
 
 **How to Use:**

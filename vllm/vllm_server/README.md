@@ -25,8 +25,8 @@ No additional changes are required.
 
 If your model requires multiple GPUs, such as for tensor parallelism, you’ll need to configure:
 
-- `accelerator`  
-  Example for 4 H100 GPUs:  
+- `accelerator`
+  Example for 4 H100 GPUs:
   ```yaml
   accelerator: H100:4
   ```
