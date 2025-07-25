@@ -230,5 +230,4 @@ print(response.choices[0].message.content)
 
 ## Support
 
-Need help?  
-Open an issue in this repository or [contact Baseten support](https://www.baseten.co/contact).
+Need help? [contact Baseten support](https://www.baseten.co/talk-to-us/).
