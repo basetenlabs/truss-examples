@@ -1,6 +1,6 @@
 description: Take in audio and text as input, generating text as usual
 base_image:
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:fe8a2c544ad97119f4dafd316e5d9664521b73f9
+  image: vllm/vllm-openai:v0.10.0
 model_metadata:
   repo_id: mistralai/Voxtral-Small-24B-2507
   avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/634c17653d11eaedd88b314d/9OgyfKstSZtbmsmuG8MbU.png
@@ -37,3 +37,5 @@ runtime:
 model_name: Voxtral Small 24B 2507
 secrets:
   hf_access_token: null
+requirements:
+  - vllm[audio]
