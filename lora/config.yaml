@@ -1,0 +1,59 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  tags:
+    - openai-compatible
+  example_model_input: {
+    model: "finance",
+    messages: [
+      {
+        role: "user",
+        content: "How would you choose back in 2008?"
+      }
+    ],
+    stream: true,
+    max_tokens: 512,
+    temperature: 0.9
+  }
+  repo_id: mistralai/Mistral-7B-Instruct-v0.3
+model_name: Mistral 7B Instruct Lora
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets:
+  hf_access_token: set token in baseten workspace
+system_packages: []
+trt_llm:
+  build:
+    base_model: mistral
+    checkpoint_repository:
+      repo: mistralai/Mistral-7B-Instruct-v0.3
+      source: HF
+    lora_adapters:
+      legal:
+        source: HF
+        repo: Aretoss/Lexgen
+      finance:
+        source: HF
+        repo: vaibhav1/lora-mistral-finance
+      medical:
+        source: HF
+        repo: Imsachinsingh00/Fine_tuned_LoRA_Mistral_MTSDialog_Summarization
+    max_seq_len: 32768
+    num_builder_gpus: 1
+    quantization_type: no_quant
+    tensor_parallel_count: 1
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: false
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 32768
+    served_model_name: mistral
