@@ -1,6 +1,6 @@
 # IMPORTANT NOTICE
 
-Currently, [support for openai compatible server with lora is not yet implemented](https://github.com/sgl-project/sglang/issues/2929). It is strongly recommended to go with the [vLLM example](../vllm-lora).
+Currently, [support for openai compatible server with lora is not yet implemented in SGLang](https://github.com/sgl-project/sglang/issues/2929). It is strongly recommended to go with the [vLLM example](../vllm-lora).
 
 # Mistral 7B Instruct LoRA
 
