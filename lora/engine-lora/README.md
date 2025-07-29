@@ -1,3 +1,7 @@
+# IMPORTANT NOTICE
+
+Currently we're seeing an issue where using LoRAs with TensorRT-LLM shows a significant drop in performance. It is strongly recommended to go with the [vLLM example](../vllm-lora)
+
 # Mistral 7B Instruct LoRA
 
 This is an example of a truss that supports **dynamic swapping of LoRA adapters**—allowing you to serve multiple fine-tuned variants efficiently from a single GPU. In this example, we deploy a **Mistral 7B Instruct** on [TensorRT-LLM Engine Builder](https://docs.baseten.co/performance/examples/mistral-trt). This model will be an expert in finance, medicine and law.
@@ -46,7 +50,7 @@ Specify the desired adapter or base model using the `model` field in your reques
 
 ```json
 {
-  "model": "finance",
+  "model": "finance", // # Or legal, medical, or mistral
   "stream": true,
   "messages": [
     {"role": "user", "content": "What would you choose in 2008?"}
