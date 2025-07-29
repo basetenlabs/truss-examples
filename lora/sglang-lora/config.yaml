@@ -23,7 +23,7 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency : 32
-model_name: Mistral-7B-Instruct SGLang
+model_name: Mistral-7B-Instruct SGLang Lora
 environment_variables:
   hf_access_token: null
 requirements:

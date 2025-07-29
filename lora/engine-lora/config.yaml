@@ -17,7 +17,7 @@ model_metadata:
     temperature: 0.9
   }
   repo_id: mistralai/Mistral-7B-Instruct-v0.3
-model_name: Mistral 7B Instruct Lora
+model_name: Mistral 7B Instruct Engine Lora
 python_version: py39
 requirements: []
 resources:

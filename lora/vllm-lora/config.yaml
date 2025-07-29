@@ -30,5 +30,3 @@ runtime:
 model_name: Mistral-7B-Instruct VLLM Lora
 environment_variables:
   hf_access_token: null
-requirements:
-  - protobuf
