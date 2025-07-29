@@ -9,11 +9,12 @@ model_metadata:
 model_name: whisperX
 python_version: py310
 requirements:
+- --extra-index-url https://download.pytorch.org/whl/cu121
 - git+https://github.com/m-bain/whisperx.git@734084cdf6f624bc33ed9f0cfcaa82840707ba6f
-- torch==2.2.0 --index-url https://download.pytorch.org/whl/cu121
-- torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
+- torch==2.2.0
+- torchaudio==2.2.0
 - transformers==4.48.3
-- torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu121
+- torchvision==0.17.0
 - ffmpeg-python==0.2.0
 - faster-whisper==1.1.0
 - pandas==2.2.3

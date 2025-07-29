@@ -18,9 +18,8 @@ model_metadata:
 model_name: Orpheus-3b
 python_version: py39
 requirements:
-  - "--index-url https://download.pytorch.org/whl/cu128"
+  - --extra-index-url https://download.pytorch.org/whl/cu128
   - torch==2.7.1
-  - "--extra-index-url https://pypi.org/simple"
   - snac==1.2.1
   - batched==0.1.4
 resources:
