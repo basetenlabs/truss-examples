@@ -66,16 +66,26 @@ class VAEModel(base_model.BaseModel):
             self.framework_model_dir, self.version, self.pipeline, self.subfolder
         )
         if not os.path.exists(self.vae_decoder_model_dir):
-            self.config = AutoencoderKL.load_config(self.path, subfolder=self.subfolder, token=self.hf_token)
+            self.config = AutoencoderKL.load_config(
+                self.path, subfolder=self.subfolder, token=self.hf_token
+            )
         else:
-            print(f"[I] Load AutoencoderKL (decoder) config from: {self.vae_decoder_model_dir}")
+            print(
+                f"[I] Load AutoencoderKL (decoder) config from: {self.vae_decoder_model_dir}"
+            )
             self.config = AutoencoderKL.load_config(self.vae_decoder_model_dir)
 
     def get_model(self, torch_inference=""):
         model_opts = (
-            {"torch_dtype": torch.float16} if self.fp16 else {"torch_dtype": torch.bfloat16} if self.bf16 else {}
+            {"torch_dtype": torch.float16}
+            if self.fp16
+            else {"torch_dtype": torch.bfloat16}
+            if self.bf16
+            else {}
         )
-        if not load.is_model_cached(self.vae_decoder_model_dir, model_opts, self.hf_safetensor):
+        if not load.is_model_cached(
+            self.vae_decoder_model_dir, model_opts, self.hf_safetensor
+        ):
             model = AutoencoderKL.from_pretrained(
                 self.path,
                 subfolder=self.subfolder,
@@ -85,8 +95,12 @@ class VAEModel(base_model.BaseModel):
             ).to(self.device)
             model.save_pretrained(self.vae_decoder_model_dir, **model_opts)
         else:
-            print(f"[I] Load AutoencoderKL (decoder) model from: {self.vae_decoder_model_dir}")
-            model = AutoencoderKL.from_pretrained(self.vae_decoder_model_dir, **model_opts).to(self.device)
+            print(
+                f"[I] Load AutoencoderKL (decoder) model from: {self.vae_decoder_model_dir}"
+            )
+            model = AutoencoderKL.from_pretrained(
+                self.vae_decoder_model_dir, **model_opts
+            ).to(self.device)
         model.forward = model.decode
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
@@ -98,33 +112,86 @@ class VAEModel(base_model.BaseModel):
         return ["images"]
 
     def get_dynamic_axes(self):
-        return {"latent": {0: "B", 2: "H", 3: "W"}, "images": {0: "B", 2: "8H", 3: "8W"}}
+        return {
+            "latent": {0: "B", 2: "H", 3: "W"},
+            "images": {0: "B", 2: "8H", 3: "8W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        min_batch, max_batch, _, _, _, _, min_latent_height, max_latent_height, min_latent_width, max_latent_width = (
-            self.get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
+        (
+            min_batch,
+            max_batch,
+            _,
+            _,
+            _,
+            _,
+            min_latent_height,
+            max_latent_height,
+            min_latent_width,
+            max_latent_width,
+        ) = self.get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
             "latent": [
-                (min_batch, self.config["latent_channels"], min_latent_height, min_latent_width),
-                (batch_size, self.config["latent_channels"], latent_height, latent_width),
-                (max_batch, self.config["latent_channels"], max_latent_height, max_latent_width),
+                (
+                    min_batch,
+                    self.config["latent_channels"],
+                    min_latent_height,
+                    min_latent_width,
+                ),
+                (
+                    batch_size,
+                    self.config["latent_channels"],
+                    latent_height,
+                    latent_width,
+                ),
+                (
+                    max_batch,
+                    self.config["latent_channels"],
+                    max_latent_height,
+                    max_latent_width,
+                ),
             ]
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         return {
-            "latent": (batch_size, self.config["latent_channels"], latent_height, latent_width),
+            "latent": (
+                batch_size,
+                self.config["latent_channels"],
+                latent_height,
+                latent_width,
+            ),
             "images": (batch_size, 3, image_height, image_width),
         }
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        dtype = torch.float16 if self.fp16 else torch.bfloat16 if self.bf16 else torch.float32
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
+        dtype = (
+            torch.float16
+            if self.fp16
+            else torch.bfloat16
+            if self.bf16
+            else torch.float32
+        )
         return torch.randn(
-            batch_size, self.config["latent_channels"], latent_height, latent_width, dtype=dtype, device=self.device
+            batch_size,
+            self.config["latent_channels"],
+            latent_height,
+            latent_width,
+            dtype=dtype,
+            device=self.device,
         )
 
 
@@ -154,11 +221,15 @@ class SD3_VAEDecoderModel(base_model.BaseModel):
 
     def get_model(self, torch_inference=""):
         dtype = torch.float16 if self.fp16 else torch.float32
-        sd3_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
+        sd3_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
         sd3_filename = "sd3_medium.safetensors"
         sd3_model_path = f"{sd3_model_dir}/{sd3_filename}"
         if not os.path.exists(sd3_model_path):
-            hf_hub_download(repo_id=self.path, filename=sd3_filename, local_dir=sd3_model_dir)
+            hf_hub_download(
+                repo_id=self.path, filename=sd3_filename, local_dir=sd3_model_dir
+            )
         with safe_open(sd3_model_path, framework="pt", device=self.device) as f:
             model = SDVAE(device=self.device, dtype=dtype).eval().cuda()
             prefix = ""
@@ -176,12 +247,30 @@ class SD3_VAEDecoderModel(base_model.BaseModel):
         return ["images"]
 
     def get_dynamic_axes(self):
-        return {"latent": {0: "B", 2: "H", 3: "W"}, "images": {0: "B", 2: "8H", 3: "8W"}}
+        return {
+            "latent": {0: "B", 2: "H", 3: "W"},
+            "images": {0: "B", 2: "8H", 3: "8W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        min_batch, max_batch, _, _, _, _, min_latent_height, max_latent_height, min_latent_width, max_latent_width = (
-            self.get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
+        (
+            min_batch,
+            max_batch,
+            _,
+            _,
+            _,
+            _,
+            min_latent_height,
+            max_latent_height,
+            min_latent_width,
+            max_latent_width,
+        ) = self.get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
             "latent": [
@@ -192,16 +281,22 @@ class SD3_VAEDecoderModel(base_model.BaseModel):
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         return {
             "latent": (batch_size, 16, latent_height, latent_width),
             "images": (batch_size, 3, image_height, image_width),
         }
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         dtype = torch.float16 if self.fp16 else torch.float32
-        return torch.randn(batch_size, 16, latent_height, latent_width, dtype=dtype, device=self.device)
+        return torch.randn(
+            batch_size, 16, latent_height, latent_width, dtype=dtype, device=self.device
+        )
 
 
 class VAEDecTemporalModel(base_model.BaseModel):
@@ -234,12 +329,19 @@ class VAEDecTemporalModel(base_model.BaseModel):
         )
         if not os.path.exists(vae_decoder_model_path):
             model = AutoencoderKLTemporalDecoder.from_pretrained(
-                self.path, subfolder=self.subfolder, use_safetensors=self.hf_safetensor, token=self.hf_token
+                self.path,
+                subfolder=self.subfolder,
+                use_safetensors=self.hf_safetensor,
+                token=self.hf_token,
             ).to(self.device)
             model.save_pretrained(vae_decoder_model_path)
         else:
-            print(f"[I] Load AutoencoderKLTemporalDecoder model from: {vae_decoder_model_path}")
-            model = AutoencoderKLTemporalDecoder.from_pretrained(vae_decoder_model_path).to(self.device)
+            print(
+                f"[I] Load AutoencoderKLTemporalDecoder model from: {vae_decoder_model_path}"
+            )
+            model = AutoencoderKLTemporalDecoder.from_pretrained(
+                vae_decoder_model_path
+            ).to(self.device)
         model.forward = model.decode
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
@@ -251,13 +353,31 @@ class VAEDecTemporalModel(base_model.BaseModel):
         return ["frames"]
 
     def get_dynamic_axes(self):
-        return {"latent": {0: "num_frames_in", 2: "H", 3: "W"}, "frames": {0: "num_frames_in", 2: "8H", 3: "8W"}}
+        return {
+            "latent": {0: "num_frames_in", 2: "H", 3: "W"},
+            "frames": {0: "num_frames_in", 2: "8H", 3: "8W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         assert batch_size == 1
-        _, _, _, _, _, _, min_latent_height, max_latent_height, min_latent_width, max_latent_width = (
-            self.get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+        (
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            min_latent_height,
+            max_latent_height,
+            min_latent_width,
+            max_latent_width,
+        ) = self.get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
             "latent": [
@@ -269,7 +389,9 @@ class VAEDecTemporalModel(base_model.BaseModel):
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         assert batch_size == 1
         return {
             "latent": (self.decode_chunk_size, 4, latent_height, latent_width),
@@ -278,11 +400,18 @@ class VAEDecTemporalModel(base_model.BaseModel):
         }
 
     def get_sample_input(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         assert batch_size == 1
         return (
             torch.randn(
-                self.decode_chunk_size, 4, latent_height, latent_width, dtype=torch.float32, device=self.device
+                self.decode_chunk_size,
+                4,
+                latent_height,
+                latent_width,
+                dtype=torch.float32,
+                device=self.device,
             ),
             self.decode_chunk_size,
         )
@@ -303,16 +432,32 @@ class TorchVAEEncoder(torch.nn.Module):
         hf_safetensor=False,
     ):
         super().__init__()
-        model_opts = {"torch_dtype": torch.float16} if fp16 else {"torch_dtype": torch.bfloat16} if bf16 else {}
-        vae_encoder_model_dir = load.get_checkpoint_dir(framework_model_dir, version, pipeline, subfolder)
+        model_opts = (
+            {"torch_dtype": torch.float16}
+            if fp16
+            else {"torch_dtype": torch.bfloat16}
+            if bf16
+            else {}
+        )
+        vae_encoder_model_dir = load.get_checkpoint_dir(
+            framework_model_dir, version, pipeline, subfolder
+        )
         if not load.is_model_cached(vae_encoder_model_dir, model_opts, hf_safetensor):
             self.vae_encoder = AutoencoderKL.from_pretrained(
-                path, subfolder="vae", use_safetensors=hf_safetensor, token=hf_token, **model_opts
+                path,
+                subfolder="vae",
+                use_safetensors=hf_safetensor,
+                token=hf_token,
+                **model_opts,
             ).to(device)
             self.vae_encoder.save_pretrained(vae_encoder_model_dir, **model_opts)
         else:
-            print(f"[I] Load AutoencoderKL (encoder) model from: {vae_encoder_model_dir}")
-            self.vae_encoder = AutoencoderKL.from_pretrained(vae_encoder_model_dir, **model_opts).to(device)
+            print(
+                f"[I] Load AutoencoderKL (encoder) model from: {vae_encoder_model_dir}"
+            )
+            self.vae_encoder = AutoencoderKL.from_pretrained(
+                vae_encoder_model_dir, **model_opts
+            ).to(device)
 
     def forward(self, x):
         return self.vae_encoder.encode(x).latent_dist.sample()
@@ -349,9 +494,13 @@ class VAEEncoderModel(base_model.BaseModel):
             framework_model_dir, version, self.pipeline, self.subfolder
         )
         if not os.path.exists(self.vae_encoder_model_dir):
-            self.config = AutoencoderKL.load_config(self.path, subfolder=self.subfolder, token=self.hf_token)
+            self.config = AutoencoderKL.load_config(
+                self.path, subfolder=self.subfolder, token=self.hf_token
+            )
         else:
-            print(f"[I] Load AutoencoderKL (encoder) config from: {self.vae_encoder_model_dir}")
+            print(
+                f"[I] Load AutoencoderKL (encoder) config from: {self.vae_encoder_model_dir}"
+            )
             self.config = AutoencoderKL.load_config(self.vae_encoder_model_dir)
 
     def get_model(self, torch_inference=""):
@@ -376,15 +525,31 @@ class VAEEncoderModel(base_model.BaseModel):
         return ["latent"]
 
     def get_dynamic_axes(self):
-        return {"images": {0: "B", 2: "8H", 3: "8W"}, "latent": {0: "B", 2: "H", 3: "W"}}
+        return {
+            "images": {0: "B", 2: "8H", 3: "8W"},
+            "latent": {0: "B", 2: "H", 3: "W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         assert batch_size >= self.min_batch and batch_size <= self.max_batch
         min_batch = batch_size if static_batch else self.min_batch
         max_batch = batch_size if static_batch else self.max_batch
         self.check_dims(batch_size, image_height, image_width)
-        min_batch, max_batch, min_image_height, max_image_height, min_image_width, max_image_width, _, _, _, _ = (
-            self.get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+        (
+            min_batch,
+            max_batch,
+            min_image_height,
+            max_image_height,
+            min_image_width,
+            max_image_width,
+            _,
+            _,
+            _,
+            _,
+        ) = self.get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
         )
 
         return {
@@ -396,16 +561,31 @@ class VAEEncoderModel(base_model.BaseModel):
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         return {
             "images": (batch_size, 3, image_height, image_width),
-            "latent": (batch_size, self.config["latent_channels"], latent_height, latent_width),
+            "latent": (
+                batch_size,
+                self.config["latent_channels"],
+                latent_height,
+                latent_width,
+            ),
         }
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         self.check_dims(batch_size, image_height, image_width)
-        dtype = torch.float16 if self.fp16 else torch.bfloat16 if self.bf16 else torch.float32
-        return torch.randn(batch_size, 3, image_height, image_width, dtype=dtype, device=self.device)
+        dtype = (
+            torch.float16
+            if self.fp16
+            else torch.bfloat16
+            if self.bf16
+            else torch.float32
+        )
+        return torch.randn(
+            batch_size, 3, image_height, image_width, dtype=dtype, device=self.device
+        )
 
 
 class SD3_VAEEncoderModel(base_model.BaseModel):
@@ -434,11 +614,15 @@ class SD3_VAEEncoderModel(base_model.BaseModel):
 
     def get_model(self, torch_inference=""):
         dtype = torch.float16 if self.fp16 else torch.float32
-        sd3_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
+        sd3_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
         sd3_filename = "sd3_medium.safetensors"
         sd3_model_path = f"{sd3_model_dir}/{sd3_filename}"
         if not os.path.exists(sd3_model_path):
-            hf_hub_download(repo_id=self.path, filename=sd3_filename, local_dir=sd3_model_dir)
+            hf_hub_download(
+                repo_id=self.path, filename=sd3_filename, local_dir=sd3_model_dir
+            )
         with safe_open(sd3_model_path, framework="pt", device=self.device) as f:
             model = SDVAE(device=self.device, dtype=dtype).eval().cuda()
             prefix = ""
@@ -456,9 +640,14 @@ class SD3_VAEEncoderModel(base_model.BaseModel):
         return ["latent"]
 
     def get_dynamic_axes(self):
-        return {"images": {0: "B", 2: "8H", 3: "8W"}, "latent": {0: "B", 2: "H", 3: "W"}}
+        return {
+            "images": {0: "B", 2: "8H", 3: "8W"},
+            "latent": {0: "B", 2: "H", 3: "W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         min_batch, max_batch, _, _, _, _, _, _, _, _ = self.get_minmax_dims(
             batch_size, image_height, image_width, static_batch, static_shape
         )
@@ -471,7 +660,9 @@ class SD3_VAEEncoderModel(base_model.BaseModel):
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         return {
             "images": (batch_size, 3, image_height, image_width),
             "latent": (batch_size, 16, latent_height, latent_width),
@@ -479,4 +670,6 @@ class SD3_VAEEncoderModel(base_model.BaseModel):
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         dtype = torch.float16 if self.fp16 else torch.float32
-        return torch.randn(batch_size, 3, image_height, image_width, dtype=dtype, device=self.device)
+        return torch.randn(
+            batch_size, 3, image_height, image_width, dtype=dtype, device=self.device
+        )

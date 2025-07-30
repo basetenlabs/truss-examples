@@ -40,6 +40,7 @@ from demo_diffusion.pipeline.type import PIPELINE_TYPE
 
 TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
 
+
 class StableDiffusion35Pipeline(DiffusionPipeline):
     """
     Application showcasing the acceleration of Stable Diffusion 3.5 pipelines using Nvidia TensorRT.
@@ -67,11 +68,7 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             max_sequence_length (`int`, defaults to 256):
                 Maximum sequence length to use with the `prompt`.
         """
-        super().__init__(
-            version=version,
-            pipeline_type=pipeline_type,
-            **kwargs
-        )
+        super().__init__(version=version, pipeline_type=pipeline_type, **kwargs)
 
         self.fp16 = True if not self.bf16 else False
 
@@ -83,7 +80,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         self.max_sequence_length = max_sequence_length
 
     @classmethod
-    def FromArgs(cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE) -> StableDiffusion35Pipeline:
+    def FromArgs(
+        cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE
+    ) -> StableDiffusion35Pipeline:
         """Factory method to construct a `StableDiffusion35Pipeline` object from parsed arguments.
 
         Overrides:
@@ -95,7 +94,10 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
 
         # Resolve all paths.
         dd_path = path_module.resolve_path(
-            cls.get_model_names(pipeline_type), args, pipeline_type, cls._get_pipeline_uid(args.version)
+            cls.get_model_names(pipeline_type),
+            args,
+            pipeline_type,
+            cls._get_pipeline_uid(args.version),
         )
 
         return cls(
@@ -131,8 +133,12 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         """
         return ["clip_l", "clip_g", "t5", "transformer", "vae"]
 
-    def download_onnx_models(self, model_name: str, model_config: dict[str, Any]) -> None:
-        raise ValueError("ONNX models download is not supported for the Stable Diffusion 3.5 pipeline")
+    def download_onnx_models(
+        self, model_name: str, model_config: dict[str, Any]
+    ) -> None:
+        raise ValueError(
+            "ONNX models download is not supported for the Stable Diffusion 3.5 pipeline"
+        )
 
     def load_resources(
         self,
@@ -216,7 +222,8 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 **models_args,
                 bf16=self.bf16,
                 fp16=self.fp16,
-                text_maxlen=self.models["t5"].text_maxlen + self.models["clip_g"].text_maxlen,
+                text_maxlen=self.models["t5"].text_maxlen
+                + self.models["clip_g"].text_maxlen,
                 build_strongly_typed=True,
                 weight_streaming=self.weight_streaming,
                 weight_streaming_budget_percentage=self.denoiser_weight_streaming_budget_percentage,
@@ -224,10 +231,14 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             )
 
         if "vae" in self.stages:
-            self.models["vae"] = VAEModel(**models_args, fp16=self.fp16, tf32=True, bf16=self.bf16)
+            self.models["vae"] = VAEModel(
+                **models_args, fp16=self.fp16, tf32=True, bf16=self.bf16
+            )
 
         self.vae_scale_factor = (
-            2 ** (len(self.models["vae"].config["block_out_channels"]) - 1) if "vae" in self.models else 8
+            2 ** (len(self.models["vae"].config["block_out_channels"]) - 1)
+            if "vae" in self.models
+            else 8
         )
         self.patch_size = (
             self.models["transformer"].config["patch_size"]
@@ -236,7 +247,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         )
 
         if "vae_encoder" in self.stages:
-            self.models["vae_encoder"] = VAEEncoderModel(**models_args, fp16=False, tf32=self.tf32, bf16=self.bf16)
+            self.models["vae_encoder"] = VAEEncoderModel(
+                **models_args, fp16=False, tf32=self.tf32, bf16=self.bf16
+            )
             self.vae_latent_channels = (
                 self.models["vae"].config["latent_channels"]
                 if "vae" in self.stages and self.models["vae"] is not None
@@ -251,40 +264,57 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             print(
                 "| {:^15} | {:>9.2f} ms |".format(
                     "VAE Encoder",
-                    cudart.cudaEventElapsedTime(self.events["vae_encode"][0], self.events["vae_encode"][1])[1],
+                    cudart.cudaEventElapsedTime(
+                        self.events["vae_encode"][0], self.events["vae_encode"][1]
+                    )[1],
                 )
             )
         print(
             "| {:^15} | {:>9.2f} ms |".format(
-                "CLIP-G", cudart.cudaEventElapsedTime(self.events["clip_g"][0], self.events["clip_g"][1])[1]
+                "CLIP-G",
+                cudart.cudaEventElapsedTime(
+                    self.events["clip_g"][0], self.events["clip_g"][1]
+                )[1],
             )
         )
         print(
             "| {:^15} | {:>9.2f} ms |".format(
-                "CLIP-L", cudart.cudaEventElapsedTime(self.events["clip_l"][0], self.events["clip_l"][1])[1]
+                "CLIP-L",
+                cudart.cudaEventElapsedTime(
+                    self.events["clip_l"][0], self.events["clip_l"][1]
+                )[1],
             )
         )
         print(
             "| {:^15} | {:>9.2f} ms |".format(
-                "T5", cudart.cudaEventElapsedTime(self.events["t5"][0], self.events["t5"][1])[1]
+                "T5",
+                cudart.cudaEventElapsedTime(self.events["t5"][0], self.events["t5"][1])[
+                    1
+                ],
             )
         )
         print(
             "| {:^15} | {:>9.2f} ms |".format(
                 "MMDiT" + " x " + str(denoising_steps),
-                cudart.cudaEventElapsedTime(self.events["transformer"][0], self.events["transformer"][1])[1],
+                cudart.cudaEventElapsedTime(
+                    self.events["transformer"][0], self.events["transformer"][1]
+                )[1],
             )
         )
         print(
             "| {:^15} | {:>9.2f} ms |".format(
                 "VAE Decoder",
-                cudart.cudaEventElapsedTime(self.events["vae"][0], self.events["vae"][1])[1],
+                cudart.cudaEventElapsedTime(
+                    self.events["vae"][0], self.events["vae"][1]
+                )[1],
             )
         )
         print("|-----------------|--------------|")
         print("| {:^15} | {:>9.2f} ms |".format("Pipeline", walltime_ms))
         print("|-----------------|--------------|")
-        print("Throughput: {:.2f} image/s".format(self.batch_size * 1000.0 / walltime_ms))
+        print(
+            "Throughput: {:.2f} image/s".format(self.batch_size * 1000.0 / walltime_ms)
+        )
 
     @staticmethod
     def _tokenize(
@@ -309,8 +339,12 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             return_tensors="pt",
         ).input_ids.type(torch.int32)
 
-        if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(text_input_ids, untruncated_ids):
-            removed_text = tokenizer.batch_decode(untruncated_ids[:, max_sequence_length - 1 : -1])
+        if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(
+            text_input_ids, untruncated_ids
+        ):
+            removed_text = tokenizer.batch_decode(
+                untruncated_ids[:, max_sequence_length - 1 : -1]
+            )
             TRT_LOGGER.warning(
                 "The following part of your input was truncated because `max_sequence_length` is set to "
                 f" {max_sequence_length} tokens: {removed_text}"
@@ -377,11 +411,17 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         _, seq_len, _ = prompt_embed.shape
         # duplicate text embeddings for each generation per prompt, using mps friendly method
         prompt_embed = prompt_embed.repeat(1, num_images_per_prompt, 1)
-        prompt_embed = prompt_embed.view(batch_size * num_images_per_prompt, seq_len, -1)
+        prompt_embed = prompt_embed.view(
+            batch_size * num_images_per_prompt, seq_len, -1
+        )
 
         if pooled_prompt_embed is not None:
-            pooled_prompt_embed = pooled_prompt_embed.repeat(1, num_images_per_prompt, 1)
-            pooled_prompt_embed = pooled_prompt_embed.view(batch_size * num_images_per_prompt, -1)
+            pooled_prompt_embed = pooled_prompt_embed.repeat(
+                1, num_images_per_prompt, 1
+            )
+            pooled_prompt_embed = pooled_prompt_embed.view(
+                batch_size * num_images_per_prompt, -1
+            )
 
         return prompt_embed, pooled_prompt_embed
 
@@ -426,34 +466,45 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
 
         clip_prompt_embeds = torch.cat([prompt_embed, prompt_2_embed], dim=-1)
         clip_prompt_embeds = torch.nn.functional.pad(
-            clip_prompt_embeds, (0, t5_prompt_embed.shape[-1] - clip_prompt_embeds.shape[-1])
+            clip_prompt_embeds,
+            (0, t5_prompt_embed.shape[-1] - clip_prompt_embeds.shape[-1]),
         )
         prompt_embeds = torch.cat([clip_prompt_embeds, t5_prompt_embed], dim=-2)
-        pooled_prompt_embeds = torch.cat([pooled_prompt_embed, pooled_prompt_2_embed], dim=-1)
+        pooled_prompt_embeds = torch.cat(
+            [pooled_prompt_embed, pooled_prompt_2_embed], dim=-1
+        )
 
         if negative_prompt is None:
             negative_prompt = ""
 
-        clip_l_negative_prompt_embed, clip_l_negative_pooled_embed = self._get_prompt_embed(
-            prompt=negative_prompt,
-            encoder_name="clip_l",
+        clip_l_negative_prompt_embed, clip_l_negative_pooled_embed = (
+            self._get_prompt_embed(
+                prompt=negative_prompt,
+                encoder_name="clip_l",
+            )
         )
-        negative_prompt_embed, negative_pooled_prompt_embed = self._duplicate_text_embed(
-            prompt_embed=clip_l_negative_prompt_embed.clone(),
-            pooled_prompt_embed=clip_l_negative_pooled_embed.clone(),
-            batch_size=self.batch_size,
-            num_images_per_prompt=num_images_per_prompt,
+        negative_prompt_embed, negative_pooled_prompt_embed = (
+            self._duplicate_text_embed(
+                prompt_embed=clip_l_negative_prompt_embed.clone(),
+                pooled_prompt_embed=clip_l_negative_pooled_embed.clone(),
+                batch_size=self.batch_size,
+                num_images_per_prompt=num_images_per_prompt,
+            )
         )
 
-        clip_g_negative_prompt_embed, clip_g_negative_pooled_embed = self._get_prompt_embed(
-            prompt=negative_prompt,
-            encoder_name="clip_g",
+        clip_g_negative_prompt_embed, clip_g_negative_pooled_embed = (
+            self._get_prompt_embed(
+                prompt=negative_prompt,
+                encoder_name="clip_g",
+            )
         )
-        negative_prompt_2_embed, negative_pooled_prompt_2_embed = self._duplicate_text_embed(
-            prompt_embed=clip_g_negative_prompt_embed.clone(),
-            pooled_prompt_embed=clip_g_negative_pooled_embed.clone(),
-            batch_size=self.batch_size,
-            num_images_per_prompt=num_images_per_prompt,
+        negative_prompt_2_embed, negative_pooled_prompt_2_embed = (
+            self._duplicate_text_embed(
+                prompt_embed=clip_g_negative_prompt_embed.clone(),
+                pooled_prompt_embed=clip_g_negative_pooled_embed.clone(),
+                batch_size=self.batch_size,
+                num_images_per_prompt=num_images_per_prompt,
+            )
         )
 
         _, t5_negative_prompt_embed = self._get_prompt_embed(
@@ -467,17 +518,30 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             num_images_per_prompt=num_images_per_prompt,
         )
 
-        negative_clip_prompt_embeds = torch.cat([negative_prompt_embed, negative_prompt_2_embed], dim=-1)
+        negative_clip_prompt_embeds = torch.cat(
+            [negative_prompt_embed, negative_prompt_2_embed], dim=-1
+        )
         negative_clip_prompt_embeds = torch.nn.functional.pad(
             negative_clip_prompt_embeds,
-            (0, t5_negative_prompt_embed.shape[-1] - negative_clip_prompt_embeds.shape[-1]),
+            (
+                0,
+                t5_negative_prompt_embed.shape[-1]
+                - negative_clip_prompt_embeds.shape[-1],
+            ),
         )
-        negative_prompt_embeds = torch.cat([negative_clip_prompt_embeds, t5_negative_prompt_embed], dim=-2)
+        negative_prompt_embeds = torch.cat(
+            [negative_clip_prompt_embeds, t5_negative_prompt_embed], dim=-2
+        )
         negative_pooled_prompt_embeds = torch.cat(
             [negative_pooled_prompt_embed, negative_pooled_prompt_2_embed], dim=-1
         )
 
-        return prompt_embeds, negative_prompt_embeds, pooled_prompt_embeds, negative_pooled_prompt_embeds
+        return (
+            prompt_embeds,
+            negative_prompt_embeds,
+            pooled_prompt_embeds,
+            negative_pooled_prompt_embeds,
+        )
 
     @staticmethod
     def initialize_latents(
@@ -538,7 +602,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 "Only one of `timesteps` or `sigmas` can be passed. Please choose one to set custom values"
             )
         if timesteps is not None:
-            accepts_timesteps = "timesteps" in set(inspect.signature(scheduler.set_timesteps).parameters.keys())
+            accepts_timesteps = "timesteps" in set(
+                inspect.signature(scheduler.set_timesteps).parameters.keys()
+            )
             if not accepts_timesteps:
                 raise ValueError(
                     f"The current scheduler class {scheduler.__class__}'s `set_timesteps` does not support custom"
@@ -548,7 +614,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             timesteps = scheduler.timesteps
             num_inference_steps = len(timesteps)
         elif sigmas is not None:
-            accept_sigmas = "sigmas" in set(inspect.signature(scheduler.set_timesteps).parameters.keys())
+            accept_sigmas = "sigmas" in set(
+                inspect.signature(scheduler.set_timesteps).parameters.keys()
+            )
             if not accept_sigmas:
                 raise ValueError(
                     f"The current scheduler class {scheduler.__class__}'s `set_timesteps` does not support custom"
@@ -577,7 +645,11 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
 
             for step_index, timestep in enumerate(timesteps):
                 # expand the latents as we are doing classifier free guidance
-                latents_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
+                latents_model_input = (
+                    torch.cat([latents] * 2)
+                    if self.do_classifier_free_guidance
+                    else latents
+                )
                 # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
                 timestep_inp = timestep.expand(latents_model_input.shape[0])
 
@@ -596,10 +668,14 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 # perform guidance
                 if self.do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
+                    )
 
                 # compute the previous noisy sample x_t -> x_t-1
-                latents = self.scheduler.step(noise_pred, timestep, latents, return_dict=False)[0]
+                latents = self.scheduler.step(
+                    noise_pred, timestep, latents, return_dict=False
+                )[0]
 
             self.profile_stop(denoiser)
         return latents
@@ -654,7 +730,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         assert image_height % (self.vae_scale_factor * self.patch_size) == 0, (
             f"image height not supported {image_height}"
         )
-        assert image_width % (self.vae_scale_factor * self.patch_size) == 0, f"image width not supported {image_width}"
+        assert image_width % (self.vae_scale_factor * self.patch_size) == 0, (
+            f"image width not supported {image_width}"
+        )
         latent_height = int(image_height) // self.vae_scale_factor
         latent_width = int(image_width) // self.vae_scale_factor
 
@@ -666,7 +744,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
             e2e_tic = time.perf_counter()
 
             # 3. encode inputs
-            with self.model_memory_manager(["clip_g", "clip_l", "t5"], low_vram=self.low_vram):
+            with self.model_memory_manager(
+                ["clip_g", "clip_l", "t5"], low_vram=self.low_vram
+            ):
                 (
                     prompt_embeds,
                     negative_prompt_embeds,
@@ -679,8 +759,12 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 )
             # do classifier free guidance
             if self.do_classifier_free_guidance:
-                prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)
-                pooled_prompt_embeds = torch.cat([negative_pooled_prompt_embeds, pooled_prompt_embeds], dim=0)
+                prompt_embeds = torch.cat(
+                    [negative_prompt_embeds, prompt_embeds], dim=0
+                )
+                pooled_prompt_embeds = torch.cat(
+                    [negative_pooled_prompt_embeds, pooled_prompt_embeds], dim=0
+                )
 
             # 4. Prepare latent variables
             num_channels_latents = self.models["transformer"].config["in_channels"]
@@ -691,7 +775,11 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 latent_width=latent_width,
                 device=prompt_embeds.device,
                 generator=self.generator,
-                dtype=torch.float16 if self.fp16 else torch.bfloat16 if self.bf16 else torch.float32,
+                dtype=torch.float16
+                if self.fp16
+                else torch.bfloat16
+                if self.bf16
+                else torch.float32,
             )
 
             # 5. Prepare timesteps
@@ -713,9 +801,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                 )
 
             # Decode Latents
-            latents = (latents / self.models["vae"].config["scaling_factor"]) + self.models["vae"].config[
-                "shift_factor"
-            ]
+            latents = (
+                latents / self.models["vae"].config["scaling_factor"]
+            ) + self.models["vae"].config["shift_factor"]
             with self.model_memory_manager(["vae"], low_vram=self.low_vram):
                 images = self.decode_latents(latents)
 
@@ -740,7 +828,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
                     .cpu()
                     .numpy()
                 )
-                self.save_image(images, self.pipeline_type.name.lower(), prompt, self.seed)
+                self.save_image(
+                    images, self.pipeline_type.name.lower(), prompt, self.seed
+                )
 
         return images, walltime_ms
 
@@ -759,7 +849,9 @@ class StableDiffusion35Pipeline(DiffusionPipeline):
         if num_warmup_runs > 0:
             print("[I] Warming up ..")
             for _ in range(num_warmup_runs):
-                self.infer(prompt, negative_prompt, height, width, warmup=True, **kwargs)
+                self.infer(
+                    prompt, negative_prompt, height, width, warmup=True, **kwargs
+                )
 
         for _ in range(batch_count):
             print("[I] Running StableDiffusion 3.5 pipeline")

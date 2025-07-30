@@ -54,9 +54,15 @@ class VQGANModel(base_model.BaseModel):
         self.scale_factor = scale_factor
 
     def get_model(self, torch_inference=""):
-        model_opts = {"variant": "bf16", "torch_dtype": torch.bfloat16} if self.bf16 else {}
-        vqgan_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
-        if not load.is_model_cached(vqgan_model_dir, model_opts, self.hf_safetensor, model_name="model"):
+        model_opts = (
+            {"variant": "bf16", "torch_dtype": torch.bfloat16} if self.bf16 else {}
+        )
+        vqgan_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
+        if not load.is_model_cached(
+            vqgan_model_dir, model_opts, self.hf_safetensor, model_name="model"
+        ):
             model = PaellaVQModel.from_pretrained(
                 self.path,
                 subfolder=self.subfolder,
@@ -67,7 +73,9 @@ class VQGANModel(base_model.BaseModel):
             model.save_pretrained(vqgan_model_dir, **model_opts)
         else:
             print(f"[I] Load VQGAN pytorch model from: {vqgan_model_dir}")
-            model = PaellaVQModel.from_pretrained(vqgan_model_dir, **model_opts).to(self.device)
+            model = PaellaVQModel.from_pretrained(vqgan_model_dir, **model_opts).to(
+                self.device
+            )
         model.forward = model.decode
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
@@ -79,12 +87,30 @@ class VQGANModel(base_model.BaseModel):
         return ["images"]
 
     def get_dynamic_axes(self):
-        return {"latent": {0: "B", 2: "H", 3: "W"}, "images": {0: "B", 2: "8H", 3: "8W"}}
+        return {
+            "latent": {0: "B", 2: "H", 3: "W"},
+            "images": {0: "B", 2: "8H", 3: "8W"},
+        }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        min_batch, max_batch, _, _, _, _, min_latent_height, max_latent_height, min_latent_width, max_latent_width = (
-            self.get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
+        (
+            min_batch,
+            max_batch,
+            _,
+            _,
+            _,
+            _,
+            min_latent_height,
+            max_latent_height,
+            min_latent_width,
+            max_latent_width,
+        ) = self.get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
             "latent": [
@@ -95,24 +121,40 @@ class VQGANModel(base_model.BaseModel):
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
         return {
             "latent": (batch_size, 4, latent_height, latent_width),
             "images": (batch_size, 3, image_height, image_width),
         }
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
-        latent_height, latent_width = self.check_dims(batch_size, image_height, image_width)
-        dtype = torch.float16 if self.fp16 else torch.bfloat16 if self.bf16 else torch.float32
-        return torch.randn(batch_size, 4, latent_height, latent_width, dtype=dtype, device=self.device)
+        latent_height, latent_width = self.check_dims(
+            batch_size, image_height, image_width
+        )
+        dtype = (
+            torch.float16
+            if self.fp16
+            else torch.bfloat16
+            if self.bf16
+            else torch.float32
+        )
+        return torch.randn(
+            batch_size, 4, latent_height, latent_width, dtype=dtype, device=self.device
+        )
 
     def check_dims(self, batch_size, image_height, image_width):
-        latent_height, latent_width = super().check_dims(batch_size, image_height, image_width)
+        latent_height, latent_width = super().check_dims(
+            batch_size, image_height, image_width
+        )
         latent_height = int(latent_height * self.latent_dim_scale)
         latent_width = int(latent_width * self.latent_dim_scale)
         return (latent_height, latent_width)
 
-    def get_minmax_dims(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_minmax_dims(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         (
             min_batch,
             max_batch,
@@ -124,7 +166,9 @@ class VQGANModel(base_model.BaseModel):
             max_latent_height,
             min_latent_width,
             max_latent_width,
-        ) = super().get_minmax_dims(batch_size, image_height, image_width, static_batch, static_shape)
+        ) = super().get_minmax_dims(
+            batch_size, image_height, image_width, static_batch, static_shape
+        )
         min_latent_height = int(min_latent_height * self.latent_dim_scale)
         min_latent_width = int(min_latent_width * self.latent_dim_scale)
         max_latent_height = int(max_latent_height * self.latent_dim_scale)

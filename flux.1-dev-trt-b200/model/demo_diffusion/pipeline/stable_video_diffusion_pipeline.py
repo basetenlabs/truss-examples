@@ -61,7 +61,9 @@ def _append_dims(x, target_dims):
     """Appends dimensions to the end of a tensor until it has target_dims dimensions."""
     dims_to_append = target_dims - x.ndim
     if dims_to_append < 0:
-        raise ValueError(f"input has {x.ndim} dims but target_dims is {target_dims}, which is less")
+        raise ValueError(
+            f"input has {x.ndim} dims but target_dims is {target_dims}, which is less"
+        )
     return x[(...,) + (None,) * dims_to_append]
 
 
@@ -69,14 +71,15 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
     """
     Application showcasing the acceleration of Stable Video Diffusion pipelines using NVidia TensorRT.
     """
+
     def __init__(
         self,
-        version='svd-xt-1.1',
+        version="svd-xt-1.1",
         pipeline_type=PIPELINE_TYPE.IMG2VID,
         min_guidance_scale: float = 1.0,
         max_guidance_scale: float = 3.0,
         decode_chunk_size: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initializes the Diffusion pipeline.
@@ -96,11 +99,7 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                 between frames, but also the higher the memory consumption. By default, the decoder will decode all frames at once
                 for maximal quality. Reduce `decode_chunk_size` to reduce memory usage.
         """
-        super().__init__(
-            version=version,
-            pipeline_type=pipeline_type,
-            **kwargs
-        )
+        super().__init__(version=version, pipeline_type=pipeline_type, **kwargs)
         self.min_guidance_scale = min_guidance_scale
         self.max_guidance_scale = max_guidance_scale
         self.do_classifier_free_guidance = max_guidance_scale > 1
@@ -108,7 +107,7 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
         self.vae_scale_factor = 8
         # FIXME num_frames = self.config.num_frames
         select_num_frames = {
-            'svd-xt-1.1': 25,
+            "svd-xt-1.1": 25,
         }
         self.num_frames = select_num_frames.get(version, 14)
         # TODO decode_chunk_size from args
@@ -121,16 +120,18 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
         vram_size = cudart.cudaGetDeviceProperties(cuda_device_id)[1].totalGlobalMem
         self.low_vram = vram_size < _GiB(40)
         if self.low_vram:
-            print(f"[W] WARNING low VRAM ({vram_size/_GiB(1):.2f} GB) mode selected. Certain optimizations may be skipped.")
+            print(
+                f"[W] WARNING low VRAM ({vram_size / _GiB(1):.2f} GB) mode selected. Certain optimizations may be skipped."
+            )
         if self.use_cuda_graph and self.low_vram:
             print("[W] WARNING CUDA graph disabled in low VRAM mode.")
             self.use_cuda_graph = False
 
         self.config = {}
         if self.pipeline_type.is_img2vid():
-            self.config['clip_vis_torch_fallback'] = True
-            self.config['clip_imgfe_torch_fallback'] = True
-            self.config['vae_temp_torch_fallback'] = True
+            self.config["clip_vis_torch_fallback"] = True
+            self.config["clip_imgfe_torch_fallback"] = True
+            self.config["vae_temp_torch_fallback"] = True
 
         # initialized in loadEngines()
         self.max_shared_device_memory_size = 0
@@ -138,25 +139,41 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
     def loadResources(self, image_height, image_width, batch_size, seed):
         # Initialize noise generator
         self.seed = seed
-        self.generator = torch.Generator(device="cuda").manual_seed(seed) if seed else None
+        self.generator = (
+            torch.Generator(device="cuda").manual_seed(seed) if seed else None
+        )
 
         # Create CUDA events and stream
-        for stage in ['clip', 'denoise', 'vae', 'vae_encoder']:
-            self.events[stage] = [cudart.cudaEventCreate()[1], cudart.cudaEventCreate()[1]]
+        for stage in ["clip", "denoise", "vae", "vae_encoder"]:
+            self.events[stage] = [
+                cudart.cudaEventCreate()[1],
+                cudart.cudaEventCreate()[1],
+            ]
         self.stream = cudart.cudaStreamCreate()[1]
 
         # Allocate shared device memory for TensorRT engines
         if not self.low_vram and not self.torch_inference:
             for model_name in self.models.keys():
                 if not self.torch_fallback[model_name]:
-                    self.max_shared_device_memory_size = max(self.max_shared_device_memory_size, self.engine[model_name].engine.device_memory_size)
-            self.shared_device_memory = cudart.cudaMalloc(self.max_shared_device_memory_size)[1]
+                    self.max_shared_device_memory_size = max(
+                        self.max_shared_device_memory_size,
+                        self.engine[model_name].engine.device_memory_size,
+                    )
+            self.shared_device_memory = cudart.cudaMalloc(
+                self.max_shared_device_memory_size
+            )[1]
             # Activate TensorRT engines
             for model_name in self.models.keys():
                 if not self.torch_fallback[model_name]:
-                    self.engine[model_name].activate(device_memory=self.shared_device_memory)
-                    alloc_shape = self.models[model_name].get_shape_dict(batch_size, image_height, image_width)
-                    self.engine[model_name].allocate_buffers(shape_dict=alloc_shape, device=self.device)
+                    self.engine[model_name].activate(
+                        device_memory=self.shared_device_memory
+                    )
+                    alloc_shape = self.models[model_name].get_shape_dict(
+                        batch_size, image_height, image_width
+                    )
+                    self.engine[model_name].allocate_buffers(
+                        shape_dict=alloc_shape, device=self.device
+                    )
 
     def loadEngines(
         self,
@@ -223,57 +240,156 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                 pathlib.Path(directory).mkdir(parents=True)
 
         # Load pipeline models
-        models_args = {'version': self.version, 'pipeline': self.pipeline_type, 'device': self.device,
-            'hf_token': self.hf_token, 'verbose': self.verbose, 'framework_model_dir': framework_model_dir,
-            'max_batch_size': self.max_batch_size}
-        if 'clip-vis' in self.stages:
-            self.models['clip-vis'] = CLIPVisionWithProjModel(**models_args, subfolder='image_encoder')
-        if 'clip-imgfe' in self.stages:
-            self.models['clip-imgfe'] = CLIPImageProcessorModel(**models_args, subfolder='feature_extractor')
-        if 'unet-temp' in self.stages:
-            self.models['unet-temp'] = UNetTemporalModel(**models_args, fp16=True, fp8=fp8, num_frames=self.num_frames, do_classifier_free_guidance=self.do_classifier_free_guidance)
-        if 'vae-temp' in self.stages:
-            self.models['vae-temp'] = VAEDecTemporalModel(**models_args, decode_chunk_size=self.decode_chunk_size)
+        models_args = {
+            "version": self.version,
+            "pipeline": self.pipeline_type,
+            "device": self.device,
+            "hf_token": self.hf_token,
+            "verbose": self.verbose,
+            "framework_model_dir": framework_model_dir,
+            "max_batch_size": self.max_batch_size,
+        }
+        if "clip-vis" in self.stages:
+            self.models["clip-vis"] = CLIPVisionWithProjModel(
+                **models_args, subfolder="image_encoder"
+            )
+        if "clip-imgfe" in self.stages:
+            self.models["clip-imgfe"] = CLIPImageProcessorModel(
+                **models_args, subfolder="feature_extractor"
+            )
+        if "unet-temp" in self.stages:
+            self.models["unet-temp"] = UNetTemporalModel(
+                **models_args,
+                fp16=True,
+                fp8=fp8,
+                num_frames=self.num_frames,
+                do_classifier_free_guidance=self.do_classifier_free_guidance,
+            )
+        if "vae-temp" in self.stages:
+            self.models["vae-temp"] = VAEDecTemporalModel(
+                **models_args, decode_chunk_size=self.decode_chunk_size
+            )
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
 
         # Configure pipeline models to load
         model_names = self.models.keys()
-        self.torch_fallback = dict(zip(model_names, [self.torch_inference or self.config.get(model_name.replace('-','_')+'_torch_fallback', False) for model_name in model_names]))
-        onnx_path = dict(zip(model_names, [self.getOnnxPath(model_name, onnx_dir, opt=False) for model_name in model_names]))
-        onnx_opt_path = dict(zip(model_names, [self.getOnnxPath(model_name, onnx_dir) for model_name in model_names]))
-        engine_path = dict(zip(model_names, [self.getEnginePath(model_name, engine_dir) for model_name in model_names]))
-        do_engine_refit = dict(zip(model_names, [enable_refit and model_name.startswith('unet') for model_name in model_names]))
+        self.torch_fallback = dict(
+            zip(
+                model_names,
+                [
+                    self.torch_inference
+                    or self.config.get(
+                        model_name.replace("-", "_") + "_torch_fallback", False
+                    )
+                    for model_name in model_names
+                ],
+            )
+        )
+        onnx_path = dict(
+            zip(
+                model_names,
+                [
+                    self.getOnnxPath(model_name, onnx_dir, opt=False)
+                    for model_name in model_names
+                ],
+            )
+        )
+        onnx_opt_path = dict(
+            zip(
+                model_names,
+                [self.getOnnxPath(model_name, onnx_dir) for model_name in model_names],
+            )
+        )
+        engine_path = dict(
+            zip(
+                model_names,
+                [
+                    self.getEnginePath(model_name, engine_dir)
+                    for model_name in model_names
+                ],
+            )
+        )
+        do_engine_refit = dict(
+            zip(
+                model_names,
+                [
+                    enable_refit and model_name.startswith("unet")
+                    for model_name in model_names
+                ],
+            )
+        )
 
         # Quantization.
-        model_suffix = dict(zip(model_names, ['' for model_name in model_names]))
+        model_suffix = dict(zip(model_names, ["" for model_name in model_names]))
         use_fp8 = dict.fromkeys(model_names, False)
         if fp8:
             model_name = "unet-temp"
             use_fp8[model_name] = True
-            model_suffix[model_name] += f"-fp8.l{quantization_level}.bs2.s{self.denoising_steps}.c{calibration_size}"
-        onnx_path = { model_name : self.getOnnxPath(model_name, onnx_dir, opt=False, suffix=model_suffix[model_name]) for model_name in model_names }
-        onnx_opt_path = { model_name : self.getOnnxPath(model_name, onnx_dir, suffix=model_suffix[model_name]) for model_name in model_names }
-        engine_path = { model_name : self.getEnginePath(model_name, engine_dir, do_engine_refit[model_name], suffix=model_suffix[model_name]) for model_name in model_names }
-        weights_map_path = { model_name : (self.getWeightsMapPath(model_name, onnx_dir) if do_engine_refit[model_name] else None) for model_name in model_names }
+            model_suffix[model_name] += (
+                f"-fp8.l{quantization_level}.bs2.s{self.denoising_steps}.c{calibration_size}"
+            )
+        onnx_path = {
+            model_name: self.getOnnxPath(
+                model_name, onnx_dir, opt=False, suffix=model_suffix[model_name]
+            )
+            for model_name in model_names
+        }
+        onnx_opt_path = {
+            model_name: self.getOnnxPath(
+                model_name, onnx_dir, suffix=model_suffix[model_name]
+            )
+            for model_name in model_names
+        }
+        engine_path = {
+            model_name: self.getEnginePath(
+                model_name,
+                engine_dir,
+                do_engine_refit[model_name],
+                suffix=model_suffix[model_name],
+            )
+            for model_name in model_names
+        }
+        weights_map_path = {
+            model_name: (
+                self.getWeightsMapPath(model_name, onnx_dir)
+                if do_engine_refit[model_name]
+                else None
+            )
+            for model_name in model_names
+        }
 
         # Export models to ONNX
         for model_name, obj in self.models.items():
             if self.torch_fallback[model_name]:
                 continue
-            do_export_onnx = not os.path.exists(engine_path[model_name]) and not os.path.exists(onnx_opt_path[model_name])
-            do_export_weights_map = weights_map_path[model_name] and not os.path.exists(weights_map_path[model_name])
+            do_export_onnx = not os.path.exists(
+                engine_path[model_name]
+            ) and not os.path.exists(onnx_opt_path[model_name])
+            do_export_weights_map = weights_map_path[model_name] and not os.path.exists(
+                weights_map_path[model_name]
+            )
             if do_export_onnx or do_export_weights_map:
                 if use_fp8[model_name]:
                     pipeline = obj.get_pipeline()
                     model = pipeline.unet
 
-                    state_dict_path = self.getStateDictPath(model_name, onnx_dir, suffix=model_suffix[model_name])
+                    state_dict_path = self.getStateDictPath(
+                        model_name, onnx_dir, suffix=model_suffix[model_name]
+                    )
                     if not os.path.exists(state_dict_path):
                         # Load calibration images
-                        print(f"[I] Calibrated weights not found, generating {state_dict_path}")
-                        root_dir = os.path.dirname(os.path.abspath(sys.modules["__main__"].__file__))
-                        calibration_image_folder = os.path.join(root_dir, "calibration_data", "calibration-images")
-                        calibration_image_list = load_calibration_images(calibration_image_folder)
+                        print(
+                            f"[I] Calibrated weights not found, generating {state_dict_path}"
+                        )
+                        root_dir = os.path.dirname(
+                            os.path.abspath(sys.modules["__main__"].__file__)
+                        )
+                        calibration_image_folder = os.path.join(
+                            root_dir, "calibration_data", "calibration-images"
+                        )
+                        calibration_image_list = load_calibration_images(
+                            calibration_image_folder
+                        )
                         print("Number of images loaded:", len(calibration_image_list))
 
                         # TODO check size > calibration_size
@@ -295,7 +411,9 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                                 n_steps=self.denoising_steps,
                             )
 
-                        print(f"[I] Performing calibration for {calibration_size} steps.")
+                        print(
+                            f"[I] Performing calibration for {calibration_size} steps."
+                        )
                         if use_fp8[model_name]:
                             quant_config = SD_FP8_FP16_DEFAULT_CONFIG
                         check_lora(model)
@@ -304,23 +422,44 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                     else:
                         mto.restore(model, state_dict_path)
 
-                    print(f"[I] Generating quantized ONNX model: {onnx_opt_path[model_name]}")
+                    print(
+                        f"[I] Generating quantized ONNX model: {onnx_opt_path[model_name]}"
+                    )
                     if not os.path.exists(onnx_path[model_name]):
                         """
                             Error: Torch bug, ONNX export failed due to unknown kernel shape in QuantConv3d.
                             TRT_FP8QuantizeLinear and TRT_FP8DequantizeLinear operations in UNetSpatioTemporalConditionModel for svd
                             cause issues. Inputs on different devices (CUDA vs CPU) may contribute to the problem.
                         """
-                        quantize_lvl(self.version, model, quantization_level, enable_conv_3d=False)
+                        quantize_lvl(
+                            self.version,
+                            model,
+                            quantization_level,
+                            enable_conv_3d=False,
+                        )
                         mtq.disable_quantizer(model, filter_func)
                         if use_fp8[model_name]:
                             generate_fp8_scales(model)
                     else:
                         model = None
 
-                    obj.export_onnx(onnx_path[model_name], onnx_opt_path[model_name], onnx_opset, opt_image_height, opt_image_width, custom_model=model, static_shape=static_shape)
+                    obj.export_onnx(
+                        onnx_path[model_name],
+                        onnx_opt_path[model_name],
+                        onnx_opset,
+                        opt_image_height,
+                        opt_image_width,
+                        custom_model=model,
+                        static_shape=static_shape,
+                    )
                 else:
-                    obj.export_onnx(onnx_path[model_name], onnx_opt_path[model_name], onnx_opset, opt_image_height, opt_image_width)
+                    obj.export_onnx(
+                        onnx_path[model_name],
+                        onnx_opt_path[model_name],
+                        onnx_opset,
+                        opt_image_height,
+                        opt_image_width,
+                    )
 
         # Clean model cache
         torch.cuda.empty_cache()
@@ -331,18 +470,27 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                 continue
             engine = engine_module.Engine(engine_path[model_name])
             if not os.path.exists(engine_path[model_name]):
-                update_output_names = obj.get_output_names() + obj.extra_output_names if obj.extra_output_names else None
-                engine.build(onnx_opt_path[model_name],
+                update_output_names = (
+                    obj.get_output_names() + obj.extra_output_names
+                    if obj.extra_output_names
+                    else None
+                )
+                engine.build(
+                    onnx_opt_path[model_name],
                     fp16=True,
                     input_profile=obj.get_input_profile(
-                        opt_batch_size, opt_image_height, opt_image_width,
-                        static_batch=static_batch, static_shape=static_shape
+                        opt_batch_size,
+                        opt_image_height,
+                        opt_image_width,
+                        static_batch=static_batch,
+                        static_shape=static_shape,
                     ),
                     enable_refit=do_engine_refit[model_name],
                     enable_all_tactics=enable_all_tactics,
                     timing_cache=timing_cache,
                     update_output_names=update_output_names,
-                    native_instancenorm=False)
+                    native_instancenorm=False,
+                )
             self.engine[model_name] = engine
 
         # Load TensorRT engines
@@ -357,20 +505,30 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                 assert not self.use_cuda_graph
                 # Reclaim GPU memory from torch cache
                 torch.cuda.empty_cache()
-                self.shared_device_memory = cudart.cudaMalloc(self.max_shared_device_memory_size)[1]
+                self.shared_device_memory = cudart.cudaMalloc(
+                    self.max_shared_device_memory_size
+                )[1]
             # Create TensorRT execution context
             if not self.engine[model_name].context:
                 assert not self.use_cuda_graph
-                self.engine[model_name].activate(device_memory=self.shared_device_memory)
+                self.engine[model_name].activate(
+                    device_memory=self.shared_device_memory
+                )
             if device_memory_update:
-                self.engine[model_name].reactivate(device_memory=self.shared_device_memory)
+                self.engine[model_name].reactivate(
+                    device_memory=self.shared_device_memory
+                )
             if alloc_shape and not self.engine[model_name].tensors:
                 assert not self.use_cuda_graph
-                self.engine[model_name].allocate_buffers(shape_dict=alloc_shape, device=self.device)
+                self.engine[model_name].allocate_buffers(
+                    shape_dict=alloc_shape, device=self.device
+                )
         else:
             # Load torch model
             if model_name not in self.torch_models:
-                self.torch_models[model_name] = self.models[model_name].get_model(torch_inference=self.torch_inference)
+                self.torch_models[model_name] = self.models[model_name].get_model(
+                    torch_inference=self.torch_inference
+                )
 
     def deactivateEngines(self, model_name, release_model=True):
         if not release_model:
@@ -387,27 +545,70 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
             del self.torch_models[model_name]
 
     def print_summary(self, denoising_steps, walltime_ms, batch_size, num_frames):
-        print('|-----------------|--------------|')
-        print('| {:^15} | {:^12} |'.format('Module', 'Latency'))
-        print('|-----------------|--------------|')
-        print('| {:^15} | {:>9.2f} ms |'.format('VAE-Enc', cudart.cudaEventElapsedTime(self.events['vae_encoder'][0], self.events['vae_encoder'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('CLIP', cudart.cudaEventElapsedTime(self.events['clip'][0], self.events['clip'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('UNet'+('+CNet' if self.pipeline_type.is_controlnet() else '')+' x '+str(denoising_steps), cudart.cudaEventElapsedTime(self.events['denoise'][0], self.events['denoise'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('VAE-Dec', cudart.cudaEventElapsedTime(self.events['vae'][0], self.events['vae'][1])[1]))
-        print('|-----------------|--------------|')
-        print('| {:^15} | {:>9.2f} ms |'.format('Pipeline', walltime_ms))
-        print('|-----------------|--------------|')
-        print('Throughput: {:.2f} videos/min ({} frames)'.format(batch_size*60000./walltime_ms, num_frames))
+        print("|-----------------|--------------|")
+        print("| {:^15} | {:^12} |".format("Module", "Latency"))
+        print("|-----------------|--------------|")
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "VAE-Enc",
+                cudart.cudaEventElapsedTime(
+                    self.events["vae_encoder"][0], self.events["vae_encoder"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "CLIP",
+                cudart.cudaEventElapsedTime(
+                    self.events["clip"][0], self.events["clip"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "UNet"
+                + ("+CNet" if self.pipeline_type.is_controlnet() else "")
+                + " x "
+                + str(denoising_steps),
+                cudart.cudaEventElapsedTime(
+                    self.events["denoise"][0], self.events["denoise"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "VAE-Dec",
+                cudart.cudaEventElapsedTime(
+                    self.events["vae"][0], self.events["vae"][1]
+                )[1],
+            )
+        )
+        print("|-----------------|--------------|")
+        print("| {:^15} | {:>9.2f} ms |".format("Pipeline", walltime_ms))
+        print("|-----------------|--------------|")
+        print(
+            "Throughput: {:.2f} videos/min ({} frames)".format(
+                batch_size * 60000.0 / walltime_ms, num_frames
+            )
+        )
 
     def save_video(self, frames, pipeline, seed):
-        video_name_prefix = '-'.join([pipeline, 'fp16', str(seed), str(random.randint(1000,9999))])
-        video_name_suffix = 'torch' if self.torch_inference else 'trt'
-        video_path = video_name_prefix+'-'+video_name_suffix+'.gif'
+        video_name_prefix = "-".join(
+            [pipeline, "fp16", str(seed), str(random.randint(1000, 9999))]
+        )
+        video_name_suffix = "torch" if self.torch_inference else "trt"
+        video_path = video_name_prefix + "-" + video_name_suffix + ".gif"
         print(f"Saving video to: {video_path}")
-        frames[0].save(os.path.join(self.output_dir, video_path), save_all=True,optimize=False, append_images=frames[1:], loop=0)
+        frames[0].save(
+            os.path.join(self.output_dir, video_path),
+            save_all=True,
+            optimize=False,
+            append_images=frames[1:],
+            loop=0,
+        )
 
     def _encode_image(self, image, num_videos_per_prompt, do_classifier_free_guidance):
-        dtype = next(self.torch_models['clip-vis'].parameters()).dtype
+        dtype = next(self.torch_models["clip-vis"].parameters()).dtype
 
         if not isinstance(image, torch.Tensor):
             image = self.image_processor.pil_to_numpy(image)
@@ -420,7 +621,7 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
             image = (image + 1.0) / 2.0
 
             # Normalize the image with for CLIP input
-            image = self.torch_models['clip-imgfe'](
+            image = self.torch_models["clip-imgfe"](
                 images=image,
                 do_normalize=True,
                 do_center_crop=False,
@@ -430,13 +631,15 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
             ).pixel_values
 
         image = image.to(device=self.device, dtype=dtype)
-        image_embeddings = self.torch_models['clip-vis'](image).image_embeds
+        image_embeddings = self.torch_models["clip-vis"](image).image_embeds
         image_embeddings = image_embeddings.unsqueeze(1)
 
         # duplicate image embeddings for each generation per prompt, using mps friendly method
         bs_embed, seq_len, _ = image_embeddings.shape
         image_embeddings = image_embeddings.repeat(1, num_videos_per_prompt, 1)
-        image_embeddings = image_embeddings.view(bs_embed * num_videos_per_prompt, seq_len, -1)
+        image_embeddings = image_embeddings.view(
+            bs_embed * num_videos_per_prompt, seq_len, -1
+        )
 
         if do_classifier_free_guidance:
             negative_image_embeddings = torch.zeros_like(image_embeddings)
@@ -456,7 +659,7 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
         do_classifier_free_guidance,
     ):
         image = image.to(device=device)
-        image_latents = self.torch_models['vae-temp'].encode(image).latent_dist.mode()
+        image_latents = self.torch_models["vae-temp"].encode(image).latent_dist.mode()
 
         if do_classifier_free_guidance:
             negative_image_latents = torch.zeros_like(image_latents)
@@ -510,7 +713,9 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
         )
 
         if latents is None:
-            latents = randn_tensor(shape, generator=self.generator, device=device, dtype=dtype)
+            latents = randn_tensor(
+                shape, generator=self.generator, device=device, dtype=dtype
+            )
         else:
             latents = latents.to(device)
 
@@ -529,20 +734,28 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
         for i in range(0, latents.shape[0], decode_chunk_size):
             num_frames_in = latents[i : i + decode_chunk_size].shape[0]
             # TODO only pass num_frames_in if it's expected
-            if self.torch_fallback['vae-temp']:
-                frame = self.torch_models['vae-temp'].decode(latents[i : i + decode_chunk_size], num_frames=num_frames_in).sample
+            if self.torch_fallback["vae-temp"]:
+                frame = (
+                    self.torch_models["vae-temp"]
+                    .decode(
+                        latents[i : i + decode_chunk_size], num_frames=num_frames_in
+                    )
+                    .sample
+                )
             else:
                 params = {
-                    'latent': latents[i : i + decode_chunk_size],
+                    "latent": latents[i : i + decode_chunk_size],
                     # FIXME segfault
                     #'num_frames_in': torch.Tensor([num_frames_in]).to(device=latents.device, dtype=torch.int64),
                 }
-                frame = self.runEngine('vae-temp', params)['frames']
+                frame = self.runEngine("vae-temp", params)["frames"]
             frames.append(frame)
         frames = torch.cat(frames, dim=0)
 
         # [batch*frames, channels, height, width] -> [batch, channels, frames, height, width]
-        frames = frames.reshape(-1, num_frames, *frames.shape[1:]).permute(0, 2, 1, 3, 4)
+        frames = frames.reshape(-1, num_frames, *frames.shape[1:]).permute(
+            0, 2, 1, 3, 4
+        )
 
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
         frames = frames.float()
@@ -601,39 +814,60 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                 ctx.model_name = model_name
                 ctx.release_model = release_model
                 ctx.alloc_shape = alloc_shape
+
             def __enter__(ctx):
                 self.activateEngines(ctx.model_name, alloc_shape=ctx.alloc_shape)
+
             def __exit__(ctx, exc_type, exc_val, exc_tb):
                 self.deactivateEngines(ctx.model_name, release_model=ctx.release_model)
 
         # Release model opportunistically in TensorRT pipeline only in low VRAM mode
         release_model = self.low_vram and not self.torch_inference
         with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):
-            with LoadModelContext('clip-imgfe', release_model=release_model), LoadModelContext('clip-vis', release_model=release_model):
-                self.profile_start('clip', color='green')
-                image_embeddings = self._encode_image(input_image, num_videos_per_prompt, self.do_classifier_free_guidance)
-                self.profile_stop('clip')
+            with (
+                LoadModelContext("clip-imgfe", release_model=release_model),
+                LoadModelContext("clip-vis", release_model=release_model),
+            ):
+                self.profile_start("clip", color="green")
+                image_embeddings = self._encode_image(
+                    input_image, num_videos_per_prompt, self.do_classifier_free_guidance
+                )
+                self.profile_stop("clip")
             # NOTE Stable Diffusion Video was conditioned on fps - 1
             fps = fps - 1
 
-            self.profile_start('preprocess', color='pink')
-            input_image = self.image_processor.preprocess(input_image, height=image_height, width=image_width).to(self.device)
-            noise = randn_tensor(input_image.shape, generator=self.generator, device=input_image.device, dtype=input_image.dtype)
+            self.profile_start("preprocess", color="pink")
+            input_image = self.image_processor.preprocess(
+                input_image, height=image_height, width=image_width
+            ).to(self.device)
+            noise = randn_tensor(
+                input_image.shape,
+                generator=self.generator,
+                device=input_image.device,
+                dtype=input_image.dtype,
+            )
             input_image = input_image + noise_aug_strength * noise
-            self.profile_stop('preprocess')
+            self.profile_stop("preprocess")
 
             # TODO
             # assert self.torch_models['vae-temp'].dtype == torch.float32
 
-            with LoadModelContext('vae-temp'):
-                self.profile_start('vae_encoder', color='red')
-                image_latents = self._encode_vae_image(input_image, self.device, num_videos_per_prompt, self.do_classifier_free_guidance)
+            with LoadModelContext("vae-temp"):
+                self.profile_start("vae_encoder", color="red")
+                image_latents = self._encode_vae_image(
+                    input_image,
+                    self.device,
+                    num_videos_per_prompt,
+                    self.do_classifier_free_guidance,
+                )
                 image_latents = image_latents.to(image_embeddings.dtype)
-                self.profile_stop('vae_encoder')
+                self.profile_stop("vae_encoder")
 
             # Repeat the image latents for each frame so we can concatenate them with the noise
             # image_latents [batch, channels, height, width] ->[batch, num_frames, channels, height, width]
-            image_latents = image_latents.unsqueeze(1).repeat(1, self.num_frames, 1, 1, 1)
+            image_latents = image_latents.unsqueeze(1).repeat(
+                1, self.num_frames, 1, 1, 1
+            )
 
             # Get Added Time IDs
             added_time_ids = self._get_add_time_ids(
@@ -655,36 +889,57 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
             latents = self.prepare_latents(
                 batch_size * num_videos_per_prompt,
                 self.num_frames,
-                8, # TODO: num_channels_latents = unet.config.in_channels
+                8,  # TODO: num_channels_latents = unet.config.in_channels
                 image_height,
                 image_width,
                 image_embeddings.dtype,
                 input_image.device,
-                None, # pre-generated latents
+                None,  # pre-generated latents
             )
 
             # Prepare guidance scale
-            guidance_scale = torch.linspace(self.min_guidance_scale, self.max_guidance_scale, self.num_frames).unsqueeze(0)
+            guidance_scale = torch.linspace(
+                self.min_guidance_scale, self.max_guidance_scale, self.num_frames
+            ).unsqueeze(0)
             guidance_scale = guidance_scale.to(self.device, latents.dtype)
-            guidance_scale = guidance_scale.repeat(batch_size * num_videos_per_prompt, 1)
+            guidance_scale = guidance_scale.repeat(
+                batch_size * num_videos_per_prompt, 1
+            )
             guidance_scale = _append_dims(guidance_scale, latents.ndim)
 
             # Denoising loop
             num_warmup_steps = len(timesteps) - denoising_steps * self.scheduler.order
-            unet_shape_dict = self.models['unet-temp'].get_shape_dict(batch_size, image_height, image_width)
-            with LoadModelContext('unet-temp', alloc_shape=unet_shape_dict, release_model=release_model), tqdm(total=denoising_steps) as progress_bar:
-                self.profile_start('denoise', color='blue')
+            unet_shape_dict = self.models["unet-temp"].get_shape_dict(
+                batch_size, image_height, image_width
+            )
+            with (
+                LoadModelContext(
+                    "unet-temp",
+                    alloc_shape=unet_shape_dict,
+                    release_model=release_model,
+                ),
+                tqdm(total=denoising_steps) as progress_bar,
+            ):
+                self.profile_start("denoise", color="blue")
                 for i, t in enumerate(timesteps):
                     # expand the latents if we are doing classifier free guidance
-                    latent_model_input = torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents
-                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+                    latent_model_input = (
+                        torch.cat([latents] * 2)
+                        if self.do_classifier_free_guidance
+                        else latents
+                    )
+                    latent_model_input = self.scheduler.scale_model_input(
+                        latent_model_input, t
+                    )
 
                     # Concatenate image_latents over channels dimention
-                    latent_model_input = torch.cat([latent_model_input, image_latents], dim=2)
+                    latent_model_input = torch.cat(
+                        [latent_model_input, image_latents], dim=2
+                    )
 
                     # predict the noise residual
-                    if self.torch_fallback['unet-temp']:
-                        noise_pred = self.torch_models['unet-temp'](
+                    if self.torch_fallback["unet-temp"]:
+                        noise_pred = self.torch_models["unet-temp"](
                             latent_model_input,
                             t,
                             encoder_hidden_states=image_embeddings,
@@ -698,26 +953,39 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
                             "encoder_hidden_states": image_embeddings,
                             "added_time_ids": added_time_ids,
                         }
-                        noise_pred = self.runEngine('unet-temp', params)['latent']
+                        noise_pred = self.runEngine("unet-temp", params)["latent"]
 
                     # perform guidance
                     if self.do_classifier_free_guidance:
                         noise_pred_uncond, noise_pred_cond = noise_pred.chunk(2)
-                        noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_cond - noise_pred_uncond)
+                        noise_pred = noise_pred_uncond + guidance_scale * (
+                            noise_pred_cond - noise_pred_uncond
+                        )
 
                     # compute the previous noisy sample x_t -> x_t-1
                     latents = self.scheduler.step(noise_pred, t, latents).prev_sample
 
-                    if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+                    if i == len(timesteps) - 1 or (
+                        (i + 1) > num_warmup_steps
+                        and (i + 1) % self.scheduler.order == 0
+                    ):
                         progress_bar.update()
-                self.profile_stop('denoise')
+                self.profile_stop("denoise")
 
-        with torch.inference_mode(), trt.Runtime(TRT_LOGGER), LoadModelContext('vae-temp'):
-            self.profile_start('vae', color='red')
-            self.torch_models['vae-temp'].to(dtype=torch.float16)
-            frames = self.decode_latents(latents, self.num_frames, self.decode_chunk_size)
-            frames = image_module.tensor2vid(frames, self.image_processor, output_type="pil")
-            self.profile_stop('vae')
+        with (
+            torch.inference_mode(),
+            trt.Runtime(TRT_LOGGER),
+            LoadModelContext("vae-temp"),
+        ):
+            self.profile_start("vae", color="red")
+            self.torch_models["vae-temp"].to(dtype=torch.float16)
+            frames = self.decode_latents(
+                latents, self.num_frames, self.decode_chunk_size
+            )
+            frames = image_module.tensor2vid(
+                frames, self.image_processor, output_type="pil"
+            )
+            self.profile_stop("vae")
 
         torch.cuda.synchronize()
 
@@ -725,14 +993,24 @@ class StableVideoDiffusionPipeline(StableDiffusionPipeline):
             return
 
         e2e_toc = time.perf_counter()
-        walltime_ms = (e2e_toc - e2e_tic) * 1000.
+        walltime_ms = (e2e_toc - e2e_tic) * 1000.0
         self.print_summary(denoising_steps, walltime_ms, batch_size, len(frames[0]))
         if save_video:
             self.save_video(frames[0], self.pipeline_type.name.lower(), self.seed)
 
         return frames, walltime_ms
 
-    def run(self, input_image, height, width, batch_size, batch_count, num_warmup_runs, use_cuda_graph, **kwargs):
+    def run(
+        self,
+        input_image,
+        height,
+        width,
+        batch_size,
+        batch_count,
+        num_warmup_runs,
+        use_cuda_graph,
+        **kwargs,
+    ):
         num_warmup_runs = max(1, num_warmup_runs) if use_cuda_graph else num_warmup_runs
         if num_warmup_runs > 0:
             print("[I] Warming up ..")

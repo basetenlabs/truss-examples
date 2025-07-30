@@ -80,6 +80,7 @@ class DiffusionPipeline(ABC):
     """
     Application showcasing the acceleration of Stable Diffusion pipelines using NVidia TensorRT.
     """
+
     VALID_DIFFUSION_PIPELINES = (
         "1.4",
         "1.5",
@@ -221,8 +222,12 @@ class DiffusionPipeline(ABC):
 
         self.low_vram = low_vram
         self.weight_streaming = weight_streaming
-        self.text_encoder_weight_streaming_budget_percentage = text_encoder_weight_streaming_budget_percentage
-        self.denoiser_weight_streaming_budget_percentage = denoiser_weight_streaming_budget_percentage
+        self.text_encoder_weight_streaming_budget_percentage = (
+            text_encoder_weight_streaming_budget_percentage
+        )
+        self.denoiser_weight_streaming_budget_percentage = (
+            denoiser_weight_streaming_budget_percentage
+        )
 
         self.stages = self.get_model_names(self.pipeline_type)
         # config to store additional info
@@ -231,31 +236,41 @@ class DiffusionPipeline(ABC):
             assert type(torch_fallback) is list
             for model_name in torch_fallback:
                 if model_name not in self.stages:
-                    raise ValueError(f'Model "{model_name}" set in --torch-fallback does not exist')
+                    raise ValueError(
+                        f'Model "{model_name}" set in --torch-fallback does not exist'
+                    )
                 self.config[model_name.replace("-", "_") + "_torch_fallback"] = True
                 print(f"[I] Setting torch_fallback for {model_name} model.")
 
         if not scheduler:
-            scheduler = 'UniPC' if self.pipeline_type.is_controlnet() else self.SCHEDULER_DEFAULTS.get(version, 'DDIM')
+            scheduler = (
+                "UniPC"
+                if self.pipeline_type.is_controlnet()
+                else self.SCHEDULER_DEFAULTS.get(version, "DDIM")
+            )
             print(f"[I] Autoselected scheduler: {scheduler}")
 
         scheduler_class_map = {
-            "DDIM" : DDIMScheduler,
-            "DDPM" : DDPMScheduler,
-            "EulerA" : EulerAncestralDiscreteScheduler,
-            "Euler" : EulerDiscreteScheduler,
-            "LCM" : LCMScheduler,
-            "LMSD" : LMSDiscreteScheduler,
-            "PNDM" : PNDMScheduler,
-            "UniPC" : UniPCMultistepScheduler,
-            "DDPMWuerstchen" : DDPMWuerstchenScheduler,
-            "FlowMatchEuler": FlowMatchEulerDiscreteScheduler
+            "DDIM": DDIMScheduler,
+            "DDPM": DDPMScheduler,
+            "EulerA": EulerAncestralDiscreteScheduler,
+            "Euler": EulerDiscreteScheduler,
+            "LCM": LCMScheduler,
+            "LMSD": LMSDiscreteScheduler,
+            "PNDM": PNDMScheduler,
+            "UniPC": UniPCMultistepScheduler,
+            "DDPMWuerstchen": DDPMWuerstchenScheduler,
+            "FlowMatchEuler": FlowMatchEulerDiscreteScheduler,
         }
         try:
             scheduler_class = scheduler_class_map[scheduler]
         except KeyError:
-            raise ValueError(f"Unsupported scheduler {scheduler}.  Should be one of {list(scheduler_class.keys())}.")
-        self.scheduler = make_scheduler(scheduler_class, version, pipeline_type, hf_token, framework_model_dir)
+            raise ValueError(
+                f"Unsupported scheduler {scheduler}.  Should be one of {list(scheduler_class.keys())}."
+            )
+        self.scheduler = make_scheduler(
+            scheduler_class, version, pipeline_type, hf_token, framework_model_dir
+        )
 
         self.torch_inference = torch_inference
         if self.torch_inference:
@@ -286,15 +301,21 @@ class DiffusionPipeline(ABC):
 
     @classmethod
     @abc.abstractmethod
-    def FromArgs(cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE) -> DiffusionPipeline:
+    def FromArgs(
+        cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE
+    ) -> DiffusionPipeline:
         """Factory method to construct a concrete pipeline object from parsed arguments."""
-        raise NotImplementedError("FromArgs cannot be called from the abstract base class.")
+        raise NotImplementedError(
+            "FromArgs cannot be called from the abstract base class."
+        )
 
     @classmethod
     @abc.abstractmethod
     def get_model_names(cls, pipeline_type: PIPELINE_TYPE) -> List[str]:
         """Return a list of model names used by this pipeline."""
-        raise NotImplementedError("get_model_names cannot be called from the abstract base class.")
+        raise NotImplementedError(
+            "get_model_names cannot be called from the abstract base class."
+        )
 
     @classmethod
     def _get_pipeline_uid(cls, version: str) -> str:
@@ -306,7 +327,9 @@ class DiffusionPipeline(ABC):
 
     def profile_start(self, name, color="blue", domain=None):
         if self.nvtx_profile:
-            self.markers[name] = nvtx.start_range(message=name, color=color, domain=domain)
+            self.markers[name] = nvtx.start_range(
+                message=name, color=color, domain=domain
+            )
         if name in self.events:
             cudart.cudaEventRecord(self.events[name][0], 0)
 
@@ -324,7 +347,10 @@ class DiffusionPipeline(ABC):
 
         # Create CUDA events and stream
         for stage in self.stages:
-            self.events[stage] = [cudart.cudaEventCreate()[1], cudart.cudaEventCreate()[1]]
+            self.events[stage] = [
+                cudart.cudaEventCreate()[1],
+                cudart.cudaEventCreate()[1],
+            ]
         self.stream = cudart.cudaStreamCreate()[1]
 
         # Allocate TensorRT I/O buffers
@@ -332,36 +358,60 @@ class DiffusionPipeline(ABC):
             for model_name, obj in self.models.items():
                 if self.torch_fallback[model_name]:
                     continue
-                self.shape_dicts[model_name] = obj.get_shape_dict(batch_size, image_height, image_width)
+                self.shape_dicts[model_name] = obj.get_shape_dict(
+                    batch_size, image_height, image_width
+                )
                 if not self.low_vram:
-                    self.engine[model_name].allocate_buffers(shape_dict=obj.get_shape_dict(batch_size, image_height, image_width), device=self.device)
+                    self.engine[model_name].allocate_buffers(
+                        shape_dict=obj.get_shape_dict(
+                            batch_size, image_height, image_width
+                        ),
+                        device=self.device,
+                    )
 
     @abstractmethod
     def _initialize_models(self, *args, **kwargs):
         raise NotImplementedError("Please Implement the _initialize_models method")
 
-    def _prepare_model_configs(
-        self,
-        enable_refit,
-        int8,
-        fp8,
-        fp4
-    ):
+    def _prepare_model_configs(self, enable_refit, int8, fp8, fp4):
         model_names = self.models.keys()
-        self.torch_fallback = dict(zip(model_names, [self.torch_inference or self.config.get(model_name.replace('-','_')+'_torch_fallback', False) for model_name in model_names]))
+        self.torch_fallback = dict(
+            zip(
+                model_names,
+                [
+                    self.torch_inference
+                    or self.config.get(
+                        model_name.replace("-", "_") + "_torch_fallback", False
+                    )
+                    for model_name in model_names
+                ],
+            )
+        )
 
         configs = {}
         for model_name in model_names:
             # Initialize config
-            do_engine_refit = enable_refit and not self.pipeline_type.is_sd_xl_refiner() and any(model_name.startswith(prefix) for prefix in ("unet", "transformer"))
-            do_lora_merge = not enable_refit and self.lora_loader and any(model_name.startswith(prefix) for prefix in ("unet", "transformer"))
+            do_engine_refit = (
+                enable_refit
+                and not self.pipeline_type.is_sd_xl_refiner()
+                and any(
+                    model_name.startswith(prefix) for prefix in ("unet", "transformer")
+                )
+            )
+            do_lora_merge = (
+                not enable_refit
+                and self.lora_loader
+                and any(
+                    model_name.startswith(prefix) for prefix in ("unet", "transformer")
+                )
+            )
 
             config = {
                 "do_engine_refit": do_engine_refit,
                 "do_lora_merge": do_lora_merge,
                 "use_int8": False,
                 "use_fp8": False,
-                'use_fp4': False,
+                "use_fp4": False,
             }
 
             # TODO: Move this to when arguments are first being validated in dd_argparse.py
@@ -372,7 +422,9 @@ class DiffusionPipeline(ABC):
                     "2.1",
                     "2.1-base",
                 ], "int8 quantization only supported for SDXL, SD1.5 and SD2.1 pipeline"
-                if (self.pipeline_type.is_sd_xl() and model_name == "unetxl") or (model_name == "unet"):
+                if (self.pipeline_type.is_sd_xl() and model_name == "unetxl") or (
+                    model_name == "unet"
+                ):
                     config["use_int8"] = True
 
             elif fp8:
@@ -380,43 +432,61 @@ class DiffusionPipeline(ABC):
                     self.pipeline_type.is_sd_xl()
                     or self.version in ["1.5", "2.1", "2.1-base"]
                     or self.version.startswith("flux.1")
-                ), "fp8 quantization only supported for SDXL, SD1.5, SD2.1 and FLUX pipeline"
+                ), (
+                    "fp8 quantization only supported for SDXL, SD1.5, SD2.1 and FLUX pipeline"
+                )
                 if (
                     (self.pipeline_type.is_sd_xl() and model_name == "unetxl")
-                    or ((self.version.startswith("flux.1")) and model_name == "transformer")
+                    or (
+                        (self.version.startswith("flux.1"))
+                        and model_name == "transformer"
+                    )
                     or (model_name == "unet")
                 ):
                     config["use_fp8"] = True
             elif fp4:
-                config['use_fp4'] = True
+                config["use_fp4"] = True
 
             # Setup paths
-            config["onnx_path"] = self.dd_path.model_name_to_unoptimized_onnx_path[model_name]
-            config["onnx_opt_path"] = self.dd_path.model_name_to_optimized_onnx_path[model_name]
+            config["onnx_path"] = self.dd_path.model_name_to_unoptimized_onnx_path[
+                model_name
+            ]
+            config["onnx_opt_path"] = self.dd_path.model_name_to_optimized_onnx_path[
+                model_name
+            ]
             config["engine_path"] = self.dd_path.model_name_to_engine_path[model_name]
             config["weights_map_path"] = (
-                self.dd_path.model_name_to_weights_map_path[model_name] if config["do_engine_refit"] else None
+                self.dd_path.model_name_to_weights_map_path[model_name]
+                if config["do_engine_refit"]
+                else None
             )
-            config["state_dict_path"] = self.dd_path.model_name_to_quantized_model_state_dict_path[model_name]
-            config["refit_weights_path"] = self.dd_path.model_name_to_refit_weights_path[model_name]
+            config["state_dict_path"] = (
+                self.dd_path.model_name_to_quantized_model_state_dict_path[model_name]
+            )
+            config["refit_weights_path"] = (
+                self.dd_path.model_name_to_refit_weights_path[model_name]
+            )
 
             configs[model_name] = config
 
         return configs
 
     def _calibrate_and_save_model(
-            self,
-            pipeline,
-            model,
-            model_config,
-            quantization_level,
-            quantization_percentile,
-            quantization_alpha,
-            calibration_size,
-            calib_batch_size,
-            enable_lora_merge = False,
-            **kwargs):
-        print(f"[I] Calibrated weights not found, generating {model_config['state_dict_path']}")
+        self,
+        pipeline,
+        model,
+        model_config,
+        quantization_level,
+        quantization_percentile,
+        quantization_alpha,
+        calibration_size,
+        calib_batch_size,
+        enable_lora_merge=False,
+        **kwargs,
+    ):
+        print(
+            f"[I] Calibrated weights not found, generating {model_config['state_dict_path']}"
+        )
 
         # TODO check size > calibration_size
         def do_calibrate(pipeline, calibration_prompts, **kwargs):
@@ -431,13 +501,17 @@ class DiffusionPipeline(ABC):
                         "height": kwargs.get("height", 1024),
                         "width": kwargs.get("width", 1024),
                         "guidance_scale": 3.5,
-                        "max_sequence_length": 512 if kwargs["model_id"] == "flux.1-dev" else 256,
+                        "max_sequence_length": 512
+                        if kwargs["model_id"] == "flux.1-dev"
+                        else 256,
                     }
                 else:
                     common_args = {
                         "prompt": prompts,
                         "num_inference_steps": kwargs["n_steps"],
-                        "negative_prompt": ["normal quality, low quality, worst quality, low res, blurry, nsfw, nude"]
+                        "negative_prompt": [
+                            "normal quality, low quality, worst quality, low res, blurry, nsfw, nude"
+                        ]
                         * len(prompts),
                     }
 
@@ -474,12 +548,22 @@ class DiffusionPipeline(ABC):
                 collate_fn=custom_collate,
             )
         else:
-            root_dir = os.path.dirname(os.path.abspath(sys.modules["__main__"].__file__))
-            calibration_file = os.path.join(root_dir, "calibration_data", "calibration-prompts.txt")
+            root_dir = os.path.dirname(
+                os.path.abspath(sys.modules["__main__"].__file__)
+            )
+            calibration_file = os.path.join(
+                root_dir, "calibration_data", "calibration-prompts.txt"
+            )
             calibration_prompts = load_calib_prompts(calib_batch_size, calibration_file)
 
         def forward_loop(model):
-            if self.version not in ("sd3", "flux.1-dev", "flux.1-schnell", "flux.1-dev-depth", "flux.1-dev-canny"):
+            if self.version not in (
+                "sd3",
+                "flux.1-dev",
+                "flux.1-schnell",
+                "flux.1-dev-depth",
+                "flux.1-dev-canny",
+            ):
                 pipeline.unet = model
             else:
                 pipeline.transformer = model
@@ -499,19 +583,19 @@ class DiffusionPipeline(ABC):
                     calib_size=calibration_size // calib_batch_size,
                     n_steps=self.denoising_steps,
                     model_id=self.version,
-                    **kwargs
+                    **kwargs,
                 )
 
         print(f"[I] Performing calibration for {calibration_size} steps.")
-        if model_config['use_int8']:
+        if model_config["use_int8"]:
             quant_config = get_int8_config(
                 model,
                 quantization_level,
                 quantization_alpha,
                 quantization_percentile,
-                self.denoising_steps
+                self.denoising_steps,
             )
-        elif model_config['use_fp8']:
+        elif model_config["use_fp8"]:
             if self.version.startswith("flux.1"):
                 quant_config = SD_FP8_BF16_FLUX_MMDIT_BMM2_FP8_OUTPUT_CONFIG
             elif self.version == "2.1":
@@ -529,26 +613,38 @@ class DiffusionPipeline(ABC):
         if self.version.startswith("flux.1"):
             set_quant_precision(quant_config, "BFloat16")
         mtq.quantize(model, quant_config, forward_loop)
-        mto.save(model, model_config['state_dict_path'])
+        mto.save(model, model_config["state_dict_path"])
 
     def _get_quantized_model(
-            self,
-            obj,
-            model_config,
-            quantization_level,
-            quantization_percentile,
-            quantization_alpha,
-            calibration_size,
-            calib_batch_size,
-            enable_lora_merge = False,
-            **kwargs):
+        self,
+        obj,
+        model_config,
+        quantization_level,
+        quantization_percentile,
+        quantization_alpha,
+        calibration_size,
+        calib_batch_size,
+        enable_lora_merge=False,
+        **kwargs,
+    ):
         pipeline = obj.get_pipeline()
         is_flux = self.version.startswith("flux.1")
-        model = pipeline.unet if self.version not in ("sd3", "flux.1-dev", "flux.1-schnell", "flux.1-dev-depth", "flux.1-dev-canny") else pipeline.transformer
-        if model_config['use_fp8'] and quantization_level == 4.0:
+        model = (
+            pipeline.unet
+            if self.version
+            not in (
+                "sd3",
+                "flux.1-dev",
+                "flux.1-schnell",
+                "flux.1-dev-depth",
+                "flux.1-dev-canny",
+            )
+            else pipeline.transformer
+        )
+        if model_config["use_fp8"] and quantization_level == 4.0:
             set_fmha(model, is_flux=is_flux)
 
-        if not os.path.exists(model_config['state_dict_path']):
+        if not os.path.exists(model_config["state_dict_path"]):
             self._calibrate_and_save_model(
                 pipeline,
                 model,
@@ -559,27 +655,32 @@ class DiffusionPipeline(ABC):
                 calibration_size,
                 calib_batch_size,
                 enable_lora_merge,
-                **kwargs)
+                **kwargs,
+            )
         else:
-            mto.restore(model, model_config['state_dict_path'])
+            mto.restore(model, model_config["state_dict_path"])
 
-        if not os.path.exists(model_config['onnx_path']):
+        if not os.path.exists(model_config["onnx_path"]):
             quantize_lvl(self.version, model, quantization_level)
             if self.version.startswith("flux.1"):
                 mtq.disable_quantizer(model, filter_func_no_proj_out)
             else:
                 mtq.disable_quantizer(model, filter_func)
-            if model_config['use_fp8'] and not self.version.startswith("flux.1"):
+            if model_config["use_fp8"] and not self.version.startswith("flux.1"):
                 generate_fp8_scales(model)
             if quantization_level == 4.0:
-                fp8_mha_disable(model, quantized_mha_output=False) # Remove Q/DQ after BMM2 in MHA
+                fp8_mha_disable(
+                    model, quantized_mha_output=False
+                )  # Remove Q/DQ after BMM2 in MHA
         else:
             model = None
 
         return model
 
     @abstractmethod
-    def download_onnx_models(self, model_name: str, model_config: dict[str, Any]) -> None:
+    def download_onnx_models(
+        self, model_name: str, model_config: dict[str, Any]
+    ) -> None:
         """Download pre-exported ONNX Models"""
         raise NotImplementedError("Please Implement the download_onnx_models method")
 
@@ -606,8 +707,12 @@ class DiffusionPipeline(ABC):
         download_onnx_models,
     ):
         # With onnx_export_only True, the export still happens even if the TRT engine exists. However, it will not re-run the export if the onnx exists.
-        do_export_onnx = (not os.path.exists(model_config['engine_path']) or onnx_export_only) and not os.path.exists(model_config['onnx_opt_path'])
-        do_export_weights_map = model_config['weights_map_path'] and not os.path.exists(model_config['weights_map_path'])
+        do_export_onnx = (
+            not os.path.exists(model_config["engine_path"]) or onnx_export_only
+        ) and not os.path.exists(model_config["onnx_opt_path"])
+        do_export_weights_map = model_config["weights_map_path"] and not os.path.exists(
+            model_config["weights_map_path"]
+        )
 
         # If ONNX export is required, either download ONNX models or check if the pipeline supports native ONNX export
         if do_export_onnx:
@@ -618,19 +723,21 @@ class DiffusionPipeline(ABC):
                 self.is_native_export_supported(model_config)
 
         if do_export_onnx or do_export_weights_map:
-            if not model_config['use_int8'] and not model_config['use_fp8']:
+            if not model_config["use_int8"] and not model_config["use_fp8"]:
                 obj.export_onnx(
-                    model_config['onnx_path'],
-                    model_config['onnx_opt_path'],
+                    model_config["onnx_path"],
+                    model_config["onnx_opt_path"],
                     onnx_opset,
                     opt_image_height,
                     opt_image_width,
-                    enable_lora_merge=model_config['do_lora_merge'],
+                    enable_lora_merge=model_config["do_lora_merge"],
                     static_shape=static_shape,
-                    lora_loader=self.lora_loader
+                    lora_loader=self.lora_loader,
                 )
             else:
-                print(f"[I] Generating quantized ONNX model: {model_config['onnx_path']}")
+                print(
+                    f"[I] Generating quantized ONNX model: {model_config['onnx_path']}"
+                )
                 quantized_model = self._get_quantized_model(
                     obj,
                     model_config,
@@ -641,32 +748,63 @@ class DiffusionPipeline(ABC):
                     calib_batch_size,
                     height=opt_image_width,
                     width=opt_image_width,
-                    enable_lora_merge=model_config['do_lora_merge']
+                    enable_lora_merge=model_config["do_lora_merge"],
                 )
                 obj.export_onnx(
-                    model_config['onnx_path'],
-                    model_config['onnx_opt_path'],
+                    model_config["onnx_path"],
+                    model_config["onnx_opt_path"],
                     onnx_opset,
                     opt_image_height,
                     opt_image_width,
                     custom_model=quantized_model,
-                    static_shape=static_shape
+                    static_shape=static_shape,
                 )
 
         # FIXME do_export_weights_map needs ONNX graph
         if do_export_weights_map:
             print(f"[I] Saving weights map: {model_config['weights_map_path']}")
-            obj.export_weights_map(model_config['onnx_opt_path'], model_config['weights_map_path'])
+            obj.export_weights_map(
+                model_config["onnx_opt_path"], model_config["weights_map_path"]
+            )
 
-    def _build_engine(self, obj, engine, model_config, opt_batch_size, opt_image_height, opt_image_width, optimization_level, static_batch, static_shape, enable_all_tactics, timing_cache):
-        update_output_names = obj.get_output_names() + obj.extra_output_names if obj.extra_output_names else None
-        fp16amp = False if (model_config['use_fp8'] or getattr(obj, 'build_strongly_typed', False)) else obj.fp16
+    def _build_engine(
+        self,
+        obj,
+        engine,
+        model_config,
+        opt_batch_size,
+        opt_image_height,
+        opt_image_width,
+        optimization_level,
+        static_batch,
+        static_shape,
+        enable_all_tactics,
+        timing_cache,
+    ):
+        update_output_names = (
+            obj.get_output_names() + obj.extra_output_names
+            if obj.extra_output_names
+            else None
+        )
+        fp16amp = (
+            False
+            if (model_config["use_fp8"] or getattr(obj, "build_strongly_typed", False))
+            else obj.fp16
+        )
         tf32amp = obj.tf32
-        bf16amp = False if (model_config['use_fp8'] or getattr(obj, 'build_strongly_typed', False)) else obj.bf16
-        strongly_typed = True if (model_config['use_fp8'] or getattr(obj, 'build_strongly_typed', False)) else False
-        weight_streaming = getattr(obj, 'weight_streaming', False)
-        int8amp = model_config.get('use_int8', False)
-        precision_constraints = 'prefer' if int8amp else 'none'
+        bf16amp = (
+            False
+            if (model_config["use_fp8"] or getattr(obj, "build_strongly_typed", False))
+            else obj.bf16
+        )
+        strongly_typed = (
+            True
+            if (model_config["use_fp8"] or getattr(obj, "build_strongly_typed", False))
+            else False
+        )
+        weight_streaming = getattr(obj, "weight_streaming", False)
+        int8amp = model_config.get("use_int8", False)
+        precision_constraints = "prefer" if int8amp else "none"
         engine.build(
             model_config["onnx_opt_path"],
             strongly_typed=strongly_typed,
@@ -675,7 +813,11 @@ class DiffusionPipeline(ABC):
             bf16=bf16amp,
             int8=int8amp,
             input_profile=obj.get_input_profile(
-                opt_batch_size, opt_image_height, opt_image_width, static_batch=static_batch, static_shape=static_shape
+                opt_batch_size,
+                opt_image_height,
+                opt_image_width,
+                static_batch=static_batch,
+                static_shape=static_shape,
             ),
             enable_refit=model_config["do_engine_refit"],
             enable_all_tactics=enable_all_tactics,
@@ -688,31 +830,45 @@ class DiffusionPipeline(ABC):
         )
 
     def _refit_engine(self, obj, model_name, model_config):
-        assert model_config['weights_map_path']
-        with open(model_config['weights_map_path'], 'r') as fp_wts:
+        assert model_config["weights_map_path"]
+        with open(model_config["weights_map_path"], "r") as fp_wts:
             print(f"[I] Loading weights map: {model_config['weights_map_path']} ")
             [weights_name_mapping, weights_shape_mapping] = json.load(fp_wts)
 
-            if not os.path.exists(model_config['refit_weights_path']):
+            if not os.path.exists(model_config["refit_weights_path"]):
                 model = merge_loras(obj.get_model(), self.lora_loader)
                 refit_weights, updated_weight_names = engine_module.get_refit_weights(
-                    model.state_dict(), model_config["onnx_opt_path"], weights_name_mapping, weights_shape_mapping
+                    model.state_dict(),
+                    model_config["onnx_opt_path"],
+                    weights_name_mapping,
+                    weights_shape_mapping,
                 )
                 print(f"[I] Saving refit weights: {model_config['refit_weights_path']}")
-                torch.save((refit_weights, updated_weight_names), model_config["refit_weights_path"])
+                torch.save(
+                    (refit_weights, updated_weight_names),
+                    model_config["refit_weights_path"],
+                )
                 unload_torch_model(model)
             else:
-                print(f"[I] Loading refit weights: {model_config['refit_weights_path']}")
-                refit_weights, updated_weight_names = torch.load(model_config['refit_weights_path'])
+                print(
+                    f"[I] Loading refit weights: {model_config['refit_weights_path']}"
+                )
+                refit_weights, updated_weight_names = torch.load(
+                    model_config["refit_weights_path"]
+                )
             self.engine[model_name].refit(refit_weights, updated_weight_names)
 
     def _load_torch_models(self):
         # Load torch models
         for model_name, obj in self.models.items():
             if self.torch_fallback[model_name]:
-                self.torch_models[model_name] = obj.get_model(torch_inference=self.torch_inference)
+                self.torch_models[model_name] = obj.get_model(
+                    torch_inference=self.torch_inference
+                )
                 if self.low_vram:
-                    self.torch_models[model_name] = self.torch_models[model_name].to('cpu')
+                    self.torch_models[model_name] = self.torch_models[model_name].to(
+                        "cpu"
+                    )
                     torch.cuda.empty_cache()
 
     def load_engines(
@@ -827,8 +983,20 @@ class DiffusionPipeline(ABC):
 
             model_config = model_configs[model_name]
             engine = engine_module.Engine(model_config["engine_path"])
-            if not os.path.exists(model_config['engine_path']):
-                self._build_engine(obj, engine, model_config, opt_batch_size, opt_image_height, opt_image_width, optimization_level, static_batch, static_shape, enable_all_tactics, timing_cache)
+            if not os.path.exists(model_config["engine_path"]):
+                self._build_engine(
+                    obj,
+                    engine,
+                    model_config,
+                    opt_batch_size,
+                    opt_image_height,
+                    opt_image_width,
+                    optimization_level,
+                    static_batch,
+                    static_shape,
+                    enable_all_tactics,
+                    timing_cache,
+                )
             self.engine[model_name] = engine
 
         # Load and refit TensorRT engines
@@ -840,11 +1008,15 @@ class DiffusionPipeline(ABC):
             # For non low_vram case, the engines will remain in GPU memory from now on.
             assert self.engine[model_name].engine is None
             if not self.low_vram:
-                weight_streaming = getattr(obj, 'weight_streaming', False)
-                weight_streaming_budget_percentage = getattr(obj, 'weight_streaming_budget_percentage', None)
-                self.engine[model_name].load(weight_streaming, weight_streaming_budget_percentage)
+                weight_streaming = getattr(obj, "weight_streaming", False)
+                weight_streaming_budget_percentage = getattr(
+                    obj, "weight_streaming_budget_percentage", None
+                )
+                self.engine[model_name].load(
+                    weight_streaming, weight_streaming_budget_percentage
+                )
 
-            if model_config['do_engine_refit'] and self.lora_loader:
+            if model_config["do_engine_refit"] and self.lora_loader:
                 # For low_vram, using on-demand load and unload for refit.
                 if self.low_vram:
                     assert self.engine[model_name].engine is None
@@ -911,19 +1083,35 @@ class DiffusionPipeline(ABC):
         cudart.cudaStreamDestroy(self.stream)
         del self.stream
 
-    def initialize_latents(self, batch_size, unet_channels, latent_height, latent_width, latents_dtype=torch.float32):
+    def initialize_latents(
+        self,
+        batch_size,
+        unet_channels,
+        latent_height,
+        latent_width,
+        latents_dtype=torch.float32,
+    ):
         latents_shape = (batch_size, unet_channels, latent_height, latent_width)
-        latents = torch.randn(latents_shape, device=self.device, dtype=latents_dtype, generator=self.generator)
+        latents = torch.randn(
+            latents_shape,
+            device=self.device,
+            dtype=latents_dtype,
+            generator=self.generator,
+        )
         # Scale the initial noise by the standard deviation required by the scheduler
         latents = latents * self.scheduler.init_noise_sigma
         return latents
 
     def save_image(self, images, pipeline, prompt, seed):
         # Save image
-        prompt_prefix = ''.join(set([prompt[i].replace(' ','_')[:10] for i in range(len(prompt))]))
-        image_name_prefix = '-'.join([pipeline, prompt_prefix, str(seed)])
-        image_name_suffix = 'torch' if self.torch_inference else 'trt'
-        image_module.save_image(images, self.output_dir, image_name_prefix, image_name_suffix)
+        prompt_prefix = "".join(
+            set([prompt[i].replace(" ", "_")[:10] for i in range(len(prompt))])
+        )
+        image_name_prefix = "-".join([pipeline, prompt_prefix, str(seed)])
+        image_name_suffix = "torch" if self.torch_inference else "trt"
+        image_module.save_image(
+            images, self.output_dir, image_name_prefix, image_name_suffix
+        )
 
     @abstractmethod
     def print_summary(self):

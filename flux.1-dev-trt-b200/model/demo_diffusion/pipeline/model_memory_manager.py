@@ -46,17 +46,24 @@ class ModelMemoryManager:
                 # creating engine object (load from plan file)
                 self.parent.engine[model_name].load()
                 # allocate device memory
-                _, shared_device_memory = cudart.cudaMalloc(self.parent.device_memory_sizes[model_name])
+                _, shared_device_memory = cudart.cudaMalloc(
+                    self.parent.device_memory_sizes[model_name]
+                )
                 self.parent.shared_device_memory = shared_device_memory
                 # creating context
-                self.parent.engine[model_name].activate(device_memory=self.parent.shared_device_memory)
+                self.parent.engine[model_name].activate(
+                    device_memory=self.parent.shared_device_memory
+                )
                 # creating input and output buffer
                 self.parent.engine[model_name].allocate_buffers(
-                    shape_dict=self.parent.shape_dicts[model_name], device=self.parent.device
+                    shape_dict=self.parent.shape_dicts[model_name],
+                    device=self.parent.device,
                 )
             else:
                 print(f"[I] Reloading torch model {model_name} from cpu.")
-                self.parent.torch_models[model_name] = self.parent.torch_models[model_name].to("cuda")
+                self.parent.torch_models[model_name] = self.parent.torch_models[
+                    model_name
+                ].to("cuda")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not self.low_vram:
@@ -69,5 +76,7 @@ class ModelMemoryManager:
                 cudart.cudaFree(self.parent.shared_device_memory)
             else:
                 print(f"[I] Offloading torch model {model_name} to cpu.")
-                self.parent.torch_models[model_name] = self.parent.torch_models[model_name].to("cpu")
+                self.parent.torch_models[model_name] = self.parent.torch_models[
+                    model_name
+                ].to("cpu")
                 torch.cuda.empty_cache()

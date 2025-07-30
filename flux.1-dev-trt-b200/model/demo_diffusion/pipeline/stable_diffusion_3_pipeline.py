@@ -46,9 +46,10 @@ class StableDiffusion3Pipeline:
     """
     Application showcasing the acceleration of Stable Diffusion 3 pipelines using NVidia TensorRT.
     """
+
     def __init__(
         self,
-        version='sd3',
+        version="sd3",
         pipeline_type=PIPELINE_TYPE.TXT2IMG,
         max_batch_size=16,
         shift=1.0,
@@ -56,14 +57,14 @@ class StableDiffusion3Pipeline:
         denoising_steps=50,
         denoising_percentage=0.6,
         input_image=None,
-        device='cuda',
-        output_dir='.',
+        device="cuda",
+        output_dir=".",
         hf_token=None,
         verbose=False,
         nvtx_profile=False,
         use_cuda_graph=False,
-        framework_model_dir='pytorch_model',
-        torch_inference='',
+        framework_model_dir="pytorch_model",
+        torch_inference="",
     ):
         """
         Initializes the Stable Diffusion 3 pipeline.
@@ -108,7 +109,9 @@ class StableDiffusion3Pipeline:
         self.cfg_scale = cfg_scale
         self.denoising_steps = denoising_steps
         self.input_image = input_image
-        self.denoising_percentage = denoising_percentage if input_image is not None else 1.0
+        self.denoising_percentage = (
+            denoising_percentage if input_image is not None else 1.0
+        )
 
         self.framework_model_dir = framework_model_dir
         self.output_dir = output_dir
@@ -126,12 +129,12 @@ class StableDiffusion3Pipeline:
 
         # Pipeline type
         self.pipeline_type = pipeline_type
-        self.stages = ['clip_g', 'clip_l', 't5xxl', 'mmdit', 'vae_decoder']
+        self.stages = ["clip_g", "clip_l", "t5xxl", "mmdit", "vae_decoder"]
         if input_image is not None:
-            self.stages += ['vae_encoder']
+            self.stages += ["vae_encoder"]
 
         self.config = {}
-        self.config['clip_hidden_states'] = True
+        self.config["clip_hidden_states"] = True
         self.torch_inference = torch_inference
         if self.torch_inference:
             torch._inductor.config.conv_1x1_as_mm = True
@@ -161,8 +164,18 @@ class StableDiffusion3Pipeline:
             self.generator = torch.Generator(device="cuda").manual_seed(seed)
 
         # Create CUDA events and stream
-        for stage in ['clip_g', 'clip_l', 't5xxl', 'denoise', 'vae_encode', 'vae_decode']:
-            self.events[stage] = [cudart.cudaEventCreate()[1], cudart.cudaEventCreate()[1]]
+        for stage in [
+            "clip_g",
+            "clip_l",
+            "t5xxl",
+            "denoise",
+            "vae_encode",
+            "vae_decode",
+        ]:
+            self.events[stage] = [
+                cudart.cudaEventCreate()[1],
+                cudart.cudaEventCreate()[1],
+            ]
         self.stream = cudart.cudaStreamCreate()[1]
 
         # Allocate TensorRT I/O buffers
@@ -170,7 +183,12 @@ class StableDiffusion3Pipeline:
             for model_name, obj in self.models.items():
                 if self.torch_fallback[model_name]:
                     continue
-                self.engine[model_name].allocate_buffers(shape_dict=obj.get_shape_dict(batch_size, image_height, image_width), device=self.device)
+                self.engine[model_name].allocate_buffers(
+                    shape_dict=obj.get_shape_dict(
+                        batch_size, image_height, image_width
+                    ),
+                    device=self.device,
+                )
 
     def teardown(self):
         for e in self.events.values():
@@ -186,13 +204,23 @@ class StableDiffusion3Pipeline:
         cudart.cudaStreamDestroy(self.stream)
         del self.stream
 
-    def getOnnxPath(self, model_name, onnx_dir, opt=True, suffix=''):
-        onnx_model_dir = os.path.join(onnx_dir, model_name+suffix+('.opt' if opt else ''))
+    def getOnnxPath(self, model_name, onnx_dir, opt=True, suffix=""):
+        onnx_model_dir = os.path.join(
+            onnx_dir, model_name + suffix + (".opt" if opt else "")
+        )
         os.makedirs(onnx_model_dir, exist_ok=True)
-        return os.path.join(onnx_model_dir, 'model.onnx')
+        return os.path.join(onnx_model_dir, "model.onnx")
 
-    def getEnginePath(self, model_name, engine_dir, enable_refit=False, suffix=''):
-        return os.path.join(engine_dir, model_name+suffix+('.refit' if enable_refit else '')+'.trt'+trt.__version__+'.plan')
+    def getEnginePath(self, model_name, engine_dir, enable_refit=False, suffix=""):
+        return os.path.join(
+            engine_dir,
+            model_name
+            + suffix
+            + (".refit" if enable_refit else "")
+            + ".trt"
+            + trt.__version__
+            + ".plan",
+        )
 
     def loadEngines(
         self,
@@ -244,51 +272,105 @@ class StableDiffusion3Pipeline:
                 pathlib.Path(directory).mkdir(parents=True)
 
         # Load pipeline models
-        models_args = {'version': self.version, 'pipeline': self.pipeline_type, 'device': self.device,
-            'hf_token': self.hf_token, 'verbose': self.verbose, 'framework_model_dir': framework_model_dir,
-            'max_batch_size': self.max_batch_size}
+        models_args = {
+            "version": self.version,
+            "pipeline": self.pipeline_type,
+            "device": self.device,
+            "hf_token": self.hf_token,
+            "verbose": self.verbose,
+            "framework_model_dir": framework_model_dir,
+            "max_batch_size": self.max_batch_size,
+        }
 
         # Load text tokenizer
         self.tokenizer = SD3Tokenizer()
 
         # Load text encoders
-        if 'clip_g' in self.stages:
-            self.models['clip_g'] = SD3_CLIPGModel(**models_args, fp16=True, pooled_output=True)
+        if "clip_g" in self.stages:
+            self.models["clip_g"] = SD3_CLIPGModel(
+                **models_args, fp16=True, pooled_output=True
+            )
 
-        if 'clip_l' in self.stages:
-            self.models['clip_l'] = SD3_CLIPLModel(**models_args, fp16=True, pooled_output=True)
+        if "clip_l" in self.stages:
+            self.models["clip_l"] = SD3_CLIPLModel(
+                **models_args, fp16=True, pooled_output=True
+            )
 
-        if 't5xxl' in self.stages:
-            self.models['t5xxl'] = SD3_T5XXLModel(**models_args, fp16=True, embedding_dim=get_clip_embedding_dim(self.version, self.pipeline_type))
+        if "t5xxl" in self.stages:
+            self.models["t5xxl"] = SD3_T5XXLModel(
+                **models_args,
+                fp16=True,
+                embedding_dim=get_clip_embedding_dim(self.version, self.pipeline_type),
+            )
 
         # Load MMDiT model
-        if 'mmdit' in self.stages:
-            self.models['mmdit'] = SD3_MMDiTModel(**models_args, fp16=True, shift=self.shift)
+        if "mmdit" in self.stages:
+            self.models["mmdit"] = SD3_MMDiTModel(
+                **models_args, fp16=True, shift=self.shift
+            )
 
         # Load VAE Encoder model
-        if 'vae_encoder' in self.stages:
-            self.models['vae_encoder'] = SD3_VAEEncoderModel(**models_args, fp16=True)
+        if "vae_encoder" in self.stages:
+            self.models["vae_encoder"] = SD3_VAEEncoderModel(**models_args, fp16=True)
 
         # Load VAE Decoder model
-        if 'vae_decoder' in self.stages:
-            self.models['vae_decoder'] = SD3_VAEDecoderModel(**models_args, fp16=True)
+        if "vae_decoder" in self.stages:
+            self.models["vae_decoder"] = SD3_VAEDecoderModel(**models_args, fp16=True)
 
         # Configure pipeline models to load
         model_names = self.models.keys()
         # Torch fallback
-        self.torch_fallback = dict(zip(model_names, [self.torch_inference or model_name in ('t5xxl') for model_name in model_names]))
+        self.torch_fallback = dict(
+            zip(
+                model_names,
+                [
+                    self.torch_inference or model_name in ("t5xxl")
+                    for model_name in model_names
+                ],
+            )
+        )
 
-        onnx_path = dict(zip(model_names, [self.getOnnxPath(model_name, onnx_dir, opt=False) for model_name in model_names]))
-        onnx_opt_path = dict(zip(model_names, [self.getOnnxPath(model_name, onnx_dir) for model_name in model_names]))
-        engine_path = dict(zip(model_names, [self.getEnginePath(model_name, engine_dir) for model_name in model_names]))
+        onnx_path = dict(
+            zip(
+                model_names,
+                [
+                    self.getOnnxPath(model_name, onnx_dir, opt=False)
+                    for model_name in model_names
+                ],
+            )
+        )
+        onnx_opt_path = dict(
+            zip(
+                model_names,
+                [self.getOnnxPath(model_name, onnx_dir) for model_name in model_names],
+            )
+        )
+        engine_path = dict(
+            zip(
+                model_names,
+                [
+                    self.getEnginePath(model_name, engine_dir)
+                    for model_name in model_names
+                ],
+            )
+        )
 
         for model_name, obj in self.models.items():
             if self.torch_fallback[model_name]:
                 continue
             # Export models to ONNX
-            do_export_onnx = not os.path.exists(engine_path[model_name]) and not os.path.exists(onnx_opt_path[model_name])
+            do_export_onnx = not os.path.exists(
+                engine_path[model_name]
+            ) and not os.path.exists(onnx_opt_path[model_name])
             if do_export_onnx:
-                obj.export_onnx(onnx_path[model_name], onnx_opt_path[model_name], onnx_opset, opt_image_height, opt_image_width, static_shape=static_shape)
+                obj.export_onnx(
+                    onnx_path[model_name],
+                    onnx_opt_path[model_name],
+                    onnx_opset,
+                    opt_image_height,
+                    opt_image_width,
+                    static_shape=static_shape,
+                )
 
         # Build TensorRT engines
         for model_name, obj in self.models.items():
@@ -296,19 +378,27 @@ class StableDiffusion3Pipeline:
                 continue
             engine = engine_module.Engine(engine_path[model_name])
             if not os.path.exists(engine_path[model_name]):
-                update_output_names = obj.get_output_names() + obj.extra_output_names if obj.extra_output_names else None
-                extra_build_args = {'verbose': self.verbose}
+                update_output_names = (
+                    obj.get_output_names() + obj.extra_output_names
+                    if obj.extra_output_names
+                    else None
+                )
+                extra_build_args = {"verbose": self.verbose}
                 fp16amp = obj.fp16
-                engine.build(onnx_opt_path[model_name],
+                engine.build(
+                    onnx_opt_path[model_name],
                     fp16=fp16amp,
                     input_profile=obj.get_input_profile(
-                        opt_batch_size, opt_image_height, opt_image_width,
-                        static_batch=static_batch, static_shape=static_shape
+                        opt_batch_size,
+                        opt_image_height,
+                        opt_image_width,
+                        static_batch=static_batch,
+                        static_shape=static_shape,
                     ),
                     enable_all_tactics=enable_all_tactics,
                     timing_cache=timing_cache,
                     update_output_names=update_output_names,
-                    verbose=self.verbose
+                    verbose=self.verbose,
                 )
             self.engine[model_name] = engine
 
@@ -320,8 +410,10 @@ class StableDiffusion3Pipeline:
 
         # Load torch models
         for model_name, obj in self.models.items():
-            if self.torch_fallback[model_name] or model_name == 'mmdit':
-                self.torch_models[model_name] = obj.get_model(torch_inference=self.torch_inference)
+            if self.torch_fallback[model_name] or model_name == "mmdit":
+                self.torch_models[model_name] = obj.get_model(
+                    torch_inference=self.torch_inference
+                )
 
     def calculateMaxDeviceMemory(self):
         max_device_memory = 0
@@ -342,10 +434,17 @@ class StableDiffusion3Pipeline:
         engine = self.engine[model_name]
         return engine.infer(feed_dict, self.stream, use_cuda_graph=self.use_cuda_graph)
 
-    def initialize_latents(self, batch_size, unet_channels, latent_height, latent_width):
-        return torch.ones(batch_size, unet_channels, latent_height, latent_width, device="cuda") * 0.0609
+    def initialize_latents(
+        self, batch_size, unet_channels, latent_height, latent_width
+    ):
+        return (
+            torch.ones(
+                batch_size, unet_channels, latent_height, latent_width, device="cuda"
+            )
+            * 0.0609
+        )
 
-    def profile_start(self, name, color='blue'):
+    def profile_start(self, name, color="blue"):
         if self.nvtx_profile:
             self.markers[name] = nvtx.start_range(message=name, color=color)
         if name in self.events:
@@ -358,38 +457,92 @@ class StableDiffusion3Pipeline:
             nvtx.end_range(self.markers[name])
 
     def print_summary(self, denoising_steps, walltime_ms, batch_size):
-        print('|-----------------|--------------|')
-        print('| {:^15} | {:^12} |'.format('Module', 'Latency'))
-        print('|-----------------|--------------|')
-        if 'vae_encoder' in self.stages:
-            print('| {:^15} | {:>9.2f} ms |'.format('VAE Encoder', cudart.cudaEventElapsedTime(self.events['vae_encode'][0], self.events['vae_encode'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('CLIP-G', cudart.cudaEventElapsedTime(self.events['clip_g'][0], self.events['clip_g'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('CLIP-L', cudart.cudaEventElapsedTime(self.events['clip_l'][0], self.events['clip_l'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('T5XXL', cudart.cudaEventElapsedTime(self.events['t5xxl'][0], self.events['t5xxl'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('MMDiT'+' x '+str(denoising_steps), cudart.cudaEventElapsedTime(self.events['denoise'][0], self.events['denoise'][1])[1]))
-        print('| {:^15} | {:>9.2f} ms |'.format('VAE Decoder', cudart.cudaEventElapsedTime(self.events['vae_decode'][0], self.events['vae_decode'][1])[1]))
-        print('|-----------------|--------------|')
-        print('| {:^15} | {:>9.2f} ms |'.format('Pipeline', walltime_ms))
-        print('|-----------------|--------------|')
-        print('Throughput: {:.2f} image/s'.format(batch_size*1000./walltime_ms))
+        print("|-----------------|--------------|")
+        print("| {:^15} | {:^12} |".format("Module", "Latency"))
+        print("|-----------------|--------------|")
+        if "vae_encoder" in self.stages:
+            print(
+                "| {:^15} | {:>9.2f} ms |".format(
+                    "VAE Encoder",
+                    cudart.cudaEventElapsedTime(
+                        self.events["vae_encode"][0], self.events["vae_encode"][1]
+                    )[1],
+                )
+            )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "CLIP-G",
+                cudart.cudaEventElapsedTime(
+                    self.events["clip_g"][0], self.events["clip_g"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "CLIP-L",
+                cudart.cudaEventElapsedTime(
+                    self.events["clip_l"][0], self.events["clip_l"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "T5XXL",
+                cudart.cudaEventElapsedTime(
+                    self.events["t5xxl"][0], self.events["t5xxl"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "MMDiT" + " x " + str(denoising_steps),
+                cudart.cudaEventElapsedTime(
+                    self.events["denoise"][0], self.events["denoise"][1]
+                )[1],
+            )
+        )
+        print(
+            "| {:^15} | {:>9.2f} ms |".format(
+                "VAE Decoder",
+                cudart.cudaEventElapsedTime(
+                    self.events["vae_decode"][0], self.events["vae_decode"][1]
+                )[1],
+            )
+        )
+        print("|-----------------|--------------|")
+        print("| {:^15} | {:>9.2f} ms |".format("Pipeline", walltime_ms))
+        print("|-----------------|--------------|")
+        print("Throughput: {:.2f} image/s".format(batch_size * 1000.0 / walltime_ms))
 
     def save_image(self, images, pipeline, prompt, seed):
         # Save image
-        image_name_prefix = pipeline+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(len(prompt))]))+'-'+str(seed)+'-'
-        image_name_suffix = 'torch' if self.torch_inference else 'trt'
-        image_module.save_image(images, self.output_dir, image_name_prefix, image_name_suffix)
+        image_name_prefix = (
+            pipeline
+            + "".join(
+                set(
+                    ["-" + prompt[i].replace(" ", "_")[:10] for i in range(len(prompt))]
+                )
+            )
+            + "-"
+            + str(seed)
+            + "-"
+        )
+        image_name_suffix = "torch" if self.torch_inference else "trt"
+        image_module.save_image(
+            images, self.output_dir, image_name_prefix, image_name_suffix
+        )
 
     def encode_prompt(self, prompt, negative_prompt):
         def encode_token_weights(model_name, token_weight_pairs):
-            self.profile_start(model_name, color='green')
+            self.profile_start(model_name, color="green")
 
             tokens = list(map(lambda a: a[0], token_weight_pairs[0]))
             tokens = torch.tensor([tokens], dtype=torch.int64, device=self.device)
             if self.torch_inference or self.torch_fallback[model_name]:
                 out, pooled = self.torch_models[model_name](tokens)
             else:
-                trt_out = self.runEngine(model_name, {'input_ids': tokens})
-                out, pooled = trt_out['text_embeddings'], trt_out["pooled_output"]
+                trt_out = self.runEngine(model_name, {"input_ids": tokens})
+                out, pooled = trt_out["text_embeddings"], trt_out["pooled_output"]
 
             self.profile_stop(model_name)
 
@@ -402,21 +555,31 @@ class StableDiffusion3Pipeline:
 
         def tokenize(prompt):
             tokens = self.tokenizer.tokenize_with_weights(prompt)
-            l_out, l_pooled = encode_token_weights('clip_l', tokens["l"])
-            g_out, g_pooled = encode_token_weights('clip_g', tokens["g"])
-            t5_out, _ = encode_token_weights('t5xxl', tokens["t5xxl"])
+            l_out, l_pooled = encode_token_weights("clip_l", tokens["l"])
+            g_out, g_pooled = encode_token_weights("clip_g", tokens["g"])
+            t5_out, _ = encode_token_weights("t5xxl", tokens["t5xxl"])
             lg_out = torch.cat([l_out, g_out], dim=-1)
             lg_out = torch.nn.functional.pad(lg_out, (0, 4096 - lg_out.shape[-1]))
 
-            return torch.cat([lg_out, t5_out], dim=-2), torch.cat((l_pooled, g_pooled), dim=-1)
+            return torch.cat([lg_out, t5_out], dim=-2), torch.cat(
+                (l_pooled, g_pooled), dim=-1
+            )
 
         conditioning = tokenize(prompt[0])
         neg_conditioning = tokenize(negative_prompt[0])
         return conditioning, neg_conditioning
 
-    def denoise_latent(self, latent, conditioning, neg_conditioning, model_name='mmdit'):
+    def denoise_latent(
+        self, latent, conditioning, neg_conditioning, model_name="mmdit"
+    ):
         def get_noise(latent):
-            return torch.randn(latent.size(), dtype=torch.float32, layout=latent.layout, generator=self.generator, device="cuda").to(latent.dtype)
+            return torch.randn(
+                latent.size(),
+                dtype=torch.float32,
+                layout=latent.layout,
+                generator=self.generator,
+                device="cuda",
+            ).to(latent.dtype)
 
         def get_sigmas(sampling, steps):
             start = sampling.timestep(sampling.sigma_max)
@@ -436,7 +599,7 @@ class StableDiffusion3Pipeline:
 
         def fix_cond(cond):
             cond, pooled = (cond[0].half().cuda(), cond[1].half().cuda())
-            return { "c_crossattn": cond, "y": pooled }
+            return {"c_crossattn": cond, "y": pooled}
 
         def cfg_denoiser(x, timestep, cond, uncond, cond_scale):
             # Run cond and uncond in a batch together
@@ -446,56 +609,73 @@ class StableDiffusion3Pipeline:
             y = torch.cat([cond["y"], uncond["y"]])
             if self.torch_inference:
                 with torch.autocast("cuda", dtype=torch.float16):
-                    batched = self.torch_models[model_name](sample, sigma, c_crossattn=c_crossattn, y=y)
+                    batched = self.torch_models[model_name](
+                        sample, sigma, c_crossattn=c_crossattn, y=y
+                    )
             else:
-                input_dict = {'sample': sample, 'sigma': sigma, 'c_crossattn': c_crossattn, 'y': y}
-                batched = self.runEngine(model_name, input_dict)['latent']
+                input_dict = {
+                    "sample": sample,
+                    "sigma": sigma,
+                    "c_crossattn": c_crossattn,
+                    "y": y,
+                }
+                batched = self.runEngine(model_name, input_dict)["latent"]
 
             # Then split and apply CFG Scaling
             pos_out, neg_out = batched.chunk(2)
             scaled = neg_out + (pos_out - neg_out) * cond_scale
             return scaled
 
-        self.profile_start('denoise', color='blue')
+        self.profile_start("denoise", color="blue")
 
         latent = latent.half().cuda()
         noise = get_noise(latent).cuda()
-        sigmas = get_sigmas(self.torch_models[model_name].model_sampling, self.denoising_steps).cuda()
-        sigmas = sigmas[int(self.denoising_steps * (1 - self.denoising_percentage)):]
+        sigmas = get_sigmas(
+            self.torch_models[model_name].model_sampling, self.denoising_steps
+        ).cuda()
+        sigmas = sigmas[int(self.denoising_steps * (1 - self.denoising_percentage)) :]
         conditioning = fix_cond(conditioning)
         neg_conditioning = fix_cond(neg_conditioning)
 
-        noise_scaled = self.torch_models[model_name].model_sampling.noise_scaling(sigmas[0], noise, latent, max_denoise(sigmas))
-        extra_args = { "cond": conditioning, "uncond": neg_conditioning, "cond_scale": self.cfg_scale }
+        noise_scaled = self.torch_models[model_name].model_sampling.noise_scaling(
+            sigmas[0], noise, latent, max_denoise(sigmas)
+        )
+        extra_args = {
+            "cond": conditioning,
+            "uncond": neg_conditioning,
+            "cond_scale": self.cfg_scale,
+        }
         latent = sample_euler(cfg_denoiser, noise_scaled, sigmas, extra_args=extra_args)
         latent = SD3LatentFormat().process_out(latent)
 
-        self.profile_stop('denoise')
+        self.profile_stop("denoise")
 
         return latent
 
     def encode_image(self):
         self.input_image = self.input_image.to(self.device)
-        self.profile_start('vae_encode', color='orange')
+        self.profile_start("vae_encode", color="orange")
         if self.torch_inference:
             with torch.autocast("cuda", dtype=torch.float16):
-                latent = self.torch_models['vae_encoder'](self.input_image)
+                latent = self.torch_models["vae_encoder"](self.input_image)
         else:
-            latent = self.runEngine('vae_encoder', {'images': self.input_image})['latent']
+            latent = self.runEngine("vae_encoder", {"images": self.input_image})[
+                "latent"
+            ]
 
         latent = SD3LatentFormat().process_in(latent)
-        self.profile_stop('vae_encode')
+        self.profile_stop("vae_encode")
         return latent
 
     def decode_latent(self, latent):
-        self.profile_start('vae_decode', color='red')
+        self.profile_start("vae_decode", color="red")
         if self.torch_inference:
             with torch.autocast("cuda", dtype=torch.float16):
-                image = self.torch_models['vae_decoder'](latent)
+                image = self.torch_models["vae_decoder"](latent)
         else:
-            image = self.runEngine('vae_decoder', {'latent': latent})['images']
+            image = self.runEngine("vae_decoder", {"latent": latent})["images"]
         image = image.float()
-        self.profile_stop('vae_decode')
+        self.profile_stop("vae_decode")
         return image
 
     def infer(
@@ -539,10 +719,12 @@ class StableDiffusion3Pipeline:
             e2e_tic = time.perf_counter()
 
             # Initialize Latents
-            latent = self.initialize_latents(batch_size=batch_size,
+            latent = self.initialize_latents(
+                batch_size=batch_size,
                 unet_channels=16,
                 latent_height=latent_height,
-                latent_width=latent_width)
+                latent_width=latent_width,
+            )
 
             # Encode input image
             if self.input_image is not None:
@@ -560,25 +742,51 @@ class StableDiffusion3Pipeline:
             torch.cuda.synchronize()
             e2e_toc = time.perf_counter()
 
-        walltime_ms = (e2e_toc - e2e_tic) * 1000.
+        walltime_ms = (e2e_toc - e2e_tic) * 1000.0
         if not warmup:
             num_inference_steps = int(self.denoising_steps * self.denoising_percentage)
             self.print_summary(num_inference_steps, walltime_ms, batch_size)
             if save_image:
                 # post-process images
-                images = ((images + 1) * 255 / 2).clamp(0, 255).detach().permute(0, 2, 3, 1).round().type(torch.uint8).cpu().numpy()
-                self.save_image(images, self.pipeline_type.name.lower(), prompt, self.seed)
+                images = (
+                    ((images + 1) * 255 / 2)
+                    .clamp(0, 255)
+                    .detach()
+                    .permute(0, 2, 3, 1)
+                    .round()
+                    .type(torch.uint8)
+                    .cpu()
+                    .numpy()
+                )
+                self.save_image(
+                    images, self.pipeline_type.name.lower(), prompt, self.seed
+                )
 
         return images, walltime_ms
 
-    def run(self, prompt, negative_prompt, height, width, batch_size, batch_count, num_warmup_runs, use_cuda_graph, **kwargs):
+    def run(
+        self,
+        prompt,
+        negative_prompt,
+        height,
+        width,
+        batch_size,
+        batch_count,
+        num_warmup_runs,
+        use_cuda_graph,
+        **kwargs,
+    ):
         # Process prompt
         if not isinstance(prompt, list):
-            raise ValueError(f"`prompt` must be of type `str` list, but is {type(prompt)}")
+            raise ValueError(
+                f"`prompt` must be of type `str` list, but is {type(prompt)}"
+            )
         prompt = prompt * batch_size
 
         if not isinstance(negative_prompt, list):
-            raise ValueError(f"`--negative-prompt` must be of type `str` list, but is {type(negative_prompt)}")
+            raise ValueError(
+                f"`--negative-prompt` must be of type `str` list, but is {type(negative_prompt)}"
+            )
         if len(negative_prompt) == 1:
             negative_prompt = negative_prompt * batch_size
 
@@ -586,7 +794,9 @@ class StableDiffusion3Pipeline:
         if num_warmup_runs > 0:
             print("[I] Warming up ..")
             for _ in range(num_warmup_runs):
-                self.infer(prompt, negative_prompt, height, width, warmup=True, **kwargs)
+                self.infer(
+                    prompt, negative_prompt, height, width, warmup=True, **kwargs
+                )
 
         for _ in range(batch_count):
             print("[I] Running StableDiffusion3 pipeline")

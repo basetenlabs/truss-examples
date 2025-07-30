@@ -110,10 +110,18 @@ class CLIPModel(base_model.BaseModel):
 
     def get_model(self, torch_inference=""):
         model_opts = (
-            {"torch_dtype": torch.float16} if self.fp16 else {"torch_dtype": torch.bfloat16} if self.bf16 else {}
+            {"torch_dtype": torch.float16}
+            if self.fp16
+            else {"torch_dtype": torch.bfloat16}
+            if self.bf16
+            else {}
         )
-        clip_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
-        if not load.is_model_cached(clip_model_dir, model_opts, self.hf_safetensor, model_name="model"):
+        clip_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
+        if not load.is_model_cached(
+            clip_model_dir, model_opts, self.hf_safetensor, model_name="model"
+        ):
             model = CLIPTextModel.from_pretrained(
                 self.path,
                 subfolder=self.subfolder,
@@ -124,7 +132,9 @@ class CLIPModel(base_model.BaseModel):
             model.save_pretrained(clip_model_dir, **model_opts)
         else:
             print(f"[I] Load CLIPTextModel model from: {clip_model_dir}")
-            model = CLIPTextModel.from_pretrained(clip_model_dir, **model_opts).to(self.device)
+            model = CLIPTextModel.from_pretrained(clip_model_dir, **model_opts).to(
+                self.device
+            )
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
 
@@ -146,13 +156,19 @@ class CLIPModel(base_model.BaseModel):
             dynamic_axes["pooled_embeddings"] = {0: "B"}
         return dynamic_axes
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         self.check_dims(batch_size, image_height, image_width)
         min_batch, max_batch, _, _, _, _, _, _, _, _ = self.get_minmax_dims(
             batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
-            "input_ids": [(min_batch, self.text_maxlen), (batch_size, self.text_maxlen), (max_batch, self.text_maxlen)]
+            "input_ids": [
+                (min_batch, self.text_maxlen),
+                (batch_size, self.text_maxlen),
+                (max_batch, self.text_maxlen),
+            ]
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
@@ -169,7 +185,9 @@ class CLIPModel(base_model.BaseModel):
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         self.check_dims(batch_size, image_height, image_width)
-        return torch.zeros(batch_size, self.text_maxlen, dtype=torch.int32, device=self.device)
+        return torch.zeros(
+            batch_size, self.text_maxlen, dtype=torch.int32, device=self.device
+        )
 
     def optimize(self, onnx_graph):
         opt = optimizer.Optimizer(onnx_graph, verbose=self.verbose)
@@ -181,14 +199,19 @@ class CLIPModel(base_model.BaseModel):
         opt.info(self.name + ": fold constants")
         opt.infer_shapes()
         opt.info(self.name + ": shape inference")
-        opt.select_outputs(keep_outputs, names=self.get_output_names())  # rename network outputs
+        opt.select_outputs(
+            keep_outputs, names=self.get_output_names()
+        )  # rename network outputs
         opt.info(self.name + ": rename network output(s)")
         opt_onnx_graph = opt.cleanup(return_onnx=True)
         if "hidden_states" in self.extra_output_names:
-            opt_onnx_graph = opt.clip_add_hidden_states(self.hidden_layer_offset, return_onnx=True)
+            opt_onnx_graph = opt.clip_add_hidden_states(
+                self.hidden_layer_offset, return_onnx=True
+            )
             opt.info(self.name + ": added hidden_states")
         opt.info(self.name + ": finished")
         return opt_onnx_graph
+
 
 class CLIPWithProjModel(CLIPModel):
     def __init__(
@@ -205,7 +228,6 @@ class CLIPWithProjModel(CLIPModel):
         output_hidden_states=False,
         subfolder="text_encoder_2",
     ):
-
         super(CLIPWithProjModel, self).__init__(
             version,
             pipeline,
@@ -222,9 +244,17 @@ class CLIPWithProjModel(CLIPModel):
         self.subfolder = subfolder
 
     def get_model(self, torch_inference=""):
-        model_opts = {"variant": "fp16", "torch_dtype": torch.float16} if self.fp16 else {"torch_dtype": torch.bfloat16}
-        clip_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
-        if not load.is_model_cached(clip_model_dir, model_opts, self.hf_safetensor, model_name="model"):
+        model_opts = (
+            {"variant": "fp16", "torch_dtype": torch.float16}
+            if self.fp16
+            else {"torch_dtype": torch.bfloat16}
+        )
+        clip_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
+        if not load.is_model_cached(
+            clip_model_dir, model_opts, self.hf_safetensor, model_name="model"
+        ):
             model = CLIPTextModelWithProjection.from_pretrained(
                 self.path,
                 subfolder=self.subfolder,
@@ -235,7 +265,9 @@ class CLIPWithProjModel(CLIPModel):
             model.save_pretrained(clip_model_dir, **model_opts)
         else:
             print(f"[I] Load CLIPTextModelWithProjection model from: {clip_model_dir}")
-            model = CLIPTextModelWithProjection.from_pretrained(clip_model_dir, **model_opts).to(self.device)
+            model = CLIPTextModelWithProjection.from_pretrained(
+                clip_model_dir, **model_opts
+            ).to(self.device)
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
 
@@ -252,13 +284,19 @@ class CLIPWithProjModel(CLIPModel):
             "text_embeddings": {0: "B"},
         }
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         self.check_dims(batch_size, image_height, image_width)
         min_batch, max_batch, _, _, _, _, _, _, _, _ = self.get_minmax_dims(
             batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
-            "input_ids": [(min_batch, self.text_maxlen), (batch_size, self.text_maxlen), (max_batch, self.text_maxlen)],
+            "input_ids": [
+                (min_batch, self.text_maxlen),
+                (batch_size, self.text_maxlen),
+                (max_batch, self.text_maxlen),
+            ],
             "attention_mask": [
                 (min_batch, self.text_maxlen),
                 (batch_size, self.text_maxlen),
@@ -280,9 +318,14 @@ class CLIPWithProjModel(CLIPModel):
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         self.check_dims(batch_size, image_height, image_width)
         return (
-            torch.zeros(batch_size, self.text_maxlen, dtype=torch.int32, device=self.device),
-            torch.zeros(batch_size, self.text_maxlen, dtype=torch.int32, device=self.device),
+            torch.zeros(
+                batch_size, self.text_maxlen, dtype=torch.int32, device=self.device
+            ),
+            torch.zeros(
+                batch_size, self.text_maxlen, dtype=torch.int32, device=self.device
+            ),
         )
+
 
 class SD3_CLIPGModel(CLIPModel):
     def __init__(
@@ -314,7 +357,9 @@ class SD3_CLIPGModel(CLIPModel):
             framework_model_dir=framework_model_dir,
             fp16=fp16,
             max_batch_size=max_batch_size,
-            embedding_dim=self.CLIPG_CONFIG["hidden_size"] if embedding_dim is None else embedding_dim,
+            embedding_dim=self.CLIPG_CONFIG["hidden_size"]
+            if embedding_dim is None
+            else embedding_dim,
         )
         self.subfolder = "text_encoders"
         if pooled_output:
@@ -330,7 +375,9 @@ class SD3_CLIPGModel(CLIPModel):
             hf_hub_download(
                 repo_id=self.path,
                 filename=clip_g_filename,
-                local_dir=load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, ""),
+                local_dir=load.get_checkpoint_dir(
+                    self.framework_model_dir, self.version, self.pipeline, ""
+                ),
                 subfolder=self.subfolder,
             )
         with safe_open(clip_g_model_path, framework="pt", device=self.device) as f:
@@ -360,7 +407,9 @@ class SD3_CLIPGModel(CLIPModel):
         opt.info(self.name + ": fold constants")
         opt.infer_shapes()
         opt.info(self.name + ": shape inference")
-        opt.select_outputs([0, 1], names=["text_embeddings", "pooled_output"])  # rename network output
+        opt.select_outputs(
+            [0, 1], names=["text_embeddings", "pooled_output"]
+        )  # rename network output
         opt.info(self.name + ": rename output[0] and output[1]")
         opt_onnx_graph = opt.cleanup(return_onnx=True)
         opt.info(self.name + ": finished")
@@ -412,7 +461,9 @@ class SD3_CLIPLModel(SD3_CLIPGModel):
             hf_hub_download(
                 repo_id=self.path,
                 filename=clip_l_filename,
-                local_dir=load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, ""),
+                local_dir=load.get_checkpoint_dir(
+                    self.framework_model_dir, self.version, self.pipeline, ""
+                ),
                 subfolder=self.subfolder,
             )
         with safe_open(clip_l_model_path, framework="pt", device=self.device) as f:
@@ -456,18 +507,28 @@ class SD3_T5XXLModel(CLIPModel):
             max_batch_size=max_batch_size,
             embedding_dim=embedding_dim,
         )
-        self.T5_CONFIG = {"d_ff": 10240, "d_model": 4096, "num_heads": 64, "num_layers": 24, "vocab_size": 32128}
+        self.T5_CONFIG = {
+            "d_ff": 10240,
+            "d_model": 4096,
+            "num_heads": 64,
+            "num_layers": 24,
+            "vocab_size": 32128,
+        }
         self.subfolder = "text_encoders"
 
     def get_model(self, torch_inference=""):
-        t5xxl_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
+        t5xxl_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
         t5xxl_filename = "t5xxl_fp16.safetensors"
         t5xxl_model_path = f"{t5xxl_model_dir}/{t5xxl_filename}"
         if not os.path.exists(t5xxl_model_path):
             hf_hub_download(
                 repo_id=self.path,
                 filename=t5xxl_filename,
-                local_dir=load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, ""),
+                local_dir=load.get_checkpoint_dir(
+                    self.framework_model_dir, self.version, self.pipeline, ""
+                ),
                 subfolder=self.subfolder,
             )
         with safe_open(t5xxl_model_path, framework="pt", device=self.device) as f:
@@ -490,7 +551,6 @@ class CLIPVisionWithProjModel(base_model.BaseModel):
         max_batch_size=1,
         subfolder="image_encoder",
     ):
-
         super(CLIPVisionWithProjModel, self).__init__(
             version,
             pipeline,
@@ -503,15 +563,24 @@ class CLIPVisionWithProjModel(base_model.BaseModel):
         self.subfolder = subfolder
 
     def get_model(self, torch_inference=""):
-        clip_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
+        clip_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
         if not os.path.exists(clip_model_dir):
             model = CLIPVisionModelWithProjection.from_pretrained(
-                self.path, subfolder=self.subfolder, use_safetensors=self.hf_safetensor, token=self.hf_token
+                self.path,
+                subfolder=self.subfolder,
+                use_safetensors=self.hf_safetensor,
+                token=self.hf_token,
             ).to(self.device)
             model.save_pretrained(clip_model_dir)
         else:
-            print(f"[I] Load CLIPVisionModelWithProjection model from: {clip_model_dir}")
-            model = CLIPVisionModelWithProjection.from_pretrained(clip_model_dir).to(self.device)
+            print(
+                f"[I] Load CLIPVisionModelWithProjection model from: {clip_model_dir}"
+            )
+            model = CLIPVisionModelWithProjection.from_pretrained(clip_model_dir).to(
+                self.device
+            )
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
 
@@ -528,7 +597,6 @@ class CLIPImageProcessorModel(base_model.BaseModel):
         max_batch_size=1,
         subfolder="feature_extractor",
     ):
-
         super(CLIPImageProcessorModel, self).__init__(
             version,
             pipeline,
@@ -541,11 +609,16 @@ class CLIPImageProcessorModel(base_model.BaseModel):
         self.subfolder = subfolder
 
     def get_model(self, torch_inference=""):
-        clip_model_dir = load.get_checkpoint_dir(self.framework_model_dir, self.version, self.pipeline, self.subfolder)
+        clip_model_dir = load.get_checkpoint_dir(
+            self.framework_model_dir, self.version, self.pipeline, self.subfolder
+        )
         # NOTE to(device) not supported
         if not os.path.exists(clip_model_dir):
             model = CLIPImageProcessor.from_pretrained(
-                self.path, subfolder=self.subfolder, use_safetensors=self.hf_safetensor, token=self.hf_token
+                self.path,
+                subfolder=self.subfolder,
+                use_safetensors=self.hf_safetensor,
+                token=self.hf_token,
             )
             model.save_pretrained(clip_model_dir)
         else:

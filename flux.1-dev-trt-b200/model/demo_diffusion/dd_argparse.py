@@ -46,7 +46,9 @@ def parse_key_value_pairs(string: str) -> Dict[str, str]:
 
         key_value_pair = key_value_pair.split(":")
         if len(key_value_pair) != 2:
-            raise argparse.ArgumentTypeError(f"Invalid key-value pair: {key_value_pair}. Must have length 2.")
+            raise argparse.ArgumentTypeError(
+                f"Invalid key-value pair: {key_value_pair}. Must have length 2."
+            )
         key, value = key_value_pair
         parsed[key] = value
 
@@ -81,22 +83,59 @@ def add_arguments(parser):
         ),
         help="Version of Stable Diffusion",
     )
-    parser.add_argument("prompt", nargs="*", help="Text prompt(s) to guide image generation")
     parser.add_argument(
-        "--negative-prompt", nargs="*", default=[""], help="The negative prompt(s) to guide the image generation."
+        "prompt", nargs="*", help="Text prompt(s) to guide image generation"
     )
-    parser.add_argument("--batch-size", type=int, default=1, choices=[1, 2, 4], help="Batch size (repeat prompt)")
     parser.add_argument(
-        "--batch-count", type=int, default=1, help="Number of images to generate in sequence, one at a time."
+        "--negative-prompt",
+        nargs="*",
+        default=[""],
+        help="The negative prompt(s) to guide the image generation.",
     )
-    parser.add_argument("--height", type=int, default=512, help="Height of image to generate (must be multiple of 8)")
-    parser.add_argument("--width", type=int, default=512, help="Height of image to generate (must be multiple of 8)")
-    parser.add_argument("--denoising-steps", type=int, default=30, help="Number of denoising steps")
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        choices=[1, 2, 4],
+        help="Batch size (repeat prompt)",
+    )
+    parser.add_argument(
+        "--batch-count",
+        type=int,
+        default=1,
+        help="Number of images to generate in sequence, one at a time.",
+    )
+    parser.add_argument(
+        "--height",
+        type=int,
+        default=512,
+        help="Height of image to generate (must be multiple of 8)",
+    )
+    parser.add_argument(
+        "--width",
+        type=int,
+        default=512,
+        help="Height of image to generate (must be multiple of 8)",
+    )
+    parser.add_argument(
+        "--denoising-steps", type=int, default=30, help="Number of denoising steps"
+    )
     parser.add_argument(
         "--scheduler",
         type=str,
         default=None,
-        choices=("DDIM", "DDPM", "EulerA", "Euler", "LCM", "LMSD", "PNDM", "UniPC", "DDPMWuerstchen", "FlowMatchEuler"),
+        choices=(
+            "DDIM",
+            "DDPM",
+            "EulerA",
+            "Euler",
+            "LCM",
+            "LMSD",
+            "PNDM",
+            "UniPC",
+            "DDPMWuerstchen",
+            "FlowMatchEuler",
+        ),
         help="Scheduler for diffusion process",
     )
     parser.add_argument(
@@ -125,7 +164,9 @@ def add_arguments(parser):
         default=None,
         help="Path to LoRA adaptor. Ex: 'latent-consistency/lcm-lora-sdv1-5'",
     )
-    parser.add_argument("--bf16", action="store_true", help="Run pipeline in BFloat16 precision")
+    parser.add_argument(
+        "--bf16", action="store_true", help="Run pipeline in BFloat16 precision"
+    )
 
     # ONNX export
     parser.add_argument(
@@ -135,7 +176,9 @@ def add_arguments(parser):
         choices=range(7, 20),
         help="Select ONNX opset version to target for exported models",
     )
-    parser.add_argument("--onnx-dir", default="onnx", help="Output directory for ONNX export")
+    parser.add_argument(
+        "--onnx-dir", default="onnx", help="Output directory for ONNX export"
+    )
     parser.add_argument(
         "--custom-onnx-paths",
         type=parse_key_value_pairs,
@@ -159,10 +202,16 @@ def add_arguments(parser):
     )
 
     # Framework model ckpt
-    parser.add_argument("--framework-model-dir", default="pytorch_model", help="Directory for HF saved models")
+    parser.add_argument(
+        "--framework-model-dir",
+        default="pytorch_model",
+        help="Directory for HF saved models",
+    )
 
     # TensorRT engine build
-    parser.add_argument("--engine-dir", default="engine", help="Output directory for TensorRT engines")
+    parser.add_argument(
+        "--engine-dir", default="engine", help="Output directory for TensorRT engines"
+    )
     parser.add_argument(
         "--custom-engine-paths",
         type=parse_key_value_pairs,
@@ -181,21 +230,36 @@ def add_arguments(parser):
         help=f"Set the builder optimization level to build the engine with. A higher level allows TensorRT to spend more building time for more optimization options. Must be one of {VALID_OPTIMIZATION_LEVELS}.",
     )
     parser.add_argument(
-        "--build-static-batch", action="store_true", help="Build TensorRT engines with fixed batch size."
+        "--build-static-batch",
+        action="store_true",
+        help="Build TensorRT engines with fixed batch size.",
     )
     parser.add_argument(
-        "--build-dynamic-shape", action="store_true", help="Build TensorRT engines with dynamic image shapes."
+        "--build-dynamic-shape",
+        action="store_true",
+        help="Build TensorRT engines with dynamic image shapes.",
     )
     parser.add_argument(
-        "--build-enable-refit", action="store_true", help="Enable Refit option in TensorRT engines during build."
+        "--build-enable-refit",
+        action="store_true",
+        help="Enable Refit option in TensorRT engines during build.",
     )
     parser.add_argument(
-        "--build-all-tactics", action="store_true", help="Build TensorRT engines using all tactic sources."
+        "--build-all-tactics",
+        action="store_true",
+        help="Build TensorRT engines using all tactic sources.",
     )
     parser.add_argument(
-        "--timing-cache", default=None, type=str, help="Path to the precached timing measurements to accelerate build."
+        "--timing-cache",
+        default=None,
+        type=str,
+        help="Path to the precached timing measurements to accelerate build.",
     )
-    parser.add_argument("--ws", action="store_true", help="Build TensorRT engines with weight streaming enabled.")
+    parser.add_argument(
+        "--ws",
+        action="store_true",
+        help="Build TensorRT engines with weight streaming enabled.",
+    )
 
     # Quantization configuration.
     parser.add_argument("--int8", action="store_true", help="Apply int8 quantization.")
@@ -229,10 +293,19 @@ def add_arguments(parser):
 
     # Inference
     parser.add_argument(
-        "--num-warmup-runs", type=int, default=5, help="Number of warmup runs before benchmarking performance"
+        "--num-warmup-runs",
+        type=int,
+        default=5,
+        help="Number of warmup runs before benchmarking performance",
     )
-    parser.add_argument("--use-cuda-graph", action="store_true", help="Enable cuda graph")
-    parser.add_argument("--nvtx-profile", action="store_true", help="Enable NVTX markers for performance profiling")
+    parser.add_argument(
+        "--use-cuda-graph", action="store_true", help="Enable cuda graph"
+    )
+    parser.add_argument(
+        "--nvtx-profile",
+        action="store_true",
+        help="Enable NVTX markers for performance profiling",
+    )
     parser.add_argument(
         "--torch-inference",
         default="",
@@ -249,14 +322,31 @@ def add_arguments(parser):
         action="store_true",
         help="[FLUX only] Optimize for low VRAM usage, possibly at the expense of inference performance. Disabled by default.",
     )
-    parser.add_argument("--seed", type=int, default=None, help="Seed for random generator to get consistent results")
-    parser.add_argument("--output-dir", default="output", help="Output directory for logs and image artifacts")
-    parser.add_argument("--hf-token", type=str, help="HuggingFace API access token for downloading model checkpoints")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Show verbose output")
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Seed for random generator to get consistent results",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="output",
+        help="Output directory for logs and image artifacts",
+    )
+    parser.add_argument(
+        "--hf-token",
+        type=str,
+        help="HuggingFace API access token for downloading model checkpoints",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Show verbose output"
+    )
     return parser
 
 
-def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dict[str, Any], Tuple]:
+def process_pipeline_args(
+    args: argparse.Namespace,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Tuple]:
     """Validate parsed arguments and process argument values.
 
     Some argument values are resolved or overwritten during processing.
@@ -286,9 +376,13 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
     # Handle batch size
     max_batch_size = 4
     if args.batch_size > max_batch_size:
-        raise ValueError(f"Batch size {args.batch_size} is larger than allowed {max_batch_size}.")
+        raise ValueError(
+            f"Batch size {args.batch_size} is larger than allowed {max_batch_size}."
+        )
 
-    if args.use_cuda_graph and (not args.build_static_batch or args.build_dynamic_shape):
+    if args.use_cuda_graph and (
+        not args.build_static_batch or args.build_dynamic_shape
+    ):
         raise ValueError(
             "Using CUDA graph requires static dimensions. Enable `--build-static-batch` and do not specify `--build-dynamic-shape`"
         )
@@ -308,15 +402,26 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
 
     # Quantized pipeline
     # int8 support
-    if args.int8 and not any(args.version.startswith(prefix) for prefix in ("xl", "1.4", "1.5", "2.1")):
-        raise ValueError("int8 quantization is only supported for SDXL, SD1.4, SD1.5 and SD2.1 pipelines.")
+    if args.int8 and not any(
+        args.version.startswith(prefix) for prefix in ("xl", "1.4", "1.5", "2.1")
+    ):
+        raise ValueError(
+            "int8 quantization is only supported for SDXL, SD1.4, SD1.5 and SD2.1 pipelines."
+        )
 
     # fp8 support
-    if args.fp8 and not (any(args.version.startswith(prefix) for prefix in ("xl", "1.4", "1.5", "2.1")) or is_flux):
-        raise ValueError("fp8 quantization is only supported for SDXL, SD1.4, SD1.5, SD2.1 and FLUX pipelines.")
+    if args.fp8 and not (
+        any(args.version.startswith(prefix) for prefix in ("xl", "1.4", "1.5", "2.1"))
+        or is_flux
+    ):
+        raise ValueError(
+            "fp8 quantization is only supported for SDXL, SD1.4, SD1.5, SD2.1 and FLUX pipelines."
+        )
 
     if args.fp8 and args.int8:
-        raise ValueError("Cannot apply both int8 and fp8 quantization, please choose only one.")
+        raise ValueError(
+            "Cannot apply both int8 and fp8 quantization, please choose only one."
+        )
 
     if args.fp8 and sm_version < 89:
         raise ValueError(
@@ -325,16 +430,21 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
 
     # TensorRT ModelOpt quantization level
     if args.quantization_level == 0.0:
+
         def override_quant_level(level: float, dtype_str: str):
             args.quantization_level = level
-            print(f"[W] The default quantization level has been set to {level} for {dtype_str}.")
+            print(
+                f"[W] The default quantization level has been set to {level} for {dtype_str}."
+            )
 
         if args.fp8:
             # L4 fp8 fMHA on Hopper not yet enabled.
             if sm_version == 90 and is_flux:
                 override_quant_level(3.0, "FP8")
             else:
-                override_quant_level(3.0 if args.version in ("1.4", "1.5") else 4.0, "FP8")
+                override_quant_level(
+                    3.0 if args.version in ("1.4", "1.5") else 4.0, "FP8"
+                )
 
         elif args.int8:
             override_quant_level(3.0, "INT8")
@@ -349,15 +459,24 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
 
     # Handle LoRA
     # FLUX canny and depth official LoRAs are not supported because they modify the transformer architecture, conflicting with refit
-    if args.lora_path and not any(args.version.startswith(prefix) for prefix in ("1.5", "2.1", "xl", "flux.1-dev", "flux.1-schnell")):
-        raise ValueError("LoRA adapter support is only supported for SD1.5, SD2.1, SDXL, FLUX.1-dev and FLUX.1-schnell pipelines")
+    if args.lora_path and not any(
+        args.version.startswith(prefix)
+        for prefix in ("1.5", "2.1", "xl", "flux.1-dev", "flux.1-schnell")
+    ):
+        raise ValueError(
+            "LoRA adapter support is only supported for SD1.5, SD2.1, SDXL, FLUX.1-dev and FLUX.1-schnell pipelines"
+        )
 
     if args.lora_weight:
         for weight in (weight for weight in args.lora_weight if not 0 <= weight <= 1):
-            raise ValueError(f"LoRA adapter weights must be between 0 and 1, provided {weight}")
+            raise ValueError(
+                f"LoRA adapter weights must be between 0 and 1, provided {weight}"
+            )
 
     if not 0 <= args.lora_scale <= 1:
-        raise ValueError(f"LoRA scale value must be between 0 and 1, provided {args.lora_scale}")
+        raise ValueError(
+            f"LoRA scale value must be between 0 and 1, provided {args.lora_scale}"
+        )
 
     # Force lora merge when fp8 or int8 is used with LoRA
     if args.build_enable_refit and args.lora_path and (args.int8 or args.fp8):
@@ -368,7 +487,9 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
 
     # Torch-fallback and Torch-inference
     if args.torch_fallback and not args.torch_inference:
-        assert is_flux or is_sd35, "PyTorch Fallback is only supported for Flux and Stable Diffusion 3.5 pipelines."
+        assert is_flux or is_sd35, (
+            "PyTorch Fallback is only supported for Flux and Stable Diffusion 3.5 pipelines."
+        )
         args.torch_fallback = args.torch_fallback.split(",")
 
     if args.torch_fallback and args.torch_inference:
@@ -379,7 +500,9 @@ def process_pipeline_args(args: argparse.Namespace) -> Tuple[Dict[str, Any], Dic
 
     # low-vram
     if args.low_vram:
-        assert is_flux or is_sd35, "low-vram mode is only supported for Flux and Stable Diffusion 3.5 pipelines."
+        assert is_flux or is_sd35, (
+            "low-vram mode is only supported for Flux and Stable Diffusion 3.5 pipelines."
+        )
 
     # Pack arguments
     kwargs_init_pipeline = {

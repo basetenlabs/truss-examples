@@ -63,7 +63,9 @@ class T5Model(base_model.BaseModel):
             self.framework_model_dir, self.version, self.pipeline, self.subfolder
         )
         if not os.path.exists(self.t5_model_dir):
-            self.config = AutoConfig.from_pretrained(self.path, subfolder=self.subfolder, token=self.hf_token)
+            self.config = AutoConfig.from_pretrained(
+                self.path, subfolder=self.subfolder, token=self.hf_token
+            )
         else:
             print(f"[I] Load T5Encoder Config from: {self.t5_model_dir}")
             self.config = AutoConfig.from_pretrained(self.t5_model_dir)
@@ -73,9 +75,15 @@ class T5Model(base_model.BaseModel):
 
     def get_model(self, torch_inference=""):
         model_opts = (
-            {"torch_dtype": torch.float16} if self.fp16 else {"torch_dtype": torch.bfloat16} if self.bf16 else {}
+            {"torch_dtype": torch.float16}
+            if self.fp16
+            else {"torch_dtype": torch.bfloat16}
+            if self.bf16
+            else {}
         )
-        if not load.is_model_cached(self.t5_model_dir, model_opts, self.hf_safetensor, model_name="model"):
+        if not load.is_model_cached(
+            self.t5_model_dir, model_opts, self.hf_safetensor, model_name="model"
+        ):
             model = T5EncoderModel.from_pretrained(
                 self.path,
                 subfolder=self.subfolder,
@@ -86,7 +94,9 @@ class T5Model(base_model.BaseModel):
             model.save_pretrained(self.t5_model_dir, **model_opts)
         else:
             print(f"[I] Load T5EncoderModel model from: {self.t5_model_dir}")
-            model = T5EncoderModel.from_pretrained(self.t5_model_dir, **model_opts).to(self.device)
+            model = T5EncoderModel.from_pretrained(self.t5_model_dir, **model_opts).to(
+                self.device
+            )
         model = optimizer.optimize_checkpoint(model, torch_inference)
         return model
 
@@ -99,13 +109,19 @@ class T5Model(base_model.BaseModel):
     def get_dynamic_axes(self):
         return {"input_ids": {0: "B"}, "text_embeddings": {0: "B"}}
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         self.check_dims(batch_size, image_height, image_width)
         min_batch, max_batch, _, _, _, _, _, _, _, _ = self.get_minmax_dims(
             batch_size, image_height, image_width, static_batch, static_shape
         )
         return {
-            "input_ids": [(min_batch, self.text_maxlen), (batch_size, self.text_maxlen), (max_batch, self.text_maxlen)]
+            "input_ids": [
+                (min_batch, self.text_maxlen),
+                (batch_size, self.text_maxlen),
+                (max_batch, self.text_maxlen),
+            ]
         }
 
     def get_shape_dict(self, batch_size, image_height, image_width):
@@ -118,4 +134,6 @@ class T5Model(base_model.BaseModel):
 
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         self.check_dims(batch_size, image_height, image_width)
-        return torch.zeros(batch_size, self.text_maxlen, dtype=torch.int32, device=self.device)
+        return torch.zeros(
+            batch_size, self.text_maxlen, dtype=torch.int32, device=self.device
+        )

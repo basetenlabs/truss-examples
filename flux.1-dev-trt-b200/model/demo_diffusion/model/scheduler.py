@@ -20,12 +20,20 @@ import os
 from demo_diffusion.model import load
 
 
-def make_scheduler(cls, version, pipeline, hf_token, framework_model_dir, subfolder="scheduler"):
+def make_scheduler(
+    cls, version, pipeline, hf_token, framework_model_dir, subfolder="scheduler"
+):
     scheduler_dir = os.path.join(
-        framework_model_dir, version, pipeline.name, next(iter({cls.__name__})).lower(), subfolder
+        framework_model_dir,
+        version,
+        pipeline.name,
+        next(iter({cls.__name__})).lower(),
+        subfolder,
     )
     if not os.path.exists(scheduler_dir):
-        scheduler = cls.from_pretrained(load.get_path(version, pipeline), subfolder=subfolder, token=hf_token)
+        scheduler = cls.from_pretrained(
+            load.get_path(version, pipeline), subfolder=subfolder, token=hf_token
+        )
         scheduler.save_pretrained(scheduler_dir)
     else:
         print(f"[I] Load Scheduler {cls.__name__} from: {scheduler_dir}")

@@ -17,6 +17,7 @@
 """
 Functions for loading models.
 """
+
 from __future__ import annotations
 
 import gc
@@ -39,7 +40,11 @@ def onnx_graph_needs_external_data(onnx_graph: onnx.ModelProto) -> bool:
         return onnx_graph.ByteSize() > TWO_GIGABYTES
 
 
-def get_path(version: str, pipeline: "pipeline.DiffusionPipeline", controlnets: Optional[List[str]] = None) -> str:
+def get_path(
+    version: str,
+    pipeline: "pipeline.DiffusionPipeline",
+    controlnets: Optional[List[str]] = None,
+) -> str:
     """Return the relative path to the model files directory."""
     if controlnets is not None:
         if version == "xl-1.0":
@@ -97,12 +102,16 @@ def get_path(version: str, pipeline: "pipeline.DiffusionPipeline", controlnets: 
 
 
 # FIXME serialization not supported for torch.compile
-def get_checkpoint_dir(framework_model_dir: str, version: str, pipeline: str, subfolder: str) -> str:
+def get_checkpoint_dir(
+    framework_model_dir: str, version: str, pipeline: str, subfolder: str
+) -> str:
     """Return the path to the torch model checkpoint directory."""
     return os.path.join(framework_model_dir, version, pipeline, subfolder)
 
 
-def is_model_cached(model_dir, model_opts, hf_safetensor, model_name="diffusion_pytorch_model") -> bool:
+def is_model_cached(
+    model_dir, model_opts, hf_safetensor, model_name="diffusion_pytorch_model"
+) -> bool:
     """Return True if model was cached."""
     variant = "." + model_opts.get("variant") if "variant" in model_opts else ""
     suffix = ".safetensors" if hf_safetensor else ".bin"

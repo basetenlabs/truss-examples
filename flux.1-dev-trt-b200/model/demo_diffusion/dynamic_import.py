@@ -24,7 +24,13 @@ def import_from_diffusers(model_name, module_name):
         module = import_module(module_name)
         return getattr(module, model_name)
     except ImportError:
-        warnings.warn(f"Failed to import {module_name}. The {model_name} model will not be available.", ImportWarning)
+        warnings.warn(
+            f"Failed to import {module_name}. The {model_name} model will not be available.",
+            ImportWarning,
+        )
     except AttributeError:
-        warnings.warn(f"The {model_name} model is not available in the installed version of diffusers.", ImportWarning)
+        warnings.warn(
+            f"The {model_name} model is not available in the installed version of diffusers.",
+            ImportWarning,
+        )
     return None

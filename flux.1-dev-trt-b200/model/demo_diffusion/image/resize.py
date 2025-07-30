@@ -41,7 +41,9 @@ def resize_with_antialiasing(input, size, interpolation="bicubic", align_corners
 
     input = _gaussian_blur2d(input, ks, sigmas)
 
-    output = torch.nn.functional.interpolate(input, size=size, mode=interpolation, align_corners=align_corners)
+    output = torch.nn.functional.interpolate(
+        input, size=size, mode=interpolation, align_corners=align_corners
+    )
     return output
 
 
@@ -85,7 +87,9 @@ def _filter2d(input, kernel):
     input = input.view(-1, tmp_kernel.size(0), input.size(-2), input.size(-1))
 
     # convolve the tensor with the kernel.
-    output = torch.nn.functional.conv2d(input, tmp_kernel, groups=tmp_kernel.size(0), padding=0, stride=1)
+    output = torch.nn.functional.conv2d(
+        input, tmp_kernel, groups=tmp_kernel.size(0), padding=0, stride=1
+    )
 
     out = output.view(b, c, h, w)
     return out
@@ -97,7 +101,10 @@ def _gaussian(window_size: int, sigma):
 
     batch_size = sigma.shape[0]
 
-    x = (torch.arange(window_size, device=sigma.device, dtype=sigma.dtype) - window_size // 2).expand(batch_size, -1)
+    x = (
+        torch.arange(window_size, device=sigma.device, dtype=sigma.dtype)
+        - window_size // 2
+    ).expand(batch_size, -1)
 
     if window_size % 2 == 0:
         x = x + 0.5

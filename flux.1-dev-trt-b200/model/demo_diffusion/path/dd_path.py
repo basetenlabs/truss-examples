@@ -28,18 +28,32 @@ from typing import Dict
 class DDPath:
     """Data class that stores various paths used in DemoDiffusion."""
 
-    model_name_to_optimized_onnx_path: Dict[str, str] = dataclasses.field(default_factory=dict)
+    model_name_to_optimized_onnx_path: Dict[str, str] = dataclasses.field(
+        default_factory=dict
+    )
     model_name_to_engine_path: Dict[str, str] = dataclasses.field(default_factory=dict)
 
     # Artifact paths.
-    model_name_to_unoptimized_onnx_path: Dict[str, str] = dataclasses.field(default_factory=dict)
-    model_name_to_weights_map_path: Dict[str, str] = dataclasses.field(default_factory=dict)
-    model_name_to_refit_weights_path: Dict[str, str] = dataclasses.field(default_factory=dict)
-    model_name_to_quantized_model_state_dict_path: Dict[str, str] = dataclasses.field(default_factory=dict)
+    model_name_to_unoptimized_onnx_path: Dict[str, str] = dataclasses.field(
+        default_factory=dict
+    )
+    model_name_to_weights_map_path: Dict[str, str] = dataclasses.field(
+        default_factory=dict
+    )
+    model_name_to_refit_weights_path: Dict[str, str] = dataclasses.field(
+        default_factory=dict
+    )
+    model_name_to_quantized_model_state_dict_path: Dict[str, str] = dataclasses.field(
+        default_factory=dict
+    )
 
     def create_directory(self) -> None:
         """Create directories for all paths, if they do not exist."""
-        all_paths = [value for name_to_path in dataclasses.astuple(self) for value in name_to_path.values()]
+        all_paths = [
+            value
+            for name_to_path in dataclasses.astuple(self)
+            for value in name_to_path.values()
+        ]
 
         for path in all_paths:
             directory = os.path.dirname(path)

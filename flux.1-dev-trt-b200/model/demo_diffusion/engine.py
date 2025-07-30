@@ -60,18 +60,24 @@ def _CUASSERT(cuda_ret):
     return None
 
 
-def get_refit_weights(state_dict, onnx_opt_path, weight_name_mapping, weight_shape_mapping):
+def get_refit_weights(
+    state_dict, onnx_opt_path, weight_name_mapping, weight_shape_mapping
+):
     onnx_opt_dir = os.path.dirname(onnx_opt_path)
     onnx_opt_model = onnx.load(onnx_opt_path)
     # Create initializer data hashes
     initializer_hash_mapping = {}
     for initializer in onnx_opt_model.graph.initializer:
-        initializer_data = numpy_helper.to_array(initializer, base_dir=onnx_opt_dir).astype(np.float16)
+        initializer_data = numpy_helper.to_array(
+            initializer, base_dir=onnx_opt_dir
+        ).astype(np.float16)
         initializer_hash = hash(initializer_data.data.tobytes())
         initializer_hash_mapping[initializer.name] = initializer_hash
 
     refit_weights = OrderedDict()
-    updated_weight_names = set()  # save names of updated weights to refit only the required weights
+    updated_weight_names = (
+        set()
+    )  # save names of updated weights to refit only the required weights
     for wt_name, wt in state_dict.items():
         # query initializer to compare
         initializer_name = weight_name_mapping[wt_name]
@@ -120,14 +126,20 @@ class Engine:
         def refit_single_weight(trt_weight_name):
             # get weight from state dict
             trt_datatype = refitter.get_weights_prototype(trt_weight_name).dtype
-            refit_weights[trt_weight_name] = refit_weights[trt_weight_name].to(trt_to_torch_dtype_dict[trt_datatype])
+            refit_weights[trt_weight_name] = refit_weights[trt_weight_name].to(
+                trt_to_torch_dtype_dict[trt_datatype]
+            )
 
             # trt.Weight and trt.TensorLocation
             trt_wt_tensor = trt.Weights(
-                trt_datatype, refit_weights[trt_weight_name].data_ptr(), torch.numel(refit_weights[trt_weight_name])
+                trt_datatype,
+                refit_weights[trt_weight_name].data_ptr(),
+                torch.numel(refit_weights[trt_weight_name]),
             )
             trt_wt_location = (
-                trt.TensorLocation.DEVICE if refit_weights[trt_weight_name].is_cuda else trt.TensorLocation.HOST
+                trt.TensorLocation.DEVICE
+                if refit_weights[trt_weight_name].is_cuda
+                else trt.TensorLocation.HOST
             )
 
             # apply refit
@@ -169,7 +181,7 @@ class Engine:
         verbose=False,
         weight_streaming=False,
         builder_optimization_level=3,
-        precision_constraints='none',
+        precision_constraints="none",
     ):
         print(f"Building TensorRT engine for {onnx_path}: {self.engine_path}")
 
@@ -178,7 +190,9 @@ class Engine:
             strongly_typed, fp16, bf16, int8, fp8 = True, False, False, False, False
 
         # Base command
-        build_command = [f"polygraphy convert {onnx_path} --convert-to trt --output {self.engine_path}"]
+        build_command = [
+            f"polygraphy convert {onnx_path} --convert-to trt --output {self.engine_path}"
+        ]
 
         # Precision flags
         build_args = [
@@ -191,21 +205,25 @@ class Engine:
         ]
 
         # Additional arguments
-        build_args.extend([
-            "--weight-streaming" if weight_streaming else "",
-            "--refittable" if enable_refit else "",
-            "--tactic-sources" if not enable_all_tactics else "",
-            "--onnx-flags native_instancenorm" if native_instancenorm else "",
-            f"--builder-optimization-level {builder_optimization_level}",
-            f"--precision-constraints {precision_constraints}",
-        ])
+        build_args.extend(
+            [
+                "--weight-streaming" if weight_streaming else "",
+                "--refittable" if enable_refit else "",
+                "--tactic-sources" if not enable_all_tactics else "",
+                "--onnx-flags native_instancenorm" if native_instancenorm else "",
+                f"--builder-optimization-level {builder_optimization_level}",
+                f"--precision-constraints {precision_constraints}",
+            ]
+        )
 
         # Timing cache
         if timing_cache:
-            build_args.extend([
-                f"--load-timing-cache {timing_cache}",
-                f"--save-timing-cache {timing_cache}"
-            ])
+            build_args.extend(
+                [
+                    f"--load-timing-cache {timing_cache}",
+                    f"--save-timing-cache {timing_cache}",
+                ]
+            )
 
         # Verbosity setting
         verbosity = "extra_verbose" if verbose else "error"
@@ -221,15 +239,21 @@ class Engine:
             profile_args = defaultdict(str)
             for name, dims in input_profile.items():
                 assert len(dims) == 3
-                profile_args["--trt-min-shapes"] += f"{name}:{str(list(dims[0])).replace(' ', '')} "
-                profile_args["--trt-opt-shapes"] += f"{name}:{str(list(dims[1])).replace(' ', '')} "
-                profile_args["--trt-max-shapes"] += f"{name}:{str(list(dims[2])).replace(' ', '')} "
+                profile_args["--trt-min-shapes"] += (
+                    f"{name}:{str(list(dims[0])).replace(' ', '')} "
+                )
+                profile_args["--trt-opt-shapes"] += (
+                    f"{name}:{str(list(dims[1])).replace(' ', '')} "
+                )
+                profile_args["--trt-max-shapes"] += (
+                    f"{name}:{str(list(dims[2])).replace(' ', '')} "
+                )
 
             build_args.extend(f"{k} {v}" for k, v in profile_args.items())
 
         # Filter out empty strings and join command
         build_args = [arg for arg in build_args if arg]
-        final_command = ' '.join(build_command + build_args)
+        final_command = " ".join(build_command + build_args)
 
         # Execute command with improved error handling
         try:
@@ -237,8 +261,7 @@ class Engine:
             subprocess.run(final_command, check=True, shell=True)
         except subprocess.CalledProcessError as exc:
             error_msg = (
-                f"Failed to build TensorRT engine. Error details:\n"
-                f"Command: {exc.cmd}\n"
+                f"Failed to build TensorRT engine. Error details:\nCommand: {exc.cmd}\n"
             )
             raise RuntimeError(error_msg) from exc
 
@@ -259,7 +282,9 @@ class Engine:
                 )
             else:
                 self.engine.weight_streaming_budget_v2 = int(
-                    weight_streaming_budget_percentage / 100 * self.engine.streamable_weights_size
+                    weight_streaming_budget_percentage
+                    / 100
+                    * self.engine.streamable_weights_size
                 )
 
     def unload(self):
@@ -325,11 +350,15 @@ class Engine:
                     raise ValueError(f"ERROR: inference of {self.engine_path} failed.")
                 # capture cuda graph
                 _CUASSERT(
-                    cudart.cudaStreamBeginCapture(stream, cudart.cudaStreamCaptureMode.cudaStreamCaptureModeGlobal)
+                    cudart.cudaStreamBeginCapture(
+                        stream, cudart.cudaStreamCaptureMode.cudaStreamCaptureModeGlobal
+                    )
                 )
                 self.context.execute_async_v3(stream)
                 self.graph = _CUASSERT(cudart.cudaStreamEndCapture(stream))
-                self.cuda_graph_instance = _CUASSERT(cudart.cudaGraphInstantiate(self.graph, 0))
+                self.cuda_graph_instance = _CUASSERT(
+                    cudart.cudaGraphInstantiate(self.graph, 0)
+                )
         else:
             noerror = self.context.execute_async_v3(stream)
             if not noerror:

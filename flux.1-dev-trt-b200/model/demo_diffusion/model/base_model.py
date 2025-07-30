@@ -47,7 +47,6 @@ class BaseModel:
         embedding_dim=768,
         compression_factor=8,
     ):
-
         self.name = self.__class__.__name__
         self.pipeline = pipeline.name
         self.version = version
@@ -79,7 +78,9 @@ class BaseModel:
         self.do_constant_folding = True
 
     def get_pipeline(self):
-        model_opts = {"variant": "fp16", "torch_dtype": torch.float16} if self.fp16 else {}
+        model_opts = (
+            {"variant": "fp16", "torch_dtype": torch.float16} if self.fp16 else {}
+        )
         model_opts = {"torch_dtype": torch.bfloat16} if self.bf16 else model_opts
         return DiffusionPipeline.from_pretrained(
             self.path,
@@ -103,7 +104,9 @@ class BaseModel:
     def get_sample_input(self, batch_size, image_height, image_width, static_shape):
         pass
 
-    def get_input_profile(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_input_profile(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         return None
 
     def get_shape_dict(self, batch_size, image_height, image_width):
@@ -132,7 +135,9 @@ class BaseModel:
                     if enable_lora_merge:
                         assert lora_loader is not None
                         model = merge_loras(model, lora_loader)
-                    inputs = self.get_sample_input(1, opt_image_height, opt_image_width, static_shape)
+                    inputs = self.get_sample_input(
+                        1, opt_image_height, opt_image_width, static_shape
+                    )
                     torch.onnx.export(
                         model,
                         inputs,
@@ -151,8 +156,13 @@ class BaseModel:
                         export_onnx(custom_model)
                 else:
                     # WAR: Enable autocast for BF16 Stable Cascade pipeline
-                    do_autocast = True if self.version == "cascade" and self.bf16 else False
-                    with torch.inference_mode(), torch.autocast("cuda", enabled=do_autocast):
+                    do_autocast = (
+                        True if self.version == "cascade" and self.bf16 else False
+                    )
+                    with (
+                        torch.inference_mode(),
+                        torch.autocast("cuda", enabled=do_autocast),
+                    ):
                         export_onnx(self.get_model())
             else:
                 print(f"[I] Found cached ONNX model: {onnx_path}")
@@ -181,9 +191,14 @@ class BaseModel:
             # Create initializer data hashes
             initializer_hash_mapping = {}
             for initializer in onnx_opt_model.graph.initializer:
-                initializer_data = numpy_helper.to_array(initializer, base_dir=onnx_opt_dir).astype(np.float16)
+                initializer_data = numpy_helper.to_array(
+                    initializer, base_dir=onnx_opt_dir
+                ).astype(np.float16)
                 initializer_hash = hash(initializer_data.data.tobytes())
-                initializer_hash_mapping[initializer.name] = (initializer_hash, initializer_data.shape)
+                initializer_hash_mapping[initializer.name] = (
+                    initializer_hash,
+                    initializer_data.shape,
+                )
 
             weights_name_mapping = {}
             weights_shape_mapping = {}
@@ -195,7 +210,10 @@ class BaseModel:
                 wt_hash = hash(wt.data.tobytes())
                 wt_t_hash = hash(np.transpose(wt).data.tobytes())
 
-                for initializer_name, (initializer_hash, initializer_shape) in initializer_hash_mapping.items():
+                for initializer_name, (
+                    initializer_hash,
+                    initializer_shape,
+                ) in initializer_hash_mapping.items():
                     # Due to constant folding, some weights are transposed during export
                     # To account for the transpose op, we compare the initializer hash to the
                     # hash for the weight and its transpose
@@ -207,12 +225,19 @@ class BaseModel:
                         weights_name_mapping[wt_name] = initializer_name
                         initializers_mapped.add(initializer_name)
                         is_transpose = False if wt_hash == initializer_hash else True
-                        weights_shape_mapping[wt_name] = (initializer_shape, is_transpose)
+                        weights_shape_mapping[wt_name] = (
+                            initializer_shape,
+                            is_transpose,
+                        )
 
                 # Sanity check: Were any weights not matched
                 if wt_name not in weights_name_mapping:
-                    print(f"[I] PyTorch weight {wt_name} not matched with any ONNX initializer")
-            print(f"[I] {len(weights_name_mapping.keys())} PyTorch weights were matched with ONNX initializers")
+                    print(
+                        f"[I] PyTorch weight {wt_name} not matched with any ONNX initializer"
+                    )
+            print(
+                f"[I] {len(weights_name_mapping.keys())} PyTorch weights were matched with ONNX initializers"
+            )
             assert weights_name_mapping.keys() == weights_shape_mapping.keys()
             with open(weights_map_path, "w") as fp:
                 json.dump([weights_name_mapping, weights_shape_mapping], fp)
@@ -246,11 +271,19 @@ class BaseModel:
         assert batch_size >= self.min_batch and batch_size <= self.max_batch
         latent_height = image_height // self.compression_factor
         latent_width = image_width // self.compression_factor
-        assert latent_height >= self.min_latent_shape and latent_height <= self.max_latent_shape
-        assert latent_width >= self.min_latent_shape and latent_width <= self.max_latent_shape
+        assert (
+            latent_height >= self.min_latent_shape
+            and latent_height <= self.max_latent_shape
+        )
+        assert (
+            latent_width >= self.min_latent_shape
+            and latent_width <= self.max_latent_shape
+        )
         return (latent_height, latent_width)
 
-    def get_minmax_dims(self, batch_size, image_height, image_width, static_batch, static_shape):
+    def get_minmax_dims(
+        self, batch_size, image_height, image_width, static_batch, static_shape
+    ):
         min_batch = batch_size if static_batch else self.min_batch
         max_batch = batch_size if static_batch else self.max_batch
         latent_height = image_height // self.compression_factor

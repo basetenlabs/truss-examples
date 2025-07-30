@@ -48,6 +48,7 @@ from demo_diffusion.pipeline.type import PIPELINE_TYPE
 
 TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
 
+
 def calculate_shift(
     image_seq_len,
     base_seq_len: int = 256,
@@ -117,7 +118,9 @@ class FluxPipeline(DiffusionPipeline):
                 self.lora_weights[path] = lora_weight[i]
 
     @classmethod
-    def FromArgs(cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE) -> FluxPipeline:
+    def FromArgs(
+        cls, args: argparse.Namespace, pipeline_type: PIPELINE_TYPE
+    ) -> FluxPipeline:
         """Factory method to construct a `FluxPipeline` object from parsed arguments.
 
         Overrides:
@@ -129,7 +132,10 @@ class FluxPipeline(DiffusionPipeline):
 
         # Resolve all paths.
         dd_path = path_module.resolve_path(
-            cls.get_model_names(pipeline_type), args, pipeline_type, cls._get_pipeline_uid(args.version)
+            cls.get_model_names(pipeline_type),
+            args,
+            pipeline_type,
+            cls._get_pipeline_uid(args.version),
         )
 
         return cls(
@@ -139,7 +145,9 @@ class FluxPipeline(DiffusionPipeline):
             guidance_scale=args.guidance_scale,
             max_sequence_length=args.max_sequence_length,
             bf16=args.bf16,
-            calibration_dataset=args.calibration_dataset if hasattr(args, "calibration_dataset") else None,
+            calibration_dataset=args.calibration_dataset
+            if hasattr(args, "calibration_dataset")
+            else None,
             low_vram=args.low_vram,
             torch_fallback=args.torch_fallback,
             weight_streaming=args.ws,
@@ -174,13 +182,17 @@ class FluxPipeline(DiffusionPipeline):
         else:
             return ["clip", "t5", "transformer", "vae"]
 
-    def download_onnx_models(self, model_name: str, model_config: dict[str, Any]) -> None:
+    def download_onnx_models(
+        self, model_name: str, model_config: dict[str, Any]
+    ) -> None:
         if self.fp16:
             raise ValueError(
                 "ONNX models can be downloaded only for the following precisions: BF16, FP8, FP4. This pipeline is running in FP16."
             )
 
-        hf_download_path = "-".join([load.get_path(self.version, self.pipeline_type.name), "onnx"])
+        hf_download_path = "-".join(
+            [load.get_path(self.version, self.pipeline_type.name), "onnx"]
+        )
         model_path = model_config["onnx_opt_path"]
         base_dir = os.path.dirname(os.path.dirname(model_config["onnx_opt_path"]))
 
@@ -236,7 +248,10 @@ class FluxPipeline(DiffusionPipeline):
     def _initialize_models(self, framework_model_dir, int8, fp8, fp4):
         # Load text tokenizer(s)
         self.tokenizer = make_tokenizer(
-            self.version, self.pipeline_type, self.hf_token, framework_model_dir,
+            self.version,
+            self.pipeline_type,
+            self.hf_token,
+            framework_model_dir,
         )
         self.tokenizer2 = make_tokenizer(
             self.version,
@@ -302,7 +317,9 @@ class FluxPipeline(DiffusionPipeline):
 
         if "vae" in self.stages:
             # Accuracy issues with FP16
-            self.models["vae"] = VAEModel(**models_args, fp16=False, tf32=self.tf32, bf16=self.bf16)
+            self.models["vae"] = VAEModel(
+                **models_args, fp16=False, tf32=self.tf32, bf16=self.bf16
+            )
 
         self.vae_scale_factor = (
             2 ** (len(self.models["vae"].config["block_out_channels"]))
@@ -311,24 +328,37 @@ class FluxPipeline(DiffusionPipeline):
         )
 
         if "vae_encoder" in self.stages:
-            self.models['vae_encoder'] = VAEEncoderModel(**models_args, fp16=False, tf32=self.tf32, bf16=self.bf16)
+            self.models["vae_encoder"] = VAEEncoderModel(
+                **models_args, fp16=False, tf32=self.tf32, bf16=self.bf16
+            )
             self.vae_latent_channels = (
-                self.models["vae"].config["latent_channels"] if "vae" in self.stages and self.models["vae"] is not None else 16
+                self.models["vae"].config["latent_channels"]
+                if "vae" in self.stages and self.models["vae"] is not None
+                else 16
             )
             self.image_processor = VaeImageProcessor(
-                vae_scale_factor=self.vae_scale_factor * 2, vae_latent_channels=self.vae_latent_channels
+                vae_scale_factor=self.vae_scale_factor * 2,
+                vae_latent_channels=self.vae_latent_channels,
             )
 
     def encode_image(self, input_image, encoder="vae_encoder"):
-        self.profile_start(encoder, color='red')
-        cast_to = torch.float16 if self.models[encoder].fp16 else torch.bfloat16 if self.models[encoder].bf16 else torch.float32
+        self.profile_start(encoder, color="red")
+        cast_to = (
+            torch.float16
+            if self.models[encoder].fp16
+            else torch.bfloat16
+            if self.models[encoder].bf16
+            else torch.float32
+        )
         input_image = input_image.to(dtype=cast_to)
         if self.torch_inference or self.torch_fallback[encoder]:
             image_latents = self.torch_models[encoder](input_image)
         else:
-            image_latents = self.run_engine(encoder, {'images': input_image})['latent']
+            image_latents = self.run_engine(encoder, {"images": input_image})["latent"]
 
-        image_latents = self.models[encoder].config["scaling_factor"] * (image_latents - self.models[encoder].config["shift_factor"])
+        image_latents = self.models[encoder].config["scaling_factor"] * (
+            image_latents - self.models[encoder].config["shift_factor"]
+        )
         self.profile_stop(encoder)
         return image_latents
 
@@ -448,7 +478,9 @@ class FluxPipeline(DiffusionPipeline):
 
         if image_latents is not None:
             image_latents = torch.cat([image_latents], dim=0).to(latents_dtype)
-            latents = self.scheduler.scale_noise(image_latents, latent_timestep, latents)
+            latents = self.scheduler.scale_noise(
+                image_latents, latent_timestep, latents
+            )
 
         latents = self._pack_latents(
             latents, batch_size, num_channels_latents, latent_height, latent_width
@@ -499,9 +531,11 @@ class FluxPipeline(DiffusionPipeline):
                 .to(self.device)
             )
 
-            untruncated_ids = tokenizer(
-                prompt, padding="longest", return_tensors="pt"
-            ).input_ids.type(torch.int32).to(self.device)
+            untruncated_ids = (
+                tokenizer(prompt, padding="longest", return_tensors="pt")
+                .input_ids.type(torch.int32)
+                .to(self.device)
+            )
             if untruncated_ids.shape[-1] >= text_input_ids.shape[
                 -1
             ] and not torch.equal(text_input_ids, untruncated_ids):
@@ -536,7 +570,13 @@ class FluxPipeline(DiffusionPipeline):
         text_encoder_output = tokenize(prompt, max_sequence_length)
 
         self.profile_stop(encoder)
-        return text_encoder_output.to(torch.float16) if self.fp16 else text_encoder_output.to(torch.bfloat16) if self.bf16 else text_encoder_output
+        return (
+            text_encoder_output.to(torch.float16)
+            if self.fp16
+            else text_encoder_output.to(torch.bfloat16)
+            if self.bf16
+            else text_encoder_output
+        )
 
     def denoise_latent(
         self,
@@ -548,7 +588,7 @@ class FluxPipeline(DiffusionPipeline):
         latent_image_ids,
         denoiser="transformer",
         guidance=None,
-        control_latent=None
+        control_latent=None,
     ):
         do_autocast = self.torch_inference != "" and self.models[denoiser].fp16
         with torch.autocast("cuda", enabled=do_autocast):
@@ -563,7 +603,11 @@ class FluxPipeline(DiffusionPipeline):
 
             for step_index, timestep in enumerate(timesteps):
                 # Prepare latents
-                latents_input = latents if control_latent is None else torch.cat((latents, control_latent), dim=-1)
+                latents_input = (
+                    latents
+                    if control_latent is None
+                    else torch.cat((latents, control_latent), dim=-1)
+                )
                 # prepare inputs
                 timestep_inp = timestep.expand(latents.shape[0]).to(latents_input.dtype)
                 params = {
@@ -588,11 +632,21 @@ class FluxPipeline(DiffusionPipeline):
                 )[0]
 
         self.profile_stop(denoiser)
-        return latents.to(dtype=torch.bfloat16) if self.bf16 else latents.to(dtype=torch.float32)
+        return (
+            latents.to(dtype=torch.bfloat16)
+            if self.bf16
+            else latents.to(dtype=torch.float32)
+        )
 
     def decode_latent(self, latents, decoder="vae"):
         self.profile_start(decoder, color="red")
-        cast_to = torch.float16 if self.models[decoder].fp16 else torch.bfloat16 if self.models[decoder].bf16 else torch.float32
+        cast_to = (
+            torch.float16
+            if self.models[decoder].fp16
+            else torch.bfloat16
+            if self.models[decoder].bf16
+            else torch.float32
+        )
         latents = latents.to(dtype=cast_to)
         if self.torch_inference or self.torch_fallback[decoder]:
             images = self.torch_models[decoder](latents, return_dict=False)[0]
@@ -706,7 +760,9 @@ class FluxPipeline(DiffusionPipeline):
 
             num_channels_latents = self.models["transformer"].config["in_channels"] // 4
             if control_image:
-                num_channels_latents = self.models["transformer"].config["in_channels"] // 8
+                num_channels_latents = (
+                    self.models["transformer"].config["in_channels"] // 8
+                )
 
                 # Prepare control latents
                 control_image = self.prepare_image(
@@ -716,11 +772,17 @@ class FluxPipeline(DiffusionPipeline):
                     batch_size=batch_size,
                     num_images_per_prompt=1,
                     device=self.device,
-                    dtype=torch.float16 if self.models["vae"].fp16 else torch.bfloat16 if self.models["vae"].bf16 else torch.float32,
+                    dtype=torch.float16
+                    if self.models["vae"].fp16
+                    else torch.bfloat16
+                    if self.models["vae"].bf16
+                    else torch.float32,
                 )
 
                 if control_image.ndim == 4:
-                    with self.model_memory_manager(["vae_encoder"], low_vram=self.low_vram):
+                    with self.model_memory_manager(
+                        ["vae_encoder"], low_vram=self.low_vram
+                    ):
                         control_image = self.encode_image(control_image)
 
                     height_control_image, width_control_image = control_image.shape[2:]
@@ -772,11 +834,15 @@ class FluxPipeline(DiffusionPipeline):
 
             # Pre-process input image and timestep for the img2img pipeline
             if input_image:
-                input_image = self.image_processor.preprocess(input_image, height=image_height, width=image_width).to(self.device)
+                input_image = self.image_processor.preprocess(
+                    input_image, height=image_height, width=image_width
+                ).to(self.device)
                 with self.model_memory_manager(["vae_encoder"], low_vram=self.low_vram):
                     image_latents = self.encode_image(input_image)
 
-                timesteps, num_inference_steps = self.get_timesteps(self.denoising_steps, image_strength)
+                timesteps, num_inference_steps = self.get_timesteps(
+                    self.denoising_steps, image_strength
+                )
                 if num_inference_steps < 1:
                     raise ValueError(
                         f"After adjusting the num_inference_steps by strength parameter: {image_strength}, the number of pipeline"
@@ -784,7 +850,9 @@ class FluxPipeline(DiffusionPipeline):
                     )
                 latent_timestep = timesteps[:1].repeat(batch_size)
 
-                latent_kwargs.update({"image_latents": image_latents, "latent_timestep": latent_timestep})
+                latent_kwargs.update(
+                    {"image_latents": image_latents, "latent_timestep": latent_timestep}
+                )
 
             # Initialize latents
             latents, latent_image_ids = self.initialize_latents(
@@ -792,8 +860,12 @@ class FluxPipeline(DiffusionPipeline):
                 num_channels_latents=num_channels_latents,
                 latent_height=latent_height,
                 latent_width=latent_width,
-                latents_dtype=torch.float16 if self.fp16 else torch.bfloat16 if self.bf16 else torch.float32,
-                **latent_kwargs
+                latents_dtype=torch.float16
+                if self.fp16
+                else torch.bfloat16
+                if self.bf16
+                else torch.float32,
+                **latent_kwargs,
             )
 
             # DiT denoiser
@@ -805,7 +877,7 @@ class FluxPipeline(DiffusionPipeline):
                     pooled_embeddings,
                     text_ids,
                     latent_image_ids,
-                    control_latent=control_image
+                    control_latent=control_image,
                 )
 
             # VAE decode latent

@@ -47,7 +47,8 @@ def resolve_path(
     """
     path = dd_path.DDPath()
     model_name_to_model_uri = {
-        model_name: _resolve_model_uri(model_name, args, pipeline_type, pipeline_uid) for model_name in model_names
+        model_name: _resolve_model_uri(model_name, args, pipeline_type, pipeline_uid)
+        for model_name in model_names
     }
 
     _resolve_default_path(model_name_to_model_uri, args, path)
@@ -59,7 +60,10 @@ def resolve_path(
 
 
 def _resolve_model_uri(
-    model_name: str, args: argparse.Namespace, pipeline_type: pipeline.PIPELINE_TYPE, pipeline_uid: str
+    model_name: str,
+    args: argparse.Namespace,
+    pipeline_type: pipeline.PIPELINE_TYPE,
+    pipeline_uid: str,
 ) -> str:
     """Resolve and return the model URI.
 
@@ -88,7 +92,9 @@ def _resolve_model_uri(
         """
         is_unet = model_name == "unet"
         is_unetxl_base = pipeline_type.is_sd_xl_base() and model_name == "unetxl"
-        is_flux_transformer = args.version.startswith("flux.1") and model_name == "transformer"
+        is_flux_transformer = (
+            args.version.startswith("flux.1") and model_name == "transformer"
+        )
 
         if args.int8:
             return is_unet or is_unetxl_base
@@ -111,7 +117,9 @@ def _resolve_model_uri(
         quantization_config_uid = ""
 
     # Model unique ID represents the model name and its configuration. It is unique under the same pipeline.
-    model_uid = "_".join([s for s in [model_name, lora_config_uid, quantization_config_uid] if s])
+    model_uid = "_".join(
+        [s for s in [model_name, lora_config_uid, quantization_config_uid] if s]
+    )
 
     # Model URI is the concatenation of pipeline unique ID and model unique ID.
     model_uri = os.path.join(pipeline_uid, model_uid)
@@ -120,7 +128,9 @@ def _resolve_model_uri(
 
 
 def _resolve_default_path(
-    model_name_to_model_uri: Dict[str, str], args: argparse.Namespace, path: dd_path.DDPath
+    model_name_to_model_uri: Dict[str, str],
+    args: argparse.Namespace,
+    path: dd_path.DDPath,
 ) -> None:
     """Resolve the default paths.
 
@@ -140,9 +150,15 @@ def _resolve_default_path(
         # Resolve artifact paths.
         artifact_dir = os.path.join(ARTIFACT_CACHE_DIRECTORY, model_uri)
 
-        path.model_name_to_unoptimized_onnx_path[model_name] = os.path.join(artifact_dir, "model_unoptimized.onnx")
-        path.model_name_to_weights_map_path[model_name] = os.path.join(artifact_dir, "weights_map.json")
-        path.model_name_to_refit_weights_path[model_name] = os.path.join(artifact_dir, "refit_weights.json")
+        path.model_name_to_unoptimized_onnx_path[model_name] = os.path.join(
+            artifact_dir, "model_unoptimized.onnx"
+        )
+        path.model_name_to_weights_map_path[model_name] = os.path.join(
+            artifact_dir, "weights_map.json"
+        )
+        path.model_name_to_refit_weights_path[model_name] = os.path.join(
+            artifact_dir, "refit_weights.json"
+        )
         path.model_name_to_quantized_model_state_dict_path[model_name] = os.path.join(
             artifact_dir, "quantized_model_state_dict.json"
         )

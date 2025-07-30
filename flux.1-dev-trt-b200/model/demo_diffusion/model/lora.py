@@ -41,11 +41,22 @@ def merge_loras(model, lora_loader):
     for i, path in enumerate(paths):
         print(f"[I] Loading LoRA: {path}, weight {weights[i]}")
         if isinstance(lora_loader, SDLoraLoader):
-            state_dict, network_alphas = lora_loader.lora_state_dict(path, unet_config=model.config)
-            lora_loader.load_lora_into_unet(state_dict, network_alphas=network_alphas, unet=model, adapter_name=path)
+            state_dict, network_alphas = lora_loader.lora_state_dict(
+                path, unet_config=model.config
+            )
+            lora_loader.load_lora_into_unet(
+                state_dict, network_alphas=network_alphas, unet=model, adapter_name=path
+            )
         elif isinstance(lora_loader, FLUXLoraLoader):
-            state_dict, network_alphas = lora_loader.lora_state_dict(path, return_alphas=True)
-            lora_loader.load_lora_into_transformer(state_dict, network_alphas=network_alphas, transformer=model, adapter_name=path)
+            state_dict, network_alphas = lora_loader.lora_state_dict(
+                path, return_alphas=True
+            )
+            lora_loader.load_lora_into_transformer(
+                state_dict,
+                network_alphas=network_alphas,
+                transformer=model,
+                adapter_name=path,
+            )
         else:
             raise ValueError(f"Unsupported LoRA loader: {lora_loader}")
 

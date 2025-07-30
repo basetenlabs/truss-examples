@@ -68,7 +68,9 @@ class Optimizer:
                 self.graph.outputs[i].name = name
 
     def fold_constants(self, return_onnx=False):
-        onnx_graph = fold_constants(gs.export_onnx(self.graph), allow_onnxruntime_shape_inference=True)
+        onnx_graph = fold_constants(
+            gs.export_onnx(self.graph), allow_onnxruntime_shape_inference=True
+        )
         self.graph = gs.import_onnx(onnx_graph)
         if return_onnx:
             return onnx_graph
@@ -103,15 +105,21 @@ class Optimizer:
             for j in range(len(onnx_graph.graph.node[i].output)):
                 name = onnx_graph.graph.node[i].output[j]
                 if "layers" in name:
-                    hidden_layers = max(int(name.split(".")[1].split("/")[0]), hidden_layers)
+                    hidden_layers = max(
+                        int(name.split(".")[1].split("/")[0]), hidden_layers
+                    )
         for i in range(len(onnx_graph.graph.node)):
             for j in range(len(onnx_graph.graph.node[i].output)):
-                if onnx_graph.graph.node[i].output[j] == "/text_model/encoder/layers.{}/Add_1_output_0".format(
+                if onnx_graph.graph.node[i].output[
+                    j
+                ] == "/text_model/encoder/layers.{}/Add_1_output_0".format(
                     hidden_layers + hidden_layer_offset
                 ):
                     onnx_graph.graph.node[i].output[j] = "hidden_states"
             for j in range(len(onnx_graph.graph.node[i].input)):
-                if onnx_graph.graph.node[i].input[j] == "/text_model/encoder/layers.{}/Add_1_output_0".format(
+                if onnx_graph.graph.node[i].input[
+                    j
+                ] == "/text_model/encoder/layers.{}/Add_1_output_0".format(
                     hidden_layers + hidden_layer_offset
                 ):
                     onnx_graph.graph.node[i].input[j] = "hidden_states"
@@ -141,7 +149,9 @@ class Optimizer:
             sorted(
                 map(
                     lambda x: x.group(0),  # type: ignore
-                    filter(lambda x: x is not None, [re.match(q_pat, key) for key in keys]),
+                    filter(
+                        lambda x: x is not None, [re.match(q_pat, key) for key in keys]
+                    ),
                 )
             )
         )
@@ -149,7 +159,9 @@ class Optimizer:
             sorted(
                 map(
                     lambda x: x.group(0),  # type: ignore
-                    filter(lambda x: x is not None, [re.match(k_pat, key) for key in keys]),
+                    filter(
+                        lambda x: x is not None, [re.match(k_pat, key) for key in keys]
+                    ),
                 )
             )
         )
@@ -157,7 +169,9 @@ class Optimizer:
             sorted(
                 map(
                     lambda x: x.group(0),  # type: ignore
-                    filter(lambda x: x is not None, [re.match(v_pat, key) for key in keys]),
+                    filter(
+                        lambda x: x is not None, [re.match(v_pat, key) for key in keys]
+                    ),
                 )
             )
         )
@@ -187,7 +201,9 @@ class Optimizer:
         # Convert INT8 Zero to FP8.
         onnx_graph = convert_zp_fp8(onnx_graph)
         # Convert weights and activations to FP16 and insert Cast nodes in FP8 MHA.
-        onnx_graph = convert_float_to_float16(onnx_graph, keep_io_types=True, disable_shape_infer=True)
+        onnx_graph = convert_float_to_float16(
+            onnx_graph, keep_io_types=True, disable_shape_infer=True
+        )
         self.graph = gs.import_onnx(onnx_graph)
         # Add cast nodes to Resize I/O.
         cast_resize_io(self.graph)
@@ -200,5 +216,7 @@ class Optimizer:
     def flux_convert_rope_weight_type(self):
         for node in self.graph.nodes:
             if node.op == "Einsum":
-                print(f"Fixed RoPE (Rotary Position Embedding) weight type: {node.name}")
+                print(
+                    f"Fixed RoPE (Rotary Position Embedding) weight type: {node.name}"
+                )
         return gs.export_onnx(self.graph)

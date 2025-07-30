@@ -25,7 +25,14 @@ from transformers import (
 from demo_diffusion.model import load
 
 
-def make_tokenizer(version, pipeline, hf_token, framework_model_dir, subfolder="tokenizer", tokenizer_type="clip"):
+def make_tokenizer(
+    version,
+    pipeline,
+    hf_token,
+    framework_model_dir,
+    subfolder="tokenizer",
+    tokenizer_type="clip",
+):
     if tokenizer_type == "clip":
         tokenizer_class = CLIPTokenizer
     elif tokenizer_type == "t5":
@@ -34,10 +41,15 @@ def make_tokenizer(version, pipeline, hf_token, framework_model_dir, subfolder="
         raise ValueError(
             f"Unsupported tokenizer_type {tokenizer_type}. Only tokenizer_type clip and t5 are currently supported"
         )
-    tokenizer_model_dir = load.get_checkpoint_dir(framework_model_dir, version, pipeline.name, subfolder)
+    tokenizer_model_dir = load.get_checkpoint_dir(
+        framework_model_dir, version, pipeline.name, subfolder
+    )
     if not os.path.exists(tokenizer_model_dir):
         model = tokenizer_class.from_pretrained(
-            load.get_path(version, pipeline), subfolder=subfolder, use_safetensors=pipeline.is_sd_xl(), token=hf_token
+            load.get_path(version, pipeline),
+            subfolder=subfolder,
+            use_safetensors=pipeline.is_sd_xl(),
+            token=hf_token,
         )
         model.save_pretrained(tokenizer_model_dir)
     else:

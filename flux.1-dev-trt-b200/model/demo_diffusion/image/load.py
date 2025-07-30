@@ -74,5 +74,5 @@ def save_image(images, image_path_dir, image_name_prefix, image_name_suffix):
             image_path_dir,
             f"{image_name_prefix}{i + 1}-{random.randint(1000, 9999)}-{image_name_suffix}.png",
         )
-        print(f"Saving image {i+1} / {images.shape[0]} to: {image_path}")
+        print(f"Saving image {i + 1} / {images.shape[0]} to: {image_path}")
         Image.fromarray(images[i]).save(image_path)
