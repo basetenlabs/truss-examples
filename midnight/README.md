@@ -23,6 +23,7 @@ With midnight as your working directory, you can deploy the model with:
 ```bash
 truss push
 ```
+
 Paste your Baseten API key if prompted.
 
 For more information, see Truss documentation.
@@ -30,8 +31,9 @@ For more information, see Truss documentation.
 Once your Truss is deployed, you can start using Midnight through the Baseten platform! Navigate to the Baseten UI to watch the model build and deploy and invoke it via the REST API.
 
 Note: If you run into the following error during the build phase, downgrade truss with: `pip install truss==0.9.111`
+
 ```
-error: failed to solve: process "/bin/sh -c uv pip install --python $(which python3) -r base_server_requirements.txt --no-cache-dir" did not complete successfully: exit code: 2 
+error: failed to solve: process "/bin/sh -c uv pip install --python $(which python3) -r base_server_requirements.txt --no-cache-dir" did not complete successfully: exit code: 2
 ```
 
 ## GPU Requirements
@@ -120,7 +122,7 @@ request_data = {
 
 # Make prediction
 response = requests.post(
-    endpoint_url, 
+    endpoint_url,
     headers={"Authorization": "Api-Key YOUR_API_KEY"},
     json=request_data
 )
@@ -157,7 +159,7 @@ request_data = {
 
 # Make prediction
 response = requests.post(
-    endpoint_url, 
+    endpoint_url,
     headers={"Authorization": "Api-Key YOUR_API_KEY"},
     json=request_data
 )

@@ -15,7 +15,7 @@ model_metadata:
   example_model_input:
     image_url: "https://upload.wikimedia.org/wikipedia/commons/8/80/Breast_DCIS_histopathology_%281%29.jpg"
     task: "classification"  # or "segmentation"
-    batch_size: 1  
+    batch_size: 1
   tags:
     - medical-imaging
     - pathology
