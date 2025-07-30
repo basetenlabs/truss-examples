@@ -1201,6 +1201,7 @@ def llamalike_config(
     tp=1,
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     batch_scheduler_policy: None = None,
+    base_model: TrussTRTLLMModel = TrussTRTLLMModel.LLAMA,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
@@ -1217,7 +1218,7 @@ def llamalike_config(
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
-            base_model=TrussTRTLLMModel.LLAMA,
+            base_model=base_model,
             checkpoint_repository=CheckpointRepository(
                 repo=repoid,
                 revision="main",
@@ -1247,14 +1248,16 @@ def llamalike_lookahead(
     quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
     tp=1,
     repoid="meta-llama/Llama-3.3-70B-Instruct",
+    use_dynamic_lengths: bool = False,
+    **kwargs,
 ):
-    config = llamalike_config(quant, tp, repoid)
+    config = llamalike_config(quant, tp, repoid, **kwargs)
     config.build.speculator = TrussSpeculatorConfiguration(
         # settings from https://arxiv.org/pdf/2402.02057
         speculative_decoding_mode="LOOKAHEAD_DECODING",
-        lookahead_windows_size=3,
-        lookahead_ngram_size=8,
-        lookahead_verification_set_size=3,
+        lookahead_windows_size=3 if not use_dynamic_lengths else 1,
+        lookahead_ngram_size=8 if not use_dynamic_lengths else 32,
+        lookahead_verification_set_size=3 if not use_dynamic_lengths else 1,
         enable_b10_lookahead=True,  #
     )
     config.build.max_batch_size = 64
@@ -1498,6 +1501,33 @@ DEPLOYMENTS_BRITON = [
         TextGen(),
         solution=Briton(
             trt_config=llamalike_lookahead(repoid="meta-llama/Llama-3.1-8B-Instruct")
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen2.5-Coder-7B-Instruct-min-latency",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
+                repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP8,
+                use_dynamic_lengths=True,
+                base_model=TrussTRTLLMModel.QWEN,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-8B-min-latency",
+        "Qwen/Qwen3-8B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
+                repoid="Qwen/Qwen3-8B",
+                base_model=TrussTRTLLMModel.QWEN,
+                use_dynamic_lengths=True,
+            )
         ),
     ),
 ]
