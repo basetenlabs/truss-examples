@@ -136,7 +136,7 @@ The model returns a JSON response with the following structure:
 
 ## Performance Notes
 
-The model is optimized with a pre-compiled TensorRT engine for the NVIDIA B200 GPU. 
+The model is optimized with a pre-compiled TensorRT engine for the NVIDIA B200 GPU.
 Performance characteristic is described below for the [basic usage](#basic-usage)
 
 
