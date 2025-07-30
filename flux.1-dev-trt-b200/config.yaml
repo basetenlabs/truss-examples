@@ -3,14 +3,13 @@ base_image:
 description: Generate high-quality images from text prompts using Black Forest Labs's Flux model with TensorRT optimization.
 external_package_dirs: []
 model_name: Flux 1.0 Dev - TensorRT
-# python_version: py312
 requirements_file: ./requirements.txt
 resources:
   accelerator: B200
   use_gpu: true
 runtime:
   predict_concurrency: 1
-secrets: 
+secrets:
   hf_access_token: null
 system_packages:
 - ffmpeg
