@@ -1,8 +1,8 @@
-# Cogito Deepseek 671B vLLM Truss
+# Cogito v2 671B Truss (vLLM)
 
-Cogito's Deepseek 671B model has powerful tool calling and reasoning capabilities. See this [blog post](https://www.deepcogito.com/research/cogito-v2-preview).
+Cogito's Deepseek-based 671B model has powerful tool calling and reasoning capabilities. See this [blog post](https://www.deepcogito.com/research/cogito-v2-preview).
 
-This is a [Truss](https://truss.baseten.co/) to deploy the model using the vLLM OpenAI Compatible server.
+This is a [Truss](https://truss.baseten.co/) to deploy the model using the vLLM OpenAI Compatible server. Note that you require 8xB200 GPUs to deploy this large model, users should contact [support@baseten.co](mailto:support@baseten.co) before deploying.
 
 ## Deployment
 
@@ -92,4 +92,4 @@ print(response.json())
 
 ## Support
 
-If you have any questions or need assistance, please open an issue in this repository or contact our support team.
+If you have any questions or need assistance, please open an issue in this repository or contact our [support team](mailto:support@baseten.co).

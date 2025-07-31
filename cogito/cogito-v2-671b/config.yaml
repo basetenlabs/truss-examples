@@ -6,12 +6,12 @@ model_metadata:
     messages: [
       {
         role: "user",
-        content: "What do you think is the fate of the universe? Is there other intelligent life out there?"
+        content: "Write the solution to FizzBuzz in Python."
       }
     ],
     stream: true,
-    max_tokens: 512,
-    temperature: 0.9
+    max_tokens: 10000,
+    temperature: 0.6
   }
   repo_id: deepcogito/cogito-v2-preview-deepseek-671B-MoE-FP8
   tags:
@@ -31,6 +31,6 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency : 32
-model_name: DeepSeek V3 671B MoE FP8
+model_name: Cogito v2 671B
 environment_variables:
   hf_access_token: null
