@@ -11,7 +11,7 @@ model_metadata:
       }
     ],
     "stream": true,
-    "max_tokens": 512,
+    "max_tokens": 10000,
     "temperature": 0.5
   }
   tags:

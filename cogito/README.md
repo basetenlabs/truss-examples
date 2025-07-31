@@ -97,14 +97,11 @@ response = client.chat.completions.create(
         }
     ],
     tools=tools,
-    stream=True,
     max_tokens=1000,
     temperature=0.6
 )
 
-for chunk in response:
-    if chunk.choices[0].delta.content:
-        print(chunk.choices[0].delta.content, end="")
+print(response.json())
 ```
 
 
