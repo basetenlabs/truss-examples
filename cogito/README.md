@@ -1,4 +1,4 @@
-# Deep Cogito v2 Preview Models
+# Cogito v2 Preview Models
 
 This directory contains [Truss](https://truss.baseten.co/) configurations for deploying Cogito v2 preview models using vLLM's OpenAI-compatible server. These models feature powerful tool calling and reasoning capabilities, as detailed in the [Cogito v2 research blog post](https://www.deepcogito.com/research/cogito-v2-preview).
 
@@ -31,7 +31,7 @@ Before deploying any of these models, ensure you have:
 1. Clone this repository:
 ```bash
 git clone https://github.com/basetenlabs/truss-examples.git
-cd deep-cogito
+cd cogito
 ```
 
 2. Navigate to your desired model directory:

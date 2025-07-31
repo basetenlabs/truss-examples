@@ -1,8 +1,8 @@
-# Cogito v2 DeepSeek 671B MoE Truss (vLLM)
+# Cogito v2 Llama 109B MoE Truss (vLLM)
 
-Cogito's DeepSeek-based 671B MoE model has powerful tool calling and reasoning capabilities. See this [blog post](https://www.deepcogito.com/research/cogito-v2-preview).
+Cogito's Llama-based 109B MoE model has powerful tool calling and reasoning capabilities. See this [blog post](https://www.deepcogito.com/research/cogito-v2-preview).
 
-This is a [Truss](https://truss.baseten.co/) to deploy the model using the vLLM OpenAI Compatible server. This model requires 8x B200 GPUs to deploy. Users should contact [support@baseten.co](mailto:support@baseten.co) before deploying.
+This is a [Truss](https://truss.baseten.co/) to deploy the model using the vLLM OpenAI Compatible server. This model requires 4x H100 GPUs to deploy.
 
 ## Deployment
 
@@ -10,7 +10,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd deep-cogito/cogito-v2-preview-deepseek-671B-MoE-vllm
+cd cogito/cogito-v2-preview-llama-109B-MoE-vllm
 ```
 
 Before deployment:
@@ -20,7 +20,7 @@ Before deployment:
 3. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
 4. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Note that you will *not* be able to successfully deploy the model without doing this.
 
-With `cogito-v2-preview-deepseek-671B-MoE-vllm` as your working directory, you can deploy the model with:
+With `cogito-v2-preview-llama-109B-MoE-vllm` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
@@ -77,7 +77,7 @@ tools = [
 
 # Example usage of the OpenAI client to use a tool call
 response = client.chat.completions.create(
-    model="deepseek",
+    model="llama",
     messages=[
         {
             "role": "user",
@@ -92,12 +92,11 @@ print(response.json())
 
 ## Model Details
 
-- **Model**: Cogito v2 Preview DeepSeek 671B MoE FP8
+- **Model**: Cogito v2 Preview Llama 109B MoE
 - **Architecture**: Mixture of Experts (MoE)
-- **GPU Requirements**: 8x B200
-- **Tool Call Parser**: deepseek_v3
-- **Tensor Parallel Size**: 8
-- **GPU Memory Utilization**: 90%
+- **GPU Requirements**: 4x H100
+- **Tool Call Parser**: llama3_json
+- **Tensor Parallel Size**: 4
 
 ## Support
 
