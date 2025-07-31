@@ -10,7 +10,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd cogito/cogito-deepseek-v3-fp8
+cd cogito/cogito-v2-671b
 ```
 
 Before deployment:
@@ -20,7 +20,7 @@ Before deployment:
 3. Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens).
 4. Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_key`. Note that you will *not* be able to successfully deploy the model without doing this.
 
-With `cogito-deepseek-v3-fp8` as your working directory, you can deploy the model with:
+With `cogito-v2-671b` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --publish
