@@ -1,0 +1,23 @@
+model_name: Kaiko Midnight
+description: Pathology foundation model for medical image analysis and classification
+python_version: py39
+base_image:
+  image: nvcr.io/nvidia/pytorch:25.06-py3
+requirements_file: ./requirements.txt
+resources:
+  accelerator: T4
+  use_gpu: true
+  memory: 1Gi
+  cpu: '1'
+runtime:
+  predict_concurrency: 32
+model_metadata:
+  example_model_input:
+    image_url: "https://upload.wikimedia.org/wikipedia/commons/8/80/Breast_DCIS_histopathology_%281%29.jpg"
+    task: "classification"  # or "segmentation"
+    batch_size: 1
+  tags:
+    - medical-imaging
+    - pathology
+    - computer-vision
+    - embeddings
