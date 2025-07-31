@@ -11,7 +11,7 @@ model_metadata:
       }
     ],
     "stream": true,
-    "max_tokens": 512,
+    "max_tokens": 10000,
     "temperature": 0.5
   }
   tags:
@@ -31,5 +31,5 @@ resources:
 secrets:
   hf_access_token: null
 runtime:
-  predict_concurrency : 256
+  predict_concurrency : 32
 model_name: Cogito V2 Preview Llama 109B MoE vLLM
