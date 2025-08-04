@@ -1,0 +1,36 @@
+external_package_dirs: []
+model_cache:
+  - repo_id: Qwen/Qwen-Image
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.bin"
+      - "*.txt"
+      - "*.md"
+model_metadata:
+  example_model_input: {
+    "prompt": "A beautiful sunset over a mountain landscape with golden clouds, Ultra HD, 4K, cinematic composition",
+    "width": 1024,
+    "height": 1024,
+    "num_inference_steps": 50,
+    "true_cfg_scale": 4.0,
+    "seed": 42
+  }
+model_name: Qwen Image Test 1 GPU
+python_version: py311
+requirements:
+  - git+https://github.com/huggingface/diffusers
+  - torch>=2.5.1
+  - transformers>=4.48.2
+  - accelerate
+  - safetensors
+  - pillow
+  - numpy
+resources:
+  accelerator: H100
+  use_gpu: true
+secrets: {}
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6
