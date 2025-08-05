@@ -1,6 +1,10 @@
-base_image:
-  #commit: 302f3aca7ea3f57842881cb2ae0062c19ad24758
-  image: vllm/vllm-openai:gptoss
+model_name: gpt-oss-20b
+python_version: py39
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
 model_metadata:
   repo_id: openai/gpt-oss-20b
   example_model_input: {
@@ -17,22 +21,43 @@ model_metadata:
   }
   tags:
   - openai-compatible
-# cache_internal:
-# - repo_id: openai/gpt-oss-20b
-docker_server:
-  start_command: sh -c /app/data/do.sh
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
-environment_variables:
-  VLLM_LOGGING_LEVEL: INFO
-  hf_access_token: null
-resources:
-  accelerator: H100:1
-  use_gpu: true
-secrets:
-  hf_access_token: null
-runtime:
-  predict_concurrency : 64
-model_name: openai/gpt-oss-20b
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: openai/gpt-oss-20b
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    patch_kwargs:
+      backend: pytorch
+      cuda_graph_config:
+        enable_padding: true
+      disable_overlap_scheduler: 1
+      enable_autotuner: 0
+      enable_chunked_prefill: 1
+      enable_iter_perf_stats: 1
+      enable_trtllm_sampler: 1
+      guided_decoding_backend: xgrammar
+      kv_cache_config:
+        enable_block_reuse: true
+        free_gpu_memory_fraction: 0.8
+      max_batch_size: 64
+      max_beam_width: 1
+      max_input_len: 131072
+      max_num_tokens: 8192
+      max_seq_len: 131072
+      moe_config:
+        backend: TRITON
+      moe_expert_parallel_size: 1
+      tensor_parallel_size: 1
+      tokenizer_limit_length: 131072
+      trust_remote_code: 1
+    served_model_name: openai/gpt-oss-20b
+    tensor_parallel_size: 1
+  version_overrides:
+    v2_llm_version: trtllm-gpu-gpt-oss-dev-83b39ab-7c72b712e8
