@@ -57,7 +57,7 @@ trt_llm:
       max_seq_len: 131072
       moe_config:
         backend: TRITON
-      moe_expert_parallel_size: 1
+      moe_expert_parallel_size: 4
       tensor_parallel_size: 4
       tokenizer_limit_length: 131072
       trust_remote_code: 1
