@@ -29,7 +29,7 @@ trt_llm:
   build:
     checkpoint_repository:
       repo: openai/gpt-oss-120b
-      revision: main
+      revision: refs/pr/35
       source: HF
   inference_stack: v2
   runtime:
