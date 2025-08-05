@@ -1,0 +1,2 @@
+#!/bin/bash
+hf download "openai/gpt-oss-20b" --local-dir /app/models/openai && vllm serve /app/models/openai --disable-log-requests --served-model-name openai/gpt-oss-20b --max-model-len 131072 --max-num-seqs 32 --tensor-parallel-size 1 --gpu-memory-utilization 0.95
