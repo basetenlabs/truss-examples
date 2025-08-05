@@ -105,12 +105,12 @@ The model supports various aspect ratios. Here are some common configurations:
 
 To deploy this model:
 
-1. Make sure you have the Truss CLI installed
-2. Navigate to the model directory
+1. Clone the repository
+2. Make sure you have the Truss CLI installed (`pip install truss`)
 3. Run the deployment command:
 
 ```bash
-truss push qwen-image --publish
+truss push qwen/qwen-image --publish
 ```
 
 ## Model Features
