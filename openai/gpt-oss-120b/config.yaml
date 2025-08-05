@@ -1,0 +1,63 @@
+model_name: gpt-oss-120b
+python_version: py39
+model_metadata:
+  repo_id: openai/gpt-oss-120b
+  example_model_input: {
+    "model": "openai/gpt-oss-120b",
+    "messages": [
+      {
+      "role": "user",
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+  tags:
+  - openai-compatible
+resources:
+  accelerator: H100:4
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: openai/gpt-oss-120b
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    patch_kwargs:
+      backend: pytorch
+      cuda_graph_config:
+        enable_padding: true
+      disable_overlap_scheduler: 1
+      enable_autotuner: 0
+      enable_chunked_prefill: 1
+      enable_iter_perf_stats: 1
+      enable_trtllm_sampler: 1
+      guided_decoding_backend: xgrammar
+      kv_cache_config:
+        enable_block_reuse: true
+        free_gpu_memory_fraction: 0.8
+      max_batch_size: 64
+      max_beam_width: 1
+      max_input_len: 131072
+      max_num_tokens: 8192
+      max_seq_len: 131072
+      moe_config:
+        backend: TRITON
+      moe_expert_parallel_size: 1
+      tensor_parallel_size: 4
+      tokenizer_limit_length: 131072
+      trust_remote_code: 1
+    served_model_name: openai/gpt-oss-120b
+    tensor_parallel_size: 4
+  version_overrides:
+    v2_llm_version: trtllm-gpu-gpt-oss-dev-83b39ab-7c72b712e8
