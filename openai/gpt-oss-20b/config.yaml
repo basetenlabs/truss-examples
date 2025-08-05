@@ -1,6 +1,6 @@
 base_image:
   #commit: 302f3aca7ea3f57842881cb2ae0062c19ad24758
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:c494f96fbcf5e9f19f59e3dea6c2780aeb6c567f
+  image: vllm/vllm-openai:gptoss
 model_metadata:
   repo_id: openai/gpt-oss-20b
   example_model_input: {
