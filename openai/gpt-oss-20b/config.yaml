@@ -1,4 +1,4 @@
-model_name: gpt-oss-20b
+model_name: GPT OSS 20B
 python_version: py39
 resources:
   accelerator: H100
@@ -11,12 +11,16 @@ model_metadata:
     "model": "openai/gpt-oss-20b",
     "messages": [
       {
+      "role": "system",
+      "content": "Reasoning: high"
+      },
+      {
       "role": "user",
       "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
       }
     ],
     "stream": true,
-    "max_tokens": 512,
+    "max_tokens": 2048,
     "temperature": 0.5
   }
   tags:
