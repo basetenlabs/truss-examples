@@ -45,8 +45,6 @@ trt_llm:
       enable_autotuner: 0
       enable_chunked_prefill: 1
       enable_iter_perf_stats: 1
-      enable_trtllm_sampler: 1
-      guided_decoding_backend: xgrammar
       kv_cache_config:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
@@ -64,4 +62,4 @@ trt_llm:
     served_model_name: openai/gpt-oss-120b
     tensor_parallel_size: 4
   version_overrides:
-    v2_llm_version: trtllm-gpu-gpt-oss-dev-83b39ab-7c72b712e8
+    v2_llm_version: trtllm-gpu-gpt-oss-dev-83b39ab-9446d76b6f
