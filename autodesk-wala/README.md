@@ -24,7 +24,7 @@ Notes:
 - The HF token is read from the `hf_access_token` secret and exported for `hf_hub_download`.
 
 ### Invoke (Python)
-A simple client is provided in `test.py`. It reads `examples/single_view/table.png`, sends it to your deployed endpoint, saves `output.obj`, and displays it if `trimesh` + `plotly` are installed.
+A simple client is provided in `test_example.py`. It reads `examples/single_view/table.png`, sends it to your deployed endpoint, saves `output.obj`, and displays it if `trimesh` + `plotly` are installed.
 
 ```bash
 export BASETEN_API_KEY=...  # your Baseten API key
