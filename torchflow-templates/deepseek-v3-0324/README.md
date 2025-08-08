@@ -37,7 +37,7 @@ These map 1-to-1 to TensorRT-LLM flags for extra performance tuning.
 
 ## Performance Metrics
 
-A preliminary benchmark was conducted with the following parameters:  
+A preliminary benchmark was conducted with the following parameters:
 
 - 150 total requests
 - 16 concurrent requests
