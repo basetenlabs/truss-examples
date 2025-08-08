@@ -29,7 +29,6 @@ resources:
   use_gpu: true
 secrets:
   hf_access_token: set token in baseten workspace
-system_packages: []
 trt_llm:
   build:
     checkpoint_repository:
