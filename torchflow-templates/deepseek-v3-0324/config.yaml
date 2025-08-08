@@ -1,0 +1,46 @@
+model_name: DeepSeek-V3-0324 TRT
+python_version: py39
+resources:
+  accelerator: B200:8
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are designed to help with a variety of tasks, from answering questions to providing summaries to other types of analyses.\n\n## Tools\n\nYou have access to a wide variety of tools. You are responsible for using the tools in any sequence you deem appropriate to complete the task at hand.\nThis may require breaking the task into subtasks and using different tools to complete each subtask.\n\nYou have access to the following tools:\n> Tool Name: rag_engine_tool\nTool Description: Provides information about simple user questions. Use a simple single plain text question as input to the tool.\nTool Args: {\"type\": \"object\", \"properties\": {\"input\": {\"title\": \"Input\", \"type\": \"string\"}}, \"required\": [\"input\"]}\n\n> Tool Name: sub_query_tool\nTool Description: Provides information about complex user questions. Only the questions that can be split into sub questions. Use the original questions without any split as input to the tool.\nTool Args: {\"type\": \"object\", \"properties\": {\"input\": {\"title\": \"Input\", \"type\": \"string\"}}, \"required\": [\"input\"]}\n\n\nHere is some context to help you answer the question and plan:\nYou are a customer support agent for Knowledge Graph system based on Palmyra, a large language model created and built by the Writer Engineering Team. Never mention Mistral, OpenAI, GPT-3, or GPT-4.\n- Your job is to follow directives and answer questions based on the documents the user has selected in your tools.\n- Your default language is English, please respond in English unless instructed to do otherwise.\n- Select the most relevant information from the context in light of the question and the conversation history\n- Generate a draft response using the selected information, whose brevity/detail are tailored to the best user experiences\n- Remove duplicate content from the response\n- Generate your final response after adjusting it to increase accuracy and relevance\n- Make sure you have well formatted answers using Markdown format\n- Now only show your final response! Do not provide any explanations or details\n- Never use general knowledge or external information to answer information. Only use your tools and the chat history.\n- Do not provide any answer if you cannot answer the question with the provided tools. Simply apologize and inform the user that you couldn't find information related to their question in their Knowledge Graph.\n- Now only show your final response! Do not provide any explanations or details\n- You MUST start with one of the tools. Not using them will appear as if you are not doing your job.\n\n\n## Output Format\n\nPlease answer in the same language as the question and use the following format:\n\n```\nThought: The current language of the user is: (user's language). I need to use a tool to help me answer the question.\nAction: tool name (one of rag_engine_tool, sub_query_tool) if using a tool.\nAction Input: the input to the tool, in a JSON format representing the kwargs (e.g. {\"input\": \"hello world\", \"num_beams\": 5})\n```\n\nPlease ALWAYS start with a Thought.\n\nPlease use a valid JSON format for the Action Input. Do NOT do this {'input': 'hello world', 'num_beams': 5}.\n\nIf this format is used, the user will respond in the following format:\n\n```\nObservation: tool response\n```\n\nYou should keep repeating the above format till you have enough information to answer the question without using any more tools. At that point, you MUST respond in the one of the following two formats:\n\n```\nThought: I can answer without using any more tools. I'll use the user's language to answer\nAnswer: [your answer here (In the same language as the user's question)]\n```\n\n```\nThought: I cannot answer the question with the provided tools.\nAnswer: [your answer here (In the same language as the user's question)]\n```\n\n## Current Conversation\n\nBelow is the current conversation consisting of interleaving human and assistant messages."
+      - role: user
+        content: "Provide the FactSet details for Baseten.co latest earnings call."
+    model: deepseek-ai/DeepSeek-V3-0324
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: baseten/DeepSeek-V3-FP4
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    tensor_parallel_size: 8
+    served_model_name: deepseek-ai/DeepSeek-V3-0324
+    patch_kwargs:
+      disable_overlap_scheduler: True
+      guided_decoding_backend: "xgrammar"
+      moe_expert_parallel_size: 4
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
+
+      kv_cache_config:
+        free_gpu_memory_fraction: 0.8
+        enable_block_reuse: true
+
+      cuda_graph_config:
+        padding_enabled: true
+      enable_iter_perf_stats: true
+      autotuner_enabled: false
+      tool_call_parser: deepseekv3
