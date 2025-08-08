@@ -1,0 +1,53 @@
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  tags:
+    - openai-compatible
+  example_model_input: {
+    "model": "deepseek-ai/DeepSeek-V3-0324",
+    "messages": [
+      {
+      "role": "user",
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
+      }
+    ],
+    "stream": true,
+    "max_tokens": 2048,
+    "temperature": 0.5
+  }
+  repo_id: Qwen/Qwen3-32B
+model_name: Qwen3-32B
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100:2
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+secrets:
+  hf_access_token: set token in baseten workspace
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: Qwen/Qwen3-32B
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    max_batch_size: 64
+    max_seq_len: 32768
+    tensor_parallel_size: 2
+    served_model_name: Qwen/Qwen3-32B
+    patch_kwargs:
+      disable_overlap_scheduler: True
+      guided_decoding_backend: "xgrammar"
+
+      kv_cache_config:
+        free_gpu_memory_fraction: 0.8
+        enable_block_reuse: true
+
+      cuda_graph_config:
+        padding_enabled: true
+      enable_iter_perf_stats: true
+      autotuner_enabled: false
