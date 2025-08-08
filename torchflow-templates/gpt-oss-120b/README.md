@@ -1,4 +1,4 @@
-# DeepSeek-V3 0324 with TensorRT-LLM (TorchFlow) — High-Throughput Template
+# GPT OSS 120B with TensorRT-LLM (TorchFlow) — High-Throughput Template
 
 GPT OSS 120B is OpenAI's open source model designed for powerful reasoning, agentic tasks and other developer use cases.
 
@@ -45,10 +45,10 @@ Results:
 
 | Metric                              | Value              |
 | ----------------------------------- | ------------------ |
-| Average Latency                     | 3.4553s           |
-| Average Time to First Token (TTFT)  | 0.4397s           |
-| Average Perceived Tokens per Second | 1304.2998           |
-| Average Overall Throughput          | 20868.7972 tokens/s |
+| Average Latency                     | NA           |
+| Average Time to First Token (TTFT)  | NA           |
+| Average Perceived Tokens per Second | NA           |
+| Average Overall Throughput          | NA           |
 
 ---
 
