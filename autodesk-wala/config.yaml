@@ -1,0 +1,8 @@
+model_name: ADSKAILab/WaLa-SV-1B
+python_version: py311
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+requirements_file: ./requirements.txt # should cover all the dependencies for WaLa, taken from repo
+secrets:
+  hf_access_token: null
