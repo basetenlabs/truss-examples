@@ -5,18 +5,16 @@ model_metadata:
   tags:
     - openai-compatible
   example_model_input: {
-    messages: [
+    "model": "deepseek-ai/DeepSeek-V3-0324",
+    "messages": [
       {
-        role: "user",
-        content: "Which is heavier, a pound of bricks or a pound of feathers?"
+      "role": "user",
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
       }
     ],
-    stream: true,
-    max_tokens: 1024,
-    temperature: 0.6,
-    top_p: 1.0,
-    top_k: 40,
-    frequency_penalty: 1
+    "stream": true,
+    "max_tokens": 2048,
+    "temperature": 0.5
   }
   repo_id: Qwen/Qwen3-32B
 model_name: Qwen3-32B
