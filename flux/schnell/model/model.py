@@ -11,6 +11,8 @@ import torch
 from diffusers import FluxPipeline
 from PIL import Image
 
+from b10_tcache import load_compile_cache, save_compile_cache
+
 logging.basicConfig(level=logging.INFO)
 MAX_SEED = np.iinfo(np.int32).max
 
@@ -23,10 +25,61 @@ class Model:
         self.pipe = None
 
     def load(self):
+        cache_loaded = load_compile_cache()
+
         self.pipe = FluxPipeline.from_pretrained(
             self.model_name, torch_dtype=torch.bfloat16, token=self.hf_access_token
         ).to("cuda")
-        # self.pipe.enable_model_cpu_offload()
+
+        logging.info("Compiling the model for performance optimization")
+        self.pipe.transformer = torch.compile(
+            self.pipe.transformer, mode="max-autotune-no-cudagraphs", dynamic=False
+        )
+
+        self.pipe.vae.decode = torch.compile(
+            self.pipe.vae.decode, mode="max-autotune-no-cudagraphs", dynamic=False
+        )
+
+        seed = random.randint(0, MAX_SEED)
+        generator = torch.Generator().manual_seed(seed)
+        start_time = time.time()
+
+        # Warmup the model with dummy prompts on every resolution that you will support
+        for width, height in [(1024, 1024), (1216, 832), (896, 1152)]:
+            self.pipe(
+                prompt="dummy prompt",
+                prompt_2=None,
+                guidance_scale=0.0,
+                max_sequence_length=256,
+                num_inference_steps=4,
+                width=width,
+                height=height,
+                output_type="pil",
+                generator=generator,
+            )
+            self.pipe(
+                prompt="extra dummy prompt",
+                prompt_2=None,
+                guidance_scale=0.0,
+                max_sequence_length=256,
+                num_inference_steps=4,
+                width=width,
+                height=height,
+                output_type="pil",
+                generator=generator,
+            )
+
+        end_time = time.time()
+
+        logging.info(
+            f"Warmup completed in {(end_time - start_time)} seconds. "
+            "This is expected to take a few minutes on the first run."
+        )
+
+        if not cache_loaded:
+            # Save compile cache for future runs
+            save_compile_cache()
+
         try:
             result = subprocess.run(
                 ["nvidia-smi"], capture_output=True, text=True, check=True
