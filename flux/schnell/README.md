@@ -2,11 +2,13 @@
 
 Speed up cold starts for a diffusers Flux pipeline on Baseten by caching PyTorch compilation artifacts with b10‑tcache. This example shows how to:
 
-Compile the heavy parts of the pipeline with torch.compile
+- Compile the heavy parts of the pipeline with torch.compile
 
-Warm up the model across supported resolutions
+- Warm up the model across supported resolutions
 
-Load a previously saved compile cache on startup and save it after first warmup
+- Load a previously saved compile cache on startup and save it after first warmup
+
+In this case, we brought the cold start time from 900s to 70s.
 
 See the full docs on [b10_tcache](https://docs.baseten.co/development/model/b10-tcache).
 
