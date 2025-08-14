@@ -1,0 +1,51 @@
+environment_variables: {}
+external_package_dirs: []
+description: Generate function calls with NexusRaven V2 13B
+model_metadata:
+  avatar_url: https://raw.githubusercontent.com/nexusflowai/NexusRaven/main/docs/NexusRaven.png
+  cover_image_url: https://raw.githubusercontent.com/nexusflowai/NexusRaven/main/docs/NexusRaven.png
+  model: "Nexusflow/NexusRaven-V2-13B"
+  pretty_name: NexusRaven V2 13B
+  tags:
+    - text-generation
+    - function-calling
+    - open-source
+  example_model_input:
+    "prompt": |
+      Function:
+      def get_weather_data(coordinates):
+          """
+          Fetches weather data from the Open-Meteo API for the given latitude and longitude.
+
+          Args:
+          coordinates (tuple): The latitude and longitude of the location.
+
+          Returns:
+          float: The current temperature in the coordinates you've asked for.
+          """
+
+      Function:
+      def get_coordinates_from_city(city_name):
+          """
+          Fetches the latitude and longitude of a given city name using the Maps.co Geocoding API.
+
+          Args:
+          city_name (str): The name of the city.
+
+          Returns:
+          tuple: The latitude and longitude of the city.
+          """
+
+      User Query: What's the weather like in Seattle right now?<human_end>
+model_name: NexusRaven V2 13B
+python_version: py311
+resources:
+  accelerator: A10G:2
+  use_gpu: true
+  memory: 14Gi
+  cpu: "3"
+requirements:
+  - transformers==4.34.0
+  - sentencepiece==0.1.99
+  - accelerate==0.23.0
+  - torch==2.0.1
