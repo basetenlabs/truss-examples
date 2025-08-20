@@ -9,7 +9,6 @@ import json
 import backoff
 import urllib.error
 from huggingface_hub import hf_hub_download
-import re
 
 
 class DotDict(dict):
@@ -73,7 +72,6 @@ def load_latent_model(
 
 
 class Model:
-
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path: str):
         if os.path.isfile(pretrained_model_name_or_path):

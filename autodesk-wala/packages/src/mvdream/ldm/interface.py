@@ -8,7 +8,6 @@ import torch.nn as nn
 from .modules.diffusionmodules.util import (
     make_beta_schedule,
     extract_into_tensor,
-    noise_like,
 )
 from .util import exists, default, instantiate_from_config
 from .modules.distributions.distributions import DiagonalGaussianDistribution
@@ -87,9 +86,9 @@ class LatentDiffusionInterface(nn.Module):
         self.num_timesteps = int(timesteps)
         self.linear_start = linear_start
         self.linear_end = linear_end
-        assert (
-            alphas_cumprod.shape[0] == self.num_timesteps
-        ), "alphas have to be defined for each timestep"
+        assert alphas_cumprod.shape[0] == self.num_timesteps, (
+            "alphas have to be defined for each timestep"
+        )
 
         to_torch = partial(
             torch.tensor, dtype=torch.float32

@@ -8,13 +8,13 @@
 # GLIDE: https://github.com/openai/glide-text2im
 # MAE: https://github.com/facebookresearch/mae/blob/main/models_mae.py
 # --------------------------------------------------------
-# Code based on https://github.com/facebookresearch/DiT/blob/main/models.py 
+# Code based on https://github.com/facebookresearch/DiT/blob/main/models.py
 
 import torch
 import torch.nn as nn
 import numpy as np
 import math
-from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
+from timm.models.vision_transformer import Attention, Mlp
 
 from typing import Final
 import torch.nn.functional as F
@@ -727,4 +727,3 @@ if __name__ == "__main__":
     output = model(x, t, latent_codes=condition)
     print(model)
     print(output.shape)
-

@@ -50,7 +50,6 @@ def load_checkpoint(filename: str):
 
 
 def save_checkpoint(filename, model, args, optimizer, scheduler, current_epoch):
-
     torch.save(
         {
             "model": model.state_dict(),
@@ -113,7 +112,6 @@ def get_device(args):
 
 
 class AverageMeter(object):
-
     def __init__(self):
         self.reset()
 

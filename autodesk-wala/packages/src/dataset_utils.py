@@ -1,6 +1,4 @@
-import functools
 import uuid
-import tempfile
 
 import h5py
 import numpy as np
@@ -129,7 +127,6 @@ def get_singleview_data(image_file, image_transform, device, image_over_white=No
 
 
 def get_multiview_data(image_files, views, image_transform, device):
-
     image_files = [
         (
             get_s3_object(image_file)
@@ -189,7 +186,6 @@ def get_voxel_data_json(voxel_file, voxel_resolution, device):
 
 
 def get_image_transform(args, train_step=False):
-
     transform = []
 
     if (
@@ -262,7 +258,6 @@ def get_pointcloud_data(pointcloud_file, device):
 
 
 def get_mv_dm_data(image_files, views, image_transform, device):
-
     image_files = [
         (
             get_s3_object(image_file)
@@ -291,7 +286,6 @@ def get_mv_dm_data(image_files, views, image_transform, device):
 
 
 def get_sketch_data(image_file, image_transform, device, image_over_white=True):
-    
     if isinstance(image_file, str):
         file_base_name = osp.basename(image_file).split(".")[0]
         if image_file.startswith("s3://"):
@@ -313,8 +307,8 @@ def get_sketch_data(image_file, image_transform, device, image_over_white=True):
 
     return data
 
+
 def get_sv_dm_data(image_file, image_transform, device, image_over_white=None):
-    
     if isinstance(image_file, str):
         file_base_name = osp.basename(image_file).split(".")[0]
         if image_file.startswith("s3://"):

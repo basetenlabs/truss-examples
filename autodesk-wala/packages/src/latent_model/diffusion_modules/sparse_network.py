@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 import copy
 import pywt
-from spconv.core import AlgoHint, ConvAlgo
+from spconv.core import ConvAlgo
 import spconv.pytorch as spconv
 from spconv.pytorch.hash import HashTable
 from src.latent_model.diffusion_modules.dwt_utils import (
@@ -20,7 +20,7 @@ takes a tuple of (h,w) and returns a tuple of (h,w)
 
 
 def conv_output_shape(input_size, kernel_size=1, stride=1, pad=0):
-    from math import floor, ceil
+    from math import floor
 
     h = floor(((input_size + (2 * pad) - kernel_size) / stride) + 1)
     return h
@@ -169,7 +169,6 @@ class DownSampleConv3D(torch.nn.Module):
         torch.nn.init.constant_(self.last_layer.bias, 0)
 
     def forward(self, input_features):
-
         x = input_features
         batch_size = x.size(0)
 
@@ -214,7 +213,6 @@ class Conv3DHigh(torch.nn.Module):
 
         for layer_dim, kernel_size, stride in conv3d_tuple_layers:
             if self.config.conv3d_use_upsample:
-
                 if stride[0] > 1:
                     layer_list = [NearestUpsample3D(stride)]
                 else:
@@ -286,7 +284,6 @@ class Conv3DHigh(torch.nn.Module):
         torch.nn.init.constant_(self.last_layer.bias, 0)
 
     def forward(self, codes, spatial_shape):
-
         ## transform and reshape
         batch_size = codes.size(0)
         x = codes
@@ -354,7 +351,6 @@ class Conv3D(torch.nn.Module):
                     hasattr(self.config, "conv3d_use_upsample")
                     and self.config.conv3d_use_upsample
                 ):
-
                     layer_list = [
                         NearestUpsample3D(stride),
                         torch.nn.Conv3d(
@@ -433,7 +429,6 @@ class Conv3D(torch.nn.Module):
         torch.nn.init.constant_(self.last_layer.bias, 0)
 
     def forward(self, codes, spatial_shape):
-
         ## transform and reshape
         batch_size = codes.size(0)
         x = codes
@@ -509,7 +504,6 @@ def get_conv_indices(current_indices, current_spatial_shape, conv_module, batch_
 
 
 def compute_modules(conv_dim, input_shape, h0, g0, mode):
-
     assert mode in ["zero", "constant"]
 
     N = input_shape[conv_dim]
@@ -565,7 +559,6 @@ def compute_modules(conv_dim, input_shape, h0, g0, mode):
 def initalize_modules(
     input_shape, max_depth, h0_dep, h0_col, h0_row, g0_dep, g0_col, g0_row, mode
 ):
-
     ## compute input_indices
     shapes_list = [input_shape]
     current_shape = input_shape
@@ -645,7 +638,6 @@ class SparseComposer(torch.nn.Module):
         )
 
     def forward(self, input_indices, weight_func, **kwargs):
-
         batch_size, indices_list = self.extract_indcies_list(input_indices)
 
         ### compute the features from bottom-up
@@ -682,10 +674,13 @@ class SparseComposer(torch.nn.Module):
                     torch.float32,
                     max_size=current_coeff.indices.size(0) * 2,
                 )
-                coeff_indices, query_indices = indices_to_key(
-                    current_coeff.indices, spatial_size=current_coeff.spatial_shape
-                ), indices_to_key(
-                    indices_list[i], spatial_size=current_coeff.spatial_shape
+                coeff_indices, query_indices = (
+                    indices_to_key(
+                        current_coeff.indices, spatial_size=current_coeff.spatial_shape
+                    ),
+                    indices_to_key(
+                        indices_list[i], spatial_size=current_coeff.spatial_shape
+                    ),
                 )
 
                 table.insert(coeff_indices, current_coeff.features)
@@ -777,10 +772,6 @@ class SparseComposer(torch.nn.Module):
 
 
 if __name__ == "__main__":
-
-    from configs import config
-    from models.module.dwt import DWTForward3d, DWTInverse3d
-
     module = spconv.SparseConvTranspose3d(
         1, 1, (16, 1, 1), stride=(2, 1, 1), groups=1, indice_key="spconv3"
     ).to(device)

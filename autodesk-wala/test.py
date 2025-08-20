@@ -1,4 +1,6 @@
-import base64, json, requests
+import base64
+import json
+import requests
 import os
 
 with open("examples/single_view/table.png", "rb") as f:
@@ -31,6 +33,7 @@ outfile = "output.obj"
 with open(outfile, "wb") as f:
     f.write(base64.b64decode(b64))
 print("Saved:", r.get("output_path", "<no path>"), "and", outfile)
+
 
 # Helper to display the generated mesh (matches Colab style)
 def display_mesh(mesh_file: str):
@@ -67,6 +70,7 @@ def display_mesh(mesh_file: str):
         )
     )
     fig.show()
+
 
 # Display the saved OBJ
 display_mesh(outfile)

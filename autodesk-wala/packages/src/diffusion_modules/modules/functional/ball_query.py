@@ -1,5 +1,3 @@
-from torch.autograd import Function
-
 from src.diffusion_modules.modules.functional.backend import (
     _backend,
 )

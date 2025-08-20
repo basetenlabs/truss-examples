@@ -9,14 +9,6 @@ import trimesh
 import torch
 import seaborn as sns
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
-from skimage.measure import block_reduce
-
-import numpy as np
-
 
 def save_point_cloud_as_ply(filename, points, colors=None):
     """
@@ -186,7 +178,6 @@ def save_mesh_png(voxels, out_file, threshold=0.5):
 
 
 def save_point_cloud(voxels, out_file):
-
     result = np.nonzero(voxels)
     pc = list(zip(result[0], result[1], result[2]))
 
@@ -259,7 +250,6 @@ def visualize_voxels(voxels, out_file=None, show=False, transpose=True):
 
 
 def visualize_voxels_texture(voxels, out_file=None, show=False, transpose=True):
-
     # Use numpy
     voxels = np.asarray(voxels)
     # Create plot
@@ -419,8 +409,6 @@ def plot_real_inter_pred(
 
 
 def multiple_plot_label_pc(batch_data_points, batch_labels, num_plots, save_loc=None):
-    from sklearn.manifold import TSNE
-
     my_colors = {
         0: "orange",
         1: "red",
@@ -459,7 +447,6 @@ def multiple_plot_label_pc(batch_data_points, batch_labels, num_plots, save_loc=
 
 
 def multiple_plot(batch_data_points, lmit=0.6, save_loc=None):
-
     my_colors = {
         0: "orange",
         1: "red",
@@ -506,7 +493,6 @@ def multiple_plot(batch_data_points, lmit=0.6, save_loc=None):
 
 
 def multiple_plot_voxel(batch_data_points, save_loc=None, transpose=True):
-
     fig = plt.figure(figsize=(40, 10))
 
     for i in range(len(batch_data_points)):
@@ -534,7 +520,6 @@ def multiple_plot_voxel(batch_data_points, save_loc=None, transpose=True):
 
 
 def multiple_plot_voxel_texture(batch_data_points, save_loc=None, transpose=True):
-
     fig = plt.figure(figsize=(40, 10))
 
     for i in range(len(batch_data_points)):
@@ -571,7 +556,6 @@ def multiple_plot_voxel_texture(batch_data_points, save_loc=None, transpose=True
 
 
 def sketch_labelled_pc(points, labels, save_loc=None, lmit=0.6):
-
     cmap = sns.cubehelix_palette(as_cmap=True)
     my_colors = {
         0: "orange",
@@ -612,7 +596,6 @@ def sketch_labelled_pc(points, labels, save_loc=None, lmit=0.6):
 
 
 def plot_label_pc(data_points, labels, save_loc=None, lmit=0.6):
-
     my_colors = {
         0: "orange",
         1: "red",
@@ -652,8 +635,6 @@ def plot_label_pc(data_points, labels, save_loc=None, lmit=0.6):
 
 
 def multiple_plot_label_pc(batch_data_points, batch_labels, num_plots, save_loc=None):
-    from sklearn.manifold import TSNE
-
     my_colors = {
         0: "orange",
         1: "red",

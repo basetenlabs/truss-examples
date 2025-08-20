@@ -6,8 +6,6 @@ from einops import rearrange
 
 from timm.models.layers import DropPath
 
-import numpy as np
-
 
 # obtained from https://github.com/1zb/3DShape2VecSet/blob/master/models_class_cond.py#L34
 

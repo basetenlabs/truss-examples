@@ -1,13 +1,8 @@
 # https://github.com/juho-lee/set_transformer/blob/master/modules.py
-import os
-import sys
-import copy
-import math
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
+from timm.models.vision_transformer import Attention, Mlp
 
 
 class MAB(nn.Module):
@@ -207,7 +202,7 @@ class DiTBlock_Basic(nn.Module):
             qkv_bias=False,
             qk_norm=True,
             norm_layer=nn.LayerNorm,
-            **block_kwargs
+            **block_kwargs,
         )
         self.norm2 = nn.LayerNorm(hidden_size, elementwise_affine=False, eps=1e-6)
         mlp_hidden_dim = int(hidden_size * mlp_ratio)

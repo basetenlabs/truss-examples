@@ -244,7 +244,6 @@ def create_mlp_components(
 
 
 class PVCNN2Base(nn.Module):
-
     def __init__(
         self,
         num_classes,

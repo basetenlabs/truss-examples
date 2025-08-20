@@ -1,6 +1,5 @@
 import logging
 from pytorch_lightning.callbacks import Callback
-from timm.utils.model import get_state_dict, unwrap_model
 from timm.utils.model_ema import ModelEmaV2
 
 

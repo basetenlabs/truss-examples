@@ -1,19 +1,10 @@
-import os
-import sys
-import copy
-import math
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from src.latent_model.quantize import VectorQuantizer2
 from src.diffusion_modules.dwt import DWTInverse3d
 from src.diffusion_modules.sparse_network import SparseComposer
 from src.experiments.utils.wavelet_utils import (
-    extract_wavelet_coefficients,
-    extract_full_indices,
-    extract_highs_from_values,
     pad_with_batch_idx,
 )
 from src.latent_model.abstract_volume_nn import (
@@ -392,7 +383,7 @@ class get_model(nn.Module):
 
         ### logging the losses
         for order_idx in range(self.current_stage):  #
-            terms[f"loss_{order_idx+1}"] = stage_losses[order_idx]
+            terms[f"loss_{order_idx + 1}"] = stage_losses[order_idx]
         return terms
 
 

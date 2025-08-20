@@ -53,7 +53,10 @@ class Model:
         configured = self._config.get("model_name")
         model_name = configured if isinstance(configured, str) else default_model
 
-        from src.dataset_utils import get_singleview_data, get_image_transform_latent_model
+        from src.dataset_utils import (
+            get_singleview_data,
+            get_image_transform_latent_model,
+        )
         from src.model_utils import Model as WaLaModel
 
         self._dataset_utils = {
@@ -78,12 +81,15 @@ class Model:
             if self.hf_access_token:
                 os.environ["HUGGINGFACE_HUB_TOKEN"] = self.hf_access_token
             from src.model_utils import Model as WaLaModel
+
             self._model = WaLaModel.from_pretrained(
                 pretrained_model_name_or_path=model_name_override
             )
             self._loaded_model_name = model_name_override
 
-    def _simplify_mesh_if_requested(self, obj_path: Path, target_num_faces: Optional[int]):
+    def _simplify_mesh_if_requested(
+        self, obj_path: Path, target_num_faces: Optional[int]
+    ):
         if not target_num_faces:
             return
         try:

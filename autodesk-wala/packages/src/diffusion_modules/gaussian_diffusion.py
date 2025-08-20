@@ -347,7 +347,6 @@ class GaussianDiffusion:
             )
         else:
             if "dp_cond" in model_kwargs:
-
                 if "latent_codes" in model_kwargs:
                     condition = model_kwargs["latent_codes"]
                 elif "single_context" in model_kwargs:
@@ -525,13 +524,13 @@ class GaussianDiffusion:
                  - 'pred_xstart': a prediction of x_0.
         """
 
-        assert (
-            "sampling_steps" in model_kwargs
-        ), "sampling_steps must be in model_kwargs"
+        assert "sampling_steps" in model_kwargs, (
+            "sampling_steps must be in model_kwargs"
+        )
         assert "jumpy_steps" in model_kwargs, "jumpy_steps must be in model_kwargs"
-        assert (
-            "wavelet_volume" in model_kwargs
-        ), "wavelet_volumes must be in model_kwargs"
+        assert "wavelet_volume" in model_kwargs, (
+            "wavelet_volumes must be in model_kwargs"
+        )
         assert "mask" in model_kwargs, "mask must be in model_kwargs"
 
         ### the timestep for setting wavelet gt
@@ -1079,7 +1078,6 @@ class GaussianDiffusion:
             if self.loss_type == LossType.RESCALED_KL:
                 terms["loss"] *= self.num_timesteps
         elif self.loss_type == LossType.MSE or self.loss_type == LossType.RESCALED_MSE:
-
             if single_context is not None:
                 model_output = model(
                     x_t, self._scale_timesteps(t), single_context=single_context
@@ -1173,7 +1171,6 @@ class GaussianDiffusion:
         stage_losses,
         target,
     ):
-
         if "training_indices" in model_kwargs and "high_values_mask" in model_kwargs:
             indices = model_kwargs["training_indices"].view(-1, 4)
             masks = model_kwargs["high_values_mask"].view(-1)
@@ -1208,7 +1205,7 @@ class GaussianDiffusion:
 
                 ### assertion for order_idx = 0 [Remove due to compilation error!]
                 if order_idx == 0:
-                    real_assertion_flag = not ("use_normalize_std" in model_kwargs)
+                    real_assertion_flag = "use_normalize_std" not in model_kwargs
                     self.assert_mask_correctness(
                         batch_size, masks, target_idx, real_assert=real_assertion_flag
                     )
@@ -1400,14 +1397,10 @@ class SpacedDiffusion(GaussianDiffusion):
         kwargs["betas"] = np.array(new_betas)
         super().__init__(**kwargs)
 
-    def p_mean_variance(
-        self, model, *args, **kwargs
-    ):  # pylint: disable=signature-differs
+    def p_mean_variance(self, model, *args, **kwargs):  # pylint: disable=signature-differs
         return super().p_mean_variance(self._wrap_model(model), *args, **kwargs)
 
-    def training_losses(
-        self, model, *args, **kwargs
-    ):  # pylint: disable=signature-differs
+    def training_losses(self, model, *args, **kwargs):  # pylint: disable=signature-differs
         return super().training_losses(self._wrap_model(model), *args, **kwargs)
 
     def _wrap_model(self, model):

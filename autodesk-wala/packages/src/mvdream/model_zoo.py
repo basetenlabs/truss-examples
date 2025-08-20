@@ -1,4 +1,4 @@
-""" Utiliy functions to load pre-trained models more easily """
+"""Utiliy functions to load pre-trained models more easily"""
 
 import os
 import pkg_resources
@@ -34,7 +34,7 @@ def get_config_file(config_path):
 
 
 def build_model(model_name, ckpt_path=None, cache_dir=None):
-    if not model_name in PRETRAINED_MODELS:
+    if model_name not in PRETRAINED_MODELS:
         raise RuntimeError(
             f"Model name {model_name} is not a pre-trained model. Available models are:\n- "
             + "\n- ".join(PRETRAINED_MODELS.keys())

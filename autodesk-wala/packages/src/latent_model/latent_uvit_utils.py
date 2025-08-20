@@ -8,18 +8,14 @@
 # GLIDE: https://github.com/openai/glide-text2im
 # MAE: https://github.com/facebookresearch/mae/blob/main/models_mae.py
 # --------------------------------------------------------
-# Code based on https://github.com/facebookresearch/DiT/blob/main/models.py 
+# Code based on https://github.com/facebookresearch/DiT/blob/main/models.py
 
 import torch
 import torch.nn as nn
-import numpy as np
 import math
-from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
 
-from typing import Final
 import torch.nn.functional as F
 from src.latent_model.latent_dit_utils import (
-    DiT,
     Global_Proj_Layer,
     TimestepEmbedder,
     DiTBlock,
@@ -28,8 +24,6 @@ from src.latent_model.latent_dit_utils import (
 )
 
 from inspect import isfunction
-from einops._torch_specific import allow_ops_in_compiled_graph  # requires einops>=0.6.1
-from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 
 #################################################################################
@@ -468,7 +462,6 @@ class Latent_UVIT(nn.Module):
         self.initialize_weights()
 
     def initialize_weights(self):
-
         if self.with_fix_pos is not None:
             pos_emb = get_3d_sincos_pos_embed(self.pos_emb.shape[-1], self.att_size)
             self.pos_emb.data.copy_(torch.from_numpy(pos_emb).float().unsqueeze(0))

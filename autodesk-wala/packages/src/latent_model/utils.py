@@ -3,7 +3,7 @@ import torch as th
 import torch.nn as nn
 from abc import abstractmethod
 import torch.nn.functional as F
-from torch import nn, einsum
+from torch import einsum
 from einops import rearrange, repeat
 from inspect import isfunction
 from einops._torch_specific import allow_ops_in_compiled_graph  # requires einops>=0.6.1

@@ -1,11 +1,8 @@
-import numpy
 import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_wavelets.dwt.lowlevel as lowlevel
-from pytorch_wavelets.dwt.transform2d import DWTForward
 import torch
 from torch.autograd import Function
-import time
 import pywt
 
 ### modify from https://github.com/fbcotter/pytorch_wavelets/blob/master/pytorch_wavelets/dwt/lowlevel.py
@@ -71,7 +68,6 @@ class DWTInverse3d_Laplacian(nn.Module):
 
         # Do a multilevel inverse transform
         for h in yh[::-1]:
-
             # 'Unpad' added dimensions
             ll_diff = SFB3D_Laplacian.apply(
                 ll, self.g0_dep, self.g0_col, self.g0_row, mode

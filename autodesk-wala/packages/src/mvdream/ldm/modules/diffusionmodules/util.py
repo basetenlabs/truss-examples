@@ -8,7 +8,6 @@
 # thanks!
 
 
-import os
 import math
 import torch
 import torch.nn as nn
@@ -18,7 +17,7 @@ import importlib
 
 
 def instantiate_from_config(config):
-    if not "target" in config:
+    if "target" not in config:
         if config == "__is_first_stage__":
             return None
         elif config == "__is_unconditional__":
@@ -314,7 +313,6 @@ def avg_pool_nd(dims, *args, **kwargs):
 
 
 class HybridConditioner(nn.Module):
-
     def __init__(self, c_concat_config, c_crossattn_config):
         super().__init__()
         self.concat_conditioner = instantiate_from_config(c_concat_config)

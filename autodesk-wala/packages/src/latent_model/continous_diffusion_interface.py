@@ -1,14 +1,6 @@
-import math
-import numpy as np
 import torch
 
 import torch.nn as nn
-import torch.nn.functional as F
-from abc import abstractmethod
-from src.diffusion_modules.fp16_util import (
-    convert_module_to_f16,
-    convert_module_to_f32,
-)
 from src.latent_model.gaussian_diffusion import (
     GaussianDiffusion,
     SpacedDiffusion,
@@ -18,16 +10,6 @@ from src.latent_model.gaussian_diffusion import (
 from src.diffusion_modules.resample import (
     UniformSampler,
     LossSecondMomentResampler,
-)
-from src.diffusion_modules.nn import (
-    SiLU,
-    conv_nd,
-    linear,
-    avg_pool_nd,
-    zero_module,
-    normalization,
-    timestep_embedding,
-    checkpoint,
 )
 from src.latent_model.utils import *
 from src.latent_model.latent_dit_utils import DiT
@@ -91,7 +73,6 @@ class get_model(nn.Module):
 
         # Initialize sampler
         self.sampler = self.initialize_sampler()
-
 
     def reset_diffusion_module(self):
         betas = get_named_beta_schedule(
@@ -303,8 +284,6 @@ class get_model(nn.Module):
             return LossSecondMomentResampler(self.diffusion_module)
         else:
             raise Exception("Unknown Sampler...")
-
- 
 
     def process_condition(self, condition, image_index=None):
         """Process and apply condition mappings."""

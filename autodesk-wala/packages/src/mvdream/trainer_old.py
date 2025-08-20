@@ -6,9 +6,8 @@ from dataset_interface import Dataset_Objaverse_captions
 from src.mvdream.ldm.util import instantiate_from_config
 from src.mvdream.ldm.models.diffusion.ddim import DDIMSampler
 from src.mvdream.model_zoo import build_model
-from src.mvdream.camera_utils import get_camera, get_camera_objaverse
+from src.mvdream.camera_utils import get_camera_objaverse
 
-from PIL import Image
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -502,7 +501,6 @@ def main():
     for epoch in range(args.num_train_epochs):
         # train_loss = 0.0
         for step, batch in enumerate(train_dataloader):
-
             # Convert images to latent space
             latents = vae.encode(batch["images"].to(device, weight_dtype)).sample()
             # latents = latents * vae.config.scaling_factor

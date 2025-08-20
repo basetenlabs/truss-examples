@@ -383,7 +383,6 @@ class SpatialTransformer(nn.Module):
 
 
 class BasicTransformerBlock3D(BasicTransformerBlock):
-
     def forward(self, x, context=None, num_frames=1):
         return checkpoint(
             self._forward, (x, context, num_frames), self.parameters(), self.checkpoint

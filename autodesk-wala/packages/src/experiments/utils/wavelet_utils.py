@@ -14,7 +14,6 @@ class WaveletData(object):
         highs_indices=None,
         wavelet_volume=None,
     ):
-
         if data_stage is None:
             self.data_stage = max(1, output_stage)
         else:
@@ -31,7 +30,6 @@ class WaveletData(object):
         self.low = low
 
     def convert_wavelet_volume(self):
-
         ### if wavelet volume is given then return it
         if self.wavelet_volume is not None:
             return self.wavelet_volume
@@ -40,7 +38,6 @@ class WaveletData(object):
             if self.output_stage == 0:
                 return self.low
             else:
-
                 ## assertion
                 assert self.low.size(0) == self.highs_values.size(
                     0
@@ -61,9 +58,7 @@ class WaveletData(object):
                         self.shape_list[-1][2],
                         data_dim,
                     )
-                ).to(
-                    self.low.device
-                )  # output high volumes
+                ).to(self.low.device)  # output high volumes
 
                 ### extend batch_size to the indices
                 batch_pad = (
@@ -97,7 +92,6 @@ class WaveletData(object):
                 return wavelet_volume
 
     def convert_low_highs(self):
-
         ### compute the volume if not given
         if self.wavelet_volume is None:
             wavelet_volume = self.convert_wavelet_volume()

@@ -6,7 +6,6 @@ from build3d.models.mvdream.ldm.util import instantiate_from_config
 from build3d.models.mvdream.model_zoo import build_model
 from build3d.models.mvdream.camera_utils import get_camera_objaverse
 
-import math
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
@@ -125,7 +124,6 @@ class MVdream_trainer(pl.LightningModule):
         #     ema_unet = EMAModel(ema_unet.parameters())
 
     def enforce_zero_terminal_snr(self):
-
         # Compute alphas_bar_sqrt from alphas
         alphas = self.noise_scheduler.alphas
         alphas_bar = alphas.cumprod(0)
@@ -173,7 +171,6 @@ class MVdream_trainer(pl.LightningModule):
         t,
         #   unconditional_guidance_scale=10., unconditional_conditioning=None,
     ):
-
         model_output = self.model.apply_model(x, t, c)
 
         # if unconditional_conditioning is None or unconditional_guidance_scale == 1.:
@@ -212,7 +209,6 @@ class MVdream_trainer(pl.LightningModule):
         return model_output
 
     def training_step(self, batch, batch_idx):
-
         # Convert images to latent space
         # latents = self.model.first_stage_model.encode(batch["images"].to(self.weight_dtype)).sample()
         latents = self.model.first_stage_model.encode(batch["images"]).sample()

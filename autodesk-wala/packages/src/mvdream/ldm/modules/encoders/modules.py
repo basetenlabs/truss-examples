@@ -5,7 +5,7 @@ from torch.utils.checkpoint import checkpoint
 from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel
 
 import open_clip
-from ...util import default, count_params
+from ...util import count_params
 
 
 class AbstractEncoder(nn.Module):
@@ -17,7 +17,6 @@ class AbstractEncoder(nn.Module):
 
 
 class IdentityEncoder(AbstractEncoder):
-
     def encode(self, x):
         return x
 
@@ -258,8 +257,8 @@ class FrozenCLIPT5Encoder(AbstractEncoder):
         )
         self.t5_encoder = FrozenT5Embedder(t5_version, device, max_length=t5_max_length)
         print(
-            f"{self.clip_encoder.__class__.__name__} has {count_params(self.clip_encoder)*1.e-6:.2f} M parameters, "
-            f"{self.t5_encoder.__class__.__name__} comes with {count_params(self.t5_encoder)*1.e-6:.2f} M params."
+            f"{self.clip_encoder.__class__.__name__} has {count_params(self.clip_encoder) * 1.0e-6:.2f} M parameters, "
+            f"{self.t5_encoder.__class__.__name__} comes with {count_params(self.t5_encoder) * 1.0e-6:.2f} M params."
         )
 
     def encode(self, text):

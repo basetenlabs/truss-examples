@@ -16,13 +16,11 @@ import ftfy
 import regex as re
 
 import hashlib
-import os
 import urllib
 import warnings
-from typing import Any, Union, List
+from typing import List
 from pkg_resources import packaging
 
-import torch
 from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from tqdm import tqdm
@@ -1158,8 +1156,6 @@ def get_clip_model(args):
         grid_emb_size = 1664
         vocab_size = "N/A"
     elif args.clip_model_type == "G-14":
-        import open_clip_mod
-
         print("open source 2b trained model for 400 images is being used G-14")
         clip_model, _, _ = open_clip.create_model_and_transforms(
             "ViT-g-14", pretrained="laion2b_s12b_b42k"

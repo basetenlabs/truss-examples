@@ -3,18 +3,16 @@ import torch
 import numpy as np
 import pytorch_lightning as pl
 from diffusers import DDPMScheduler
-from typing import Optional, List
 from omegaconf import OmegaConf
 
 from src.mvdream.model_zoo import build_model
 from src.mvdream.camera_utils import get_camera
 from src.mvdream.ldm.models.diffusion.ddim import DDIMSampler
-from src.mvdream.camera_utils import get_camera, get_camera_build3d
+from src.mvdream.camera_utils import get_camera_build3d
 from src.mvdream.ldm.util import instantiate_from_config
 
 
 def enforce_zero_terminal_snr(noise_scheduler):
-
     # Compute alphas_bar_sqrt from alphas
     alphas = noise_scheduler.alphas
     alphas_bar = alphas.cumprod(0)
@@ -120,7 +118,7 @@ class MVDreamModule(pl.LightningModule):
     def setup_camera(
         self,
         num_frames: int = 4,
-        testing_views = [0, 6, 10, 26],
+        testing_views=[0, 6, 10, 26],
     ):
         indices_list = testing_views
         batch_size = num_frames
@@ -183,7 +181,7 @@ class MVDreamModule(pl.LightningModule):
         guidance_scale: float = 10,
         ddim_discretize: str = "trailing",
         fp16: bool = False,
-        testing_views: List[int] = [0, 6, 10, 26]
+        testing_views: List[int] = [0, 6, 10, 26],
     ):
         self.model.eval()
         dtype = torch.float16 if fp16 else torch.float32
