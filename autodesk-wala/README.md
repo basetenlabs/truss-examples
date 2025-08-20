@@ -15,16 +15,16 @@ From this folder (`autodesk-wala`):
 
 ```bash
 # Option A: Truss CLI
-truss push --trusted --publish
+truss push --publish
 ```
 
 Notes:
 - You can use the client code in `autodesk-wala/test.py` to call your endpoint and save the OBJ locally.
-- The Truss downloads WaLa source code at runtime (pinned commit) and imports `src/*` to run inference.
+- WaLa source code is vendored in `packages/src/` (run `./vendor_wala.sh` to set up if missing).
 - The HF token is read from the `hf_access_token` secret and exported for `hf_hub_download`.
 
 ### Invoke (Python)
-A simple client is provided in `test_example.py`. It reads `examples/single_view/table.png`, sends it to your deployed endpoint, saves `output.obj`, and displays it if `trimesh` + `plotly` are installed.
+A simple client is provided in `test.py`. It reads `examples/single_view/table.png`, sends it to your deployed endpoint, saves `output.obj`, and displays it if `trimesh` + `plotly` are installed.
 
 ```bash
 export BASETEN_API_KEY=...  # your Baseten API key

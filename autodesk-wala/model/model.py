@@ -4,11 +4,14 @@ import os
 import sys
 import time
 import uuid
-import zipfile
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import torch
+from pytorch_lightning import seed_everything
+
+# Add packages directory to Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "packages"))
 
 # Enable TF32 for better performance on NVIDIA GPUs
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -45,48 +48,10 @@ class Model:
         self._dataset_utils = None
         self._loaded_model_name: Optional[str] = None
 
-    def _ensure_wala_src(self) -> None:
-        """Ensure WaLa source code is available and importable as `src.*`."""
-        try:
-            import importlib
-            if importlib.util.find_spec("src") is not None:
-                return
-        except Exception:
-            pass
-
-        wala_zip_url = (
-            "https://github.com/AutodeskAILab/WaLa/archive/10abccb018c851337258236bc9f63ad5e3e348d3.zip"
-        )
-        extract_root = Path(self._data_dir) / "wala_repo"
-        extract_root.mkdir(parents=True, exist_ok=True)
-
-        candidate_src = None
-        for child in extract_root.glob("WaLa-*/src"):
-            candidate_src = child
-            break
-        if candidate_src is None:
-            import urllib.request
-            with urllib.request.urlopen(wala_zip_url) as resp:
-                content = resp.read()
-            with zipfile.ZipFile(io.BytesIO(content)) as zf:
-                zf.extractall(extract_root)
-            for child in extract_root.glob("WaLa-*/src"):
-                candidate_src = child
-                break
-
-        if candidate_src is None:
-            raise RuntimeError("Failed to prepare WaLa source code.")
-
-        src_root = str(candidate_src.parent.resolve())
-        if src_root not in sys.path:
-            sys.path.insert(0, src_root)
-
     def load(self):
         default_model = "ADSKAILab/WaLa-SV-1B"
         configured = self._config.get("model_name")
         model_name = configured if isinstance(configured, str) else default_model
-
-        self._ensure_wala_src()
 
         from src.dataset_utils import get_singleview_data, get_image_transform_latent_model
         from src.model_utils import Model as WaLaModel
@@ -112,7 +77,6 @@ class Model:
         if model_name_override and model_name_override != self._loaded_model_name:
             if self.hf_access_token:
                 os.environ["HUGGINGFACE_HUB_TOKEN"] = self.hf_access_token
-            self._ensure_wala_src()
             from src.model_utils import Model as WaLaModel
             self._model = WaLaModel.from_pretrained(
                 pretrained_model_name_or_path=model_name_override
@@ -174,7 +138,6 @@ class Model:
         save_dir = Path(self._data_dir) / "outputs" / request_id
         save_dir.mkdir(parents=True, exist_ok=True)
 
-        from pytorch_lightning import seed_everything
         seed_everything(seed, workers=True)
         self._model.set_inference_fusion_params(scale, diffusion_rescale_timestep)
 
