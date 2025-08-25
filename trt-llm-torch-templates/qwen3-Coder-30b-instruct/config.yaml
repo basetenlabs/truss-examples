@@ -1,0 +1,37 @@
+model_metadata:
+  example_model_input:
+    messages:
+    - content: You are a helpful assistant
+      role: system
+    - content: Provide the FactSet details for Baseten.co latest earnings call.
+      role: user
+    model: deepseek-ai/DeepSeek-V3-0324
+model_name: Inference Stack V2 qwen3 moe
+python_version: py39
+resources:
+  accelerator: H100:1
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    patch_kwargs:
+      cuda_graph_config:
+        enable_padding: true
+      enable_autotune: 0
+      enable_iter_perf_stats: 1
+      kv_cache_config:
+        enable_block_reuse: true
+        free_gpu_memory_fraction: 0.8
+    served_model_name: Qwen/Qwen3-Coder-30B-A3B-Instruct
+    tensor_parallel_size: 1

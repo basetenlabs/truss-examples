@@ -1,8 +1,8 @@
-# Qwen3 32B MoE with TensorRT-LLM (TorchFlow) — High-Throughput Template
+# Qwen3 Coder 30B Instruct with TensorRT-LLM (TorchFlow) — High-Throughput Template
 
 Qwen3 32B is a MoE model that is an expert in reasoning, instruction-following, human preference alignment, and agent capabilities.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 32B MoE** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
 
 ---
 
@@ -14,7 +14,7 @@ This directory contains a **[Truss](https://truss.baseten.co/)** template for de
 | `tensor_parallel_size`| **2** | Shards every weight matrix across the 2 H100s |
 | `max_batch_size`      | **64** | Up to 64 concurrent requests per forward pass |
 | `max_seq_len`         | **32768** | Max context length supported by Qwen natively |
-| `served_model_name`   | `Qwen/Qwen3-32B` | `model: Qwen/Qwen3-32B` to call this model in OpenAI Compatible server |
+| `served_model_name`   | `Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` | `model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` to call this model in OpenAI Compatible server |
 
 ---
 
@@ -40,12 +40,11 @@ A preliminary benchmark was conducted with the following parameters:
 
 Results:
 
-| Metric                              | Value              |
-| ----------------------------------- | ------------------ |
-| Average Latency                     | 5.7581 s           |
-| Average Time to First Token (TTFT)  | 1.6962 s           |
-| Average Perceived Tokens per Second | 717.2388           |
-| Average Overall Throughput          | 11475.8215 tokens/s |
+| Metric                              |Torchflow              |vLLM               |
+| ----------------------------------- | ------------------ | ---------------- |
+| Average Latency                     | 7.3772 s           | 8.2202s           |
+| Average Time to First Token (TTFT)  | 0.2066 s           | 0.1888s           |
+| Average Perceived Tokens per Second | 974.0529           | 908.9224            |
 
 ---
 
@@ -55,7 +54,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd torchflow-templates/qwen3-32b-moe
+cd torchflow-templates/qwen3-Coder-30b-instruct
 ```
 
 Before deployment:
@@ -63,7 +62,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `torchflow-templates/qwen3-32b-moe` as your working directory, you can deploy the model with:
+With `torchflow-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish
