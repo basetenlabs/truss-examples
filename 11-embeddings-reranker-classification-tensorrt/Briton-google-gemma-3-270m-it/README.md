@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-speculative-with-1B-external-draft
+# TensorRT-LLM Briton with google/gemma-3-270m-it
 
-This is a Deployment for TensorRT-LLM Briton with meta-llama/Llama-3.3-70B-Instruct-speculative-with-1B-external-draft. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with google/gemma-3-270m-it. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -15,12 +15,11 @@ Optionally, you can also enable:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [meta-llama/Llama-3.3-70B-Instruct](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct).
+This deployment is specifically designed for the Hugging Face model [google/gemma-3-270m-it](https://huggingface.co/google/gemma-3-270m-it).
 Suitable models can be identified by the `ForCausalLM` suffix in the model name. Currently we support e.g. LLama, Qwen, Mistral models.
 
-meta-llama/Llama-3.3-70B-Instruct  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
+google/gemma-3-270m-it  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
 
-This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -33,15 +32,15 @@ Note: [This is a gated/private model] Retrieve your Hugging Face token from the 
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8
+cd 11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-270m-it
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-270m-it` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8-truss-example was successfully pushed ✨
+# ✨ Model Briton-google-gemma-3-270m-it-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -130,7 +129,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment.
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
 model_metadata:
@@ -143,10 +142,10 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8-truss-example
+model_name: Briton-google-gemma-3-270m-it-truss-example
 python_version: py39
 resources:
-  accelerator: H100:2
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -154,26 +153,15 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Llama-3.3-70B-Instruct
+      repo: google/gemma-3-270m-it
       revision: main
       source: HF
-    max_batch_size: 64
-    max_num_tokens: 32768
     max_seq_len: 32768
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
-    speculator:
-      checkpoint_repository:
-        repo: meta-llama/Llama-3.2-1B-Instruct
-        revision: main
-        source: HF
-      num_draft_tokens: 10
-      speculative_decoding_mode: DRAFT_TOKENS_EXTERNAL
-    tensor_parallel_count: 2
+    quantization_type: no_quant
+    tensor_parallel_count: 1
   runtime:
-    enable_chunked_context: false
-    kv_cache_free_gpu_mem_fraction: 0.45
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
 
 ```
 

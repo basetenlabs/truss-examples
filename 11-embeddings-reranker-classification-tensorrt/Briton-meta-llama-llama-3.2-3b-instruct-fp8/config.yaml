@@ -9,10 +9,10 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-speculative-with-1b-external-draft-fp8-truss-example
+model_name: Briton-meta-llama-llama-3.2-3b-instruct-fp8-truss-example
 python_version: py39
 resources:
-  accelerator: H100:2
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -20,23 +20,14 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Llama-3.3-70B-Instruct
+      repo: meta-llama/Llama-3.2-3B-Instruct
       revision: main
       source: HF
-    max_batch_size: 64
-    max_num_tokens: 32768
-    max_seq_len: 32768
+    max_seq_len: 131072
+    num_builder_gpus: 4
     plugin_configuration:
       use_fp8_context_fmha: true
     quantization_type: fp8_kv
-    speculator:
-      checkpoint_repository:
-        repo: meta-llama/Llama-3.2-1B-Instruct
-        revision: main
-        source: HF
-      num_draft_tokens: 10
-      speculative_decoding_mode: DRAFT_TOKENS_EXTERNAL
-    tensor_parallel_count: 2
+    tensor_parallel_count: 1
   runtime:
-    enable_chunked_context: false
-    kv_cache_free_gpu_mem_fraction: 0.45
+    enable_chunked_context: true

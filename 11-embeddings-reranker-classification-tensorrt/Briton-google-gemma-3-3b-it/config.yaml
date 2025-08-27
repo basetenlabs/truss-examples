@@ -9,7 +9,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.2-1b-instruct-fp8-truss-example
+model_name: Briton-google-gemma-3-3b-it-truss-example
 python_version: py39
 resources:
   accelerator: H100_40GB
@@ -20,14 +20,11 @@ trt_llm:
   build:
     base_model: llama
     checkpoint_repository:
-      repo: meta-llama/Llama-3.2-1B-Instruct
+      repo: unsloth/gemma-3-1b-it
       revision: main
       source: HF
-    max_seq_len: 131072
-    num_builder_gpus: 4
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    max_seq_len: 32768
+    quantization_type: no_quant
     tensor_parallel_count: 1
   runtime:
     batch_scheduler_policy: max_utilization
