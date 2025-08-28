@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with google/gemma-3-27b-it
+# TensorRT-LLM Briton with google/gemma-3-27b-it-speculative-lookahead
 
-This is a Deployment for TensorRT-LLM Briton with google/gemma-3-27b-it. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with google/gemma-3-27b-it-speculative-lookahead. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -32,15 +32,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-27b-it
+cd 11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-27b-it-speculative-lookahead
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-27b-it` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-google-gemma-3-27b-it-speculative-lookahead` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-google-gemma-3-27b-it-truss-example was successfully pushed ✨
+# ✨ Model Briton-google-gemma-3-27b-it-speculative-lookahead-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -142,7 +142,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-google-gemma-3-27b-it-truss-example
+model_name: Briton-google-gemma-3-27b-it-speculative-lookahead-truss-example
 python_version: py39
 resources:
   accelerator: H100
@@ -156,12 +156,21 @@ trt_llm:
       repo: baseten/gemma-3-27b-causallm-it
       revision: main
       source: HF
-    max_seq_len: 131072
+    max_batch_size: 64
+    max_num_tokens: 32768
+    max_seq_len: 32768
     quantization_type: no_quant
+    speculator:
+      enable_b10_lookahead: true
+      lookahead_ngram_size: 8
+      lookahead_verification_set_size: 3
+      lookahead_windows_size: 3
+      num_draft_tokens: 41
+      speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
     batch_scheduler_policy: max_utilization
-    enable_chunked_context: true
+    enable_chunked_context: false
 
 ```
 
