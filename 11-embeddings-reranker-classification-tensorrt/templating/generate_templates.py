@@ -1356,6 +1356,34 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "google/gemma-3-27b-it",
+        "baseten/gemma-3-27b-causallm-it",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="baseten/gemma-3-27b-causallm-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "google/gemma-3-27b-it-speculative-lookahead",
+        "baseten/gemma-3-27b-causallm-it",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
+                repoid="baseten/gemma-3-27b-causallm-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
         "google/gemma-3-1b-it",
         "unsloth/gemma-3-1b-it",
         Accelerator.H100_40GB,
