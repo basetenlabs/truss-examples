@@ -46,6 +46,6 @@ trt_llm:
 
       cuda_graph_config:
         padding_enabled: true
-      enable_iter_perf_stats: true
+      enable_iter_perf_stats: false
       autotuner_enabled: false
       tool_call_parser: deepseekv3

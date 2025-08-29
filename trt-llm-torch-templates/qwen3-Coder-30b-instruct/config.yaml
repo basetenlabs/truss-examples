@@ -5,7 +5,7 @@ model_metadata:
       role: system
     - content: Provide the FactSet details for Baseten.co latest earnings call.
       role: user
-    model: deepseek-ai/DeepSeek-V3-0324
+    model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8
 model_name: Inference Stack V2 qwen3 moe
 python_version: py39
 resources:
@@ -29,9 +29,9 @@ trt_llm:
       cuda_graph_config:
         enable_padding: true
       enable_autotune: 0
-      enable_iter_perf_stats: 1
+      enable_iter_perf_stats: 0
       kv_cache_config:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
-    served_model_name: Qwen/Qwen3-Coder-30B-A3B-Instruct
+    served_model_name: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8
     tensor_parallel_size: 1

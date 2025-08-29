@@ -1,4 +1,4 @@
-model_name: Kimi K2 Instruct Internal Cache Final
+model_name: Kimi K2 Instruct
 python_version: py39
 resources:
   accelerator: B200:4
@@ -8,7 +8,7 @@ resources:
 model_metadata:
   repo_id: baseten/Kimi-K2-Instruct-FP4
   example_model_input:
-    model: baseten/Kimi-K2-Instruct-FP4
+    model: moonshotai/Kimi-K2-Instruct
     messages:
       - role: user
         content: "Provide the FactSet details for Baseten.co latest earnings call."
@@ -20,18 +20,18 @@ trt_llm:
       source: HF
   inference_stack: v2
   runtime:
-    enable_chunked_prefill: false
-    max_batch_size: 16
+    enable_chunked_prefill: true
+    max_batch_size: 64
     max_num_tokens: 8192
-    max_seq_len: 8192
+    max_seq_len: 98304
     tensor_parallel_size: 4
-    served_model_name: baseten/Kimi-K2-Instruct-FP4
+    served_model_name: moonshotai/Kimi-K2-Instruct
     patch_kwargs:
       disable_overlap_scheduler: True
       guided_decoding_backend: null
 
       kv_cache_config:
         free_gpu_memory_fraction: 0.8
-        enable_block_reuse: false
+        enable_block_reuse: true
 
       autotuner_enabled: false
