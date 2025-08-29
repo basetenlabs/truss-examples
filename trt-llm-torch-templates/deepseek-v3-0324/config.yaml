@@ -1,9 +1,11 @@
-build_commands: []
-environment_variables: {}
-external_package_dirs: []
+model_name: DeepSeek-V3-0324 TRT
+python_version: py39
+resources:
+  accelerator: B200:8
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
 model_metadata:
-  tags:
-    - openai-compatible
   example_model_input: {
     "model": "deepseek-ai/DeepSeek-V3-0324",
     "messages": [
@@ -16,32 +18,27 @@ model_metadata:
     "max_tokens": 2048,
     "temperature": 0.5
   }
-  repo_id: Qwen/Qwen3-32B
-model_name: Qwen3-32B
-python_version: py39
-requirements: []
-resources:
-  accelerator: H100:2
-  cpu: '1'
-  memory: 24Gi
-  use_gpu: true
-secrets:
-  hf_access_token: set token in baseten workspace
 trt_llm:
   build:
     checkpoint_repository:
-      repo: Qwen/Qwen3-32B
+      repo: baseten/DeepSeek-V3-FP4
       revision: main
       source: HF
   inference_stack: v2
   runtime:
+    enable_chunked_prefill: true
     max_batch_size: 64
-    max_seq_len: 32768
-    tensor_parallel_size: 2
-    served_model_name: Qwen/Qwen3-32B
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    tensor_parallel_size: 8
+    served_model_name: deepseek-ai/DeepSeek-V3-0324
     patch_kwargs:
       disable_overlap_scheduler: True
       guided_decoding_backend: "xgrammar"
+      moe_expert_parallel_size: 4
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
 
       kv_cache_config:
         free_gpu_memory_fraction: 0.8
@@ -49,5 +46,6 @@ trt_llm:
 
       cuda_graph_config:
         padding_enabled: true
-      enable_iter_perf_stats: true
+      enable_iter_perf_stats: false
       autotuner_enabled: false
+      tool_call_parser: deepseekv3
