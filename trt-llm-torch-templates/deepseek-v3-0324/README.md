@@ -1,4 +1,4 @@
-# DeepSeek-V3 0324 with TensorRT-LLM (TorchFlow) — High-Throughput Template
+# DeepSeek-V3 0324 with TensorRT-LLM (PyTorch) — High-Throughput Template
 
 DeepSeek V3 is a powerful model that excels in coding, mathematical reasoning and ideal for building agents. Especially in the world of building agents, latencies matter.
 
@@ -60,7 +60,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd torchflow-templates/deepseek-v3-0324
+cd trt-llm-torch-templates/deepseek-v3-0324
 ```
 
 Before deployment:
@@ -68,7 +68,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `torchflow-templates/deepseek-v3-0324` as your working directory, you can deploy the model with:
+With `trt-llm-torch-templates/deepseek-v3-0324` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish

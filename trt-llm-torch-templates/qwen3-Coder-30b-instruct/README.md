@@ -1,4 +1,4 @@
-# Qwen3 Coder 30B Instruct with TensorRT-LLM (TorchFlow) — High-Throughput Template
+# Qwen3 Coder 30B Instruct with TensorRT-LLM (PyTorch) — High-Throughput Template
 
 Qwen3 32B is a MoE model that is an expert in reasoning, instruction-following, human preference alignment, and agent capabilities.
 
@@ -54,7 +54,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd torchflow-templates/qwen3-Coder-30b-instruct
+cd trt-llm-torch-templates/qwen3-Coder-30b-instruct
 ```
 
 Before deployment:
@@ -62,7 +62,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `torchflow-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
+With `trt-llm-torch-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish

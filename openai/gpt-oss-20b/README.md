@@ -1,8 +1,8 @@
-# GPT OSS 120B with TensorRT-LLM (PyTorch) — High-Throughput Template
+# GPT OSS 20B with TensorRT-LLM (Torch) — High-Throughput Template
 
-GPT OSS 120B is OpenAI's open source model designed for powerful reasoning, agentic tasks and other developer use cases. It uses their open source response format, Harmony.
+GPT OSS 20B is OpenAI's open source model designed for powerful reasoning, agentic tasks and other developer use cases. It uses their open source response format, Harmony.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **GPT OSS 120B** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 4 H100 GPUs. This truss fully abstracts OpenAI's harmony response format, so everything works outside of the box. You can simply use it like a regular OpenAI compatible server. This stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **GPT OSS 20B** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 4 H100 GPUs. This truss fully abstracts OpenAI's harmony response format, so everything works outside of the box. You can simply use it like a regular OpenAI compatible server. This stack maximizes both inference and throughput.
 
 ---
 
@@ -12,7 +12,7 @@ This directory contains a **[Truss](https://truss.baseten.co/)** template for de
 
 You also need the file in data, which downloads GPT's harmony encoding ahead of time, because once deployed, the deployment will be unable to download from internet.
 
-The environment variable `TIKTOKEN_RS_CACHE_DIR: /app/data` in `config.yaml` points `openai_harmony` to the local encoding file. See this(discussion)[https://huggingface.co/openai/gpt-oss-120b/discussions/39] for details.
+The environment variable `TIKTOKEN_RS_CACHE_DIR: /app/data` in `config.yaml` points `openai_harmony` to the local encoding file. See this(discussion)[https://huggingface.co/openai/gpt-oss-20b/discussions/39] for details.
 
 ---
 
@@ -27,7 +27,7 @@ The environment variable `TIKTOKEN_RS_CACHE_DIR: /app/data` in `config.yaml` poi
 | `max_seq_len`         | **98304** | 96 context length |
 | `enable_chunked_prefill` | `true` | Streams very long prompts without bursting VRAM |
 | `max_num_tokens`      | **8192** | Upper limit on total tokens per chunk |
-| `served_model_name`   | `openai/gpt-oss-120b` | `model: openai/gpt-oss-120b` to call this model in OpenAI Compatible server |
+| `served_model_name`   | `openai/gpt-oss-20b` | `model: openai/gpt-oss-20b` to call this model in OpenAI Compatible server |
 
 ---
 
@@ -51,7 +51,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd trt-llm-torch-templates/gpt-oss-120b
+cd openai/gpt-oss-20b
 ```
 
 Before deployment:
@@ -59,7 +59,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `trt-llm-torch-templates/gpt-oss-120b` as your working directory, you can deploy the model with:
+With `openai/gpt-oss-20b` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish
