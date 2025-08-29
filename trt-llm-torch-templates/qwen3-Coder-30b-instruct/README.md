@@ -2,7 +2,7 @@
 
 Qwen3 Coder 30B is a MoE model that is an expert in reasoning, instruction-following, human preference alignment, and agent capabilities.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 1 H100 GPUs. This inference stack maximizes both inference and throughput.
 
 ---
 
@@ -13,7 +13,7 @@ This directory contains a **[Truss](https://truss.baseten.co/)** template for de
 | --------------------- | -------------------- | -------------- |
 | `tensor_parallel_size`| **2** | Shards every weight matrix across the 2 H100s |
 | `max_batch_size`      | **64** | Up to 64 concurrent requests per forward pass |
-| `max_seq_len`         | **32768** | Max context length supported by Qwen natively |
+| `max_seq_len`         | **131072** | Max context length supported by Qwen natively |
 | `served_model_name`   | `Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` | `model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` to call this model in OpenAI Compatible server |
 
 ---
