@@ -24,8 +24,8 @@ The environment variable `TIKTOKEN_RS_CACHE_DIR: /app/data` in `config.yaml` poi
 | `tensor_parallel_size`| **4** | Shards every weight matrix across the 2 H100s |
 | `moe_expert_parallel_size` | **4** | Shards each expert across 2 H100s |
 | `max_batch_size`      | **64** | Up to 64 concurrent requests per forward pass |
-| `max_seq_len`         | **98304** | 96 context length |
-| `enable_chunked_prefill` | `true` | Streams very long prompts without bursting VRAM |
+| `max_seq_len`         | **98304** | 98304 token context length |
+| `enable_chunked_prefill` | `true` | Chunks long prompts to reduce memory usage |
 | `max_num_tokens`      | **8192** | Upper limit on total tokens per chunk |
 | `served_model_name`   | `openai/gpt-oss-20b` | `model: openai/gpt-oss-20b` to call this model in OpenAI Compatible server |
 
