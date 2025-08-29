@@ -3,7 +3,7 @@ model_metadata:
     messages:
     - content: You are a helpful assistant
       role: system
-    - content: Provide the FactSet details for Baseten.co latest earnings call.
+    - content: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
       role: user
     model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8
 model_name: Inference Stack V2 qwen3 moe
