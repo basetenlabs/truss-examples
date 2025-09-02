@@ -52,11 +52,10 @@ trt_llm:
       max_input_len: 131072
       model_level_stop_words:
       - "<|call|>"
-      moe_expert_parallel_size: 2
       tokenizer_limit_length: 131072
       trust_remote_code: 1
     served_model_name: openai/gpt-oss-120b
-    tensor_parallel_size: 2
+    tensor_parallel_size: 1
   version_overrides:
     # Use truss == 0.10.5
     v2_llm_version: trtllm-gpu-1.1.0rc0-6489f859-00df817e93
