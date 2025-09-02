@@ -146,7 +146,7 @@ model_metadata:
 model_name: Briton-meta-llama-llama-3.2-1b-instruct-fp8-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true

@@ -1317,26 +1317,82 @@ DEPLOYMENTS_BRITON = [
     Deployment(
         "meta-llama/Llama-3.2-3B-Instruct",
         "meta-llama/Llama-3.2-3B-Instruct",
-        Accelerator.A10G,
+        Accelerator.H100_40GB,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
-                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
             )
         ),
     ),
     Deployment(
         "meta-llama/Llama-3.2-1B-Instruct",
         "meta-llama/Llama-3.2-1B-Instruct",
-        Accelerator.L4,
+        Accelerator.H100_40GB,
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
                 repoid="meta-llama/Llama-3.2-1B-Instruct",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "google/gemma-3-270m-it",
+        "google/gemma-3-270m-it",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="google/gemma-3-270m-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "google/gemma-3-27b-it",
+        "baseten/gemma-3-27b-causallm-it",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="baseten/gemma-3-27b-causallm-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "google/gemma-3-27b-it-speculative-lookahead",
+        "baseten/gemma-3-27b-causallm-it",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
+                repoid="baseten/gemma-3-27b-causallm-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "google/gemma-3-1b-it",
+        "unsloth/gemma-3-1b-it",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="unsloth/gemma-3-1b-it",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
                 batch_scheduler_policy="max_utilization",
             )
         ),
@@ -1471,19 +1527,6 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
-        "meta-llama/Llama-3.3-70B-Instruct-speculative-with-1B-external-draft",
-        "meta-llama/Llama-3.3-70B-Instruct",
-        Accelerator.H100,
-        TextGen(),
-        solution=Briton(
-            trt_config=llamalike_spec_dec(
-                repoid="meta-llama/Llama-3.3-70B-Instruct",
-                spec_repo="meta-llama/Llama-3.2-1B-Instruct",
-                tp=2,
-            )
-        ),
-    ),
-    Deployment(
         "Qwen/Qwen2.5-7B-Instruct-with-speculative-lookahead-decoding",
         "Qwen/Qwen2.5-7B-Instruct",
         Accelerator.H100,
@@ -1598,7 +1641,7 @@ With Briton you get the following benefits by default:
 - *chunked prefilling* for long generation tasks
 
 Optionally, you can also enable:
-- *speculative decoding* using external draft models or lookahead decoding
+- *speculative decoding* using lookahead decoding
 - *fp8 quantization* on new GPUS such as H100, H200 and L4 GPUs
 
 Examples:
