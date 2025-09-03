@@ -1,8 +1,8 @@
-# DeepSeek-V3 0324 with TensorRT-LLM (PyTorch) — High-Throughput Template
+# DeepSeek-V3 0324 with BISv2 — High-Throughput Template
 
 DeepSeek V3 is a powerful model that excels in coding, mathematical reasoning and ideal for building agents. Especially in the world of building agents, latencies matter.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **DeepSeek-V3 0324 (FP4)** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **DeepSeek-V3 0324 (FP4)** with **Baseten Inference Stack v2 (TensorRT-LLM + PyTorch backend)** on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
 
 ---
 

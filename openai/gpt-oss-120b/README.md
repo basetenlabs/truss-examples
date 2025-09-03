@@ -1,8 +1,8 @@
-# GPT OSS 120B with TensorRT-LLM (PyTorch) — High-Throughput Template
+# GPT OSS 120B with BISv2 — High-Throughput Template
 
 GPT OSS 120B is OpenAI's open source model designed for powerful reasoning, agentic tasks and other developer use cases. It uses their open source response format, Harmony.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **GPT OSS 120B** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 4 H100 GPUs. This truss fully abstracts OpenAI's harmony response format, so everything works outside of the box. You can simply use it like a regular OpenAI compatible server. This stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **GPT OSS 120B** with **Baseten Inference Stack v2 (TensorRT-LLM + PyTorch backend)** on 4 H100 GPUs. This truss fully abstracts OpenAI's harmony response format, so everything works outside of the box. You can simply use it like a regular OpenAI compatible server. This stack maximizes both inference and throughput.
 
 ---
 

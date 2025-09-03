@@ -1,8 +1,8 @@
-# Qwen3 Coder 30B Instruct with TensorRT-LLM (PyTorch) — High-Throughput Template
+# Qwen3 Coder 30B Instruct with BISv2 — High-Throughput Template
 
 Qwen3 Coder 30B is a MoE model that is an expert in reasoning, instruction-following, human preference alignment, and agent capabilities.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with **Baseten Inference Stack v2 (TensorRT-LLM + PyTorch backend)** on 1 H100 GPUs. This inference stack maximizes both inference and throughput.
 
 ---
 
@@ -11,9 +11,9 @@ This directory contains a **[Truss](https://truss.baseten.co/)** template for de
 
 | Property (YAML path)  | Value                | Why it matters |
 | --------------------- | -------------------- | -------------- |
-| `tensor_parallel_size`| **4** | Shards every weight matrix across the 4 B200s |
-| `max_batch_size`      | **16** | Up to 16 concurrent requests per forward pass |
-| `max_seq_len`         | **98304** | Max context length |
+| `tensor_parallel_size`| **2** | Shards every weight matrix across the 2 H100s |
+| `max_batch_size`      | **64** | Up to 64 concurrent requests per forward pass |
+| `max_seq_len`         | **131072** | Max context length supported by Qwen natively |
 | `served_model_name`   | `Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` | `model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` to call this model in OpenAI Compatible server |
 
 ---
