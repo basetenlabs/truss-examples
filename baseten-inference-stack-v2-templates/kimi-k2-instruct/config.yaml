@@ -1,0 +1,37 @@
+model_name: Kimi K2 Instruct
+python_version: py39
+resources:
+  accelerator: B200:4
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+model_metadata:
+  repo_id: baseten/Kimi-K2-Instruct-FP4
+  example_model_input:
+    model: moonshotai/Kimi-K2-Instruct
+    messages:
+      - role: user
+        content: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: baseten/Kimi-K2-Instruct-FP4
+      revision: 70b0fd863895ef1bae0706471685292d6f63261c
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 98304
+    tensor_parallel_size: 4
+    served_model_name: moonshotai/Kimi-K2-Instruct
+    patch_kwargs:
+      disable_overlap_scheduler: True
+      guided_decoding_backend: null
+
+      kv_cache_config:
+        free_gpu_memory_fraction: 0.8
+        enable_block_reuse: true
+
+      autotuner_enabled: false

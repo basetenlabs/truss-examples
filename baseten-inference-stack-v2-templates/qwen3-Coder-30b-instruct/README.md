@@ -1,8 +1,8 @@
-# DeepSeek-V3 0324 with TensorRT-LLM (TorchFlow) — High-Throughput Template
+# Qwen3 Coder 30B Instruct with BISv2 — High-Throughput Template
 
-DeepSeek V3 is a powerful model that excels in coding, mathematical reasoning and ideal for building agents. Especially in the world of building agents, latencies matter.
+Qwen3 Coder 30B is a MoE model that is an expert in reasoning, instruction-following, human preference alignment, and agent capabilities.
 
-This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **DeepSeek-V3 0324 (FP4)** with Baseten’s **TensorRT-LLM (TRT-LLM) + PyTorch backend** stack on 8 B200 GPUs. This inference stack maximizes both inference and throughput.
+This directory contains a **[Truss](https://truss.baseten.co/)** template for deploying **Qwen3 Coder 30B Instruct** with **Baseten Inference Stack v2 (TensorRT-LLM + PyTorch backend)** on 1 H100 GPUs. This inference stack maximizes both inference and throughput.
 
 ---
 
@@ -11,13 +11,10 @@ This directory contains a **[Truss](https://truss.baseten.co/)** template for de
 
 | Property (YAML path)  | Value                | Why it matters |
 | --------------------- | -------------------- | -------------- |
-| `tensor_parallel_size`| **8** | Shards every weight matrix across the 8 B200s |
-| `moe_expert_parallel_size` | **4** | Shards each expert across 4 B200s |
+| `tensor_parallel_size`| **2** | Shards every weight matrix across the 2 H100s |
 | `max_batch_size`      | **64** | Up to 64 concurrent requests per forward pass |
-| `max_seq_len`         | **98304** | 96 k-token context length supported by DeepSeek |
-| `enable_chunked_prefill` | `true` | Streams very long prompts without bursting VRAM |
-| `max_num_tokens`      | **8192** | Upper limit on total tokens per chunk |
-| `served_model_name`   | `deepseek-ai/DeepSeek-V3-0324` | `model: deepseek-ai/Deepseek-V3-0324` to call this model in OpenAI Compatible server |
+| `max_seq_len`         | **131072** | Max context length supported by Qwen natively |
+| `served_model_name`   | `Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` | `model: Qwen/Qwen3-Coder-30B-A3B-Instruct-FP8` to call this model in OpenAI Compatible server |
 
 ---
 
@@ -27,8 +24,6 @@ These map 1-to-1 to TensorRT-LLM flags for extra performance tuning.
 
 | Property (YAML path)                    | Value / Setting | Effect |
 | --------------------------------------- | --------------- | ------ |
-| `speculative_config.decoding_type`      | `MTP`           | Enables Multi-Token Prediction speculative decoding |
-| `speculative_config.num_nextn_predict_layers` | **3** | Draft uses first L-3 layers → cheaper guesses |
 | `cuda_graph_config.enable_padding`      | `true`          | Pad to fixed shape so one CUDA Graph is reused every step |
 | `kv_cache_config.free_gpu_memory_fraction` | **0.8** | 80 % of post-load VRAM reserved for paged KV-cache |
 | `kv_cache_config.enable_block_reuse`    | `true`          | Identical prefixes share cache blocks → faster TTFT |
@@ -45,12 +40,11 @@ A preliminary benchmark was conducted with the following parameters:
 
 Results:
 
-| Metric                              | Value              |
-| ----------------------------------- | ------------------ |
-| Average Latency                     | 3.4553s           |
-| Average Time to First Token (TTFT)  | 0.4397s           |
-| Average Perceived Tokens per Second | 1304.2998           |
-| Average Overall Throughput          | 20868.7972 tokens/s |
+| Metric                              |Torchflow              |vLLM               |
+| ----------------------------------- | ------------------ | ---------------- |
+| Average Latency                     | 7.3772 s           | 8.2202s           |
+| Average Time to First Token (TTFT)  | 0.2066 s           | 0.1888s           |
+| Average Perceived Tokens per Second | 974.0529           | 908.9224            |
 
 ---
 
@@ -60,7 +54,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd torchflow-templates/deepseek-v3-0324
+cd baseten-inference-stack-v2-templates/qwen3-Coder-30b-instruct
 ```
 
 Before deployment:
@@ -68,7 +62,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `torchflow-templates/deepseek-v3-0324` as your working directory, you can deploy the model with:
+With `baseten-inference-stack-v2-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish

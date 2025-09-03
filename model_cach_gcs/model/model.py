@@ -2,7 +2,6 @@
 import pathlib
 
 
-
 class Model:
     """example usage of `model_cache` in truss"""
 
@@ -21,11 +20,7 @@ class Model:
         #     weights_only=True
         # )
         self.tensor_size = (
-            pathlib.Path(
-                "/app/model_cache/llama/model.safetensors"
-            )
-            .stat()
-            .st_size
+            pathlib.Path("/app/model_cache/llama/model.safetensors").stat().st_size
         )
         print(
             "Model loaded successfully with size of {} bytes".format(self.tensor_size)
