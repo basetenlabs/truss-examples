@@ -60,7 +60,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd trt-llm-torch-templates/deepseek-v3-0324
+cd baseten-inference-stack-v2-templates/deepseek-v3-0324
 ```
 
 Before deployment:
@@ -68,7 +68,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `trt-llm-torch-templates/deepseek-v3-0324` as your working directory, you can deploy the model with:
+With `baseten-inference-stack-v2-templates/deepseek-v3-0324` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish

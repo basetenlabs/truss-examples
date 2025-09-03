@@ -54,7 +54,7 @@ First, clone this repository:
 
 ```sh
 git clone https://github.com/basetenlabs/truss-examples/
-cd trt-llm-torch-templates/qwen3-Coder-30b-instruct
+cd baseten-inference-stack-v2-templates/qwen3-Coder-30b-instruct
 ```
 
 Before deployment:
@@ -62,7 +62,7 @@ Before deployment:
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
 
-With `trt-llm-torch-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
+With `baseten-inference-stack-v2-templates/qwen3-Coder-30b-instruct` as your working directory, you can deploy the model with:
 
 ```sh
 truss push --trusted --publish
