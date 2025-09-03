@@ -19,7 +19,7 @@ model_metadata:
   tags:
   - openai-compatible
 resources:
-  accelerator: B200:8
+  accelerator: B200
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -57,7 +57,7 @@ trt_llm:
       moe_config:
         backend: TRTLLM
     served_model_name: openai/gpt-oss-120b
-    tensor_parallel_size: 8
+    tensor_parallel_size: 1
   version_overrides:
     # Use truss == 0.10.5
     v2_llm_version: trtllm-gpu-1.1.0rc0-6489f859-00df817e93
