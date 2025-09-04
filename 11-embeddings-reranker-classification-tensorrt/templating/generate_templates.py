@@ -924,6 +924,13 @@ DEPLOYMENTS_BEI = [
         solution=BEI(),
     ),
     Deployment(
+        "jinaai/jina-code-embeddings-0.5b",
+        "jinaai/jina-code-embeddings-0.5b",
+        Accelerator.H100_40GB,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
         "WhereIsAI/UAE-Large-V1-embedding",
         "WhereIsAI/UAE-Large-V1",
         Accelerator.L4,

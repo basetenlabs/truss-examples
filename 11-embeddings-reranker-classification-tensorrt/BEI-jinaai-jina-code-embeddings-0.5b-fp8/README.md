@@ -1,30 +1,21 @@
-# Huggingface's text-embeddings-inference with intfloat/multilingual-e5-large-instruct
+# BEI (Baseten-Embeddings-Inference) with jinaai/jina-code-embeddings-0.5b
 
-This is a Deployment for Huggingface's text-embeddings-inference with intfloat/multilingual-e5-large-instruct. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
-
-Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
-
-For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
-```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.7.2
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7.2
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7.2
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7.2
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7.2
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7.2
-```
-
-As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
-For larger models, we recommend downloading the weights at runtime for faster autoscaling, as the weights don't need to go through decompression of the docker image.
+This is a Deployment for BEI (Baseten-Embeddings-Inference) with jinaai/jina-code-embeddings-0.5b. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+With BEI you get the following benefits:
+- *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
+- *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
+- High parallelism: up to 1400 client embeddings per second
+- Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [intfloat/multilingual-e5-large-instruct](https://huggingface.co/intfloat/multilingual-e5-large-instruct).
+This deployment is specifically designed for the Hugging Face model [jinaai/jina-code-embeddings-0.5b](https://huggingface.co/jinaai/jina-code-embeddings-0.5b).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-intfloat/multilingual-e5-large-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+jinaai/jina-code-embeddings-0.5b  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
+This model is quantized to FP8 for deployment, which is supported by Nvidia's newest GPUs e.g. H100, H100_40GB or L4. Quantization is optional, but leads to higher efficiency.
 
 ## Deployment with Truss
 
@@ -37,15 +28,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-intfloat-multilingual-e5-large-instruct
+cd 11-embeddings-reranker-classification-tensorrt/BEI-jinaai-jina-code-embeddings-0.5b-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-intfloat-multilingual-e5-large-instruct` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-jinaai-jina-code-embeddings-0.5b-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-intfloat-multilingual-e5-large-instruct-truss-example was successfully pushed ✨
+# ✨ Model BEI-jinaai-jina-code-embeddings-0.5b-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -155,45 +146,33 @@ print(resp.json())
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment.
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
-base_image:
-  image: baseten/text-embeddings-inference-mirror:89-1.7.2
-docker_server:
-  liveness_endpoint: /health
-  predict_endpoint: /v1/embeddings
-  readiness_endpoint: /health
-  server_port: 7997
-  start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
-    --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
-    1024 --max-batch-tokens 16384 --auto-truncate --tokenization-workers 3"
-model_cache:
-- ignore_patterns:
-  - '*.pt'
-  - '*.ckpt'
-  - '*.onnx'
-  repo_id: intfloat/multilingual-e5-large-instruct
-  revision: main
-  use_volume: true
-  volume_folder: cached_model
 model_metadata:
   example_model_input:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-intfloat-multilingual-e5-large-instruct-truss-example
+model_name: BEI-jinaai-jina-code-embeddings-0.5b-fp8-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
-  memory: 2Gi
+  memory: 10Gi
   use_gpu: true
-runtime:
-  is_websocket_endpoint: false
-  predict_concurrency: 32
-  transport:
-    kind: http
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: jinaai/jina-code-embeddings-0.5b
+      revision: main
+      source: HF
+    max_num_tokens: 32768
+    num_builder_gpus: 1
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /v1/embeddings
 
 ```
 
