@@ -10,7 +10,7 @@ requirements:
   - accelerate
   - sentencepiece
   - protobuf
-  - b10_tcache
+  - b10-transfer
 resources:
   accelerator: H100_40GB
   use_gpu: true
