@@ -11,7 +11,7 @@ import torch
 from diffusers import FluxPipeline
 from PIL import Image
 
-from b10_tcache import load_compile_cache, save_compile_cache
+from b10_transfer import load_compile_cache, save_compile_cache, OperationStatus
 
 logging.basicConfig(level=logging.INFO)
 MAX_SEED = np.iinfo(np.int32).max
@@ -24,13 +24,7 @@ class Model:
         self.hf_access_token = self._secrets["hf_access_token"]
         self.pipe = None
 
-    def load(self):
-        cache_loaded = load_compile_cache()
-
-        self.pipe = FluxPipeline.from_pretrained(
-            self.model_name, torch_dtype=torch.bfloat16, token=self.hf_access_token
-        ).to("cuda")
-
+    def compile(self):
         logging.info("Compiling the model for performance optimization")
         self.pipe.transformer = torch.compile(
             self.pipe.transformer, mode="max-autotune-no-cudagraphs", dynamic=False
@@ -76,7 +70,19 @@ class Model:
             "This is expected to take a few minutes on the first run."
         )
 
-        if not cache_loaded:
+    def load(self):
+        cache_loaded = load_compile_cache()
+
+        self.pipe = FluxPipeline.from_pretrained(
+            self.model_name, torch_dtype=torch.bfloat16, token=self.hf_access_token
+        ).to("cuda")
+
+        if cache_loaded == OperationStatus.ERROR:
+            logging.info("Run in eager mode, skipping torch compile")
+        else:  # OperationStatus.(SUCCESS|SKIPPED|DOES_NOT_EXIST)
+            self.compile()
+
+        if cache_loaded == OperationStatus.DOES_NOT_EXIST:
             # Save compile cache for future runs
             save_compile_cache()
 
