@@ -1,4 +1,4 @@
-# b10‑tcache + torch.compile example (Flux image generation)
+# b10‑transfer + torch.compile example (Flux image generation)
 
 Speed up cold starts for a diffusers Flux pipeline on Baseten by caching PyTorch compilation artifacts with b10‑tcache. This example shows how to:
 
@@ -18,7 +18,7 @@ Add the cache helper to your requirements in `config.yaml`:
 
 ```yaml
 requirements:
-  - b10-tcache
+  - b10-transfer
 ```
 
 ## How it works
@@ -26,11 +26,16 @@ requirements:
 Load (and later save) compile cache via b10_tcache:
 
 ```python
-from b10_tcache import load_compile_cache, save_compile_cache
+from b10_transfer import load_compile_cache, save_compile_cache, OperationStatus
 
 cache_loaded = load_compile_cache()
-# ... compile & warm up ...
-if not cache_loaded:
+
+if cache_loaded == OperationStatus.ERROR:
+    logging.info("Run in eager mode, skipping torch compile")
+else:
+    self.compile()
+
+if cache_loaded == OperationStatus.DOES_NOT_EXIST:
     save_compile_cache()
 ```
 
