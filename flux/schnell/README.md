@@ -10,7 +10,7 @@ Speed up cold starts for a diffusers Flux pipeline on Baseten by caching PyTorch
 
 In this case, we brought the cold start time from 900s to 70s.
 
-See the full docs on [b10_tcache](https://docs.baseten.co/development/model/b10-tcache).
+See the full docs on [b10_transfer](https://docs.baseten.co/development/model/b10-transfer).
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ requirements:
 
 ## How it works
 
-Load (and later save) compile cache via b10_tcache:
+Load (and later save) compile cache via b10_transfer:
 
 ```python
 from b10_transfer import load_compile_cache, save_compile_cache, OperationStatus
