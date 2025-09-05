@@ -54,7 +54,7 @@ trt_llm:
       - "<|call|>"
       tokenizer_limit_length: 131072
       trust_remote_code: 1
-    served_model_name: openai/gpt-oss-120b
+    served_model_name: openai/gpt-oss-20b
     tensor_parallel_size: 1
   version_overrides:
     # Use truss == 0.10.5
