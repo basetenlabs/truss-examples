@@ -26,6 +26,7 @@ SNAC_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 MAX_CHARACTERS_INPUT = 6144
+MAX_CHUNK_SIZE = 300
 
 
 class SnacModelBatched:
@@ -270,26 +271,67 @@ class Model:
             logging.warning("Warn: Using slow format")
             return self._format_prompt_slow(prompt, voice)
 
+    def _chunk_text(self, text: str, max_len: int) -> list[str]:
+        """
+        Split `text` into chunks of length <= max_len, preferring boundaries in this order:
+        double newlines -> sentence enders -> spaces -> hard cut.
+        """
+        if len(text) <= max_len:
+            return [text]
+
+        chunks = []
+        start = 0
+        while start < len(text):
+            end = min(start + max_len, len(text))
+            window = text[start:end]
+
+            # Prefer paragraph-ish breaks
+            split_at = window.rfind("\n")
+            if split_at == -1 or split_at < max_len * 0.5:
+                # Prefer sentence boundaries
+                split_at = max(window.rfind("."), window.rfind("?"), window.rfind("!"))
+                if split_at != -1:
+                    split_at += 1  # include the punctuation
+            if split_at == -1 or split_at < max_len * 0.33:
+                # Prefer last space
+                split_at = window.rfind(" ")
+
+            if split_at == -1:
+                split_at = len(window)
+
+            chunk = text[start : start + split_at].strip()
+            if chunk:
+                chunks.append(chunk)
+
+            start = start + split_at
+            # Skip leading whitespace before next chunk
+            while start < len(text) and text[start].isspace():
+                start += 1
+
+        return chunks or [""]
+
     async def predict(
         self, model_input: Any, request: fastapi.Request
     ) -> StreamingResponse:
         try:
             req_id = str(model_input.get("request_id", uuid.uuid4()))
-            model_input["prompt"] = self.format_prompt(
-                model_input["prompt"], voice=model_input.get("voice", "tara")
-            )
-            input_length = len(model_input["prompt"])
+            max_chunk_size = model_input.get("max_chunk_size", MAX_CHUNK_SIZE)
+            voice = model_input.get("voice", "tara")
+
+            # 1) Chunk the ORIGINAL prompt before formatting
+            original_prompt: str = model_input["prompt"]
+            chunks = self._chunk_text(original_prompt, max_chunk_size)
+            formatted_chunks = [
+                self.format_prompt(chunk, voice=voice) for chunk in chunks
+            ]
+
+            total_input_length = len(original_prompt)
             logging.info(
-                f"Starting request_id {req_id} with input length {input_length}"
+                f"Starting request_id {req_id} with total input length {total_input_length} "
+                f"split into {len(chunks)} chunk(s) (max {max_chunk_size} chars per chunk)."
             )
-            if input_length > MAX_CHARACTERS_INPUT:
-                return Response(
-                    (
-                        f"Your suggested prompt is too long (len: {input_length}), max length is {MAX_CHARACTERS_INPUT} characters."
-                        "To generate audio faster, please split your request into multiple prompts. "
-                    ),
-                    status_code=400,
-                )
+
+            # 2) Model params (carry across chunks)
             model_input["temperature"] = model_input.get("temperature", 0.6)
             model_input["top_p"] = model_input.get("top_p", 0.8)
             model_input["max_tokens"] = model_input.get("max_tokens", 6144)
@@ -302,22 +344,34 @@ class Model:
             model_input["repetition_penalty"] = model_input.get(
                 "repetition_penalty", 1.1
             )
+
             start_time = time.time()
 
             async def audio_stream(req_id: str):
-                token_gen = await self._engine.predict(model_input, request)
+                # 3) Stream each chunk sequentially (preserves original order)
+                for idx, chunk in enumerate(formatted_chunks):
+                    model_input["prompt"] = chunk
 
-                if isinstance(token_gen, StreamingResponse):
-                    token_gen = token_gen.body_iterator
+                    logging.info(f"[{req_id}] Streaming chunk {idx + 1}/{len(chunks)} ")
 
-                async for chunk in tokens_decoder(token_gen, req_id, start_time):
-                    yield chunk
+                    token_gen = await self._engine.predict(model_input, request)
+                    if isinstance(token_gen, StreamingResponse):
+                        token_gen = token_gen.body_iterator
+
+                    # 4) Forward audio bytes as we receive them
+                    async for chunk_bytes in tokens_decoder(
+                        token_gen, req_id, start_time
+                    ):
+                        yield chunk_bytes
+
+                logging.info(f"[{req_id}] Completed streaming {len(chunks)} chunk(s).")
 
             return StreamingResponse(
                 audio_stream(req_id),
                 media_type="audio/wav",
-                headers={"X-Baseten-Input-Tokens": str(input_length)},
+                headers={"X-Baseten-Input-Tokens": str(total_input_length)},
             )
+
         except Exception as e:
             print(f"Error in request_id {req_id}: {e} with input {model_input}")
             return Response(
