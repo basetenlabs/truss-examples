@@ -15,7 +15,7 @@ model_metadata:
     voice: tara
   tags:
     - force-legacy-api-non-openai-compatible
-model_name: Orpheus-3b
+model_name: Orpheus-3b Best Performance
 python_version: py39
 requirements:
   - --extra-index-url https://download.pytorch.org/whl/cu128
