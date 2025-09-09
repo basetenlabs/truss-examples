@@ -1,8 +1,6 @@
 #vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --limit_mm_per_prompt 'image=10' --tensor-parallel-size 2
 base_image:
-  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:c0efdd655b4ce9188f93b0030dcdebcf43858914
-build_commands:
-  - pip install git+https://github.com/huggingface/transformers@cbfb8d7b27b4724f60c4085842f5150dbd3b41f3
+  image: vllm/vllm-openai:v0.10.1.1
 model_metadata:
   repo_id: mistralai/Mistral-Small-3.1-24B-Instruct-2503
   example_model_input: {
@@ -31,7 +29,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --served-model-name mistral --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --tensor-parallel-size 1 --gpu-memory-utilization 0.95\""
+  start_command: "sh -c \"TORCHINDUCTOR_CACHE_DIR=~/.cache/vllm b10-transfer & VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve mistralai/Mistral-Small-3.1-24B-Instruct-2503 --tokenizer_mode mistral --config_format mistral --load_format mistral --tool-call-parser mistral --enable-auto-tool-choice --served-model-name mistral --max-num-seqs 8 --max-model-len 16384 --tensor-parallel-size 1 --gpu-memory-utilization 0.95\""
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -43,6 +41,7 @@ requirements:
 - huggingface_hub
 - hf_transfer
 - datasets
+- b10-transfer
 resources:
   accelerator: H100:1
   use_gpu: true
