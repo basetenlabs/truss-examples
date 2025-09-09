@@ -26,7 +26,7 @@ SNAC_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 MAX_CHARACTERS_INPUT = 6144
-MAX_CHUNK_SIZE = 300
+MAX_CHUNK_SIZE = 280
 
 
 class SnacModelBatched:
@@ -293,6 +293,9 @@ class Model:
                 if split_at != -1:
                     split_at += 1  # include the punctuation
             if split_at == -1 or split_at < max_len * 0.33:
+                # Prefer last comma
+                split_at = window.rfind(",")
+            if split_at == -1:
                 # Prefer last space
                 split_at = window.rfind(" ")
 
