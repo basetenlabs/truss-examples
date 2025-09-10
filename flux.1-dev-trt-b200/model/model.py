@@ -184,6 +184,10 @@ class Model:
         batch_size = model_input.pop("batch_size", 1)
         batch_count = model_input.pop("batch_count", 1)
 
+        # If prompt is a list, use its length as the batch size
+        if isinstance(prompt, list) and len(prompt) > 1:
+            batch_size = len(prompt)
+
         # Validate dimensions
         if height % 8 != 0 or width % 8 != 0:
             raise ValueError("Height and width must be multiples of 8")
@@ -207,7 +211,9 @@ class Model:
         # Prepare prompts
         if not isinstance(prompt, list):
             prompt = [prompt]
-        prompt = prompt * batch_size
+        # Only duplicate if we have 1 prompt but need multiple
+        if len(prompt) == 1 and batch_size > 1:
+            prompt = prompt * batch_size
 
         # Use prompt2 if provided, otherwise use prompt
         prompt2 = model_input.pop("prompt2", None)
@@ -215,13 +221,15 @@ class Model:
             prompt2 = prompt
         elif not isinstance(prompt2, list):
             prompt2 = [prompt2]
-        if len(prompt2) == 1:
+        # Only duplicate if we have 1 prompt2 but need multiple
+        if len(prompt2) == 1 and batch_size > 1:
             prompt2 = prompt2 * batch_size
 
         # Prepare negative prompt
         if not isinstance(negative_prompt, list):
             negative_prompt = [negative_prompt]
-        if len(negative_prompt) == 1:
+        # Only duplicate if we have 1 negative_prompt but need multiple
+        if len(negative_prompt) == 1 and batch_size > 1:
             negative_prompt = negative_prompt * batch_size
 
         # Update guidance scale

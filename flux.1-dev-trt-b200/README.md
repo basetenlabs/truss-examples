@@ -38,6 +38,85 @@ curl -X POST https://app.baseten.co/models/{MODEL_ID}/predict \
   }' | python show.py
 ```
 
+### Batch Processing
+
+The model supports efficient batch processing for generating multiple images in a single request. You can generate up to 4 images simultaneously with either the same prompt or different prompts for each image.
+
+#### Same Prompt for All Images
+
+```bash
+curl -X POST https://app.baseten.co/models/{MODEL_ID}/predict \
+  -H "Authorization: Api-Key API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A beautiful landscape with mountains and a lake, photorealistic, high quality",
+    "negative_prompt": "blurry, low quality, distorted",
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 30,
+    "guidance_scale": 3.5,
+    "seed": 42,
+    "batch_size": 4,
+    "batch_count": 1
+  }' | python show_batch.py
+```
+
+#### Different Prompts for Each Image
+
+```bash
+curl -X POST https://app.baseten.co/models/{MODEL_ID}/predict \
+  -H "Authorization: Api-Key API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": [
+      "A beautiful landscape with mountains and a lake, photorealistic, high quality",
+      "A futuristic city skyline at sunset, neon lights, cyberpunk style, high quality",
+      "A cute cat sitting in a garden, soft lighting, detailed, high quality",
+      "Abstract geometric patterns in vibrant colors, modern art style, high quality"
+    ],
+    "negative_prompt": [
+      "blurry, low quality, distorted",
+      "blurry, low quality, distorted",
+      "blurry, low quality, distorted",
+      "blurry, low quality, distorted"
+    ],
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 30,
+    "guidance_scale": 3.5,
+    "seed": 42,
+    "batch_size": 4,
+    "batch_count": 1
+  }' | python show_batch.py
+```
+
+#### Batch Processing Benefits
+
+- **Parallel Processing**: All images in a batch are generated simultaneously, not sequentially
+- **Better GPU Utilization**: More efficient use of GPU resources compared to separate requests
+- **Faster Total Time**: Generating 4 images in a batch is significantly faster than 4 separate API calls
+- **Consistent Parameters**: All images in a batch use the same dimensions, inference steps, and guidance scale
+
+#### Batch Processing Limitations
+
+- **Maximum Batch Size**: Limited to 4 images per batch (MAX_BATCH_SIZE = 4)
+- **Prompt Array Length**: When using different prompts, the prompt array length must match the batch_size
+- **Memory Requirements**: Larger batches require more GPU memory
+
+#### Displaying Batch Results
+
+Use the included `show_batch.py` script to handle multiple images in the response:
+
+```bash
+# The script automatically detects single vs multiple images
+curl ... | python show_batch.py
+```
+
+The script will:
+- Save each image with a unique filename
+- Automatically open all generated images
+- Print status information about the batch
+
 ### Load Test
 Before running the load test, update `load_test.py` with your actual endpoint URL and API key. Replace the placeholder values for `api_url` and `api_key` with your deployment's information (lines 43 and 44).
 
@@ -106,9 +185,9 @@ Throughput: 0.40 requests/second
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `prompt` | string | required | Text prompt for image generation |
-| `prompt2` | string | same as prompt | Additional prompt for T5 tokenizer |
-| `negative_prompt` | string | "" | Negative prompt to avoid certain elements |
+| `prompt` | string/array | required | Text prompt(s) for image generation. Can be a single string or array of strings for different prompts per batch item |
+| `prompt2` | string/array | same as prompt | Additional prompt(s) for T5 tokenizer. Can be a single string or array of strings |
+| `negative_prompt` | string/array | "" | Negative prompt(s) to avoid certain elements. Can be a single string or array of strings |
 | `height` | int | 1024 | Image height (must be multiple of 8) |
 | `width` | int | 1024 | Image width (must be multiple of 8) |
 | `denoising_steps` | int | 50 | Number of denoising steps |
@@ -125,12 +204,52 @@ Throughput: 0.40 requests/second
 
 The model returns a JSON response with the following structure:
 
+### Single Image Response
+
 ```json
 {
     "status": "success",
     "data": "base64_encoded_image",
     "time": 2.34,
-    "images_generated": 1
+    "prompt": "A beautiful landscape with mountains and a lake, photorealistic, high quality",
+    "negative_prompt": "blurry, low quality, distorted",
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 30,
+    "guidance_scale": 3.5,
+    "seed": 42
+}
+```
+
+### Batch Response (Multiple Images)
+
+```json
+{
+    "status": "success",
+    "data": [
+        "base64_encoded_image_1",
+        "base64_encoded_image_2",
+        "base64_encoded_image_3",
+        "base64_encoded_image_4"
+    ],
+    "time": 7.23,
+    "prompt": [
+        "A beautiful landscape with mountains and a lake, photorealistic, high quality",
+        "A futuristic city skyline at sunset, neon lights, cyberpunk style, high quality",
+        "A cute cat sitting in a garden, soft lighting, detailed, high quality",
+        "Abstract geometric patterns in vibrant colors, modern art style, high quality"
+    ],
+    "negative_prompt": [
+        "blurry, low quality, distorted",
+        "blurry, low quality, distorted",
+        "blurry, low quality, distorted",
+        "blurry, low quality, distorted"
+    ],
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 30,
+    "guidance_scale": 3.5,
+    "seed": 42
 }
 ```
 
