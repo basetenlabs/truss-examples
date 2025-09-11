@@ -2,8 +2,7 @@ base_image:
   image: lmsysorg/sglang:v0.5.2rc2-cu126
 build_commands:
   - pip uninstall -y sglang
-  - git clone -b main https://github.com/sgl-project/sglang.git
-  - cd sglang && pip install --upgrade pip && pip install -e "python[all]"
+  - pip install 'sglang[all] @ git+https://github.com/sgl-project/sglang.git@4a0e0be2a2b43066a2e44e9ddbdeb4a52e3e3a10#subdirectory=python'
 model_metadata:
   repo_id: Qwen/Qwen3-Next-80B-A3B-Thinking
   example_model_input: # Loads sample request into Baseten playground
