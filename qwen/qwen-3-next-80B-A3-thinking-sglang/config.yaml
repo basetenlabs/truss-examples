@@ -33,5 +33,5 @@ model_cache:
   - repo_id: Qwen/Qwen3-Next-80B-A3B-Thinking
     revision: 3e64fd191eaaf4b3e2ccb5519500a0ae515c3e25
     use_volume: true
-    volume_folder: glm
+    volume_folder: qwen
 model_name: Qwen3-Next-80B-A3B-Thinking
