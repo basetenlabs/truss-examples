@@ -1,0 +1,38 @@
+base_image:
+  image: lmsysorg/sglang:v0.5.2rc2-cu126
+build_commands:
+  - pip uninstall -y sglang
+  - git clone -b main https://github.com/sgl-project/sglang.git
+  - cd sglang && pip install --upgrade pip && pip install -e "python[all]"
+model_metadata:
+  repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct
+  example_model_input: # Loads sample request into Baseten playground
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Write FizzBuzz in Python"
+    stream: true
+    model: "Qwen/Qwen3-Next-80B-A3B-Instruct"
+    max_tokens: 4096
+    temperature: 0.6
+  tags:
+    - openai-compatible
+docker_server:
+  # start_command: sh -c "python3 -m sglang.launch_server --model-path /app/model_cache/glm --tp-size 1   --tool-call-parser glm45    --reasoning-parser glm45    --speculative-algorithm EAGLE   --speculative-num-steps 3    --speculative-eagle-topk 1    --speculative-num-draft-tokens 4   --mem-fraction-static 0.9   --served-model-name zai-org/GLM-4.5-Air-FP8   --host 0.0.0.0   --port 8000"
+  start_command: sh -c "SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python3 -m sglang.launch_server --model-path Qwen/Qwen3-Next-80B-A3B-Instruct --revision cfdff41643e5ac01d6613c9974df09650daf0e5e --tp-size 4  --context-length 262144 --mem-fraction-static 0.8 --speculative-algo NEXTN --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --served-model-name Qwen/Qwen3-Next-80B-A3B-Instruct   --host 0.0.0.0   --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+model_cache:
+  - repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct
+    revision: cfdff41643e5ac01d6613c9974df09650daf0e5e
+    use_volume: true
+    volume_folder: glm
+model_name: Qwen3-Next-80B-A3B-Instruct
