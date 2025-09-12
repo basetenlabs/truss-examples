@@ -13,3 +13,4 @@ tests:
   - whisper/faster-whisper-v3
   - playground-v2-aesthetic
   - llama/tinyllama-1.1B-chat-v1.0
+  - qwen/BEI-qwen-qwen3-reranker-0.6b-fp8
