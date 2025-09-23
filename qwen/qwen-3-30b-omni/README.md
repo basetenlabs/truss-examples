@@ -1,6 +1,6 @@
 # Qwen3-Omni-30B-Thinker (vLLM) on Baseten
 
-This is a [Truss](https://truss.baseten.co/) for serving **Qwen/Qwen3-Omni-30B-A3B-Intruct** with **transformers** on Baseten. It exposes an endpoint that accepts **text, image, audio, and video** inputs and returns low-latency text and audio responses. 
+This is a [Truss](https://truss.baseten.co/) for serving **Qwen/Qwen3-Omni-30B-A3B-Intruct** with **transformers** on Baseten. It exposes an endpoint that accepts **text, image, audio, and video** inputs and returns low-latency text and audio responses.
 
 **Why this deployment**
 

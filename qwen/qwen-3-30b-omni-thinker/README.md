@@ -1,6 +1,6 @@
 # Qwen3-Omni-30B-Thinker (vLLM) on Baseten
 
-This is a [Truss](https://truss.baseten.co/) for serving the "thinker" part of **Qwen/Qwen3-Omni-30B-A3B-Intruct** with **vLLM** on Baseten. It exposes an **OpenAI-compatible /v1/chat/completions** endpoint that accepts **text, image, audio, and video** inputs and returns low-latency text responses. 
+This is a [Truss](https://truss.baseten.co/) for serving the "thinker" part of **Qwen/Qwen3-Omni-30B-A3B-Intruct** with **vLLM** on Baseten. It exposes an **OpenAI-compatible /v1/chat/completions** endpoint that accepts **text, image, audio, and video** inputs and returns low-latency text responses.
 
 **Why this deployment**
 
