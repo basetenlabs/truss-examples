@@ -1,0 +1,25 @@
+model_name: Qwen3 Omni 30B Instruct
+base_image:
+  image: qwenllm/qwen3-omni
+model_metadata:
+  example_model_input: {
+    "speaker": "Chelsie",
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Hi, how are you?"
+                }
+            ]
+        }
+    ]
+  }
+runtime:
+  predict_concurrency : 1
+resources:
+  accelerator: H100
+  use_gpu: true
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
