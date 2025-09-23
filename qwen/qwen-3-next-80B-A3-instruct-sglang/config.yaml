@@ -1,8 +1,5 @@
 base_image:
-  image: lmsysorg/sglang:v0.5.2rc2-cu126
-build_commands:
-  - pip uninstall -y sglang
-  - pip install 'sglang[all] @ git+https://github.com/sgl-project/sglang.git@4a0e0be2a2b43066a2e44e9ddbdeb4a52e3e3a10#subdirectory=python'
+  image: lmsysorg/sglang@sha256:c977d3c5cf66029c8c37436a777381cb5bc861527da1b405c90ae2360417eedb
 model_metadata:
   repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct
   example_model_input: # Loads sample request into Baseten playground
@@ -18,19 +15,19 @@ model_metadata:
   tags:
     - openai-compatible
 docker_server:
-  start_command: sh -c "SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python3 -m sglang.launch_server --model-path Qwen/Qwen3-Next-80B-A3B-Instruct --revision cfdff41643e5ac01d6613c9974df09650daf0e5e --tp-size 4  --context-length 262144 --mem-fraction-static 0.8 --speculative-algo NEXTN --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --served-model-name Qwen/Qwen3-Next-80B-A3B-Instruct   --host 0.0.0.0   --port 8000"
+  start_command: sh -c "SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 python3 -m sglang.launch_server --model-path Qwen/Qwen3-Next-80B-A3B-Instruct-FP8 --revision c5f5f263bdd5cc134092897864e8905d8fe7b928 --tp-size 2 --context-length 262144 --mem-fraction-static 0.8 --speculative-algo NEXTN --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --served-model-name Qwen/Qwen3-Next-80B-A3B-Instruct --tool-call-parser qwen25 --host 0.0.0.0 --port 8000"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
   server_port: 8000
 resources:
-  accelerator: H100:4
+  accelerator: H100:2
   use_gpu: true
 runtime:
   predict_concurrency: 128
 model_cache:
-  - repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct
-    revision: cfdff41643e5ac01d6613c9974df09650daf0e5e
+  - repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct-FP8
+    revision: c5f5f263bdd5cc134092897864e8905d8fe7b928
     use_volume: true
     volume_folder: qwen
 model_name: Qwen3-Next-80B-A3B-Instruct
