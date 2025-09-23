@@ -98,7 +98,7 @@ curl -X POST https://model-xxxxxx.api.baseten.co/development/predict \
 ### requests (Python)
 
 ```python
-import os, requests, json
+import os, requests, json, base64
 
 url = "https://model-xxxxxx.api.baseten.co/development/predict"
 headers = {
@@ -110,7 +110,12 @@ payload = {
     "messages": [{"role":"user","content":[{"type":"text","text":"Briefly describe the image."},
         {"type":"image","image":"https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/demo/cars.jpg"}]}]
 }
-print(requests.post(url, headers=headers, data=json.dumps(payload)).json())
+result = requests.post(url, headers=headers, data=json.dumps(payload)).json()
+
+print(result["text"])
+
+with open("result.wav", "wb") as f:
+  f.write(base64.b64decode(result["audio"]))
 ```
 
 ---
