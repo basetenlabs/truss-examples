@@ -1,5 +1,10 @@
 base_image:
-  image: lmsysorg/sglang@sha256:c977d3c5cf66029c8c37436a777381cb5bc861527da1b405c90ae2360417eedb
+  #image: lmsysorg/sglang@sha256:c977d3c5cf66029c8c37436a777381cb5bc861527da1b405c90ae2360417eedb
+  image: lmsysorg/sglang:v0.5.3rc1-cu126
+# build_commands:
+#   - pip install --upgrade pip
+#   - pip uninstall -y sglang
+#   - git clone https://github.com/sgl-project/sglang.git && cd sglang && pip install -e "python[all]"
 model_metadata:
   repo_id: Qwen/Qwen3-Next-80B-A3B-Thinking-FP8
   example_model_input: # Loads sample request into Baseten playground
