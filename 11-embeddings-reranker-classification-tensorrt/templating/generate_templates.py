@@ -114,13 +114,14 @@ With BEI you get the following benefits:
                         "num_builder_gpus": num_builder_gpus,
                     }
                     if self.make_fp8
-                    else ({
-                        "quantization_type": TrussTRTLLMQuantizationType.FP4,
-                        # give more resources / cpu ram + vram on build if the model uses not-mig
-                        "num_builder_gpus": num_builder_gpus,
-                    }
-                    if self.make_fp4
-                    else {})
+                    else (
+                        {
+                            "quantization_type": TrussTRTLLMQuantizationType.FP4,
+                            "num_builder_gpus": num_builder_gpus,
+                        }
+                        if self.make_fp4
+                        else {}
+                    )
                 ),
             ),
             runtime=TrussTRTLLMRuntimeConfiguration(
@@ -798,7 +799,7 @@ class Deployment:
             return self.solution.make_fp8
         else:
             return False
-    
+
     @cached_property
     def is_fp4(self):
         if self.solution.trt_config is not None:
