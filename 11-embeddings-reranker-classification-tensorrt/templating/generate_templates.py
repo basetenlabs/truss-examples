@@ -71,6 +71,11 @@ With BEI you get the following benefits:
 - Cached model weights for fast vertical scaling and high availability - no Hugging Face hub dependency at runtime
 """
     make_fp8: bool = False
+    make_fp4: bool = False
+
+    def __post_init__(self):
+        if self.make_fp8 and self.make_fp4:
+            raise ValueError("make_fp8 and make_fp4 cannot both be True")
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
         hf_cfg = AutoConfig.from_pretrained(
@@ -109,7 +114,14 @@ With BEI you get the following benefits:
                         "num_builder_gpus": num_builder_gpus,
                     }
                     if self.make_fp8
-                    else {}
+                    else (
+                        {
+                            "quantization_type": TrussTRTLLMQuantizationType.FP4,
+                            "num_builder_gpus": num_builder_gpus,
+                        }
+                        if self.make_fp4
+                        else {}
+                    )
                 ),
             ),
             runtime=TrussTRTLLMRuntimeConfiguration(
@@ -789,6 +801,15 @@ class Deployment:
             return False
 
     @cached_property
+    def is_fp4(self):
+        if self.solution.trt_config is not None:
+            return "fp4" in self.solution.trt_config.build.quantization_type.value
+        elif hasattr(self.solution, "make_fp4"):
+            return self.solution.make_fp4
+        else:
+            return False
+
+    @cached_property
     def hf_config(self):
         return AutoConfig.from_pretrained(self.hf_model_id, trust_remote_code=True)
 
@@ -816,6 +837,7 @@ class Deployment:
             + "-"
             + self.name.replace(" ", "-").replace("/", "-").lower()
             + ("-fp8" * self.is_fp8)
+            + ("-fp4" * self.is_fp4)
         )
 
     @property
@@ -1106,6 +1128,20 @@ DEPLOYMENTS_BEI = [
         Predictor(),
         solution=BEI(make_fp8=True),
     ),
+    Deployment(
+        "Qwen/Qwen3-Embedding-4B",
+        "michaelfeil/Qwen3-Embedding-4B-auto",
+        Accelerator.B200,
+        Embedder(),
+        solution=BEI(make_fp4=True),
+    ),
+    Deployment(
+        "Qwen/Qwen3-Reranker-8B",
+        "michaelfeil/Qwen3-Reranker-8B-seq",
+        Accelerator.B200,
+        Predictor(),
+        solution=BEI(make_fp4=True),
+    ),
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
@@ -1311,6 +1347,18 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.3-70B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4,
+            )
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.3-70B-Instruct-tp4",
         "meta-llama/Llama-3.3-70B-Instruct",
         Accelerator.H100,
@@ -1414,6 +1462,20 @@ DEPLOYMENTS_BRITON = [
                 repoid="Qwen/Qwen3-32B",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.B200,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP4_KV,
                 batch_scheduler_policy="max_utilization",
             )
         ),
