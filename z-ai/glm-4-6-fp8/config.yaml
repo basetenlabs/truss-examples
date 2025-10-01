@@ -11,7 +11,7 @@ model_metadata:
     temperature: 0.6
   tags:
     - openai-compatible
-model_name: zai-org/GLM-4.6-FP8
+model_name: GLM-4.6-FP8
 base_image:
   image: lmsysorg/sglang:v0.5.3rc1-cu126
 # build_commands:
