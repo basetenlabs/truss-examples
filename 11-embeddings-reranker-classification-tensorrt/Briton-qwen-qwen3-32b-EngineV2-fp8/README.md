@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with Qwen/Qwen3-32B
+# Tensorflow Briton with Qwen/Qwen3-32B
 
-This is a Deployment for TensorRT-LLM Briton with Qwen/Qwen3-32B. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for Tensorflow Briton with Qwen/Qwen3-32B. Briton is Baseten's solution for production-grade deployments via Tensorflow for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm

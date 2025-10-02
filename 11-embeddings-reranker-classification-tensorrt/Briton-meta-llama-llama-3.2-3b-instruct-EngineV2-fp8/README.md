@@ -1,6 +1,6 @@
-# TensorRT-LLM Briton with meta-llama/Llama-3.2-3B-Instruct
+# Tensorflow Briton with meta-llama/Llama-3.2-3B-Instruct
 
-This is a Deployment for TensorRT-LLM Briton with meta-llama/Llama-3.2-3B-Instruct. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for Tensorflow Briton with meta-llama/Llama-3.2-3B-Instruct. Briton is Baseten's solution for production-grade deployments via Tensorflow for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
