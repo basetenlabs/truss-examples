@@ -9,13 +9,16 @@ from transformers import AutoConfig
 from truss.base.trt_llm_config import (
     CheckpointRepository,
     CheckpointSource,
+    InferenceStack,
     TRTLLMConfiguration,
+    TRTLLMConfigurationV2,
     TrussSpeculatorConfiguration,
     TrussTRTLLMBuildConfiguration,
     TrussTRTLLMModel,
     TrussTRTLLMPluginConfiguration,
     TrussTRTLLMQuantizationType,
     TrussTRTLLMRuntimeConfiguration,
+    TRTLLMRuntimeConfigurationV2,
     TrussTRTQuantizationConfiguration,
     VersionsOverrides,
 )
@@ -27,6 +30,7 @@ from truss.base.truss_config import (
     Resources,
     TrussConfig,
 )
+import yaml
 
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
@@ -301,6 +305,81 @@ Optionally, you can also enable:
             trt_llm=self.trt_config,
         )
 
+@dataclasses.dataclass
+class BritonV2(Solution):
+    name: str = "TensorRT-LLM Briton"
+    nickname: str = "Briton"
+    benefits: str = """Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+
+With Briton you get the following benefits by default:
+- *Lowest-latency* latency, beating frameworks such as vllm
+- *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
+- *distributed inference* run large models (such as LLama-405B) tensor-parallel
+- *json-schema based structured output for any model*
+- *chunked prefilling* for long generation tasks
+
+Optionally, you can also enable:
+- *speculative decoding* using an external draft model or self-speculative decoding
+- *fp8 quantization* deployments on H100, H200 and L4 GPUs
+
+With the V2 Config, you can now also quantize models straight from huggingface in FP8 and FP4, and also use KV Caching.
+"""
+
+    def make_truss_config(self, dp):
+        hf_cfg = AutoConfig.from_pretrained(
+            dp.hf_model_id, trust_remote_code=True
+        )  # make sure model is available
+        max_position_embeddings = hf_cfg.max_position_embeddings
+        assert self.trt_config is not None
+        self.trt_config.runtime.max_seq_len = max_position_embeddings
+        assert max_position_embeddings >= 512, "Model needs to have at least 512 tokens"
+        if self.trt_config.runtime is not None:
+            self.trt_config.runtime.max_seq_len = min(
+                self.trt_config.runtime.max_seq_len, 32768
+            )
+            self.trt_config.runtime.max_num_tokens = self.trt_config.runtime.max_seq_len
+
+        if (
+            hf_cfg.model_type in ["qwen2", "qwen2_moe"]
+            and self.trt_config.build.quantization_type is not None
+        ):
+            if (
+                self.trt_config.build.quantization_type
+                == TrussTRTLLMQuantizationType.FP8_KV
+            ):
+                raise ValueError(
+                    f"Qwen2 models do not support FP8_KV quantization / have quality issues with this dtype - please use regular FP8 for now in the model library {dp.hf_model_id}"
+                )
+            # increase the quantization example size for qwen2 models
+            self.trt_config.build.quantization_config = (
+                TrussTRTQuantizationConfiguration(
+                    calib_size=2048,
+                    calib_max_seq_length=min(2048, self.trt_config.runtime.max_seq_len),
+                )
+            )
+
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_briton = BRITON_VERSION
+
+        if overrides_engine_builder is not None or overrides_briton is not None:
+            version_overrides = VersionsOverrides(
+                engine_builder_version=overrides_engine_builder,
+                briton_version=overrides_briton,
+            )
+            self.trt_config.root.version_overrides = version_overrides
+        
+        return TrussConfig(
+            model_metadata=dp.task.model_metadata,
+            resources=Resources(
+                accelerator=AcceleratorSpec(
+                    accelerator=dp.accelerator,
+                    count=1,
+                ),
+                memory="10Gi",
+            ),
+            model_name=dp.model_nickname,
+            trt_llm=self.trt_config,
+        )
 
 @dataclasses.dataclass
 class Embedder(Task):
@@ -836,6 +915,7 @@ class Deployment:
             self.solution.nickname
             + "-"
             + self.name.replace(" ", "-").replace("/", "-").lower()
+            + ("-EngineV2" if isinstance(self.solution, BritonV2) else "")
             + ("-fp8" * self.is_fp8)
             + ("-fp4" * self.is_fp4)
         )
@@ -843,6 +923,42 @@ class Deployment:
     @property
     def model_nickname(self):
         return self.folder_name + "-truss-example"
+
+def add_inference_v2_stack(path: Path, dep: Deployment) -> None:
+    """
+    Edits the YAML at `path` in-place:
+      - Only if `should_inject` is True
+      - Adds `inference_stack: v2` INSIDE the `trt_llm` mapping
+    """
+    if not isinstance(dep.solution, BritonV2):
+        return
+    
+    data = yaml.safe_load(path.read_text())
+    trt_llm = data.get("trt_llm")
+    if isinstance(trt_llm, dict):
+        # Build new dict with inference_stack first
+        new_trt = {"inference_stack": "v2"}
+        new_trt.update({k: v for k, v in trt_llm.items() if k != "inference_stack"})
+        data["trt_llm"] = new_trt
+        path.write_text(yaml.safe_dump(data, sort_keys=False))
+
+def add_base_model_override(path: Path, dep: Deployment) -> None:
+    """
+    Edits the YAML at `path` in-place:
+      - Only if `should_inject` is True
+      - Adds `base_model: ...` INSIDE the `trt_llm` mapping
+    """
+    if not isinstance(dep.solution, BritonV2):
+        return
+    
+    data = yaml.safe_load(path.read_text())
+    build_details = data.get("trt_llm").get("build")
+    if isinstance(build_details, dict):
+        # Build new dict with base_model first
+        new_build = {"base_model": "decoder"}
+        new_build.update({k: v for k, v in build_details.items() if k != "base_model"})
+        data["trt_llm"]["build"] = new_build
+        path.write_text(yaml.safe_dump(data, sort_keys=False))
 
 
 def generate_deployment(dp: Deployment):
@@ -886,6 +1002,9 @@ def generate_deployment(dp: Deployment):
     config_yaml_as_str = Path(config_yaml_path).read_text()
     header = "# this file was autogenerated by `generate_templates.py` - please do change via template only\n"
     Path(config_yaml_path).write_text(header + config_yaml_as_str)
+
+    add_inference_v2_stack(config_yaml_path, dp)
+    add_base_model_override(config_yaml_path, dp)
 
     README_SUBREPO = f"""# {dp.solution.make_headline(dp)}
 
@@ -1335,6 +1454,40 @@ def llamalike_spec_dec(
     )
     return config
 
+def llamalike_config_v2(
+    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
+    repoid="meta-llama/Llama-3.3-70B-Instruct",
+    max_batch_size: int = 32,
+):
+    # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
+    build_kwargs = dict()
+    runtime_kwargs = dict()
+
+    config = TRTLLMConfigurationV2(
+        build=TrussTRTLLMBuildConfiguration(
+            checkpoint_repository=CheckpointRepository(
+                repo=repoid,
+                revision="main",
+                source=CheckpointSource.HF,
+            ),
+            quantization_type=quant,
+            **build_kwargs,
+        ),
+        runtime=TRTLLMRuntimeConfigurationV2(
+            max_seq_len=1000001,  # dummy for now
+            max_batch_size=max_batch_size,
+            **runtime_kwargs,
+        ),
+    )
+
+    if quant in [
+        TrussTRTLLMQuantizationType.WEIGHTS_INT4_KV_INT8,
+    ]:
+        config.build.plugin_configuration.use_paged_context_fmha = False
+        config.build.plugin_configuration.use_fp8_context_fmha = False
+        config.runtime.enable_chunked_context = False
+    return config
+
 
 DEPLOYMENTS_BRITON = [
     Deployment(
@@ -1353,6 +1506,18 @@ DEPLOYMENTS_BRITON = [
         TextGen(),
         solution=Briton(
             trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.3-70B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
                 repoid="meta-llama/Llama-3.3-70B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP4,
             )
@@ -1378,6 +1543,18 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config(
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
             )
         ),
@@ -1477,6 +1654,18 @@ DEPLOYMENTS_BRITON = [
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP4_KV,
                 batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.H100,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-32B",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
             )
         ),
     ),
