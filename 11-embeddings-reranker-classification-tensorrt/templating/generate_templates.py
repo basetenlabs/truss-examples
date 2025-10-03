@@ -36,6 +36,7 @@ SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
 ROOT_NAME = Path(REPO_URL.split("/")[-1])
 BEI_VERSION = os.environ.get("BEI")
 ENGINE_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER")
+ENGINE_V2_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER_V2")
 BRITON_VERSION = os.environ.get("BRITON")
 
 
@@ -307,7 +308,7 @@ Optionally, you can also enable:
 
 @dataclasses.dataclass
 class BritonV2(Solution):
-    name: str = "TensorRT-LLM Briton"
+    name: str = "TensorRT Torch Backend Briton"
     nickname: str = "Briton"
     benefits: str = """Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
@@ -358,7 +359,7 @@ With the V2 Config, you can now also quantize models straight from huggingface i
                 )
             )
 
-        overrides_engine_builder = ENGINE_BUILDER_VERSION
+        overrides_engine_builder = ENGINE_V2_BUILDER_VERSION
         overrides_briton = BRITON_VERSION
 
         if overrides_engine_builder is not None or overrides_briton is not None:
@@ -1429,6 +1430,24 @@ def llamalike_lookahead(
     return config
 
 
+def llamalike_lookahead_v2(
+    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
+    repoid="meta-llama/Llama-3.3-70B-Instruct",
+    use_dynamic_lengths: bool = False,
+    **kwargs,
+):
+    config = llamalike_config_v2(quant, repoid, **kwargs)
+    config.build.speculator = TrussSpeculatorConfiguration(
+        # settings from https://arxiv.org/pdf/2402.02057
+        speculative_decoding_mode="LOOKAHEAD_DECODING",
+        lookahead_windows_size=3 if not use_dynamic_lengths else 1,
+        lookahead_ngram_size=8 if not use_dynamic_lengths else 32,
+        lookahead_verification_set_size=3 if not use_dynamic_lengths else 1,
+        enable_b10_lookahead=True,  #
+    )
+    return config
+
+
 def llamalike_spec_dec(
     quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
     tp=1,
@@ -1819,6 +1838,31 @@ DEPLOYMENTS_BRITON = [
                 quant=TrussTRTLLMQuantizationType.FP8,
                 use_dynamic_lengths=True,
                 base_model=TrussTRTLLMModel.QWEN,
+            )
+        ),
+    ),
+    # Deployment(
+    #     "Qwen/Qwen2.5-Coder-7B-Instruct-min-latency",
+    #     "Qwen/Qwen2.5-Coder-7B-Instruct",
+    #     Accelerator.B200,
+    #     TextGen(),
+    #     solution=BritonV2(
+    #         trt_config=llamalike_lookahead_v2(
+    #             repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
+    #             use_dynamic_lengths=True,
+    #             quant=TrussTRTLLMQuantizationType.FP4,
+    #         )
+    #     ),
+    # ),
+    Deployment(
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4,
             )
         ),
     ),

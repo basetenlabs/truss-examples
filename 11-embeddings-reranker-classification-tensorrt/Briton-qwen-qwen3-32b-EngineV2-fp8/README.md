@@ -1,6 +1,6 @@
-# Tensorflow Briton with Qwen/Qwen3-32B
+# TensorRT Torch Backend Briton with Qwen/Qwen3-32B
 
-This is a Deployment for Tensorflow Briton with Qwen/Qwen3-32B. Briton is Baseten's solution for production-grade deployments via Tensorflow for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT Torch Backend Briton with Qwen/Qwen3-32B. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
 With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
@@ -163,6 +163,9 @@ trt_llm:
     max_batch_size: 32
     max_num_tokens: 32768
     max_seq_len: 32768
+  version_overrides:
+    briton_version: null
+    engine_builder_version: 0.20.0.post13.dev3
 
 ```
 

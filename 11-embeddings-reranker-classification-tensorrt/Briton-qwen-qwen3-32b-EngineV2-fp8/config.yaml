@@ -30,4 +30,4 @@ trt_llm:
     max_seq_len: 32768
   version_overrides:
     briton_version: null
-    engine_builder_version: 0.20.0.post13.dev1
+    engine_builder_version: 0.20.0.post13.dev3
