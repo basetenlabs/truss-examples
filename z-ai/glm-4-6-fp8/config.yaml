@@ -5,23 +5,20 @@ model_metadata:
         content: "You are a helpful assistant."
       - role: user
         content: "Write FizzBuzz in Python"
-    stream: true
-    model: "zai-org/GLM-4.6"
-    max_tokens: 4096
-    temperature: 0.6
+    stream: false
+    model: "zai-org/glm-4.6"
+    top_p: 0.95
+    extra_body: {"top_k": 40}
+    max_tokens: 2048
   tags:
     - openai-compatible
 model_name: GLM-4.6-FP8
 base_image:
-  image: lmsysorg/sglang:v0.5.3rc1-cu126
-# build_commands:
-#   - pip install --upgrade pip
-#   - pip uninstall -y sglang
-#   - git clone https://github.com/sgl-project/sglang.git && cd sglang && git checkout 229d2b95f19573ece9c1c5d6b357df9874e04f59 && pip install -e "python[all]"
+  image: lmsysorg/sglang:dev-x86@sha256:baa805a1ce7ed1b8646d8ac40c51b264c775bce56ec9e8d6f1bbdef58fcb9bae
 docker_server:
-  start_command: sh -c "python3 -m sglang.launch_server --model-path zai-org/GLM-4.6-FP8 --tp-size 8 --tool-call-parser glm45 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.9 --disable-shared-experts-fusion --served-model-name zai-org/GLM-4.6 --host 0.0.0.0 --port 8000"
-  readiness_endpoint: /health
-  liveness_endpoint: /health
+  start_command: sh -c "python3 -m sglang.launch_server --model-path zai-org/GLM-4.6-FP8 --tp-size 8 --tool-call-parser glm45 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.9 --disable-shared-experts-fusion --served-model-name z-ai/glm-4.6 --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
   predict_endpoint: /v1/chat/completions
   server_port: 8000
 resources:
