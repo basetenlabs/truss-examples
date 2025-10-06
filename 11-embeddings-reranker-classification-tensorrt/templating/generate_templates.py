@@ -1693,6 +1693,42 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-4B",
+        "Qwen/Qwen3-4B",
+        Accelerator.H100,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-4B",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        Accelerator.H100,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
+                quant=TrussTRTLLMQuantizationType.FP8,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
+                quant=TrussTRTLLMQuantizationType.FP4,
+            )
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
         Accelerator.H100,
@@ -1723,6 +1759,18 @@ DEPLOYMENTS_BRITON = [
                 repoid="deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
                 tp=2,
+            )
+        ),
+    ),
+    Deployment(
+        "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+                quant=TrussTRTLLMQuantizationType.FP4_KV,
             )
         ),
     ),
@@ -1863,6 +1911,18 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP4,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
             )
         ),
     ),

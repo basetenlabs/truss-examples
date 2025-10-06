@@ -1,0 +1,33 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-deepseek-ai-deepseek-r1-distill-llama-70b-EngineV2-fp4-truss-example
+python_version: py39
+resources:
+  accelerator: B200
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  inference_stack: v2
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+      revision: main
+      source: HF
+    quantization_type: fp4_kv
+  runtime:
+    max_batch_size: 32
+    max_num_tokens: 32768
+    max_seq_len: 32768
+  version_overrides:
+    briton_version: null
+    engine_builder_version: 0.20.0.post13.dev3
