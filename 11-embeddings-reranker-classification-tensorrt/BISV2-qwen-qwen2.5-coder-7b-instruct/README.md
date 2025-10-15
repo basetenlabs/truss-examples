@@ -1,8 +1,8 @@
-# TensorRT Torch Backend Briton with Qwen/Qwen3-30B-A3B-Instruct-2507
+# TensorRT Torch Backend Baseten Inference Service with Qwen/Qwen2.5-Coder-7B-Instruct
 
-This is a Deployment for TensorRT Torch Backend Briton with Qwen/Qwen3-30B-A3B-Instruct-2507. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT Torch Backend Baseten Inference Service with Qwen/Qwen2.5-Coder-7B-Instruct. Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Briton you get the following benefits by default:
+With Baseten Inference Service you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel
@@ -13,14 +13,14 @@ Optionally, you can also enable:
 - *speculative decoding* using an external draft model or self-speculative decoding
 - *fp8 quantization* deployments on H100, H200 and L4 GPUs
 
-With the V2 Config, you can now also quantize models straight from huggingface in FP8 and FP4, and also use KV Caching.
+The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config, you can now also quantize models straight from huggingface in FP8 and FP4, FP4_KV, FP8_KV and FP4_MLP_ONLY.
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Qwen/Qwen3-30B-A3B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507).
+This deployment is specifically designed for the Hugging Face model [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct).
 Suitable models can be identified by the `ForCausalLM` suffix in the model name. Currently we support e.g. LLama, Qwen, Mistral models.
 
-Qwen/Qwen3-30B-A3B-Instruct-2507  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
+Qwen/Qwen2.5-Coder-7B-Instruct  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
 
 
 ## Deployment with Truss
@@ -34,15 +34,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen3-30b-a3b-instruct-2507-EngineV2-fp4
+cd 11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen2.5-coder-7b-instruct
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen3-30b-a3b-instruct-2507-EngineV2-fp4` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen2.5-coder-7b-instruct` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-qwen-qwen3-30b-a3b-instruct-2507-EngineV2-fp4-truss-example was successfully pushed ✨
+# ✨ Model BISV2-qwen-qwen2.5-coder-7b-instruct-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -131,7 +131,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp4`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment.
 
 ```yaml
 model_metadata:
@@ -144,7 +144,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-qwen-qwen3-30b-a3b-instruct-2507-EngineV2-fp4-truss-example
+model_name: BISV2-qwen-qwen2.5-coder-7b-instruct-truss-example
 python_version: py39
 resources:
   accelerator: B200
@@ -154,17 +154,17 @@ resources:
 trt_llm:
   build:
     checkpoint_repository:
-      repo: Qwen/Qwen3-30B-A3B-Instruct-2507
+      repo: Qwen/Qwen2.5-Coder-7B-Instruct
       revision: main
       source: HF
-    quantization_type: fp4
+    quantization_config:
+      calib_max_seq_length: 2048
+      calib_size: 2048
+    quantization_type: no_quant
   runtime:
     max_batch_size: 32
     max_num_tokens: 32768
     max_seq_len: 32768
-  version_overrides:
-    briton_version: null
-    engine_builder_version: 0.20.0.post13.dev3
 
 ```
 

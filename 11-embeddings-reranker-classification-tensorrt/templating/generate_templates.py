@@ -308,11 +308,11 @@ Optionally, you can also enable:
 
 @dataclasses.dataclass
 class BritonV2(Solution):
-    name: str = "TensorRT Torch Backend Briton"
-    nickname: str = "Briton"
-    benefits: str = """Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+    name: str = "TensorRT Torch Backend Baseten Inference Service"
+    nickname: str = "BISV2"
+    benefits: str = """Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Briton you get the following benefits by default:
+With Baseten Inference Service you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel
@@ -323,7 +323,7 @@ Optionally, you can also enable:
 - *speculative decoding* using an external draft model or self-speculative decoding
 - *fp8 quantization* deployments on H100, H200 and L4 GPUs
 
-With the V2 Config, you can now also quantize models straight from huggingface in FP8 and FP4, and also use KV Caching.
+The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config, you can now also quantize models straight from huggingface in FP8 and FP4, FP4_KV, FP8_KV and FP4_MLP_ONLY.
 """
 
     def make_truss_config(self, dp):
@@ -917,7 +917,6 @@ class Deployment:
             self.solution.nickname
             + "-"
             + self.name.replace(" ", "-").replace("/", "-").lower()
-            + ("-EngineV2" if isinstance(self.solution, BritonV2) else "")
             + ("-fp8" * self.is_fp8)
             + ("-fp4" * self.is_fp4)
         )
@@ -1008,7 +1007,7 @@ def generate_deployment(dp: Deployment):
     Path(config_yaml_path).write_text(header + config_yaml_as_str)
 
     add_inference_v2_stack(config_yaml_path, dp)
-    add_base_model_override(config_yaml_path, dp)
+    # add_base_model_override(config_yaml_path, dp)
 
     README_SUBREPO = f"""# {dp.solution.make_headline(dp)}
 
@@ -1688,7 +1687,7 @@ DEPLOYMENTS_BRITON = [
         solution=BritonV2(
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-32B",
-                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                quant=TrussTRTLLMQuantizationType.FP4_KV,
             )
         ),
     ),

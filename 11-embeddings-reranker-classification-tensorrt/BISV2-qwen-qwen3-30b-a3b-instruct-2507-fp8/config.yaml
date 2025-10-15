@@ -8,26 +8,22 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-EngineV2-fp4-truss-example
+model_name: BISV2-qwen-qwen3-30b-a3b-instruct-2507-fp8-truss-example
 python_version: py39
 resources:
-  accelerator: B200
+  accelerator: H100
   cpu: '1'
   memory: 10Gi
   use_gpu: true
 trt_llm:
   inference_stack: v2
   build:
-    base_model: decoder
     checkpoint_repository:
-      repo: meta-llama/Llama-3.3-70B-Instruct
+      repo: Qwen/Qwen3-30B-A3B-Instruct-2507
       revision: main
       source: HF
-    quantization_type: fp4
+    quantization_type: fp8
   runtime:
     max_batch_size: 32
     max_num_tokens: 32768
     max_seq_len: 32768
-  version_overrides:
-    briton_version: null
-    engine_builder_version: 0.20.0.post13.dev3

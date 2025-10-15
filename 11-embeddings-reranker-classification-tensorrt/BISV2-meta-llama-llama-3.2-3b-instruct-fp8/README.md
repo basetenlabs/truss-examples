@@ -1,8 +1,8 @@
-# TensorRT Torch Backend Briton with meta-llama/Llama-3.2-3B-Instruct
+# TensorRT Torch Backend Baseten Inference Service with meta-llama/Llama-3.2-3B-Instruct
 
-This is a Deployment for TensorRT Torch Backend Briton with meta-llama/Llama-3.2-3B-Instruct. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT Torch Backend Baseten Inference Service with meta-llama/Llama-3.2-3B-Instruct. Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Briton you get the following benefits by default:
+With Baseten Inference Service you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel
@@ -13,7 +13,7 @@ Optionally, you can also enable:
 - *speculative decoding* using an external draft model or self-speculative decoding
 - *fp8 quantization* deployments on H100, H200 and L4 GPUs
 
-With the V2 Config, you can now also quantize models straight from huggingface in FP8 and FP4, and also use KV Caching.
+The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config, you can now also quantize models straight from huggingface in FP8 and FP4, FP4_KV, FP8_KV and FP4_MLP_ONLY.
 
 
 # Examples:
@@ -35,15 +35,15 @@ Note: [This is a gated/private model] Retrieve your Hugging Face token from the 
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.2-3b-instruct-EngineV2-fp8
+cd 11-embeddings-reranker-classification-tensorrt/BISV2-meta-llama-llama-3.2-3b-instruct-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/Briton-meta-llama-llama-3.2-3b-instruct-EngineV2-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BISV2-meta-llama-llama-3.2-3b-instruct-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model Briton-meta-llama-llama-3.2-3b-instruct-EngineV2-fp8-truss-example was successfully pushed ✨
+# ✨ Model BISV2-meta-llama-llama-3.2-3b-instruct-fp8-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -145,7 +145,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.2-3b-instruct-EngineV2-fp8-truss-example
+model_name: BISV2-meta-llama-llama-3.2-3b-instruct-fp8-truss-example
 python_version: py39
 resources:
   accelerator: H100_40GB
@@ -163,9 +163,6 @@ trt_llm:
     max_batch_size: 32
     max_num_tokens: 32768
     max_seq_len: 32768
-  version_overrides:
-    briton_version: null
-    engine_builder_version: 0.20.0.post13.dev3
 
 ```
 
