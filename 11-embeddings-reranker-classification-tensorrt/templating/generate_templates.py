@@ -1652,6 +1652,32 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-30B-A3B",
+        "Qwen/Qwen3-30B-A3B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-30B-A3B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-30B-A3B",
+        "Qwen/Qwen3-30B-A3B",
+        Accelerator.B200,
+        TextGen(),
+        solution=BritonV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-30B-A3B",
+                quant=TrussTRTLLMQuantizationType.FP8,
+            )
+        ),
+    ),
+    Deployment(
         "Qwen/Qwen3-32B",
         "Qwen/Qwen3-32B",
         Accelerator.H100,

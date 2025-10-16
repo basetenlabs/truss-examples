@@ -1,0 +1,29 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: BISV2-qwen-qwen3-30b-a3b-fp8-truss-example
+python_version: py39
+resources:
+  accelerator: B200
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  inference_stack: v2
+  build:
+    checkpoint_repository:
+      repo: Qwen/Qwen3-30B-A3B
+      revision: main
+      source: HF
+    quantization_type: fp8
+  runtime:
+    max_batch_size: 32
+    max_num_tokens: 32768
+    max_seq_len: 32768

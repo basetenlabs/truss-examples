@@ -90,6 +90,8 @@ Examples:
  - [Qwen/Qwen2.5-Coder-7B-Instruct-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen2.5-coder-7b-instruct-fp4)
  - [Qwen/Qwen2.5-Coder-7B-Instruct-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen2.5-coder-7b-instruct)
  - [Qwen/Qwen2.5-Coder-7B-Instruct-min-latency-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-coder-7b-instruct-min-latency-fp8)
+ - [Qwen/Qwen3-30B-A3B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen3-30b-a3b-fp8)
+ - [Qwen/Qwen3-30B-A3B-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen3-30b-a3b-fp8)
  - [Qwen/Qwen3-30B-A3B-Instruct-2507-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen3-30b-a3b-instruct-2507-fp8)
  - [Qwen/Qwen3-30B-A3B-Instruct-2507-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen3-30b-a3b-instruct-2507-fp4)
  - [Qwen/Qwen3-32B-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen3-32b-fp8)
