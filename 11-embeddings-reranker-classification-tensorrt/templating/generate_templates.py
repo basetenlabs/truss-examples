@@ -195,6 +195,9 @@ For larger models, we recommend downloading the weights at runtime for faster au
             if isinstance(dp.task, Predictor)
             else "/rerank"
         )
+        low_cpu_instructions = ""
+        if dp.accelerator in [Accelerator.L4, Accelerator.A10G]:
+            low_cpu_instructions = " --tokenization-workers 3"
         return TrussConfig(
             base_image=dict(image=docker_image),
             model_metadata=dp.task.model_metadata,
@@ -210,7 +213,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
                 ]
             ),
             docker_server=dict(
-                start_command='bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate --tokenization-workers 3"',
+                start_command=f'bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate{low_cpu_instructions}"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,
@@ -1145,6 +1148,13 @@ DEPLOYMENTS_BEI = [
 ]
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
+    Deployment(  #
+        name="BAAI/bge-reranker-large-TEI",
+        hf_model_id="BAAI/bge-reranker-large",
+        accelerator=Accelerator.H100,
+        task=Reranker(),
+        solution=HFTEI(),
+    ),
     Deployment(  #
         name="Alibaba-NLP/gte-modernbert-base-embedding",
         hf_model_id="Alibaba-NLP/gte-modernbert-base",
