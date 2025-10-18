@@ -180,7 +180,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
         docker_image = {
             Accelerator.L4: f"baseten/text-embeddings-inference-mirror:89-{version}",
             Accelerator.A100: f"baseten/text-embeddings-inference-mirror:{version}",
-            Accelerator.H100: f"baseten/text-embeddings-inference-mirror:89-{version}",
+            Accelerator.H100: f"baseten/text-embeddings-inference-mirror:hopper-{version}",
             Accelerator.H100_40GB: f"baseten/text-embeddings-inference-mirror:hopper-{version}",
             Accelerator.A10G: f"baseten/text-embeddings-inference-mirror:86-{version}",
             Accelerator.T4: f"baseten/text-embeddings-inference-mirror:turing-{version}",
