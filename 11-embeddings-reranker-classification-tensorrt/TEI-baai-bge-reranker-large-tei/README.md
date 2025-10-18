@@ -162,7 +162,7 @@ By default, the following configuration is used for this deployment.
 
 ```yaml
 base_image:
-  image: baseten/text-embeddings-inference-mirror:89-1.7.2
+  image: baseten/text-embeddings-inference-mirror:hopper-1.7.2
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /rerank
