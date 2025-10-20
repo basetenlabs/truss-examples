@@ -1,0 +1,20 @@
+build_commands:
+- git clone https://github.com/deepseek-ai/DeepSeek-OCR.git /DeepSeek-OCR
+- cd /DeepSeek-OCR && pip install -r requirements.txt
+environment_variables:
+  CUDA_VISIBLE_DEVICES: '0'
+  VLLM_USE_V1: '0'
+model_metadata:
+  example_model_input:
+    image_url: https://example.com/image.jpg
+    prompt: Extract all text from this image. <image>
+  model_name: DeepSeek OCR
+model_name: deepseek-ocr
+python_version: py310
+requirements:
+- uvicorn<0.36.0
+resources:
+  accelerator: H100_40GB
+  cpu: '2'
+  memory: 16Gi
+  use_gpu: true
