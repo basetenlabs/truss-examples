@@ -12,7 +12,8 @@ from visualizer import DeepSeekOCRVisualizer
 
 # Baseten API configuration
 API_KEY = os.getenv("BASETEN_API_KEY")  # previously committed key has been invalidated
-ENDPOINT_URL = "https://model-vq0nln7w.api.baseten.co/environments/production/predict"
+print(API_KEY)
+ENDPOINT_URL = "https://model-7wlgx8eq.api.baseten.co/environments/production/predict"
 
 
 def load_test_document():
