@@ -2,7 +2,7 @@
 
 This is a Truss deployment of the DeepSeek OCR model for optical character recognition using vLLM engine on Baseten served on a H100_40G. The model excels at reading handwritten text, documents, and complex layouts with bounding box detection.
 
-DeepSeek-OCR processes 200k+ pages/day on a single GPU or 33M pages/day on 20 nodes. It requires 10x fewer visual tokens than text tokens, which means compress information 10x better than the text version, with decoding precision of 97%. This makes it an excellent model for generating training data as well as potential tasks that involve long-context windows and memory.
+DeepSeek-OCR processes 200k+ pages/day on a single GPU or 33M pages/day on 20 nodes. It requires 10x fewer visual tokens than text tokens, which means OCR compresses information 10x more efficiently than the text, with decoding precision of 97%. This makes it an excellent model for generating training data as well as potential tasks that involve long-context windows and memory.
 
 ## Quick Start
 
