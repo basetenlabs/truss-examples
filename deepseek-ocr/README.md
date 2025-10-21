@@ -12,6 +12,10 @@ DeepSeek-OCR processes 200k+ pages/day on a single GPU or 33M pages/day on 20 no
 # Set your Baseten API key
 export BASETEN_API_KEY="your_api_key_here"
 
+# Clone this repo and cd into this folder
+git clone https://github.com/basetenlabs/truss-examples.git
+cd truss-examples/deepseek-ocr
+
 # Deploy the model
 truss push
 ```
@@ -20,7 +24,6 @@ truss push
 
 ```bash
 # Run the test script with Bad-Handwriting.png
-cd deepseek-ocr
 python test_document_ocr.py
 ```
 
