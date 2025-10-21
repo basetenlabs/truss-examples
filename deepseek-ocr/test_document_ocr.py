@@ -20,7 +20,7 @@ def load_test_document():
     """Load the test document image and convert to base64"""
     try:
         # Load the test document image
-        image = Image.open("test_document.png")
+        image = Image.open("Bad-Handwriting.png")
         print(f"Loaded test document: {image.size[0]}x{image.size[1]} pixels")
 
         # Convert to base64
@@ -78,7 +78,12 @@ def test_ocr_with_document():
 
                 # Print extracted text
                 extracted_text = result.get("extracted_text", "No text extracted")
-                print(f"Extracted text: {extracted_text[:200]}...")
+                print(f"Extracted text:\n{extracted_text}")
+
+                # Print raw output for debugging
+                raw_output = result.get("raw_output", "")
+                if raw_output:
+                    print(f"Raw output:\n{raw_output[:500]}...")
 
                 # Check if we have bounding boxes
                 has_boxes = result.get("has_bounding_boxes", False)
@@ -172,7 +177,7 @@ def main():
     """Main test function"""
     print("DeepSeek OCR Document Test")
     print("=" * 80)
-    print("Testing with test_document.png")
+    print("Testing with Bad-Handwriting.png")
     print("=" * 80)
 
     # Test OCR with document

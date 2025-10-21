@@ -49,6 +49,7 @@ class DeepSeekOCRVisualizer:
         draw2 = ImageDraw.Draw(overlay)
 
         img_idx = 0
+        label_positions = []  # Track label positions to avoid overlap
 
         for i, ref in enumerate(refs):
             try:
@@ -101,14 +102,45 @@ class DeepSeekOCRVisualizer:
                                     width=1,
                                 )
 
+                            # Position label with smart spacing to avoid overlap
                             text_x = x1
-                            text_y = max(0, y1 - 15)
+                            base_y = max(0, y1 - 15)
 
+                            # Check for overlap with existing labels and adjust position
                             text_bbox = draw.textbbox(
                                 (0, 0), label_type, font=self.font
                             )
                             text_width = text_bbox[2] - text_bbox[0]
                             text_height = text_bbox[3] - text_bbox[1]
+
+                            # Find a non-overlapping position
+                            text_y = base_y
+                            while True:
+                                overlaps = False
+                                for (
+                                    existing_x,
+                                    existing_y,
+                                    existing_w,
+                                    existing_h,
+                                ) in label_positions:
+                                    if (
+                                        text_x < existing_x + existing_w
+                                        and text_x + text_width > existing_x
+                                        and text_y < existing_y + existing_h
+                                        and text_y + text_height > existing_y
+                                    ):
+                                        overlaps = True
+                                        break
+
+                                if not overlaps:
+                                    break
+                                text_y -= 20  # Move up by 20 pixels
+
+                            # Store this label position
+                            label_positions.append(
+                                (text_x, text_y, text_width, text_height)
+                            )
+
                             draw.rectangle(
                                 [
                                     text_x,
