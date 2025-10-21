@@ -1,3 +1,17 @@
+import sys
+
+sys.path.append("/DeepSeek-OCR/DeepSeek-OCR-master/DeepSeek-OCR-vllm")
+from vllm import AsyncLLMEngine, SamplingParams
+from vllm.engine.arg_utils import AsyncEngineArgs
+from vllm.model_executor.models.registry import ModelRegistry
+from deepseek_ocr import DeepseekOCRForCausalLM
+from process.ngram_norepeat import NoRepeatNGramLogitsProcessor
+from process.image_process import DeepseekOCRProcessor
+from config import MODEL_PATH, PROMPT, CROP_MODE
+
+# Register the custom model only if import succeeded
+ModelRegistry.register_model("DeepseekOCRForCausalLM", DeepseekOCRForCausalLM)
+
 import asyncio
 import re
 import os
@@ -9,43 +23,8 @@ import base64
 from typing import Dict, Any
 import time
 
-# Set environment variables for CUDA and vLLM
-if torch.version.cuda == "11.8":
-    os.environ["TRITON_PTXAS_PATH"] = "/usr/local/cuda-11.8/bin/ptxas"
-
 os.environ["VLLM_USE_V1"] = "0"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
-from vllm import AsyncLLMEngine, SamplingParams
-from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.model_executor.models.registry import ModelRegistry
-
-# Import from the cloned DeepSeek-OCR repository
-import sys
-
-sys.path.append("/DeepSeek-OCR")
-
-try:
-    from deepseek_ocr import DeepseekOCRForCausalLM
-    from process.image_process import DeepseekOCRProcessor
-    from process.ngram_norepeat import NoRepeatNGramLogitsProcessor
-except ImportError as e:
-    print(f"Warning: Could not import DeepSeek-OCR modules: {e}")
-    print(
-        "This is expected during local development. Imports will work after deployment."
-    )
-
-    # Define mock classes for local development
-    class DeepseekOCRForCausalLM:
-        pass
-
-    class DeepseekOCRProcessor:
-        def tokenize_with_images(self, *args, **kwargs):
-            return None
-
-    class NoRepeatNGramLogitsProcessor:
-        def __init__(self, *args, **kwargs):
-            pass
 
 
 class Model:
@@ -53,22 +32,17 @@ class Model:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.engine = None
         self.processor = None
-        self.model_name = "deepseek-ai/DeepSeek-OCR"
+        self.model_name = MODEL_PATH
 
     def load(self):
-        """Load the DeepSeek OCR model with vLLM engine"""
+        """Load the DeepSeek OCR model with vLLM engine (matching official implementation)"""
         try:
-            # Register the custom model
-            ModelRegistry.register_model(
-                "DeepseekOCRForCausalLM", DeepseekOCRForCausalLM
-            )
-
             # Initialize the image processor
             self.processor = DeepseekOCRProcessor()
 
-            # Set up engine arguments
+            # Set up engine arguments (matching official implementation)
             engine_args = AsyncEngineArgs(
-                model=self.model_name,
+                model=MODEL_PATH,
                 hf_overrides={"architectures": ["DeepseekOCRForCausalLM"]},
                 block_size=256,
                 max_model_len=8192,
@@ -93,12 +67,26 @@ class Model:
         """Load and preprocess image from various formats"""
         try:
             if isinstance(image_data, str):
-                # Assume it's a URL
-                response = requests.get(image_data)
-                image = Image.open(BytesIO(response.content))
+                # Check if it's base64 encoded
+                if image_data.startswith("data:image/"):
+                    # Data URL format: data:image/png;base64,iVBORw0KGgo...
+                    base64_data = image_data.split(",")[1]
+                    image_bytes = base64.b64decode(base64_data)
+                    image = Image.open(BytesIO(image_bytes))
+                elif len(image_data) > 100 and not image_data.startswith("http"):
+                    # Assume it's base64 encoded string
+                    image_bytes = base64.b64decode(image_data)
+                    image = Image.open(BytesIO(image_bytes))
+                else:
+                    # Assume it's a URL
+                    response = requests.get(image_data)
+                    image = Image.open(BytesIO(response.content))
             else:
-                # Assume it's bytes data
-                image = Image.open(BytesIO(image_data))
+                # Assume it's bytes data or file-like object
+                if hasattr(image_data, "read"):
+                    image = Image.open(image_data)
+                else:
+                    image = Image.open(BytesIO(image_data))
 
             # Apply EXIF orientation correction
             corrected_image = ImageOps.exif_transpose(image)
@@ -133,11 +121,11 @@ class Model:
         return (label_type, cor_list)
 
     async def stream_generate(self, image=None, prompt=""):
-        """Generate OCR results using the vLLM engine"""
+        """Generate OCR results using the vLLM engine (matching official implementation)"""
         if self.engine == "mock_engine":
             return "Mock OCR result: This is a placeholder response."
 
-        # Set up logits processors
+        # Set up logits processors (matching official implementation)
         logits_processors = [
             NoRepeatNGramLogitsProcessor(
                 ngram_size=30,
@@ -161,7 +149,7 @@ class Model:
         elif prompt:
             request = {"prompt": prompt}
         else:
-            raise ValueError("Prompt is required!")
+            assert False, "prompt is none!!!"
 
         final_output = ""
         async for request_output in self.engine.generate(
@@ -201,20 +189,15 @@ class Model:
                 return {"error": "Failed to load image"}
 
             # Get prompt if provided
-            prompt = model_input.get(
-                "prompt", "Extract all text from this image. <image>"
-            )
+            prompt = model_input.get("prompt", PROMPT)
 
-            # Process image with the processor
+            # Process image with the processor (matching official implementation)
             if self.processor != "mock_processor" and "<image>" in prompt:
                 image_features = self.processor.tokenize_with_images(
-                    images=[image],
-                    bos=True,
-                    eos=True,
-                    cropping=False,  # Set to True if you want cropping
+                    images=[image], bos=True, eos=True, cropping=CROP_MODE
                 )
             else:
-                image_features = image
+                image_features = ""
 
             # Generate OCR results
             if self.engine == "mock_engine":

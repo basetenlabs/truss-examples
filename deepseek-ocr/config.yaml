@@ -1,20 +1,21 @@
+base_image:
+  image: baseten/cuda_python:12.4.1-dev
 build_commands:
-- git clone https://github.com/deepseek-ai/DeepSeek-OCR.git /DeepSeek-OCR
-- cd /DeepSeek-OCR && pip install -r requirements.txt
-environment_variables:
-  CUDA_VISIBLE_DEVICES: '0'
-  VLLM_USE_V1: '0'
+  - apt-get update && apt-get install -y python3-dev
+  - git clone https://github.com/deepseek-ai/DeepSeek-OCR.git /DeepSeek-OCR
+  - pip install -r /DeepSeek-OCR/requirements.txt
+  - pip install vllm==0.8.5
+  - pip install flash-attn==2.7.3 --no-build-isolation
+python_version: py310
 model_metadata:
   example_model_input:
     image_url: https://example.com/image.jpg
-    prompt: Extract all text from this image. <image>
+    prompt: <image>\n<|grounding|>Convert the document to markdown.
   model_name: DeepSeek OCR
-model_name: deepseek-ocr
-python_version: py310
-requirements:
-- uvicorn<0.36.0
+model_name: deepseek-ocr-latest
+#requirements_file: ./requirements.txt
 resources:
   accelerator: H100_40GB
-  cpu: '2'
+  cpu: "2"
   memory: 16Gi
   use_gpu: true
