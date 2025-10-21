@@ -6,11 +6,12 @@ Test DeepSeek OCR with test_document.png and visualize results
 import requests
 import base64
 import io
+import os
 from PIL import Image
 from visualizer import DeepSeekOCRVisualizer
 
 # Baseten API configuration
-API_KEY = "rwEy1u1j.WQuZKHOTK56MeGFaqptqcIJ5Gs1epWJf"
+API_KEY = os.getenv("BASETEN_API_KEY")  # previously committed key has been invalidated
 ENDPOINT_URL = "https://model-vq0nln7w.api.baseten.co/environments/production/predict"
 
 
