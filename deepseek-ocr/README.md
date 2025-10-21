@@ -56,16 +56,6 @@ deepseek-ocr/
 - **Memory**: 16GB RAM
 - **Engine**: AsyncLLMEngine with custom DeepseekOCRForCausalLM
 
-## Features
-
-- **Advanced OCR**: Extracts text with bounding box coordinates
-- **Reference Processing**: Handles `<|ref|>` and `<|det|>` tokens for structured output
-- **Image Processing**: Automatic resizing, padding, and EXIF correction
-- **N-gram Prevention**: Prevents repetitive text generation
-- **Multiple Input Formats**: URL, base64, or direct image data
-- **Separate Visualization Module**: `visualizer.py` for bounding box and geometric visualization
-- **Clean API**: Model returns OCR results, visualization handled separately
-
 ## Usage
 
 ### Using the Test Script
@@ -83,57 +73,6 @@ prompts = [
 ]
 ```
 
-### API Input Format
+**Recommended**: Use `<image>\n<|grounding|>Convert the document to markdown.` for best results with bounding boxes.
 
-The model accepts the following input formats:
-
-```json
-{
-  "image_url": "https://example.com/image.jpg",
-  "prompt": "Extract all text from this image. <image>"
-}
-```
-
-Or with base64 encoded image:
-
-```json
-{
-  "image_base64": "iVBORw0KGgoAAAANSUhEUgAA...",
-  "prompt": "Extract all text from this image. <image>"
-}
-```
-
-### Recommended Prompts
-
-For best results, use these prompts:
-
-1. **`<image>\n<|grounding|>Convert the document to markdown.`** - Best for structured documents with bounding boxes
-2. **`<image>\nFree OCR.`** - Good for simple text extraction without bounding boxes
-3. **`<image>\n<|grounding|>OCR this image.`** - Detailed detection but may fragment text
-
-### Output Format
-
-For images with references:
-```json
-{
-  "extracted_text": "Cleaned text with image references",
-  "raw_output": "Raw model output with <|ref|> tokens",
-  "references": [["<|ref|>text<|/ref|><|det|>coords<|/det|>", ...]],
-  "image_references": ["<|ref|>image<|/ref|><|det|>coords<|/det|>", ...],
-  "other_references": ["<|ref|>other<|/ref|><|det|>coords<|/det|>", ...],
-  "image_size": [width, height],
-  "prompt_used": "Extract all text from this image. <image>",
-  "model_name": "deepseek-ai/DeepSeek-OCR",
-  "has_bounding_boxes": true
-}
-```
-
-For simple text extraction:
-```json
-{
-  "extracted_text": "The extracted text from the image",
-  "image_size": [width, height],
-  "prompt_used": "Extract all text from this image. <image>",
-  "model_name": "deepseek-ai/DeepSeek-OCR"
-}
-```
+For detailed API documentation and examples, see the `test_document_ocr.py` script.
