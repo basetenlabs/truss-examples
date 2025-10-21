@@ -1,6 +1,8 @@
-# DeepSeek OCR Truss Model
+# DeepSeek-OCR Truss Model
 
-This is a Truss deployment of the DeepSeek OCR model for optical character recognition using vLLM engine. The model excels at reading handwritten text, documents, and complex layouts with bounding box detection.
+This is a Truss deployment of the DeepSeek OCR model for optical character recognition using vLLM engine on Baseten served on a H100_40G. The model excels at reading handwritten text, documents, and complex layouts with bounding box detection.
+
+DeepSeek-OCR processes 200k+ pages/day on a single GPU or 33M pages/day on 20 nodes. It requires 10x fewer visual tokens than text tokens, which means compress information 10x better than the text version, with decoding precision of 97%. This makes it an excellent model for generating training data as well as potential tasks that involve long-context windows and memory.
 
 ## Quick Start
 
@@ -28,6 +30,21 @@ This will:
 - Generate visualizations with bounding boxes
 - Save results as `visualization_*.png` files
 
+### 3. Project Structure
+
+```
+deepseek-ocr/
+├── config.yaml              # Truss configuration
+├── model/
+│   ├── __init__.py
+│   └── model.py            # Main model implementation
+├── README.md                # Documentation
+├── test_document_ocr.py     # Working test script
+├── visualizer.py           # Bounding box visualization
+├── Bad-Handwriting.png     # Test image
+└── visualization_*.png     # Generated outputs
+```
+
 ## Model Information
 
 - **Model**: DeepSeek OCR v1
@@ -50,7 +67,7 @@ This will:
 
 ### Using the Test Script
 
-The `test_document_ocr.py` script provides a complete example of how to use the model:
+The `test_document_ocr.py` script is the main testing interface and provides a complete example of how to use the model:
 
 ```python
 # The script tests these prompts:
@@ -117,105 +134,3 @@ For simple text extraction:
   "model_name": "deepseek-ai/DeepSeek-OCR"
 }
 ```
-
-## Visualization
-
-The model includes an enhanced visualizer with smart label spacing to prevent overlap:
-
-```python
-from visualizer import DeepSeekOCRVisualizer
-from PIL import Image
-import base64
-import io
-
-# Load image and OCR result
-image = Image.open("your_image.jpg")
-ocr_result = {
-    "raw_output": "your_ocr_output_with_ref_tokens",
-    "has_bounding_boxes": True
-}
-
-# Create visualization
-visualizer = DeepSeekOCRVisualizer()
-viz_result = visualizer.create_visualization(image, ocr_result)
-
-# Save visualization
-if viz_result:
-    viz_image = Image.open(io.BytesIO(base64.b64decode(viz_result['visualization'])))
-    viz_image.save("visualization.png")
-    print(f"Has bounding boxes: {viz_result['has_bounding_boxes']}")
-```
-
-### Visualization Features
-
-- **Smart Label Spacing**: Automatically prevents label overlap
-- **Bounding Box Detection**: Shows detected text regions
-- **Color-coded Regions**: Different colors for titles, text, and other elements
-- **Geometric Visualization**: Optional matplotlib-based geometric elements
-
-## Configuration
-
-The model uses several configuration parameters:
-
-- **Model Path**: `deepseek-ai/DeepSeek-OCR`
-- **Max Model Length**: 8192 tokens
-- **GPU Memory Utilization**: 75%
-- **N-gram Size**: 30 (for repetition prevention)
-- **Window Size**: 90 (for sliding window)
-- **Model Implementation**: `transformers` (forced for compatibility)
-
-## Dependencies
-
-- `vllm==0.8.5` - vLLM inference engine
-- `transformers==4.46.3` - Hugging Face transformers
-- `tokenizers==0.20.3` - Tokenization library
-- `PyMuPDF` - PDF processing
-- `img2pdf` - Image to PDF conversion
-- `einops` - Tensor operations
-- `easydict` - Dictionary utilities
-- `addict` - Dictionary enhancements
-- `Pillow` - Image processing
-- `numpy` - Numerical computations
-
-## Build Commands
-
-The DeepSeek-OCR repository is cloned during the build stage:
-
-```yaml
-build_commands:
-  - apt-get update && apt-get install -y python3-dev
-  - git clone https://github.com/deepseek-ai/DeepSeek-OCR.git /DeepSeek-OCR
-  - pip install -r /DeepSeek-OCR/requirements.txt
-  - pip install vllm==0.8.5
-  - pip install flash-attn==2.7.3 --no-build-isolation
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Import Errors**: The model falls back to mock implementation if DeepSeek-OCR imports fail
-2. **Version Compatibility**: Uses `transformers==4.46.3` with vLLM 0.8.5
-3. **Label Overlap**: The visualizer automatically handles label spacing to prevent overlap
-4. **Empty Text**: Some prompts may detect bounding boxes but extract minimal text
-
-### Debug Mode
-
-Enable debug logging by checking the model output:
-
-```python
-# Check raw output for debugging
-raw_output = result.get("raw_output", "")
-if raw_output:
-    print(f"Raw output: {raw_output[:500]}...")
-```
-
-## Notes
-
-- The model uses async generation for better performance
-- Custom logits processor prevents n-gram repetition
-- Image processing includes automatic resizing and padding
-- Reference tokens are processed to extract structured information
-- Mock implementation available for testing without GPU
-- Enhanced visualizer with smart label spacing
-- Compatible with Baseten's CUDA Python base image

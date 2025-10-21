@@ -13,7 +13,6 @@ model_metadata:
     prompt: <image>\n<|grounding|>Convert the document to markdown.
   model_name: DeepSeek OCR
 model_name: deepseek-ocr-latest
-#requirements_file: ./requirements.txt
 resources:
   accelerator: H100_40GB
   cpu: "2"
