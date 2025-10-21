@@ -1480,10 +1480,16 @@ def llamalike_config_v2(
     quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     max_batch_size: int = 32,
+    calib_size: Optional[int] = None,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
     runtime_kwargs = dict()
+
+    if calib_size is not None:
+        build_kwargs["quantization_config"] = dict(
+            calib_size=calib_size
+        )
 
     config = TRTLLMConfigurationV2(
         build=TrussTRTLLMBuildConfiguration(
@@ -1674,6 +1680,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-30B-A3B",
                 quant=TrussTRTLLMQuantizationType.FP8,
+                calib_size=4096,
             )
         ),
     ),
@@ -1750,6 +1757,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
                 quant=TrussTRTLLMQuantizationType.FP4,
+                calib_size=4096,
             )
         ),
     ),
