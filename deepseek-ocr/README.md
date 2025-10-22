@@ -18,10 +18,13 @@ cd truss-examples/deepseek-ocr
 
 # Deploy the model
 truss push
+# This assumes you have truss installed, if not follow the instructions here:
+# https://docs.baseten.co/development/model/build-your-first-model
 ```
 
 ### 2. Test with Sample Image
 
+Replace line 16 `ENDPOINT_URL` in `test_document_ocr.py` with your specific deployment URL.
 ```bash
 # Run the test script with Bad-Handwriting.png
 python test_document_ocr.py
