@@ -23,6 +23,7 @@ _TOKEN_RE = re.compile(r"<custom_token_(\d+)>")
 SNAC_DEVICE = "cuda"
 SNAC_MAX_BATCH = 64
 PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
+SOH, SOT, EOT, EOH, SOA, SOS, EOS, EOA = 128259, 128000, 128009, 128260, 128261, 128257, 128258, 128262
 
 
 class SnacModelBatched:
@@ -129,8 +130,12 @@ def split_custom_tokens(s: str) -> List[int]:
     return [int(match) for match in matches if match != "0"]
 
 
-async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[bytes]:
-    """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
+async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[tuple[bytes, list[int]]]:
+    """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields.
+    
+    Yields tuples of (audio_bytes, audio_token_ids) where audio_token_ids are the 
+    token IDs used to generate the audio.
+    """
     assert hasattr(token_gen, "__aiter__")
     audio_queue = asyncio.Queue()
 
@@ -146,7 +151,7 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
                 if count % 7 == 0 and count > 27:
                     buf_to_proc = buffer[-28:]
                     task = asyncio.create_task(convert_to_audio(buf_to_proc))
-                    audio_queue.put_nowait(task)
+                    audio_queue.put_nowait((task, buf_to_proc))
         audio_queue.put_nowait(None)
         print(f"Finished `{request_id}`, total tokens : {count}")
 
@@ -154,12 +159,13 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "") -> Iterator[
 
     while True:
         # wait for the next audio conversion to finish
-        task: None | Awaitable[bytes | None] = await audio_queue.get()
-        if task is None:
+        item = await audio_queue.get()
+        if item is None:
             break
+        task, audio_token_ids = item
         audio_bytes = await task
         if audio_bytes is not None:
-            yield audio_bytes
+            yield audio_bytes, audio_token_ids
         audio_queue.task_done()
     assert audio_queue.empty(), (
         f"audio queue is not empty: e.g. {audio_queue.get_nowait()}"
@@ -225,19 +231,77 @@ class Model:
         )
         self.end_tokenized = self._tokenizer.decode(self.end_ids)
 
-        self.use_fast_fmt = self._format_prompt_fast(
-            "hello world", "tara"
-        ) == self._format_prompt_slow("hello world", "tara")
+        self.use_fast_fmt = False
 
-    def _format_prompt_slow(self, prompt, voice="tara"):
-        if voice:
-            adapted_prompt = f"{voice}: {prompt}"
-        else:
-            adapted_prompt = prompt
-        input_ids = self._tokenizer.encode(
-            adapted_prompt,
-        )
-        full_ids = self.start_id + input_ids + self.end_ids
+    def _format_prompt_slow(
+        self, 
+        user_text, 
+        voice="tara", 
+        previous_audio_token_ids=None,
+        previous_text=None # New parameter for the text that generated the prior audio
+    ):
+        """
+        Formats the input prompt using the full Orpheus turn-based token structure,
+        including the full history (Text + Audio) of the previous turn for conditioning.
+        
+        Args:
+            user_text (str): The new text the model should speak.
+            voice (str): The voice identifier (e.g., "tara").
+            previous_audio_token_ids (list[int], optional): SNAC tokens from the prior AI turn.
+            previous_text (str, optional): The text corresponding to the previous_audio_token_ids.
+            
+        Returns:
+            list[int]: The full token ID sequence ready for the LLM.
+        """
+        # 2. Start the full token sequence (Turn History)
+        full_ids = []
+        
+        # --- A. Include Previous Turn (Full Context History) ---
+        # This block reconstructs the entire previous turn to provide the model with context.
+        if previous_audio_token_ids and previous_text:
+            # 1. Start of the Human's Turn in the prior dialogue
+            # NOTE: A *perfect* dialogue history should also include the text that 
+            # *triggered* the previous AI response, but in a simple TTS tool, 
+            # we can assume the 'previous_text' is the AI's spoken content.
+            
+            # In this structure, we'll assume the previous turn was the AI speaking the 'previous_text'
+            # in response to some implied user query.
+            
+            # We start by reconstructing the AI's *previous* output sequence:
+            
+            # Format the previous text with the voice tag (as the model expects it)
+            adapted_prev_text = f"{voice}: {previous_text}"
+            prev_text_ids = self._tokenizer.encode(adapted_prev_text)
+            
+            # We will reconstruct the prior turn as a full *AI* turn for simplicity:
+            # SOH SOT [Previous AI Text] EOT EOH SOA SOS [SNAC TOKENS] EOS EOA
+            
+            full_ids.extend([
+                SOH, SOT,
+                *prev_text_ids,
+                EOT, EOH,
+                SOA, SOS,
+                *previous_audio_token_ids,
+                EOS, EOA
+            ])
+            
+        # --- B. Format the NEW User Turn (Current Turn Input) ---
+        
+        # Format the current text with the voice identifier
+        adapted_user_text = f"{voice}: {user_text}"
+        
+        # Encode the new user text
+        input_text_ids = self._tokenizer.encode(adapted_user_text)
+        
+        # Build the full input for the NEW turn. 
+        # This is what tells the model the history is over and it's time to generate.
+        full_ids.extend([
+            SOH, SOT,
+            *input_text_ids,
+            EOT, EOH,
+            SOA, SOS  # The model will generate new SNAC TOKENS starting here
+        ])
+        
         return self._tokenizer.decode(full_ids)
 
     def _format_prompt_fast(self, prompt, voice="tara"):
@@ -248,13 +312,13 @@ class Model:
         token_stream += self.end_tokenized
         return token_stream
 
-    def format_prompt(self, prompt: str, voice="tara"):
+    def format_prompt(self, prompt: str, voice="tara", previous_audio_token_ids=None, previous_text=None):
         """Format the prompt for the model."""
         if self.use_fast_fmt:
             return self._format_prompt_fast(prompt, voice)
         else:
             print("Warn: Using slow format")
-            return self._format_prompt_slow(prompt, voice)
+            return self._format_prompt_slow(prompt, voice, previous_audio_token_ids, previous_text)
 
     async def websocket(self, ws: WebSocket):
         # satisfy Truss’s metrics/cancellation wrapper
@@ -281,6 +345,8 @@ class Model:
         self.websocket_connections[sid] = {
             "text_buffer": [],  # this is your cache
             # you could add more, e.g. "audio_buffer": []
+            "previous_audio_token_ids": [],
+            "previous_text": "",
         }
 
         async def flush(final=False):
@@ -309,7 +375,7 @@ class Model:
 
             inp = {
                 "request_id": sid,
-                "prompt": self.format_prompt(prompt, voice),
+                "prompt": self.format_prompt(prompt, voice, previous_audio_token_ids=self.websocket_connections[sid]["previous_audio_token_ids"], previous_text=self.websocket_connections[sid]["previous_text"]),
                 "voice": voice,
                 "max_tokens": max_tokens,
                 "temperature": temperature,
@@ -323,10 +389,16 @@ class Model:
                 tokgen = tokgen.body_iterator
 
             sent = 0
-            async for audio in tokens_decoder(tokgen, sid):
+            collected_audio_token_ids = []
+            async for audio, audio_token_ids in tokens_decoder(tokgen, sid):
                 sent += len(audio)
+                collected_audio_token_ids.extend(audio_token_ids)
                 # print(f"[ws:{sid}] sending {len(audio)} bytes (total {sent})")
                 await ws.send_bytes(audio)
+            
+            # Set the previous text and audio token ids for the next turn
+            self.websocket_connections[sid]["previous_text"] = prompt
+            self.websocket_connections[sid]["previous_audio_token_ids"] = collected_audio_token_ids
 
             if final:
                 print(f"[ws:{sid}] final flush complete - closing")
