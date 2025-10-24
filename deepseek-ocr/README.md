@@ -17,7 +17,7 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd truss-examples/deepseek-ocr
 
 # Deploy the model
-truss push
+truss push --publish
 # This assumes you have truss installed, if not follow the instructions here:
 # https://docs.baseten.co/development/model/build-your-first-model
 ```
