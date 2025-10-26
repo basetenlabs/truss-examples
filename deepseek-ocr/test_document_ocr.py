@@ -74,26 +74,24 @@ def test_ocr_with_document():
 
             if resp.status_code == 200:
                 result = resp.json()
-                print("✅ Success!")
-
+                
+                # Extract the model output from nested structure
+                model_output = result.get("model_output", {})
+                
                 # Print extracted text
-                extracted_text = result.get("extracted_text", "No text extracted")
-                print(f"Extracted text:\n{extracted_text}")
-
-                # Print raw output for debugging
-                raw_output = result.get("raw_output", "")
-                if raw_output:
-                    print(f"Raw output:\n{raw_output[:500]}...")
+                extracted_text = model_output.get("extracted_text", "No text extracted")
+                print("✅ Success!")
+                print(f"Extracted text ({len(extracted_text)} chars):\n{extracted_text[:500]}{'...' if len(extracted_text) > 500 else ''}")
 
                 # Check if we have bounding boxes
-                has_boxes = result.get("has_bounding_boxes", False)
+                has_boxes = model_output.get("has_bounding_boxes", False)
                 print(f"Has bounding boxes: {has_boxes}")
 
                 # Store result for visualization
                 results.append(
                     {
                         "prompt": prompt,
-                        "result": result,
+                        "result": model_output,  # Use model_output instead of full result
                         "original_image": original_image,
                     }
                 )
