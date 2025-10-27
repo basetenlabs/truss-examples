@@ -1,0 +1,28 @@
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Write FizzBuzz in Python"
+    stream: false
+    model: "zai-org/GLM-4.5V-FP8"
+    top_p: 0.95
+    extra_body: { "top_k": 40 }
+    max_tokens: 2048
+  tags:
+    - openai-compatible
+model_name: GLM-4.5V-FP8
+base_image:
+  image: lmsysorg/sglang:v0.5.4.post1-cu129-amd64
+docker_server:
+  start_command: sh -c "python3 -m sglang.launch_server --model-path zai-org/GLM-4.5V-FP8 --tp-size 8 --tool-call-parser glm45 --reasoning-parser glm45 --mem-fraction-static 0.9 --served-model-name zai-org/GLM-4.5V --host 0.0.0.0 --port 8000 --enable-cache-report"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:8
+  use_gpu: true
+runtime:
+  predict_concurrency: 32
