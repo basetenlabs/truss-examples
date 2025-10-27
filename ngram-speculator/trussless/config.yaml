@@ -1,7 +1,7 @@
 base_image:
-  image: vllm/vllm-openai:v0.6.5
+  image: vllm/vllm-openai:nightly
 model_metadata:
-  repo_id: NousResearch/Meta-Llama-3.1-8B-Instruct
+  repo_id: Qwen/Qwen3-0.6B
   example_model_input: {
     "model": "llama",
     "messages": [
@@ -19,7 +19,7 @@ model_metadata:
     "max_tokens": 512,
   }
 docker_server:
-  start_command: sh -c "vllm serve NousResearch/Meta-Llama-3.1-8B-Instruct --served-model-name llama --tensor-parallel-size 1 --speculative-model [ngram] --ngram-prompt-lookup-max 64 --ngram-prompt-lookup-min 2 --num-speculative-tokens 64"
+  start_command: sh -c "vllm serve distilbert/distilgpt2 --served-model-name llama --tensor-parallel-size 1 --max-model-len 64 --max-num-seqs 1 --max-num-batched-tokens 64 --gpu-memory-utilization 0.7"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
