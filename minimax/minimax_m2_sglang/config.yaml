@@ -1,0 +1,32 @@
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Who won the world series in 2020?"
+    stream: true
+    model: "MiniMaxAI/MiniMax-M2"
+    max_tokens: 4096
+    temperature: 0.6
+  tags:
+    - openai-compatible
+model_name: MiniMax-M2
+
+base_image:
+  image: lmsysorg/sglang:v0.5.4.post1-cu129-amd64
+docker_server:
+  start_command: sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l); python3 -m sglang.launch_server --model-path MiniMaxAI/MiniMax-M2 --tp-size $GPU_COUNT --tool-call-parser minimax-m2 --reasoning-parser minimax-append-think --trust-remote-code --mem-fraction-static 0.85 --served-model-name MiniMaxAI/MiniMax-M2 --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:8
+  use_gpu: true
+runtime:
+  predict_concurrency: 32
+  health_checks:
+    stop_traffic_threshold_seconds: 1800
+    restart_check_delay_seconds: 1200
+    restart_threshold_seconds: 600
