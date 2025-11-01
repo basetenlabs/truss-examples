@@ -24,8 +24,8 @@ class DeployedWhisper(chains.StubBase):
     async def run_remote(
         self, whisper_input: data_types.WhisperInput
     ) -> data_types.WhisperResult:
-        resp = await self._remote.predict_async(
-            json_payload={"whisper_input": whisper_input.model_dump()},
+        resp = await self.predict_async(
+            inputs={"whisper_input": whisper_input.model_dump()},
         )
         return data_types.WhisperResult.parse_obj(resp)
 
