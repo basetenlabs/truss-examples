@@ -1,20 +1,29 @@
-base_image:
-  image: baseten/cuda_python:12.4.1-dev
-build_commands:
-  - apt-get update && apt-get install -y python3-dev
-  - git clone https://github.com/deepseek-ai/DeepSeek-OCR.git /DeepSeek-OCR
-  - pip install -r /DeepSeek-OCR/requirements.txt
-  - pip install vllm==0.8.5
-  - pip install flash-attn==2.7.3 --no-build-isolation
-python_version: py310
 model_metadata:
   example_model_input:
-    image_url: https://example.com/image.jpg
-    prompt: <image>\n<|grounding|>Convert the document to markdown.
-  model_name: DeepSeek OCR
+    model: "deepseek-ai/DeepSeek-OCR"
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          - type: text
+            text: "<|grounding|>Convert the document to markdown."
+    max_tokens: 4096
+    temperature: 0.6
+  tags:
+    - openai-compatible
 model_name: deepseek-ocr-latest
+base_image:
+  image: lmsysorg/sglang@sha256:bb19265cdc61a65a158b84fb69d84f885f4c5f55e12e4515be88223ec067cf50
+docker_server:
+  start_command: sh -c "python3 -m sglang.launch_server --model deepseek-ai/DeepSeek-OCR --served-model-name deepseek-ai/DeepSeek-OCR --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
 resources:
-  accelerator: H100_40GB
-  cpu: "2"
-  memory: 16Gi
+  accelerator: H100
   use_gpu: true
+runtime:
+  predict_concurrency: 256
