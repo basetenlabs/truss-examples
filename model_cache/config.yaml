@@ -4,7 +4,7 @@ requirements: ["torch"]
 resources:
   accelerator: null
   cpu: "1"
-  memory: 2Gi
+  memory: 8Gi
   use_gpu: false
 secrets: { hf_access_token: null } # null is encouraged, as this will automatically use the one provided by baseten.co
 model_cache:
