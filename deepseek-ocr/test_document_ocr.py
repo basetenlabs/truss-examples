@@ -7,13 +7,13 @@ import requests
 import base64
 import io
 import os
+import re
 from PIL import Image
 from visualizer import DeepSeekOCRVisualizer
 
 # Baseten API configuration
-API_KEY = os.getenv("BASETEN_API_KEY")  # previously committed key has been invalidated
-print(API_KEY)
-ENDPOINT_URL = "https://model-7wlgx8eq.api.baseten.co/environments/production/predict"
+API_KEY = os.getenv("BASETEN_API_KEY")
+ENDPOINT_URL = "https://model-7wlgx8eq.api.baseten.co/environments/production/predict"  # Replace this line with your production endpoint
 
 
 def load_test_document():
@@ -60,7 +60,27 @@ def test_ocr_with_document():
         print(f"\n{i}. Testing prompt: {prompt}")
         print("-" * 60)
 
-        test_data = {"prompt": prompt, "image_base64": img_base64}
+        # Extract text from prompt (remove <image>\n prefix)
+        prompt_text = prompt.replace("<image>\n", "").strip()
+
+        # Format request as OpenAI chat completions format
+        test_data = {
+            "model": "deepseek-ai/DeepSeek-OCR",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/png;base64,{img_base64}"},
+                        },
+                        {"text": prompt_text, "type": "text"},
+                    ],
+                }
+            ],
+            "max_tokens": 4096,
+            "temperature": 0.0,
+        }
 
         try:
             resp = client.post(
@@ -76,27 +96,56 @@ def test_ocr_with_document():
                 result = resp.json()
                 print("✅ Success!")
 
-                # Print extracted text
-                extracted_text = result.get("extracted_text", "No text extracted")
-                print(f"Extracted text:\n{extracted_text}")
+                # Handle OpenAI chat completions response format
+                if "choices" in result and len(result["choices"]) > 0:
+                    content = result["choices"][0]["message"]["content"]
+                    extracted_text = content
+                    raw_output = content
 
-                # Print raw output for debugging
-                raw_output = result.get("raw_output", "")
-                if raw_output:
-                    print(f"Raw output:\n{raw_output[:500]}...")
+                    print(f"Extracted text:\n{extracted_text}")
+                    if len(raw_output) > 500:
+                        print(f"Raw output:\n{raw_output[:500]}...")
 
-                # Check if we have bounding boxes
-                has_boxes = result.get("has_bounding_boxes", False)
-                print(f"Has bounding boxes: {has_boxes}")
+                    # Check if we have bounding boxes (look for reference tokens or bracket format)
+                    has_boxes = "<|ref|>" in raw_output or re.search(
+                        r"\w+\[\[\d+,\s*\d+,\s*\d+,\s*\d+\]\]", raw_output
+                    )
+                    print(f"Has bounding boxes: {has_boxes}")
 
-                # Store result for visualization
-                results.append(
-                    {
-                        "prompt": prompt,
-                        "result": result,
-                        "original_image": original_image,
+                    # Store result in format expected by visualizer
+                    visualizer_result = {
+                        "extracted_text": extracted_text,
+                        "raw_output": raw_output,
+                        "has_bounding_boxes": has_boxes,
                     }
-                )
+
+                    # Store result for visualization
+                    results.append(
+                        {
+                            "prompt": prompt,
+                            "result": visualizer_result,
+                            "original_image": original_image,
+                        }
+                    )
+                else:
+                    # Fallback to original format if response doesn't have choices
+                    extracted_text = result.get("extracted_text", "No text extracted")
+                    print(f"Extracted text:\n{extracted_text}")
+
+                    raw_output = result.get("raw_output", "")
+                    if raw_output:
+                        print(f"Raw output:\n{raw_output[:500]}...")
+
+                    has_boxes = result.get("has_bounding_boxes", False)
+                    print(f"Has bounding boxes: {has_boxes}")
+
+                    results.append(
+                        {
+                            "prompt": prompt,
+                            "result": result,
+                            "original_image": original_image,
+                        }
+                    )
 
             else:
                 print(f"❌ Error: {resp.status_code}")
@@ -129,9 +178,14 @@ def visualize_results(results):
         print(f"\n{i}. Visualizing: {prompt}")
         print("-" * 60)
 
-        # Check if we have raw output with references
+        # Check if we have raw output with references (either <|ref|> format or bracket format)
         raw_output = ocr_result.get("raw_output", "")
-        if "<|ref|>" in raw_output:
+        has_ref_tokens = "<|ref|>" in raw_output
+        has_bracket_format = re.search(
+            r"\w+\[\[\d+,\s*\d+,\s*\d+,\s*\d+\]\]", raw_output
+        )
+
+        if has_ref_tokens or has_bracket_format:
             print("Found reference tokens - creating visualization...")
 
             try:
