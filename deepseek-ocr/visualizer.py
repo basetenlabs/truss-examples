@@ -69,10 +69,17 @@ class DeepSeekOCRVisualizer:
                     for points in points_list:
                         x1, y1, x2, y2 = points
 
-                        x1 = int(x1 / 999 * image_width)
-                        y1 = int(y1 / 999 * image_height)
-                        x2 = int(x2 / 999 * image_width)
-                        y2 = int(y2 / 999 * image_height)
+                        # Check if coordinates are already in pixel format (larger than 999)
+                        # or normalized format (0-999)
+                        if max(x1, y1, x2, y2) > 999:
+                            # Already in pixel coordinates, use directly
+                            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                        else:
+                            # Normalized coordinates, convert to pixels
+                            x1 = int(x1 / 999 * image_width)
+                            y1 = int(y1 / 999 * image_height)
+                            x2 = int(x2 / 999 * image_width)
+                            y2 = int(y2 / 999 * image_height)
 
                         if label_type == "image":
                             try:
@@ -262,9 +269,39 @@ class DeepSeekOCRVisualizer:
     def create_visualization(self, image, ocr_result):
         """Create complete visualization from OCR result"""
         try:
-            # Extract references from raw output
+            raw_output = ocr_result.get("raw_output", "")
+
+            # Try to extract references in <|ref|> format first
             pattern = r"(<\|ref\|>(.*?)<\|/ref\|><\|det\|>(.*?)<\|/det\|>)"
-            matches = re.findall(pattern, ocr_result.get("raw_output", ""), re.DOTALL)
+            matches = re.findall(pattern, raw_output, re.DOTALL)
+
+            # If no <|ref|> format found, try bracket format: text[[x1, y1, x2, y2]]
+            if not matches:
+                bracket_pattern = r"(\w+)\[\[(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\]\]"
+                bracket_matches = re.findall(bracket_pattern, raw_output)
+                if bracket_matches:
+                    # Convert bracket format to ref format for processing
+                    # The ref format expects: (full_match, label_type, coords_string)
+                    # where coords_string when eval'd becomes a list of coordinate lists
+                    matches = []
+                    for match in bracket_matches:
+                        label_type = match[0]
+                        x1, y1, x2, y2 = (
+                            int(match[1]),
+                            int(match[2]),
+                            int(match[3]),
+                            int(match[4]),
+                        )
+                        # Wrap coordinates in a list to match expected format: [[x1, y1, x2, y2]]
+                        coords = f"[[{x1}, {y1}, {x2}, {y2}]]"
+                        # Create a tuple matching the ref format: (full_match, label_type, coords)
+                        matches.append(
+                            (
+                                f"{label_type}[[{x1}, {y1}, {x2}, {y2}]]",
+                                label_type,
+                                coords,
+                            )
+                        )
 
             if not matches:
                 return None
