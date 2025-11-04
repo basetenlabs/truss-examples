@@ -1,7 +1,6 @@
 model_name: GPT OSS 20B
 build_commands:
   - python -c 'from openai_harmony import load_harmony_encoding; load_harmony_encoding("HarmonyGptOss")'
-python_version: py39
 model_metadata:
   repo_id: openai/gpt-oss-20b
   example_model_input: {
@@ -23,20 +22,27 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
+model_cache:
+  - repo_id: openai/gpt-oss-20b
+    revision: refs/pr/36
+    use_volume: true
+    volume_folder: trt_model
 trt_llm:
   build:
     checkpoint_repository:
-      repo: openai/gpt-oss-20b
-      revision: refs/pr/36
+      repo: michaelfeil/empty-model
+      revision: main
       source: HF
   inference_stack: v2
   runtime:
     enable_chunked_prefill: true
     max_batch_size: 64
     max_num_tokens: 8192
-    max_seq_len: 98304
+    max_seq_len: 131072
     patch_kwargs:
+      model_path: /app/model_cache/trt_model
       chat_processor: harmony
+      moe_expert_parallel_size: 1
       backend: pytorch
       cuda_graph_config:
         enable_padding: true
@@ -48,14 +54,16 @@ trt_llm:
       kv_cache_config:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
+        event_buffer_max_size: 1024
       max_beam_width: 1
       max_input_len: 131072
       model_level_stop_words:
       - "<|call|>"
       tokenizer_limit_length: 131072
       trust_remote_code: 1
+      moe_config:
+        backend: CUTLASS
     served_model_name: openai/gpt-oss-20b
     tensor_parallel_size: 1
   version_overrides:
-    # Use truss == 0.10.5
-    v2_llm_version: trtllm-gpu-1.1.0rc0-6489f859-00df817e93
+    v2_llm_version: trtllm-gpu-1.1.0rc4-a8818f0d-d1353ef071
