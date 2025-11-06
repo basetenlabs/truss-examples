@@ -1439,24 +1439,6 @@ def llamalike_lookahead(
     return config
 
 
-def llamalike_lookahead_v2(
-    quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
-    repoid="meta-llama/Llama-3.3-70B-Instruct",
-    use_dynamic_lengths: bool = False,
-    **kwargs,
-):
-    config = llamalike_config_v2(quant, repoid, **kwargs)
-    config.build.speculator = TrussSpeculatorConfiguration(
-        # settings from https://arxiv.org/pdf/2402.02057
-        speculative_decoding_mode="LOOKAHEAD_DECODING",
-        lookahead_windows_size=3 if not use_dynamic_lengths else 1,
-        lookahead_ngram_size=8 if not use_dynamic_lengths else 32,
-        lookahead_verification_set_size=3 if not use_dynamic_lengths else 1,
-        enable_b10_lookahead=True,  #
-    )
-    return config
-
-
 def llamalike_spec_dec(
     quant: TrussTRTLLMQuantizationType = TrussTRTLLMQuantizationType.FP8_KV,
     tp=1,
@@ -1983,19 +1965,6 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
-    # Deployment(
-    #     "Qwen/Qwen2.5-Coder-7B-Instruct-min-latency",
-    #     "Qwen/Qwen2.5-Coder-7B-Instruct",
-    #     Accelerator.B200,
-    #     TextGen(),
-    #     solution=BISV2(
-    #         trt_config=llamalike_lookahead_v2(
-    #             repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
-    #             use_dynamic_lengths=True,
-    #             quant=TrussTRTLLMQuantizationType.FP4,
-    #         )
-    #     ),
-    # ),
     Deployment(
         "Qwen/Qwen2.5-Coder-7B-Instruct",
         "Qwen/Qwen2.5-Coder-7B-Instruct",
