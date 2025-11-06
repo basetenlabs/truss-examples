@@ -307,11 +307,11 @@ Optionally, you can also enable:
 
 @dataclasses.dataclass
 class BISV2(Solution):
-    name: str = "Baseten Inference Service"
+    name: str = "Baseten Inference Stack"
     nickname: str = "BISV2"
-    benefits: str = """Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+    benefits: str = """Baseten Inference Stack is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Baseten Inference Service you get the following benefits by default:
+With Baseten Inference Stack you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel

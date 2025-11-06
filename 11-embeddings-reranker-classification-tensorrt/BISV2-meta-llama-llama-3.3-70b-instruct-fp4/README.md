@@ -1,8 +1,8 @@
-# Baseten Inference Service with meta-llama/Llama-3.3-70B-Instruct
+# Baseten Inference Stack with meta-llama/Llama-3.3-70B-Instruct
 
-This is a Deployment for Baseten Inference Service with meta-llama/Llama-3.3-70B-Instruct. Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for Baseten Inference Stack with meta-llama/Llama-3.3-70B-Instruct. Baseten Inference Stack is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Baseten Inference Service you get the following benefits by default:
+With Baseten Inference Stack you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel
