@@ -128,22 +128,30 @@ class Model:
 
             print(f"Encoding {len(processed_passages)} passages...")
 
-            image_passages = [p for p in processed_passages if isinstance(p, Image.Image)]
+            image_passages = [
+                p for p in processed_passages if isinstance(p, Image.Image)
+            ]
             text_passages = [p for p in processed_passages if isinstance(p, str)]
 
             # forward_passages expects a list of images
             tensors = []
             if len(image_passages) > 0:
-                img_out = self._model.forward_passages(image_passages, batch_size=batch_size)
+                img_out = self._model.forward_passages(
+                    image_passages, batch_size=batch_size
+                )
                 tensors.append(self._norm_embs(img_out))
             if len(text_passages) > 0:
-                txt_out = self._model.forward_queries(text_passages, batch_size=batch_size)
+                txt_out = self._model.forward_queries(
+                    text_passages, batch_size=batch_size
+                )
                 tensors.append(self._norm_embs(txt_out))
 
             if len(tensors) > 0:
                 passage_embeddings = torch.cat(tensors, dim=0)
             else:
-                passage_embeddings = torch.empty((0, getattr(self._model.config, "hidden_size", 0)))
+                passage_embeddings = torch.empty(
+                    (0, getattr(self._model.config, "hidden_size", 0))
+                )
 
             # # forward_queries expects a list of strings
             # text_embs = self._model.forward_queries(text_passages, batch_size=batch_size)
@@ -152,13 +160,12 @@ class Model:
 
             # Convert to list for JSON serialization
 
-
             result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
-            # 
+            #
             # # forward_documents
             # image_embs = self._model.forward_passages(image_passages, batch_size=batch_size)
             # text_embs = self._model.forward_passages(text_passages, batch_size=batch_size)
-            
+
             # # passage_embeddings = self._model.forward_passages(
             # #     processed_passages, batch_size=batch_size
             # # )
@@ -171,7 +178,9 @@ class Model:
         # Compute scores if requested
         if compute_scores:
             if query_embeddings is None or passage_embeddings is None:
-                raise ValueError("Query embeddings and passage embeddings must be provided to compute scores")
+                raise ValueError(
+                    "Query embeddings and passage embeddings must be provided to compute scores"
+                )
 
             def _as_list_of_2d(x):
                 if isinstance(x, list):
@@ -186,7 +195,9 @@ class Model:
                         return [x]
                     if x.ndim == 1:  # [D]
                         return [x.unsqueeze(0)]
-                raise TypeError(f"Unexpected type for embeddings: {type(x)}, shape={getattr(x, 'shape', None)}")
+                raise TypeError(
+                    f"Unexpected type for embeddings: {type(x)}, shape={getattr(x, 'shape', None)}"
+                )
 
             q_list = _as_list_of_2d(query_embeddings)
             p_list = _as_list_of_2d(passage_embeddings)
@@ -248,7 +259,7 @@ class Model:
             image_data = base64.b64decode(base64_str)
             img = Image.open(io.BytesIO(image_data))
             if img.mode != "RGB":
-                    img = img.convert("RGB")
+                img = img.convert("RGB")
             return img
         else:
             raise ValueError("Image input must contain 'url' or 'content' field")
@@ -258,9 +269,9 @@ class Model:
             # pool each item to a single vector, then stack -> [N, D]
             pooled = []
             for t in out:
-                if t.ndim == 2:      # [seq_len, dim] -> mean over tokens
+                if t.ndim == 2:  # [seq_len, dim] -> mean over tokens
                     pooled.append(t.mean(dim=0))
-                elif t.ndim == 1:    # [dim]
+                elif t.ndim == 1:  # [dim]
                     pooled.append(t)
                 else:
                     pooled.append(t.reshape(-1))
