@@ -307,7 +307,7 @@ Optionally, you can also enable:
 
 @dataclasses.dataclass
 class BISV2(Solution):
-    name: str = "TensorRT Torch Backend Baseten Inference Service"
+    name: str = "Baseten Inference Service"
     nickname: str = "BISV2"
     benefits: str = """Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
@@ -321,8 +321,7 @@ With Baseten Inference Service you get the following benefits by default:
 Optionally, you can also enable:
 - *speculative decoding* using an external draft model or self-speculative decoding
 - *fp8 quantization* deployments on H100, H200 and L4 GPUs
-
-The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config, you can now also quantize models straight from huggingface in FP8 and FP4, FP4_KV, FP8_KV and FP4_MLP_ONLY.
+- *fp4 quantization* deployments on B200 GPUs to get even more speed
 """
 
     def make_truss_config(self, dp):
