@@ -11,7 +11,7 @@ model_metadata:
 model_name: BISV2-qwen-qwen3-32b-fp4-truss-example
 python_version: py39
 resources:
-  accelerator: H100
+  accelerator: B200
   cpu: '1'
   memory: 10Gi
   use_gpu: true

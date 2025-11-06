@@ -1,8 +1,8 @@
-# TensorRT Torch Backend Baseten Inference Service with Qwen/Qwen3-32B
+# TensorRT-LLM Briton with Qwen/Qwen2.5-Coder-7B-Instruct-calib-dataset
 
-This is a Deployment for TensorRT Torch Backend Baseten Inference Service with Qwen/Qwen3-32B. Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
+This is a Deployment for TensorRT-LLM Briton with Qwen/Qwen2.5-Coder-7B-Instruct-calib-dataset. Briton is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
 
-With Baseten Inference Service you get the following benefits by default:
+With Briton you get the following benefits by default:
 - *Lowest-latency* latency, beating frameworks such as vllm
 - *Highest-throughput* inference, automatically using XQA kernels, paged kv caching and inflight batching.
 - *distributed inference* run large models (such as LLama-405B) tensor-parallel
@@ -13,14 +13,12 @@ Optionally, you can also enable:
 - *speculative decoding* using an external draft model or self-speculative decoding
 - *fp8 quantization* deployments on H100, H200 and L4 GPUs
 
-The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config, you can now also quantize models straight from huggingface in FP8 and FP4, FP4_KV, FP8_KV and FP4_MLP_ONLY.
-
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [Qwen/Qwen3-32B](https://huggingface.co/Qwen/Qwen3-32B).
+This deployment is specifically designed for the Hugging Face model [Qwen/Qwen2.5-Coder-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct).
 Suitable models can be identified by the `ForCausalLM` suffix in the model name. Currently we support e.g. LLama, Qwen, Mistral models.
 
-Qwen/Qwen3-32B  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
+Qwen/Qwen2.5-Coder-7B-Instruct  is a text-generation model, used to generate text given a prompt. \nIt is frequently used in chatbots, text completion, structured output and more.
 
 
 ## Deployment with Truss
@@ -34,15 +32,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen3-32b-fp4
+cd 11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-coder-7b-instruct-calib-dataset-fp4-mlp-only
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BISV2-qwen-qwen3-32b-fp4` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-coder-7b-instruct-calib-dataset-fp4-mlp-only` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BISV2-qwen-qwen3-32b-fp4-truss-example was successfully pushed ✨
+# ✨ Model Briton-qwen-qwen2.5-coder-7b-instruct-calib-dataset-fp4-mlp-only-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -131,7 +129,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp4_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp4_mlp_only`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
 model_metadata:
@@ -144,7 +142,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: BISV2-qwen-qwen3-32b-fp4-truss-example
+model_name: Briton-qwen-qwen2.5-coder-7b-instruct-calib-dataset-fp4-mlp-only-truss-example
 python_version: py39
 resources:
   accelerator: B200
@@ -153,15 +151,20 @@ resources:
   use_gpu: true
 trt_llm:
   build:
+    base_model: llama
     checkpoint_repository:
-      repo: Qwen/Qwen3-32B
+      repo: Qwen/Qwen2.5-Coder-7B-Instruct
       revision: main
       source: HF
-    quantization_type: fp4_kv
-  runtime:
-    max_batch_size: 32
-    max_num_tokens: 32768
     max_seq_len: 32768
+    num_builder_gpus: 4
+    quantization_config:
+      calib_max_seq_length: 2048
+      calib_size: 2048
+    quantization_type: fp4_mlp_only
+    tensor_parallel_count: 1
+  runtime:
+    enable_chunked_context: true
 
 ```
 

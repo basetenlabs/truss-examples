@@ -36,7 +36,6 @@ SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
 ROOT_NAME = Path(REPO_URL.split("/")[-1])
 BEI_VERSION = os.environ.get("BEI")
 ENGINE_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER")
-ENGINE_V2_BUILDER_VERSION = os.environ.get("ENGINE_BUILDER_V2")
 BRITON_VERSION = os.environ.get("BRITON")
 
 
@@ -307,7 +306,7 @@ Optionally, you can also enable:
 
 
 @dataclasses.dataclass
-class BritonV2(Solution):
+class BISV2(Solution):
     name: str = "TensorRT Torch Backend Baseten Inference Service"
     nickname: str = "BISV2"
     benefits: str = """Baseten Inference Service is Baseten's solution for production-grade deployments via TensorRT-LLM for Causal Language Models models. (e.g. LLama, Qwen, Mistral)
@@ -359,7 +358,7 @@ The V2 upgrade works with TensorRT-LLM's new torch backend. With this V2 config,
                 )
             )
 
-        overrides_engine_builder = ENGINE_V2_BUILDER_VERSION
+        overrides_engine_builder = ENGINE_BUILDER_VERSION
         overrides_briton = BRITON_VERSION
 
         if overrides_engine_builder is not None or overrides_briton is not None:
@@ -882,6 +881,13 @@ class Deployment:
             return False
 
     @cached_property
+    def is_mlp_only(self):
+        if self.solution.trt_config is not None:
+            return "mlp_only" in self.solution.trt_config.build.quantization_type.value
+        else:
+            return False
+
+    @cached_property
     def is_fp4(self):
         if self.solution.trt_config is not None:
             return "fp4" in self.solution.trt_config.build.quantization_type.value
@@ -919,6 +925,7 @@ class Deployment:
             + self.name.replace(" ", "-").replace("/", "-").lower()
             + ("-fp8" * self.is_fp8)
             + ("-fp4" * self.is_fp4)
+            + ("-mlp-only" * self.is_mlp_only)
         )
 
     @property
@@ -932,7 +939,7 @@ def add_inference_v2_stack(path: Path, dep: Deployment) -> None:
       - Only if `should_inject` is True
       - Adds `inference_stack: v2` INSIDE the `trt_llm` mapping
     """
-    if not isinstance(dep.solution, BritonV2):
+    if not isinstance(dep.solution, BISV2):
         return
 
     data = yaml.safe_load(path.read_text())
@@ -951,7 +958,7 @@ def add_base_model_override(path: Path, dep: Deployment) -> None:
       - Only if `should_inject` is True
       - Adds `base_model: ...` INSIDE the `trt_llm` mapping
     """
-    if not isinstance(dep.solution, BritonV2):
+    if not isinstance(dep.solution, BISV2):
         return
 
     data = yaml.safe_load(path.read_text())
@@ -1367,6 +1374,7 @@ def llamalike_config(
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     batch_scheduler_policy: None = None,
     base_model: TrussTRTLLMModel = TrussTRTLLMModel.LLAMA,
+    calib_dataset: str = None
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
@@ -1380,6 +1388,11 @@ def llamalike_config(
         )
     if batch_scheduler_policy:
         runtime_kwargs["batch_scheduler_policy"] = batch_scheduler_policy
+    
+    if calib_dataset is not None:
+        build_kwargs["quantization_config"] = dict(
+            calib_dataset=calib_dataset
+        )
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
@@ -1544,7 +1557,7 @@ DEPLOYMENTS_BRITON = [
         "meta-llama/Llama-3.3-70B-Instruct",
         Accelerator.B200,
         TextGen(),
-        solution=BritonV2(
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="meta-llama/Llama-3.3-70B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP4,
@@ -1571,7 +1584,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config(
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
-                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
             )
         ),
     ),
@@ -1580,10 +1593,49 @@ DEPLOYMENTS_BRITON = [
         "meta-llama/Llama-3.2-3B-Instruct",
         Accelerator.H100_40GB,
         TextGen(),
-        solution=BritonV2(
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct-calib-dataset",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                calib_dataset="baseten/quant_calibration_dataset_v1"
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4_MLP_ONLY,
             )
         ),
     ),
@@ -1671,19 +1723,19 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
-    Deployment(
-        "Qwen/Qwen3-30B-A3B",
-        "Qwen/Qwen3-30B-A3B",
-        Accelerator.B200,
-        TextGen(),
-        solution=BritonV2(
-            trt_config=llamalike_config_v2(
-                repoid="Qwen/Qwen3-30B-A3B",
-                quant=TrussTRTLLMQuantizationType.FP8,
-                calib_size=4096,
-            )
-        ),
-    ),
+    # Deployment(
+    #     "Qwen/Qwen3-30B-A3B",
+    #     "Qwen/Qwen3-30B-A3B",
+    #     Accelerator.B200,
+    #     TextGen(),
+    #     solution=BISV2(
+    #         trt_config=llamalike_config_v2(
+    #             repoid="Qwen/Qwen3-30B-A3B",
+    #             quant=TrussTRTLLMQuantizationType.FP8,
+    #             calib_size=4096,
+    #         )
+    #     ),
+    # ),
     Deployment(
         "Qwen/Qwen3-32B",
         "Qwen/Qwen3-32B",
@@ -1715,9 +1767,23 @@ DEPLOYMENTS_BRITON = [
     Deployment(
         "Qwen/Qwen3-32B",
         "Qwen/Qwen3-32B",
-        Accelerator.H100,
+        Accelerator.B200,
         TextGen(),
-        solution=BritonV2(
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-32B",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP4_MLP_ONLY,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-32B",
                 quant=TrussTRTLLMQuantizationType.FP4_KV,
@@ -1729,38 +1795,38 @@ DEPLOYMENTS_BRITON = [
         "Qwen/Qwen3-4B",
         Accelerator.H100,
         TextGen(),
-        solution=BritonV2(
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-4B",
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
             )
         ),
     ),
-    Deployment(
-        "Qwen/Qwen3-30B-A3B-Instruct-2507",
-        "Qwen/Qwen3-30B-A3B-Instruct-2507",
-        Accelerator.H100,
-        TextGen(),
-        solution=BritonV2(
-            trt_config=llamalike_config_v2(
-                repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
-                quant=TrussTRTLLMQuantizationType.FP8,
-            )
-        ),
-    ),
-    Deployment(
-        "Qwen/Qwen3-30B-A3B-Instruct-2507",
-        "Qwen/Qwen3-30B-A3B-Instruct-2507",
-        Accelerator.B200,
-        TextGen(),
-        solution=BritonV2(
-            trt_config=llamalike_config_v2(
-                repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
-                quant=TrussTRTLLMQuantizationType.FP4,
-                calib_size=4096,
-            )
-        ),
-    ),
+    # Deployment(
+    #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #     Accelerator.H100,
+    #     TextGen(),
+    #     solution=BISV2(
+    #         trt_config=llamalike_config_v2(
+    #             repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #             quant=TrussTRTLLMQuantizationType.FP8,
+    #         )
+    #     ),
+    # ),
+    # Deployment(
+    #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #     Accelerator.B200,
+    #     TextGen(),
+    #     solution=Briton(
+    #         trt_config=llamalike_config(
+    #             repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
+    #             quant=TrussTRTLLMQuantizationType.FP4,
+    #             calib_dataset="baseten/quant_calibration_dataset_v1",
+    #         )
+    #     ),
+    # ),
     Deployment(
         "meta-llama/Llama-3.1-405B",
         "meta-llama/Llama-3.1-405B",
@@ -1800,7 +1866,7 @@ DEPLOYMENTS_BRITON = [
         "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
         Accelerator.B200,
         TextGen(),
-        solution=BritonV2(
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
                 quant=TrussTRTLLMQuantizationType.FP4_KV,
@@ -1927,7 +1993,7 @@ DEPLOYMENTS_BRITON = [
     #     "Qwen/Qwen2.5-Coder-7B-Instruct",
     #     Accelerator.B200,
     #     TextGen(),
-    #     solution=BritonV2(
+    #     solution=BISV2(
     #         trt_config=llamalike_lookahead_v2(
     #             repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
     #             use_dynamic_lengths=True,
@@ -1940,10 +2006,23 @@ DEPLOYMENTS_BRITON = [
         "Qwen/Qwen2.5-Coder-7B-Instruct",
         Accelerator.B200,
         TextGen(),
-        solution=BritonV2(
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP4,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen2.5-Coder-7B-Instruct-calib-dataset",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4_MLP_ONLY,
+                calib_dataset="baseten/quant_calibration_dataset_v1"
             )
         ),
     ),
@@ -1952,7 +2031,7 @@ DEPLOYMENTS_BRITON = [
         "Qwen/Qwen2.5-Coder-7B-Instruct",
         Accelerator.B200,
         TextGen(),
-        solution=BritonV2(
+        solution=BISV2(
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
                 quant=TrussTRTLLMQuantizationType.NO_QUANT,

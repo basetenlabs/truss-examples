@@ -145,7 +145,7 @@ model_metadata:
 model_name: Briton-meta-llama-llama-3.2-3b-instruct-truss-example
 python_version: py39
 resources:
-  accelerator: A10G
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
