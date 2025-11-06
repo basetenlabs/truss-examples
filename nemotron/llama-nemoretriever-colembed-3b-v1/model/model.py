@@ -80,6 +80,8 @@ class Model:
         compute_scores = model_input.get("compute_scores", False)
 
         result = {}
+        query_embeddings = None
+        passage_embeddings = None
 
         # Process queries if provided
         if "queries" in model_input:
@@ -116,6 +118,8 @@ class Model:
                     if passage.get("type") == "image":
                         # Load and add image
                         image = self._load_image(passage)
+                        if image is None:
+                            raise ValueError(f"Failed to load image: {passage}")
                         processed_passages.append(image)
                     else:
                         raise ValueError(f"Unsupported passage type: {type(passage)}")
@@ -123,26 +127,86 @@ class Model:
                     raise ValueError(f"Unsupported passage type: {type(passage)}")
 
             print(f"Encoding {len(processed_passages)} passages...")
-            passage_embeddings = self._model.forward_passages(
-                processed_passages, batch_size=batch_size
-            )
+
+            image_passages = [p for p in processed_passages if isinstance(p, Image.Image)]
+            text_passages = [p for p in processed_passages if isinstance(p, str)]
+
+            # forward_passages expects a list of images
+            tensors = []
+            if len(image_passages) > 0:
+                img_out = self._model.forward_passages(image_passages, batch_size=batch_size)
+                tensors.append(self._norm_embs(img_out))
+            if len(text_passages) > 0:
+                txt_out = self._model.forward_queries(text_passages, batch_size=batch_size)
+                tensors.append(self._norm_embs(txt_out))
+
+            if len(tensors) > 0:
+                passage_embeddings = torch.cat(tensors, dim=0)
+            else:
+                passage_embeddings = torch.empty((0, getattr(self._model.config, "hidden_size", 0)))
+
+            # # forward_queries expects a list of strings
+            # text_embs = self._model.forward_queries(text_passages, batch_size=batch_size)
+            # # combine above two lists into a single list
+            # passage_embeddings = torch.cat([text_embs, image_embs], dim=0)
 
             # Convert to list for JSON serialization
+
+
             result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
+            # 
+            # # forward_documents
+            # image_embs = self._model.forward_passages(image_passages, batch_size=batch_size)
+            # text_embs = self._model.forward_passages(text_passages, batch_size=batch_size)
+            
+            # # passage_embeddings = self._model.forward_passages(
+            # #     processed_passages, batch_size=batch_size
+            # # )
+
+            # passage_embeddings = torch.cat([image_embs, text_embs], dim=0)
+
+            # # Convert to list for JSON serialization
+            # result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
 
         # Compute scores if requested
         if compute_scores:
-            if (
-                result["query_embeddings"] is None
-                or result["passage_embeddings"] is None
-            ):
-                raise ValueError(
-                    "Query embeddings and passage embeddings must be provided to compute scores"
-                )
-            scores = self._model.get_scores(
-                result["query_embeddings"], result["passage_embeddings"]
-            )
+            if query_embeddings is None or passage_embeddings is None:
+                raise ValueError("Query embeddings and passage embeddings must be provided to compute scores")
+
+            def _as_list_of_2d(x):
+                if isinstance(x, list):
+                    return x
+                if isinstance(x, torch.Tensor):
+                    # Squeeze any singleton batch dimension at the front
+                    while x.ndim > 3 and x.shape[0] == 1:
+                        x = x.squeeze(0)
+                    if x.ndim == 3:  # [B, N, D]
+                        return [x[i] for i in range(x.shape[0])]
+                    if x.ndim == 2:  # [N, D]
+                        return [x]
+                    if x.ndim == 1:  # [D]
+                        return [x.unsqueeze(0)]
+                raise TypeError(f"Unexpected type for embeddings: {type(x)}, shape={getattr(x, 'shape', None)}")
+
+            q_list = _as_list_of_2d(query_embeddings)
+            p_list = _as_list_of_2d(passage_embeddings)
+
+            scores = self._model.get_scores(q_list, p_list, batch_size=batch_size)
             result["scores"] = scores.cpu().float().tolist()
+
+        # # Compute scores if requested
+        # if compute_scores:
+        #     if (
+        #         result["query_embeddings"] is None
+        #         or result["passage_embeddings"] is None
+        #     ):
+        #         raise ValueError(
+        #             "Query embeddings and passage embeddings must be provided to compute scores"
+        #         )
+        #     scores = self._model.get_scores(
+        #         result["query_embeddings"], result["passage_embeddings"]
+        #     )
+        #     result["scores"] = scores.cpu().float().tolist()
 
         return result
 
@@ -164,18 +228,63 @@ class Model:
                 # Base64 encoded image in data URL
                 base64_str = url.split(",")[1]
                 image_data = base64.b64decode(base64_str)
-                return Image.open(io.BytesIO(image_data))
+                img = Image.open(io.BytesIO(image_data))
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+                return img
             else:
                 # Regular URL
                 response = requests.get(url, headers=headers, timeout=30)
                 response.raise_for_status()
-                return Image.open(io.BytesIO(response.content))
+                img = Image.open(io.BytesIO(response.content))
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+                return img
         elif "content" in image_input:
             # Base64 string
             base64_str = image_input["content"]
             if "," in base64_str:
                 base64_str = base64_str.split(",")[1]
             image_data = base64.b64decode(base64_str)
-            return Image.open(io.BytesIO(image_data))
+            img = Image.open(io.BytesIO(image_data))
+            if img.mode != "RGB":
+                    img = img.convert("RGB")
+            return img
         else:
             raise ValueError("Image input must contain 'url' or 'content' field")
+
+    def _norm_embs(self, out):
+        if isinstance(out, list):
+            # pool each item to a single vector, then stack -> [N, D]
+            pooled = []
+            for t in out:
+                if t.ndim == 2:      # [seq_len, dim] -> mean over tokens
+                    pooled.append(t.mean(dim=0))
+                elif t.ndim == 1:    # [dim]
+                    pooled.append(t)
+                else:
+                    pooled.append(t.reshape(-1))
+            return torch.stack(pooled, dim=0)
+        elif isinstance(out, torch.Tensor):
+            return out if out.ndim == 2 else out.unsqueeze(0)
+        else:
+            raise TypeError(f"Unexpected embedding output type: {type(out)}")
+
+    # def _as_tokens_3d(self, x):
+    #     if isinstance(x, list):
+    #         # list of [tokens, D] -> pad to max tokens and stack -> [B, N, D]
+    #         N = max(t.shape[0] if t.ndim == 2 else 1 for t in x)
+    #         D = x[0].shape[-1] if x and x[0].ndim >= 1 else 0
+    #         out = []
+    #         for t in x:
+    #             if t.ndim == 1:          # [D] -> [1, D]
+    #                 t = t.unsqueeze(0)
+    #             if t.shape[0] < N:       # pad tokens
+    #                 pad = torch.zeros(N - t.shape[0], D, device=t.device, dtype=t.dtype)
+    #                 t = torch.cat([t, pad], dim=0)
+    #             out.append(t)
+    #         return torch.stack(out, dim=0)  # [B, N, D]
+    #     # tensor
+    #     if x.ndim == 2:   # [B, D] -> add token dim: [B, 1, D]
+    #         return x.unsqueeze(1)
+    #     return x          # already [B, N, D]
