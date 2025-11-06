@@ -1374,7 +1374,7 @@ def llamalike_config(
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     batch_scheduler_policy: None = None,
     base_model: TrussTRTLLMModel = TrussTRTLLMModel.LLAMA,
-    calib_dataset: str = None
+    calib_dataset: str = None,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
@@ -1388,11 +1388,9 @@ def llamalike_config(
         )
     if batch_scheduler_policy:
         runtime_kwargs["batch_scheduler_policy"] = batch_scheduler_policy
-    
+
     if calib_dataset is not None:
-        build_kwargs["quantization_config"] = dict(
-            calib_dataset=calib_dataset
-        )
+        build_kwargs["quantization_config"] = dict(calib_dataset=calib_dataset)
 
     config = TRTLLMConfiguration(
         build=TrussTRTLLMBuildConfiguration(
@@ -1500,9 +1498,7 @@ def llamalike_config_v2(
     runtime_kwargs = dict()
 
     if calib_size is not None:
-        build_kwargs["quantization_config"] = dict(
-            calib_size=calib_size
-        )
+        build_kwargs["quantization_config"] = dict(calib_size=calib_size)
 
     config = TRTLLMConfigurationV2(
         build=TrussTRTLLMBuildConfiguration(
@@ -1611,7 +1607,7 @@ DEPLOYMENTS_BRITON = [
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
-                calib_dataset="baseten/quant_calibration_dataset_v1"
+                calib_dataset="baseten/quant_calibration_dataset_v1",
             )
         ),
     ),
@@ -2022,7 +2018,7 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config(
                 repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP4_MLP_ONLY,
-                calib_dataset="baseten/quant_calibration_dataset_v1"
+                calib_dataset="baseten/quant_calibration_dataset_v1",
             )
         ),
     ),
