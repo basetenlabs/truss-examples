@@ -128,52 +128,46 @@ class Model:
 
             print(f"Encoding {len(processed_passages)} passages...")
 
-            image_passages = [
-                p for p in processed_passages if isinstance(p, Image.Image)
-            ]
-            text_passages = [p for p in processed_passages if isinstance(p, str)]
-
-            # forward_passages expects a list of images
             tensors = []
-            if len(image_passages) > 0:
-                img_out = self._model.forward_passages(
-                    image_passages, batch_size=batch_size
-                )
-                tensors.append(self._norm_embs(img_out))
-            if len(text_passages) > 0:
-                txt_out = self._model.forward_queries(
-                    text_passages, batch_size=batch_size
-                )
-                tensors.append(self._norm_embs(txt_out))
+            for p in processed_passages:
+                if isinstance(p, Image.Image):
+                    img_out = self._model.forward_passages([p], batch_size=batch_size)
+                    tensors.append(img_out)
+                elif isinstance(p, str):
+                    txt_out = self._model.forward_queries([p], batch_size=batch_size)
+                    tensors.append(txt_out)
+                else:
+                    print(f"Unsupported passage type: {type(p)}")
+
+            # image_passages = [
+            #     p for p in processed_passages if isinstance(p, Image.Image)
+            # ]
+            # text_passages = [p for p in processed_passages if isinstance(p, str)]
+
+            # # forward_passages expects a list of images
+            # tensors = []
+            # if len(image_passages) > 0:
+            #     img_out = self._model.forward_passages(image_passages, batch_size=batch_size)
+            #     # tensors.append(self._norm_embs(img_out))
+            #     tensors.append(img_out)
+            # if len(text_passages) > 0:
+            #     txt_out = self._model.forward_queries(text_passages, batch_size=batch_size)
+            #     # tensors.append(self._norm_embs(txt_out))
+            #     tensors.append(txt_out)
 
             if len(tensors) > 0:
-                passage_embeddings = torch.cat(tensors, dim=0)
+                # passage_embeddings = torch.cat(tensors, dim=0)
+                passage_embeddings = tensors
             else:
                 passage_embeddings = torch.empty(
                     (0, getattr(self._model.config, "hidden_size", 0))
                 )
 
-            # # forward_queries expects a list of strings
-            # text_embs = self._model.forward_queries(text_passages, batch_size=batch_size)
-            # # combine above two lists into a single list
-            # passage_embeddings = torch.cat([text_embs, image_embs], dim=0)
-
             # Convert to list for JSON serialization
-
-            result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
-            #
-            # # forward_documents
-            # image_embs = self._model.forward_passages(image_passages, batch_size=batch_size)
-            # text_embs = self._model.forward_passages(text_passages, batch_size=batch_size)
-
-            # # passage_embeddings = self._model.forward_passages(
-            # #     processed_passages, batch_size=batch_size
-            # # )
-
-            # passage_embeddings = torch.cat([image_embs, text_embs], dim=0)
-
-            # # Convert to list for JSON serialization
             # result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
+            result["passage_embeddings"] = [
+                t.cpu().float().tolist() for t in passage_embeddings
+            ]
 
         # Compute scores if requested
         if compute_scores:
@@ -189,6 +183,8 @@ class Model:
                     # Squeeze any singleton batch dimension at the front
                     while x.ndim > 3 and x.shape[0] == 1:
                         x = x.squeeze(0)
+                    # if x.ndim == 3 and x.shape[0] == 1:
+                    #     x = x.squeeze(0)
                     if x.ndim == 3:  # [B, N, D]
                         return [x[i] for i in range(x.shape[0])]
                     if x.ndim == 2:  # [N, D]
@@ -202,22 +198,12 @@ class Model:
             q_list = _as_list_of_2d(query_embeddings)
             p_list = _as_list_of_2d(passage_embeddings)
 
+            # Normalize embeddings to fix text/image scale mismatch
+            q_list = [torch.nn.functional.normalize(q, dim=-1) for q in q_list]
+            p_list = [torch.nn.functional.normalize(p, dim=-1) for p in p_list]
+
             scores = self._model.get_scores(q_list, p_list, batch_size=batch_size)
             result["scores"] = scores.cpu().float().tolist()
-
-        # # Compute scores if requested
-        # if compute_scores:
-        #     if (
-        #         result["query_embeddings"] is None
-        #         or result["passage_embeddings"] is None
-        #     ):
-        #         raise ValueError(
-        #             "Query embeddings and passage embeddings must be provided to compute scores"
-        #         )
-        #     scores = self._model.get_scores(
-        #         result["query_embeddings"], result["passage_embeddings"]
-        #     )
-        #     result["scores"] = scores.cpu().float().tolist()
 
         return result
 
@@ -280,22 +266,3 @@ class Model:
             return out if out.ndim == 2 else out.unsqueeze(0)
         else:
             raise TypeError(f"Unexpected embedding output type: {type(out)}")
-
-    # def _as_tokens_3d(self, x):
-    #     if isinstance(x, list):
-    #         # list of [tokens, D] -> pad to max tokens and stack -> [B, N, D]
-    #         N = max(t.shape[0] if t.ndim == 2 else 1 for t in x)
-    #         D = x[0].shape[-1] if x and x[0].ndim >= 1 else 0
-    #         out = []
-    #         for t in x:
-    #             if t.ndim == 1:          # [D] -> [1, D]
-    #                 t = t.unsqueeze(0)
-    #             if t.shape[0] < N:       # pad tokens
-    #                 pad = torch.zeros(N - t.shape[0], D, device=t.device, dtype=t.dtype)
-    #                 t = torch.cat([t, pad], dim=0)
-    #             out.append(t)
-    #         return torch.stack(out, dim=0)  # [B, N, D]
-    #     # tensor
-    #     if x.ndim == 2:   # [B, D] -> add token dim: [B, 1, D]
-    #         return x.unsqueeze(1)
-    #     return x          # already [B, N, D]
