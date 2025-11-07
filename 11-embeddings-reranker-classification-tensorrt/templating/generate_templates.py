@@ -1779,6 +1779,42 @@ DEPLOYMENTS_BRITON = [
             )
         ),
     ),
+    Deployment(
+        "nvidia/Qwen3-8B-FP4",
+        "nvidia/Qwen3-8B-FP4",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="nvidia/Qwen3-8B-FP4",
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
+        ),
+    ),
+    Deployment(
+        "nvidia/Qwen3-30B-A3B-FP4",
+        "nvidia/Qwen3-30B-A3B-FP4",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="nvidia/Qwen3-30B-A3B-FP4",
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
+        ),
+    ),
+    Deployment(
+        "nvidia/Llama-3.1-8B-Instruct-FP4",
+        "nvidia/Llama-3.1-8B-Instruct-FP4",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="nvidia/Llama-3.1-8B-Instruct-FP4",
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
+        ),
+    ),
     # Deployment(
     #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
     #     "Qwen/Qwen3-30B-A3B-Instruct-2507",
