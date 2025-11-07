@@ -139,22 +139,6 @@ class Model:
                 else:
                     print(f"Unsupported passage type: {type(p)}")
 
-            # image_passages = [
-            #     p for p in processed_passages if isinstance(p, Image.Image)
-            # ]
-            # text_passages = [p for p in processed_passages if isinstance(p, str)]
-
-            # # forward_passages expects a list of images
-            # tensors = []
-            # if len(image_passages) > 0:
-            #     img_out = self._model.forward_passages(image_passages, batch_size=batch_size)
-            #     # tensors.append(self._norm_embs(img_out))
-            #     tensors.append(img_out)
-            # if len(text_passages) > 0:
-            #     txt_out = self._model.forward_queries(text_passages, batch_size=batch_size)
-            #     # tensors.append(self._norm_embs(txt_out))
-            #     tensors.append(txt_out)
-
             if len(tensors) > 0:
                 # passage_embeddings = torch.cat(tensors, dim=0)
                 passage_embeddings = tensors
