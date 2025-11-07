@@ -13,9 +13,9 @@ model_metadata:
     temperature: 0.6
   tags:
     - openai-compatible
-model_name: deepseek-ocr-latest
+model_name: deepseek vl2
 base_image:
-  image: lmsysorg/sglang:0.5.5
+  image: lmsysorg/sglang:v0.5.5
 docker_server:
   start_command: sh -c "python3 -m sglang.launch_server --model deepseek-ai/deepseek-vl2 --served-model-name deepseek-ai/deepseek-vl2 --host 0.0.0.0 --port 8000"
   readiness_endpoint: /health_generate
