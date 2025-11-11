@@ -128,19 +128,31 @@ class Model:
 
             print(f"Encoding {len(processed_passages)} passages...")
 
-            tensors = []
-            for p in processed_passages:
-                if isinstance(p, Image.Image):
-                    img_out = self._model.forward_passages([p], batch_size=batch_size)
-                    tensors.append(img_out)
-                elif isinstance(p, str):
-                    txt_out = self._model.forward_queries([p], batch_size=batch_size)
-                    tensors.append(txt_out)
-                else:
-                    print(f"Unsupported passage type: {type(p)}")
+            # forward pass
+            # Track order of inputs
+            indexed = [(p, i) for i, p in enumerate(processed_passages)]
+            imgs = [p for p, _ in indexed if isinstance(p, Image.Image)]
+            txts = [p for p, _ in indexed if isinstance(p, str)]
+            img_indices = [i for p, i in indexed if isinstance(p, Image.Image)]
+            txt_indices = [i for p, i in indexed if isinstance(p, str)]
 
-            if len(tensors) > 0:
-                # passage_embeddings = torch.cat(tensors, dim=0)
+            # Run batched forward passes only once per modality
+            img_out = []
+            txt_out = []
+            if imgs:
+                img_out = self._model.forward_passages(imgs, batch_size=batch_size)
+            if txts:
+                txt_out = self._model.forward_queries(txts, batch_size=batch_size)
+
+            # Reassemble in original order
+            tensors = [None] * len(processed_passages)
+            for out, idx in zip(img_out, img_indices):
+                tensors[idx] = out
+            for out, idx in zip(txt_out, txt_indices):
+                tensors[idx] = out
+
+            # Final tensor list or empty tensor if none
+            if any(t is not None for t in tensors):
                 passage_embeddings = tensors
             else:
                 passage_embeddings = torch.empty(
