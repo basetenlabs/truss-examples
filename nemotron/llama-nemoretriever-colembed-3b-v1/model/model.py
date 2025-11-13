@@ -112,15 +112,17 @@ class Model:
             for passage in passages:
                 if isinstance(passage, str):
                     # Text passage
-                    processed_passages.append(passage)
+                    processed_passages.append(("text", passage))
                 elif isinstance(passage, dict):
                     # Check if it's an image
                     if passage.get("type") == "image":
                         # Load and add image
                         image = self._load_image(passage)
+                        text = passage.get("text", "") or ""
+                        kind = "doc" if text else "image"
+                        processed_passages.append((kind, (image, text)))
                         if image is None:
                             raise ValueError(f"Failed to load image: {passage}")
-                        processed_passages.append(image)
                     else:
                         raise ValueError(f"Unsupported passage type: {type(passage)}")
                 else:
@@ -128,39 +130,53 @@ class Model:
 
             print(f"Encoding {len(processed_passages)} passages...")
 
-            # forward pass
-            # Track order of inputs
-            indexed = [(p, i) for i, p in enumerate(processed_passages)]
-            imgs = [p for p, _ in indexed if isinstance(p, Image.Image)]
-            txts = [p for p, _ in indexed if isinstance(p, str)]
-            img_indices = [i for p, i in indexed if isinstance(p, Image.Image)]
-            txt_indices = [i for p, i in indexed if isinstance(p, str)]
+            # separate passages of each modality
+            docs = []
+            images = []
+            texts = []
+            for kind, payload in processed_passages:
+                if kind == "doc":
+                    image, text = payload
+                    docs.append({"image": image, "text": text})
+                elif kind == "image":
+                    image, _ = payload
+                    images.append(image)
+                elif kind == "text":
+                    texts.append(payload)
 
-            # Run batched forward passes only once per modality
-            img_out = []
-            txt_out = []
-            if imgs:
-                img_out = self._model.forward_passages(imgs, batch_size=batch_size)
-            if txts:
-                txt_out = self._model.forward_queries(txts, batch_size=batch_size)
+            # run each forward pass now
+            doc_out = (
+                self._model.forward_documents(docs, batch_size=batch_size)
+                if docs
+                else []
+            )
+            img_out = (
+                self._model.forward_passages(images, batch_size=batch_size)
+                if images
+                else []
+            )
+            txt_out = (
+                self._model.forward_queries(texts, batch_size=batch_size)
+                if texts
+                else []
+            )
 
-            # Reassemble in original order
-            tensors = [None] * len(processed_passages)
-            for out, idx in zip(img_out, img_indices):
-                tensors[idx] = out
-            for out, idx in zip(txt_out, txt_indices):
-                tensors[idx] = out
-
-            # Final tensor list or empty tensor if none
-            if any(t is not None for t in tensors):
-                passage_embeddings = tensors
-            else:
-                passage_embeddings = torch.empty(
-                    (0, getattr(self._model.config, "hidden_size", 0))
-                )
-
+            # merge outputs preserving order
+            out_docs, out_images, out_texts = (
+                iter(doc_out),
+                iter(img_out),
+                iter(txt_out),
+            )
+            tensors = []
+            for kind, payload in processed_passages:
+                if kind == "doc":
+                    tensors.append(next(out_docs))
+                elif kind == "image":
+                    tensors.append(next(out_images))
+                else:
+                    tensors.append(next(out_texts))
+            passage_embeddings = tensors
             # Convert to list for JSON serialization
-            # result["passage_embeddings"] = passage_embeddings.cpu().float().tolist()
             result["passage_embeddings"] = [
                 t.cpu().float().tolist() for t in passage_embeddings
             ]
@@ -243,8 +259,8 @@ class Model:
             if img.mode != "RGB":
                 img = img.convert("RGB")
             return img
-        else:
-            raise ValueError("Image input must contain 'url' or 'content' field")
+        # else:
+        #     raise ValueError("Image input must contain 'url' or 'content' field")
 
     def _norm_embs(self, out):
         if isinstance(out, list):
