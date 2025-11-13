@@ -1,0 +1,8 @@
+instances:
+  - openmetrics_endpoint: http://localhost:8000/metrics
+    namespace: vllm
+    metrics:
+      - vllm.*
+    tags:
+      - env:dev
+      - service:fastapi-single-container
