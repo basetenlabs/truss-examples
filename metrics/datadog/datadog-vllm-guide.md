@@ -206,17 +206,19 @@ Before deploying, configure your secrets in the Baseten dashboard:
 
 ## Step 6: Deploy to Baseten
 
-Deploy your model using the Baseten CLI:
+Deploy your model using Truss:
 
 ```bash
-# If you haven't installed the Baseten CLI
-pip install baseten
+# Install or upgrade Truss with required dependencies
+pip3 install --upgrade truss 'pydantic>=2.0.0'
 
 # Deploy your model
-baseten deploy
+truss push
 ```
 
-Or deploy through the Baseten web UI by uploading your `config.yaml` file.
+This will package your configuration and deploy it to Baseten. Follow the prompts to select your Baseten workspace.
+
+Alternatively, you can deploy through the Baseten web UI by creating a new deployment and uploading your `config.yaml` file.
 
 ## Step 7: Verify the Integration
 
