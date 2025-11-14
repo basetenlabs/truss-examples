@@ -261,4 +261,3 @@ class Model:
             return img
         else:
             raise ValueError("Image input must contain 'url' or 'content' field")
-
