@@ -11,7 +11,7 @@ This model provides high-quality embeddings using NVIDIA's ColEmbed approach for
 import base64
 import io
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 import requests
 import torch
@@ -85,139 +85,231 @@ class Model:
 
         # Process queries if provided
         if "queries" in model_input:
-            queries = model_input["queries"]
-            if not isinstance(queries, list):
-                raise ValueError(
-                    f"Queries must be a list of strings, got {type(queries)}: {queries}"
-                )
-
-            print(f"Encoding {len(queries)} queries...")
-            query_embeddings = self._model.forward_queries(
-                queries, batch_size=batch_size
-            )
-
-            # Convert to list for JSON serialization
+            query_embeddings = self._process_queries(model_input["queries"], batch_size)
             result["query_embeddings"] = query_embeddings.cpu().float().tolist()
 
         # Process passages if provided
         if "passages" in model_input:
-            passages = model_input["passages"]
-            if not isinstance(passages, list):
-                raise ValueError(
-                    f"Passages must be a list of strings or dicts, got {type(passages)}: {passages}"
-                )
-
-            # Process passages - can be text or images
-            processed_passages = []
-            for passage in passages:
-                if isinstance(passage, str):
-                    # Text passage
-                    processed_passages.append(("text", passage))
-                elif isinstance(passage, dict):
-                    # Check if it's an image
-                    if passage.get("type") == "image":
-                        # Load and add image
-                        image = self._load_image(passage)
-                        text = passage.get("text", "") or ""
-                        kind = "doc" if text else "image"
-                        processed_passages.append((kind, (image, text)))
-                        if image is None:
-                            raise ValueError(f"Failed to load image: {passage}")
-                    else:
-                        raise ValueError(f"Unsupported passage type: {type(passage)}")
-                else:
-                    raise ValueError(f"Unsupported passage type: {type(passage)}")
-
-            print(f"Encoding {len(processed_passages)} passages...")
-
-            # separate passages of each modality
-            docs = []
-            images = []
-            texts = []
-            for kind, payload in processed_passages:
-                if kind == "doc":
-                    image, text = payload
-                    docs.append({"image": image, "text": text})
-                elif kind == "image":
-                    image, _ = payload
-                    images.append(image)
-                elif kind == "text":
-                    texts.append(payload)
-
-            # run each forward pass now
-            doc_out = (
-                self._model.forward_documents(docs, batch_size=batch_size)
-                if docs
-                else []
+            passage_embeddings = self._process_passages(
+                model_input["passages"], batch_size
             )
-            img_out = (
-                self._model.forward_passages(images, batch_size=batch_size)
-                if images
-                else []
-            )
-            txt_out = (
-                self._model.forward_queries(texts, batch_size=batch_size)
-                if texts
-                else []
-            )
-
-            # merge outputs preserving order
-            out_docs, out_images, out_texts = (
-                iter(doc_out),
-                iter(img_out),
-                iter(txt_out),
-            )
-            tensors = []
-            for kind, payload in processed_passages:
-                if kind == "doc":
-                    tensors.append(next(out_docs))
-                elif kind == "image":
-                    tensors.append(next(out_images))
-                else:
-                    tensors.append(next(out_texts))
-            passage_embeddings = tensors
-            # Convert to list for JSON serialization
             result["passage_embeddings"] = [
                 t.cpu().float().tolist() for t in passage_embeddings
             ]
 
         # Compute scores if requested
         if compute_scores:
-            if query_embeddings is None or passage_embeddings is None:
-                raise ValueError(
-                    "Query embeddings and passage embeddings must be provided to compute scores"
-                )
-
-            def _as_list_of_2d(x):
-                if isinstance(x, list):
-                    return x
-                if isinstance(x, torch.Tensor):
-                    # Squeeze any singleton batch dimension at the front
-                    while x.ndim > 3 and x.shape[0] == 1:
-                        x = x.squeeze(0)
-                    # if x.ndim == 3 and x.shape[0] == 1:
-                    #     x = x.squeeze(0)
-                    if x.ndim == 3:  # [B, N, D]
-                        return [x[i] for i in range(x.shape[0])]
-                    if x.ndim == 2:  # [N, D]
-                        return [x]
-                    if x.ndim == 1:  # [D]
-                        return [x.unsqueeze(0)]
-                raise TypeError(
-                    f"Unexpected type for embeddings: {type(x)}, shape={getattr(x, 'shape', None)}"
-                )
-
-            q_list = _as_list_of_2d(query_embeddings)
-            p_list = _as_list_of_2d(passage_embeddings)
-
-            # Normalize embeddings to fix text/image scale mismatch
-            q_list = [torch.nn.functional.normalize(q, dim=-1) for q in q_list]
-            p_list = [torch.nn.functional.normalize(p, dim=-1) for p in p_list]
-
-            scores = self._model.get_scores(q_list, p_list, batch_size=batch_size)
+            scores = self._compute_similarity_scores(
+                query_embeddings, passage_embeddings, batch_size
+            )
             result["scores"] = scores.cpu().float().tolist()
 
         return result
+
+    def _process_queries(self, queries: list, batch_size: int) -> torch.Tensor:
+        """
+        Process and encode text queries.
+
+        Args:
+            queries: List of query strings
+            batch_size: Batch size for encoding
+
+        Returns:
+            Query embeddings tensor
+        """
+        if not isinstance(queries, list):
+            raise ValueError(
+                f"Queries must be a list of strings, got {type(queries)}: {queries}"
+            )
+
+        print(f"Encoding {len(queries)} queries...")
+        return self._model.forward_queries(queries, batch_size=batch_size)
+
+    def _process_passages(self, passages: list, batch_size: int) -> list:
+        """
+        Process and encode passages (text, images, or documents with both).
+
+        Args:
+            passages: List of passage strings or dicts
+            batch_size: Batch size for encoding
+
+        Returns:
+            List of passage embedding tensors
+        """
+        if not isinstance(passages, list):
+            raise ValueError(
+                f"Passages must be a list of strings or dicts, got {type(passages)}: {passages}"
+            )
+
+        processed_passages = self._parse_passages(passages)
+        print(f"Encoding {len(processed_passages)} passages...")
+
+        # Separate passages by modality
+        docs, images, texts = self._separate_passages_by_type(processed_passages)
+
+        # Encode each modality
+        doc_embeddings = (
+            self._model.forward_documents(docs, batch_size=batch_size) if docs else []
+        )
+        img_embeddings = (
+            self._model.forward_passages(images, batch_size=batch_size)
+            if images
+            else []
+        )
+        txt_embeddings = (
+            self._model.forward_queries(texts, batch_size=batch_size) if texts else []
+        )
+
+        # Merge outputs preserving original order
+        return self._merge_passage_embeddings(
+            processed_passages, doc_embeddings, img_embeddings, txt_embeddings
+        )
+
+    def _parse_passages(self, passages: list) -> list:
+        """
+        Parse passages into a standardized format with type information.
+
+        Args:
+            passages: List of passage strings or dicts
+
+        Returns:
+            List of tuples (kind, payload) where kind is "text", "image", or "doc"
+        """
+        processed_passages = []
+        for passage in passages:
+            if isinstance(passage, str):
+                # Text passage
+                processed_passages.append(("text", passage))
+            elif isinstance(passage, dict):
+                if passage.get("type") == "image":
+                    # Load and add image
+                    image = self._load_image(passage)
+                    if image is None:
+                        raise ValueError(f"Failed to load image: {passage}")
+                    text = passage.get("text", "") or ""
+                    kind = "doc" if text else "image"
+                    processed_passages.append((kind, (image, text)))
+                else:
+                    raise ValueError(f"Unsupported passage type: {type(passage)}")
+            else:
+                raise ValueError(f"Unsupported passage type: {type(passage)}")
+        return processed_passages
+
+    def _separate_passages_by_type(
+        self, processed_passages: list
+    ) -> Tuple[list, list, list]:
+        """
+        Separate processed passages into lists by modality.
+
+        Args:
+            processed_passages: List of (kind, payload) tuples
+
+        Returns:
+            Tuple of (docs, images, texts) lists
+        """
+        docs = []
+        images = []
+        texts = []
+        for kind, payload in processed_passages:
+            if kind == "doc":
+                image, text = payload
+                docs.append({"image": image, "text": text})
+            elif kind == "image":
+                image, _ = payload
+                images.append(image)
+            elif kind == "text":
+                texts.append(payload)
+        return docs, images, texts
+
+    def _merge_passage_embeddings(
+        self,
+        processed_passages: list,
+        doc_embeddings: list,
+        img_embeddings: list,
+        txt_embeddings: list,
+    ) -> list:
+        """
+        Merge embeddings from different modalities while preserving original order.
+
+        Args:
+            processed_passages: List of (kind, payload) tuples in original order
+            doc_embeddings: List of document embeddings
+            img_embeddings: List of image embeddings
+            txt_embeddings: List of text embeddings
+
+        Returns:
+            List of embeddings in original passage order
+        """
+        out_docs = iter(doc_embeddings)
+        out_images = iter(img_embeddings)
+        out_texts = iter(txt_embeddings)
+
+        tensors = []
+        for kind, payload in processed_passages:
+            if kind == "doc":
+                tensors.append(next(out_docs))
+            elif kind == "image":
+                tensors.append(next(out_images))
+            else:  # text
+                tensors.append(next(out_texts))
+        return tensors
+
+    def _compute_similarity_scores(
+        self,
+        query_embeddings: torch.Tensor,
+        passage_embeddings: list,
+        batch_size: int,
+    ) -> torch.Tensor:
+        """
+        Compute similarity scores between query and passage embeddings.
+
+        Args:
+            query_embeddings: Query embeddings tensor
+            passage_embeddings: List of passage embedding tensors
+            batch_size: Batch size for score computation
+
+        Returns:
+            Similarity scores tensor
+        """
+        if query_embeddings is None or passage_embeddings is None:
+            raise ValueError(
+                "Query embeddings and passage embeddings must be provided to compute scores"
+            )
+
+        q_list = self._as_list_of_2d(query_embeddings)
+        p_list = self._as_list_of_2d(passage_embeddings)
+
+        # Normalize embeddings to fix text/image scale mismatch
+        q_list = [torch.nn.functional.normalize(q, dim=-1) for q in q_list]
+        p_list = [torch.nn.functional.normalize(p, dim=-1) for p in p_list]
+
+        return self._model.get_scores(q_list, p_list, batch_size=batch_size)
+
+    def _as_list_of_2d(self, x) -> list:
+        """
+        Convert embeddings to a list of 2D tensors.
+
+        Args:
+            x: Embeddings as list, tensor, or other format
+
+        Returns:
+            List of 2D tensors
+        """
+        if isinstance(x, list):
+            return x
+        if isinstance(x, torch.Tensor):
+            # Squeeze any singleton batch dimension at the front
+            while x.ndim > 3 and x.shape[0] == 1:
+                x = x.squeeze(0)
+            if x.ndim == 3:  # [B, N, D]
+                return [x[i] for i in range(x.shape[0])]
+            if x.ndim == 2:  # [N, D]
+                return [x]
+            if x.ndim == 1:  # [D]
+                return [x.unsqueeze(0)]
+        raise TypeError(
+            f"Unexpected type for embeddings: {type(x)}, shape={getattr(x, 'shape', None)}"
+        )
 
     def _load_image(self, image_input: Dict) -> Image.Image:
         """
