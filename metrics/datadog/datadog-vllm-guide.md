@@ -12,66 +12,24 @@ This integration allows you to:
 
 ## Prerequisites
 
-- Docker installed locally
-- Docker Hub account (or another container registry)
 - Baseten account
 - Datadog account with API key
 - Hugging Face access token (for model downloads)
 
 ## Architecture
 
-The solution consists of three main components:
+The solution consists of two main components:
 
-1. **Custom Docker Image**: A vLLM base image with Datadog agent installed
-2. **Datadog Configuration**: Configuration files for the Datadog agent and vLLM integration
-3. **Baseten Deployment**: Configuration to deploy your monitored model on Baseten
+1. **Datadog Configuration**: Configuration files for the Datadog agent and vLLM integration
+2. **Baseten Deployment**: Configuration to deploy your monitored model on Baseten with build commands that install the Datadog agent
 
-## Step 1: Create the Dockerfile
+## Step 1: Create the vLLM Configuration File
 
-Create a `Dockerfile` that adds the Datadog agent to the vLLM base image:
+Create a `vllm_conf.yaml` file inside a `data/` directory to configure how Datadog collects vLLM metrics:
 
-```dockerfile
-FROM vllm/vllm-openai:v0.11.0
-
-# Set environment variable to ensure non-interactive installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update
-RUN apt-get -y install apt-transport-https curl gnupg
-
-# Download and install the Datadog GPG key
-RUN sh -c "curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | gpg --dearmor -o /usr/share/keyrings/datadog-archive-keyring.gpg"
-
-# Add the Datadog repository
-RUN sh -c "echo 'deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
-
-RUN apt-get update
-RUN apt-get install -y datadog-agent
-
-# Create the vllm.d directory and copy integration config
-RUN mkdir -p /etc/datadog-agent/conf.d/vllm.d
-COPY vllm_conf.yaml /etc/datadog-agent/conf.d/vllm.d/conf.yaml
-
-# Completely disable kubelet check (prevents unnecessary error logs)
-RUN rm -rf /etc/datadog-agent/conf.d/kubelet.d
-
-# Create writable directories for Datadog agent
-RUN mkdir -p /tmp/datadog-agent /var/log/datadog && \
-    chmod -R 777 /tmp/datadog-agent /var/log/datadog
-```
-
-**Key Points:**
-- Starts from the official vLLM OpenAI-compatible image
-- Installs Datadog agent version 7
-- Configures the vLLM integration
-- Removes kubelet checks that aren't needed in this environment
-- Creates writable directories for the agent to store runtime data
-
-## Step 2: Create the vLLM Configuration File
-
-Create a `vllm_conf.yaml` file to configure how Datadog collects vLLM metrics:
-
-```yaml
+```bash
+mkdir -p data
+cat > data/vllm_conf.yaml << 'EOF'
 instances:
   - openmetrics_endpoint: http://localhost:8000/metrics
     namespace: vllm
@@ -80,6 +38,7 @@ instances:
     tags:
       - env:production
       - service:truss-vllm
+EOF
 ```
 
 **Configuration Details:**
@@ -88,35 +47,28 @@ instances:
 - `metrics`: Pattern to collect all vLLM metrics
 - `tags`: Custom tags to organize your metrics in Datadog
 
-## Step 3: Build and Push the Docker Image
+**Note:** The `vllm_conf.yaml` must be placed in the `data/` directory so it gets copied to the correct location during the build process.
 
-Build your Docker image for the correct platform and push it to your registry:
-
-```bash
-# Build for linux/amd64 (required for most cloud deployments)
-docker buildx build --platform linux/amd64 -t YOUR_USERNAME/truss_fastapi_datadog_vllm:v0.11.0 --push .
-```
-
-**Important Notes:**
-- Make sure you're in the directory with your `Dockerfile` and `vllm_conf.yaml`
-- Replace `YOUR_USERNAME` with your Docker Hub username
-- Use `--platform linux/amd64` to ensure compatibility with Baseten's infrastructure
-- The `--push` flag automatically pushes to Docker Hub after building
-
-If you encounter buildx errors, create a builder first:
-
-```bash
-docker buildx create --use --name multiarch-builder
-docker buildx build --platform linux/amd64 -t YOUR_USERNAME/truss_fastapi_datadog_vllm:v0.11.0 --push .
-```
-
-## Step 4: Create Baseten Configuration
+## Step 2: Create Baseten Configuration
 
 Create a `config.yaml` file for your Baseten deployment:
 
 ```yaml
 base_image:
-  image: YOUR_USERNAME/truss_fastapi_datadog_vllm:v0.11.0
+  image: vllm/vllm-openai:v0.11.0
+
+build_commands:
+  - apt-get update
+  - apt-get -y install apt-transport-https curl gnupg
+  - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | gpg --dearmor -o /usr/share/keyrings/datadog-archive-keyring.gpg
+  - sh -c "echo 'deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
+  - apt-get update
+  - apt-get install -y datadog-agent
+  - mkdir -p /etc/datadog-agent/conf.d/vllm.d
+  - cp data/vllm_conf.yaml /etc/datadog-agent/conf.d/vllm.d/conf.yaml
+  - rm -rf /etc/datadog-agent/conf.d/kubelet.d
+  - mkdir -p /tmp/datadog-agent /var/log/datadog
+  - chmod -R 777 /tmp/datadog-agent /var/log/datadog
 
 docker_server:
   liveness_endpoint: /health
@@ -135,36 +87,29 @@ environment_variables:
   DD_INVENTORIES_CHECKS_ENABLED: "false"
   DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT: ""
   DD_CLOUD_PROVIDER_METADATA: "[]"
-  DD_AUTOCONFIG_FROM_ENVIRONMENT: "false"
-  DD_EXTRA_CONFIG_PROVIDERS: ""
   VLLM_LOGGING_LEVEL: WARNING
 
 model_metadata:
-  engine_args:
-    model: Qwen/Qwen2.5-3B-Instruct
+  repo_id: Qwen/Qwen2.5-3B-Instruct
   example_model_input:
-    max_tokens: 512
     messages:
-    - content: You are a helpful assistant.
-      role: system
-    - content: What does Tongyi Qianwen mean?
-      role: user
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "What does Tongyi Qianwen mean?"
     stream: false
+    model: "Qwen/Qwen2.5-3B-Instruct"
+    max_tokens: 512
     temperature: 0.6
 
 model_name: your-model-name
-python_version: py39
 
 resources:
   accelerator: L4
-  cpu: '1'
-  memory: 2Gi
   use_gpu: true
 
 runtime:
   predict_concurrency: 256
-  transport:
-    kind: http
 
 secrets:
   dd_api_key: null
@@ -173,8 +118,15 @@ secrets:
 
 ### Configuration Breakdown
 
+**Build Commands:**
+- Use the official vLLM OpenAI-compatible image as the base
+- Install the Datadog agent at build time (same steps as the previous Dockerfile approach)
+- Copy `vllm_conf.yaml` from the `data/` directory to the agent config location
+- Remove kubelet checks that aren't needed
+- Create writable directories for the agent
+
 **Base Image:**
-- Uses your custom Docker image with Datadog installed
+- Uses the official vLLM OpenAI image directly from Docker Hub
 
 **Start Command:**
 - Reads Datadog API key from secrets
@@ -194,7 +146,7 @@ secrets:
 - `dd_api_key`: Your Datadog API key (set in Baseten UI)
 - `hf_access_token`: Your Hugging Face token (set in Baseten UI)
 
-## Step 5: Set Up Secrets in Baseten
+## Step 3: Set Up Secrets in Baseten
 
 Before deploying, configure your secrets in the Baseten dashboard:
 
@@ -204,7 +156,7 @@ Before deploying, configure your secrets in the Baseten dashboard:
    - `dd_api_key`: Your Datadog API key (found in Datadog under Organization Settings → API Keys)
    - `hf_access_token`: Your Hugging Face access token
 
-## Step 6: Deploy to Baseten
+## Step 4: Deploy to Baseten
 
 Deploy your model using Truss:
 
@@ -220,7 +172,7 @@ This will package your configuration and deploy it to Baseten. Follow the prompt
 
 Alternatively, you can deploy through the Baseten web UI by creating a new deployment and uploading your `config.yaml` file.
 
-## Step 7: Verify the Integration
+## Step 5: Verify the Integration
 
 ### Check Deployment Logs
 
@@ -362,7 +314,7 @@ If you see errors like "API Key invalid":
 
 If you see "Permission denied" errors:
 - Ensure the directories `/tmp/datadog-agent` and `/var/log/datadog` are writable
-- Verify the Dockerfile creates these directories with proper permissions
+- The build commands create these directories with proper permissions
 
 ### High Memory Usage
 
@@ -373,12 +325,10 @@ If the Datadog agent uses too much memory:
 
 ## Best Practices
 
-1. **Use Semantic Versioning**: Tag your Docker images with version numbers for easy rollbacks
-2. **Monitor Agent Health**: Set up Datadog monitors to alert on agent issues
-3. **Tag Consistently**: Use consistent tagging across all deployments
-4. **Start Simple**: Begin with default metrics, then customize as needed
-5. **Test Locally First**: Test your Docker image locally before deploying to Baseten
-6. **Use Secrets Management**: Never hardcode API keys in configuration files
+1. **Monitor Agent Health**: Set up Datadog monitors to alert on agent issues
+2. **Tag Consistently**: Use consistent tagging across all deployments
+3. **Start Simple**: Begin with default metrics, then customize as needed
+4. **Use Secrets Management**: Never hardcode API keys in configuration files
 
 ## Cost Considerations
 
@@ -402,4 +352,4 @@ You now have a fully monitored vLLM deployment with Datadog integration! The met
 - Set up alerts for performance degradation
 - Make data-driven decisions about scaling
 
-Happy monitoring! 🚀
+Happy monitoring!

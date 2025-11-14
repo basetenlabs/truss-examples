@@ -1,5 +1,17 @@
 base_image:
-  image: chriswirick/truss_fastapi_datadog_vllm:v0.11.0h
+  image: vllm/vllm-openai:v0.11.0
+build_commands:
+  - apt-get update
+  - apt-get -y install apt-transport-https curl gnupg
+  - curl -fsSL https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public | gpg --dearmor -o /usr/share/keyrings/datadog-archive-keyring.gpg
+  - sh -c "echo 'deb [signed-by=/usr/share/keyrings/datadog-archive-keyring.gpg] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
+  - apt-get update
+  - apt-get install -y datadog-agent
+  - mkdir -p /etc/datadog-agent/conf.d/vllm.d
+  - cp data/vllm_conf.yaml /etc/datadog-agent/conf.d/vllm.d/conf.yaml
+  - rm -rf /etc/datadog-agent/conf.d/kubelet.d
+  - mkdir -p /tmp/datadog-agent /var/log/datadog
+  - chmod -R 777 /tmp/datadog-agent /var/log/datadog
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
