@@ -259,22 +259,6 @@ class Model:
             if img.mode != "RGB":
                 img = img.convert("RGB")
             return img
-        # else:
-        #     raise ValueError("Image input must contain 'url' or 'content' field")
-
-    def _norm_embs(self, out):
-        if isinstance(out, list):
-            # pool each item to a single vector, then stack -> [N, D]
-            pooled = []
-            for t in out:
-                if t.ndim == 2:  # [seq_len, dim] -> mean over tokens
-                    pooled.append(t.mean(dim=0))
-                elif t.ndim == 1:  # [dim]
-                    pooled.append(t)
-                else:
-                    pooled.append(t.reshape(-1))
-            return torch.stack(pooled, dim=0)
-        elif isinstance(out, torch.Tensor):
-            return out if out.ndim == 2 else out.unsqueeze(0)
         else:
-            raise TypeError(f"Unexpected embedding output type: {type(out)}")
+            raise ValueError("Image input must contain 'url' or 'content' field")
+
