@@ -28,6 +28,7 @@ PREPROCESS_STREAM = torch.Stream(SNAC_DEVICE)
 MAX_CHARACTERS_INPUT = 6144
 MAX_CHUNK_SIZE = 280
 
+MU_LAW_MU = 255  # Standard μ-law compression parameter
 
 class SnacModelBatched:
     def __init__(self):
@@ -134,7 +135,7 @@ def split_custom_tokens(s: str) -> List[int]:
 
 
 async def tokens_decoder(
-    token_gen: Iterator, request_id: str, start_time: int
+    token_gen: Iterator, request_id: str, start_time: int, encoding: str = "pcm_s16le"
 ) -> Iterator[bytes]:
     """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
     assert hasattr(token_gen, "__aiter__")
@@ -154,7 +155,7 @@ async def tokens_decoder(
                 # every 7 tokens → one frame; once we have at least 28 tokens, we extract the last 28
                 if count % 7 == 0 and count > 27:
                     buf_to_proc = buffer[-28:]
-                    task = asyncio.create_task(convert_to_audio(buf_to_proc))
+                    task = asyncio.create_task(convert_to_audio(buf_to_proc, encoding=encoding))
                     audio_queue.put_nowait(task)
         audio_queue.put_nowait(None)
         elapsed = time.time() - start_time
@@ -183,14 +184,42 @@ async def tokens_decoder(
     )
     await producer_task
 
+def encode_mulaw(audio: np.ndarray) -> np.ndarray:
+    """
+    Encode audio samples to μ-law format.
+    
+    Args:
+        audio: Input audio samples as float32 array in range [-1.0, 1.0]
+        
+    Returns:
+        μ-law encoded samples as uint8 array
+    """
+    # Clamp audio to valid range
+    audio = np.clip(audio, -1.0, 1.0)
+    
+    # Get sign
+    sign = np.sign(audio)
+    abs_audio = np.abs(audio)
+    
+    # Apply μ-law companding: y = sign(x) * ln(1 + μ|x|) / ln(1 + μ)
+    # Then quantize to 8 bits
+    mulaw_audio = sign * np.log1p(MU_LAW_MU * abs_audio) / np.log1p(MU_LAW_MU)
+    
+    # Quantize to 8-bit: scale from [-1, 1] to [0, 255]
+    mulaw_quantized = ((mulaw_audio + 1.0) / 2.0 * 255.0).astype(np.uint8)
+    
+    return mulaw_quantized
 
 @torch.inference_mode()
-async def convert_to_audio(frame_ids: list[int]) -> bytes | None:
+async def convert_to_audio(frame_ids: list[int], encoding: str = "pcm_s16le") -> bytes | None:
     """Convert a list of token IDs into audio bytes efficiently.
 
-    frame_ids:
-    - list of token IDS (phonemes) of length 28 or less.
-    - 7 tokens = 1 frame
+    Args:
+        frame_ids: list of token IDs (phonemes) of length 28 or less. 7 tokens = 1 frame
+        encoding: Encoding to use. Must be one of "pcm_s16le" or "pcm_mulaw".
+    
+    Returns:
+        Audio bytes in either μ-law (8-bit) or PCM (16-bit) format
     """
     n = len(frame_ids) // 7
     if n == 0:
@@ -217,7 +246,14 @@ async def convert_to_audio(frame_ids: list[int]) -> bytes | None:
         PREPROCESS_STREAM.synchronize()  # only queue codes that are ready
     audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
     audio_np = audio_hat.numpy(force=True)
-    audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
+    
+    if encoding == "pcm_mulaw":
+        # Encode to μ-law (8-bit)
+        audio_bytes = encode_mulaw(audio_np).tobytes()
+    else:
+        # Encode to 16-bit PCM
+        audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
+    
     return audio_bytes
 
 
@@ -320,6 +356,7 @@ class Model:
             req_id = str(model_input.get("request_id", uuid.uuid4()))
             max_chunk_size = model_input.get("max_chunk_size", MAX_CHUNK_SIZE)
             voice = model_input.get("voice", "tara")
+            encoding = model_input.get("encoding", "pcm_s16le")
 
             # 1) Chunk the ORIGINAL prompt before formatting
             original_prompt: str = model_input["prompt"]
@@ -363,7 +400,7 @@ class Model:
 
                     # 4) Forward audio bytes as we receive them
                     async for chunk_bytes in tokens_decoder(
-                        token_gen, req_id, start_time
+                        token_gen, req_id, start_time, encoding=encoding
                     ):
                         yield chunk_bytes
 
