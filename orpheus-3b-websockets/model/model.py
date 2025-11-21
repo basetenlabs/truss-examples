@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import json
 import re
 import threading
 import time
@@ -14,6 +16,8 @@ from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 from snac import SNAC
 from transformers import AutoTokenizer
+import torchaudio
+from audioop import lin2ulaw
 
 # force inference mode during the lifetime of the script
 _inference_mode_raii_guard = torch._C._InferenceMode(True)
@@ -131,14 +135,22 @@ def split_custom_tokens(s: str) -> List[int]:
     return [int(match) for match in matches if match != "0"]
 
 
-async def tokens_decoder(token_gen: Iterator, request_id: str = "", encoding: str = "pcm_s16le") -> Iterator[bytes]:
-    """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields."""
+async def tokens_decoder(token_gen: Iterator, request_id: str = "", encoding: str = "pcm_s16le") -> Iterator[dict]:
+    """Decoder that pipelines convert_to_audio calls but enforces strict in-order yields.
+    
+    Yields:
+        dict with keys:
+            - 'audio_bytes': the audio data
+            - 'token_gen_time': time taken to generate this chunk (in seconds)
+            - 'tokens_processed': number of tokens processed so far
+    """
     assert hasattr(token_gen, "__aiter__")
     audio_queue = asyncio.Queue()
 
     async def producer(token_gen: Iterator):
         buffer: list[int] = []
         count = 0
+        chunk_start_time = time.time()
         async for token_sim in token_gen:
             for tok_str in split_custom_tokens(token_sim):
                 token = turn_token_into_id(int(tok_str), count)
@@ -147,8 +159,15 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "", encoding: st
                 # every 7 tokens → one frame; once we have at least 28 tokens, we extract the last 28
                 if count % 7 == 0 and count > 27:
                     buf_to_proc = buffer[-28:]
+                    chunk_end_time = time.time()
+                    chunk_duration = chunk_end_time - chunk_start_time
                     task = asyncio.create_task(convert_to_audio(buf_to_proc, encoding=encoding))
-                    audio_queue.put_nowait(task)
+                    audio_queue.put_nowait({
+                        'task': task,
+                        'token_gen_time': chunk_duration,
+                        'tokens_processed': count
+                    })
+                    chunk_start_time = time.time()
         audio_queue.put_nowait(None)
         print(f"Finished `{request_id}`, total tokens : {count}")
 
@@ -156,12 +175,16 @@ async def tokens_decoder(token_gen: Iterator, request_id: str = "", encoding: st
 
     while True:
         # wait for the next audio conversion to finish
-        task: None | Awaitable[bytes | None] = await audio_queue.get()
-        if task is None:
+        item: None | dict = await audio_queue.get()
+        if item is None:
             break
-        audio_bytes = await task
+        audio_bytes = await item['task']
         if audio_bytes is not None:
-            yield audio_bytes
+            yield {
+                'audio_bytes': audio_bytes,
+                'token_gen_time': item['token_gen_time'],
+                'tokens_processed': item['tokens_processed']
+            }
         audio_queue.task_done()
     assert audio_queue.empty(), (
         f"audio queue is not empty: e.g. {audio_queue.get_nowait()}"
@@ -230,14 +253,12 @@ async def convert_to_audio(frame_ids: list[int], encoding: str = "pcm_s16le") ->
         PREPROCESS_STREAM.synchronize()  # only queue codes that are ready
     audio_hat = await model_snac.batch_snac_model.acall({"codes": codes})
     audio_np = audio_hat.numpy(force=True)
-    
+    # Encode to 16-bit PCM
+    audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
+
     if encoding == "pcm_mulaw":
-        # Encode to μ-law (8-bit)
-        audio_bytes = encode_mulaw(audio_np).tobytes()
-    else:
-        # Encode to 16-bit PCM
-        audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()
-    
+        audio_bytes = lin2ulaw(audio_bytes, 2)
+
     return audio_bytes
 
 
@@ -318,7 +339,8 @@ class Model:
         # initialize per-sid state
         self.websocket_connections[sid] = {
             "text_buffer": [],  # this is your cache
-            # you could add more, e.g. "audio_buffer": []
+            "first_text_time": None,  # track when first text was received
+            "first_audio_sent": False,  # track if first audio was sent
         }
 
         async def flush(final=False):
@@ -361,10 +383,29 @@ class Model:
                 tokgen = tokgen.body_iterator
 
             sent = 0
-            async for audio in tokens_decoder(tokgen, sid, encoding=encoding):
-                sent += len(audio)
-                # print(f"[ws:{sid}] sending {len(audio)} bytes (total {sent})")
-                await ws.send_bytes(audio)
+            async for audio_data in tokens_decoder(tokgen, sid, encoding=encoding):
+                audio_bytes = audio_data['audio_bytes']
+                sent += len(audio_bytes)
+                
+                # Create JSON payload with base64-encoded audio and timing info
+                payload = {
+                    'audio': base64.b64encode(audio_bytes).decode('utf-8'),
+                    'token_gen_time': audio_data['token_gen_time'],
+                    'tokens_processed': audio_data['tokens_processed'],
+                    'audio_size_bytes': len(audio_bytes)
+                }
+                
+                # Calculate end-to-end latency for first audio chunk
+                if not self.websocket_connections[sid]["first_audio_sent"]:
+                    first_text_time = self.websocket_connections[sid]["first_text_time"]
+                    if first_text_time is not None:
+                        end_to_end_latency = (time.time() - first_text_time) * 1000  # ms
+                        payload['first_chunk_e2e_latency_ms'] = end_to_end_latency
+                        print(f"[ws:{sid}] First audio latency: {end_to_end_latency:.2f} ms")
+                    self.websocket_connections[sid]["first_audio_sent"] = True
+                
+                # print(f"[ws:{sid}] sending {len(audio_bytes)} bytes (total {sent}) with gen_time={audio_data['token_gen_time']:.4f}s")
+                await ws.send_json(payload)
 
             if final:
                 print(f"[ws:{sid}] final flush complete - closing")
@@ -380,6 +421,11 @@ class Model:
                     print(f"[ws:{sid}] END sentinel received")
                     await flush(final=True)
                     break
+
+                # Track when first text is received for end-to-end latency measurement
+                if self.websocket_connections[sid]["first_text_time"] is None:
+                    self.websocket_connections[sid]["first_text_time"] = time.time()
+                    print(f"[ws:{sid}] First text received at {time.time()}")
 
                 # append to your cached buffer
                 self.websocket_connections[sid]["text_buffer"].extend(

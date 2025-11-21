@@ -1,6 +1,7 @@
 from typing import Any, Iterator
 from transformers import AutoTokenizer
 import torch
+import torchaudio
 import fastapi
 from snac import SNAC
 from pathlib import Path
@@ -249,7 +250,7 @@ async def convert_to_audio(frame_ids: list[int], encoding: str = "pcm_s16le") ->
     
     if encoding == "pcm_mulaw":
         # Encode to μ-law (8-bit)
-        audio_bytes = encode_mulaw(audio_np).tobytes()
+        audio_bytes = torchaudio.transforms.MuLawEncoding()(audio_hat).numpy(force=True).tobytes()
     else:
         # Encode to 16-bit PCM
         audio_bytes = (audio_np * 32767).astype(np.int16).tobytes()

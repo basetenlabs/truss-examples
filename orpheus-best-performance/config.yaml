@@ -20,6 +20,7 @@ python_version: py39
 requirements:
   - --extra-index-url https://download.pytorch.org/whl/cu128
   - torch==2.7.1
+  - torchaudio==2.7.1
   - snac==1.2.1
   - batched==0.1.4
 resources:

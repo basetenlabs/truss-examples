@@ -19,6 +19,7 @@ python_version: py39
 requirements:
   - snac==1.2.1
   - torch==2.7.0
+  - torchaudio==2.7.0
   - batched==0.1.4
   - httpx
   - websockets
