@@ -315,7 +315,20 @@ class Model:
             return self._format_prompt_slow(prompt, voice)
 
     async def websocket(self, ws: WebSocket):
-        # satisfy Truss’s metrics/cancellation wrapper
+        """
+        WebSocket endpoint for streaming TTS.
+        
+        Expected metadata parameters:
+        - voice: Voice to use (default: "tara")
+        - max_tokens: Maximum tokens to generate (default: 6144)
+        - temperature: Sampling temperature (default: 0.6)
+        - top_p: Top-p sampling (default: 0.8)
+        - repetition_penalty: Repetition penalty (default: 1.3)
+        - buffer_size: Word buffer size before flushing (default: 10)
+        - encoding: Audio encoding - "pcm_s16le" or "pcm_mulaw" (default: "pcm_s16le")
+        - include_timing_info: Whether to include timing metrics in response (default: False)
+        """
+        # satisfy Truss's metrics/cancellation wrapper
         async def _never_disconnected():
             return False
 
@@ -334,13 +347,15 @@ class Model:
         rep_pen = params.get("repetition_penalty", 1.3)
         buf_sz = int(params.get("buffer_size", 10))
         encoding = params.get("encoding", "pcm_s16le")
-        print(f" → voice={voice}, buffer_size={buf_sz}, encoding={encoding}")
+        include_timing_info = params.get("include_timing_info", False)
+        print(f" → voice={voice}, buffer_size={buf_sz}, encoding={encoding}, timing={include_timing_info}")
 
         # initialize per-sid state
         self.websocket_connections[sid] = {
             "text_buffer": [],  # this is your cache
-            "first_text_time": None,  # track when first text was received
+            "first_text_time": None if include_timing_info else False,  # track when first text was received (False = disabled)
             "first_audio_sent": False,  # track if first audio was sent
+            "include_timing_info": include_timing_info,  # whether to include timing info
         }
 
         async def flush(final=False):
@@ -387,18 +402,21 @@ class Model:
                 audio_bytes = audio_data['audio_bytes']
                 sent += len(audio_bytes)
                 
-                # Create JSON payload with base64-encoded audio and timing info
+                # Create JSON payload with base64-encoded audio
                 payload = {
                     'audio': base64.b64encode(audio_bytes).decode('utf-8'),
-                    'token_gen_time': audio_data['token_gen_time'],
-                    'tokens_processed': audio_data['tokens_processed'],
-                    'audio_size_bytes': len(audio_bytes)
                 }
                 
-                # Calculate end-to-end latency for first audio chunk
+                # Optionally include timing info
+                if self.websocket_connections[sid]["include_timing_info"]:
+                    payload['token_gen_time'] = audio_data['token_gen_time']
+                    payload['tokens_processed'] = audio_data['tokens_processed']
+                    payload['audio_size_bytes'] = len(audio_bytes)
+                
+                # Calculate end-to-end latency for first audio chunk (if timing enabled)
                 if not self.websocket_connections[sid]["first_audio_sent"]:
                     first_text_time = self.websocket_connections[sid]["first_text_time"]
-                    if first_text_time is not None:
+                    if first_text_time is not None and first_text_time is not False:
                         end_to_end_latency = (time.time() - first_text_time) * 1000  # ms
                         payload['first_chunk_e2e_latency_ms'] = end_to_end_latency
                         print(f"[ws:{sid}] First audio latency: {end_to_end_latency:.2f} ms")
@@ -422,8 +440,8 @@ class Model:
                     await flush(final=True)
                     break
 
-                # Track when first text is received for end-to-end latency measurement
-                if self.websocket_connections[sid]["first_text_time"] is None:
+                # Track when first text is received for end-to-end latency measurement (if timing enabled)
+                if self.websocket_connections[sid]["include_timing_info"] and self.websocket_connections[sid]["first_text_time"] is None:
                     self.websocket_connections[sid]["first_text_time"] = time.time()
                     print(f"[ws:{sid}] First text received at {time.time()}")
 
