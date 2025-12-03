@@ -30,7 +30,7 @@ class SnacModelBatched:
         self.dtype_decoder = torch.float32
         compile_background = False
         use_compile = True
-        model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
+        model = SNAC.from_pretrained("/app/snac_24khz").eval()
         model = model.to(SNAC_DEVICE)
 
         model.decoder = model.decoder.to(self.dtype_decoder)
