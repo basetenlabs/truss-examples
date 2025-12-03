@@ -106,7 +106,8 @@ response = client.embed(
     model="my_model",
     batch_size=4,
     max_concurrent_requests=32,
-    timeout_s=360
+    timeout_s=360,
+    # dimensions=1536 # optional for fp8 models.
 )
 print(response.numpy())
 ```
@@ -126,7 +127,7 @@ client = OpenAI(
 embedding = client.embeddings.create(
     input="Baseten Embeddings are fast",
     model="model"
-)
+    # dimensions=1536 # optional for MRL models.
 ```
 ### requests python library
 

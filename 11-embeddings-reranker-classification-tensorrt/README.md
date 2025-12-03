@@ -84,7 +84,6 @@ Optionally, you can also enable:
 - *fp8 quantization* on new GPUS such as H100, H200 and L4 GPUs
 
 Examples:
- - [NVFP4/Qwen3-30B-A3B-Instruct-2507-FP4-BISV2](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BISV2-nvfp4-qwen3-30b-a3b-instruct-2507-fp4)
  - [Qwen/QwQ-32B-reasoning-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwq-32b-reasoning-fp8)
  - [Qwen/QwQ-32B-reasoning-with-speculative-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwq-32b-reasoning-with-speculative-fp8)
  - [Qwen/Qwen2.5-72B-Instruct-tp2-Briton](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/Briton-qwen-qwen2.5-72b-instruct-tp2-fp8)
