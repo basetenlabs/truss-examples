@@ -27,8 +27,8 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
+
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
