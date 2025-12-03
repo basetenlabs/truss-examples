@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with nomic-ai/nomic-embed-text-v1.5
+# Huggingface's text-embeddings-inference with google/embeddinggemma-300m
 
-This is a Deployment for Huggingface's text-embeddings-inference with nomic-ai/nomic-embed-text-v1.5. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with google/embeddinggemma-300m. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -19,10 +19,10 @@ For larger models, we recommend downloading the weights at runtime for faster au
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [nomic-ai/nomic-embed-text-v1.5](https://huggingface.co/nomic-ai/nomic-embed-text-v1.5).
+This deployment is specifically designed for the Hugging Face model [google/embeddinggemma-300m](https://huggingface.co/google/embeddinggemma-300m).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-nomic-ai/nomic-embed-text-v1.5  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+google/embeddinggemma-300m  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -32,20 +32,20 @@ Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Install the latest version of Truss: `pip install --upgrade truss`
-
+Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-nomic-ai-nomic-embed-text-v1.5
+cd 11-embeddings-reranker-classification-tensorrt/TEI-google-embeddinggemma-300m
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-nomic-ai-nomic-embed-text-v1.5` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-google-embeddinggemma-300m` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-nomic-ai-nomic-embed-text-v1.5-truss-example was successfully pushed ✨
+# ✨ Model TEI-google-embeddinggemma-300m-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -157,10 +157,10 @@ print(resp.json())
 
 ## Config.yaml
 By default, the following configuration is used for this deployment.
-
+Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 ```yaml
 base_image:
-  image: baseten/text-embeddings-inference-mirror:86-1.8.3
+  image: baseten/text-embeddings-inference-mirror:89-1.8.3
 docker_server:
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
@@ -174,7 +174,7 @@ model_cache:
   - '*.pt'
   - '*.ckpt'
   - '*.onnx'
-  repo_id: nomic-ai/nomic-embed-text-v1.5
+  repo_id: google/embeddinggemma-300m
   revision: main
   use_volume: true
   volume_folder: cached_model
@@ -183,10 +183,10 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: TEI-nomic-ai-nomic-embed-text-v1.5-truss-example
+model_name: TEI-google-embeddinggemma-300m-truss-example
 python_version: py39
 resources:
-  accelerator: A10G
+  accelerator: L4
   cpu: '1'
   memory: 2Gi
   use_gpu: true

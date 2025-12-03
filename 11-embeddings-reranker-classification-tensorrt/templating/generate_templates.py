@@ -160,12 +160,12 @@ Supported models are tagged here: https://huggingface.co/models?other=text-embed
 
 For TEI you have to perform a manual selection of the Docker Image. We have mirrored the following images:
 ```
-CPU	baseten/text-embeddings-inference-mirror:cpu-1.7.2
-Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.7.2
-Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.7.2
-Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.7.2
-Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.7.2
-Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.7.2
+CPU	baseten/text-embeddings-inference-mirror:cpu-1.8.3
+Turing (T4, ...)	baseten/text-embeddings-inference-mirror:turing-1.8.3
+Ampere 80 (A100, A30)	baseten/text-embeddings-inference-mirror:1.8.3
+Ampere 86 (A10, A10G, A40, ...)	baseten/text-embeddings-inference-mirror:86-1.8.3
+Ada Lovelace (L4, ...)	baseten/text-embeddings-inference-mirror:89-1.8.3
+Hopper (H100/H100 40GB/H200)	baseten/text-embeddings-inference-mirror:hopper-1.8.3
 ```
 
 As we are deploying mostly tiny models (<1GB), we are downloading the model weights into the docker image.
@@ -179,7 +179,7 @@ For larger models, we recommend downloading the weights at runtime for faster au
             )  # make sure model is available
         except ImportError:
             pass
-        version = "1.7.2"
+        version = "1.8.3"
         docker_image = {
             Accelerator.L4: f"baseten/text-embeddings-inference-mirror:89-{version}",
             Accelerator.A100: f"baseten/text-embeddings-inference-mirror:{version}",
@@ -1287,6 +1287,13 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
         name="Alibaba-NLP/gte-modernbert-base-embedding",
         hf_model_id="Alibaba-NLP/gte-modernbert-base",
+        accelerator=Accelerator.L4,
+        task=Embedder(),
+        solution=HFTEI(),
+    ),
+    Deployment(  #
+        name="google/embeddinggemma-300m",
+        hf_model_id="google/embeddinggemma-300m",
         accelerator=Accelerator.L4,
         task=Embedder(),
         solution=HFTEI(),
