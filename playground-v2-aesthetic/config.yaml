@@ -7,6 +7,7 @@ model_cache:
   - '*.txt'
   - '*.fp16.safetensors'
   repo_id: playgroundai/playground-v2-1024px-aesthetic
+  use_volume: false
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/playground-logo.jpeg
   cover_image_url: https://cdn.baseten.co/production/static/playground-v2.png
