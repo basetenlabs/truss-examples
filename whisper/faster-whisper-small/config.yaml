@@ -1,6 +1,7 @@
 description: A small speech-to-text model for multi-lingual audio transcription.
 model_cache:
 - repo_id: Systran/faster-whisper-small
+  use_volume: false
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png

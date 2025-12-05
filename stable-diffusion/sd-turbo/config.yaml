@@ -6,6 +6,7 @@ model_cache:
   - '*.fp16.safetensors'
   - '*.txt'
   repo_id: stabilityai/sdxl-turbo
+  use_volume: false
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png

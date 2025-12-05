@@ -15,6 +15,7 @@ resources:
   use_gpu: true
 model_cache:
   - repo_id: htrivedi99/whisper-torchserve
+    use_volume: false
 secrets: {}
 system_packages:
   - ffmpeg

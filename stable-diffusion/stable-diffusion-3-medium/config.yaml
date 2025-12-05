@@ -4,6 +4,7 @@ external_package_dirs: []
 model_metadata: {}
 model_cache:
   - repo_id: stabilityai/stable-diffusion-3-medium-diffusers
+    use_volume: false
 model_name: Stable Diffusion 3 Medium
 python_version: py310
 requirements:
