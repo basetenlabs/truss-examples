@@ -6,16 +6,19 @@ model_cache:
   - config.json
   - diffusion_pytorch_model.safetensors
   repo_id: madebyollin/sdxl-vae-fp16-fix
+  use_volume: false
 - allow_patterns:
   - '*.json'
   - '*.fp16.safetensors'
   - sd_xl_base_1.0.safetensors
   repo_id: stabilityai/stable-diffusion-xl-base-1.0
+  use_volume: false
 - allow_patterns:
   - '*.json'
   - '*.fp16.safetensors'
   - sd_xl_refiner_1.0.safetensors
   repo_id: stabilityai/stable-diffusion-xl-refiner-1.0
+  use_volume: false
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png
