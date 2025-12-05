@@ -8,6 +8,7 @@ model_cache:
   - '*.tiktoken'
   - '*.py'
   repo_id: Qwen/Qwen-VL
+  use_volume: false
 model_name: Qwen VL
 python_version: py310
 requirements:

@@ -8,6 +8,7 @@ python_version: py311
 data_dir: data
 model_cache:
   - repo_id: metavoiceio/metavoice-1B-v0.1
+    use_volume: false
     allow_patterns:
       - "*.pt"
   - repo_id: facebook/multiband-diffusion

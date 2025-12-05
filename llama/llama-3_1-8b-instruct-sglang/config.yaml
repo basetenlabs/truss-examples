@@ -9,6 +9,7 @@ requirements:
   - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.1.6/flashinfer-0.1.6+cu121torch2.4-cp311-cp311-linux_x86_64.whl
 model_cache:
   - repo_id: meta-llama/Llama-3.1-8B-Instruct
+    use_volume: false
     ignore_patterns:
       - "original/*"
       - "*.pth"

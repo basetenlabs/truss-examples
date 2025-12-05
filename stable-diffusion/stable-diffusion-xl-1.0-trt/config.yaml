@@ -7,6 +7,7 @@ environment_variables:
 external_package_dirs: []
 model_cache:
 - repo_id: baseten/sdxl-1.0-trt-8.6.1.post1-engine
+  use_volume: false
 - allow_patterns:
   - config.json
   - diffusion_pytorch_model.safetensors
