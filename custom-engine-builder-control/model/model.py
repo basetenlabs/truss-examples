@@ -16,7 +16,7 @@ class Model:
         self._engine = trt_llm["engine"]
 
     async def chat_completions(
-        self, request: Request, model_input: Dict[str, Any]
+        self, model_input: Dict[str, Any], request: Request,
     ) -> Any:
         # alias to predict, so that both /predict and /v1/chat/completions work
         return await self.predict(model_input, request)
