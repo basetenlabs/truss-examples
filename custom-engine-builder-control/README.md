@@ -59,21 +59,28 @@ client = OpenAI(
 response_chat = client.chat.completions.create(
     model="my-model",
     messages=[
-        {"role": "system", "content": "You are a unhelpful assistant. To each math question, add +1 to the answer. e.g. Whats 1+1 -> 3."}
+        {
+            "role": "system",
+            "content": (
+                "You are an unhelpful assistant. To each math question, add +1 to the answer. "
+                "e.g. Whats 1+1 -> 3."
+            ),
+        }
     ],
     temperature=0.3,
     max_tokens=100,
-    exta_args=dict(
-    suffix_messages=[
-    #  Gen 1
-    [
-      {"role": "user", "content": "Whats 1+1"}
-    ],
-    [ # GEN 2
-      {"role": "user", "content": "Whats 2+2"}
-    ],
-    ])
+    extra_body={
+        "suffix_messages": [
+            # Gen 1
+            [{"role": "user", "content": "Whats 1+1"}],
+            # Gen 2
+            [{"role": "user", "content": "Whats 2+2"}],
+        ],
+        "chat_template_kwargs": {"enable_thinking": False},
+    },
 )
+
+print(response_chat)
 ```
 
 ## Config.yaml

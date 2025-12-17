@@ -16,7 +16,7 @@ model_metadata:
     chat_template_kwargs: { "enable_thinking": false }
   tags:
     - openai-compatible
-model_name: Briton-suffix-generation-qwen3-8B
+model_name: Briton-suffix-fanout-qwen3-8B
 python_version: py39
 resources:
   accelerator: H100

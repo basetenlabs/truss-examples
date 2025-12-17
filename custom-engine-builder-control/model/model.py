@@ -1,17 +1,16 @@
 # model/model.py
 import copy
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
-import json
 from fastapi import HTTPException, Request
-from starlette.responses import Response, JSONResponse, StreamingResponse
+from starlette.responses import JSONResponse, StreamingResponse
 import asyncio
 
 Message = Dict[str, str]  # {"role": "...", "content": "..."}
 
 
 class Model:
+    """model class implementing fanout via suffix_messages"""
     def __init__(self, trt_llm, **kwargs) -> None:
         self._secrets = kwargs["secrets"]
         self._engine = trt_llm["engine"]
