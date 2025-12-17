@@ -16,7 +16,9 @@ class Model:
         self._engine = trt_llm["engine"]
 
     async def chat_completions(
-        self, model_input: Dict[str, Any], request: Request,
+        self,
+        model_input: Dict[str, Any],
+        request: Request,
     ) -> Any:
         # alias to predict, so that both /predict and /v1/chat/completions work
         return await self.predict(model_input, request)
@@ -47,6 +49,9 @@ class Model:
         # Build a reusable request skeleton (don’t forward n/suffix_messages to engine)
         base_req = copy.deepcopy(model_input)
         base_req.pop("suffix_messages", None)
+        # you can send debug_id for logging/tracing
+        # debug_id = base_req.pop("debug_id", "") get from headers
+        debug_id = request.headers.get("X-Debug-ID", "")
 
         # Run sequential generations
         per_gen_payloads: List[Any] = []
@@ -56,12 +61,19 @@ class Model:
             if suffix_tasks is not None:
                 msgs_i.extend(suffix_tasks[i])
             base_req[prompt_key] = msgs_i
-            print(f"Running generation {i} with messages: {msgs_i}")
-
+            if debug_id:
+                print(f"Running generation {debug_id} {i} with messages: {msgs_i}")
+            start_time = asyncio.get_event_loop().time()
             resp = await self._engine.chat_completions(
                 request=request, model_input=base_req
             )
-
+            end_time = asyncio.get_event_loop().time()
+            if debug_id:
+                duration = end_time - start_time
+                print(
+                    f"Result Generation {debug_id} {i} response: {resp} (took {duration:.3f}s)"
+                )
+            # set response headers that get passed back though baseten.
             # You said stream=false returns a full Response object.
             # Still: fail loudly if a stream ever appears.
             if isinstance(resp, StreamingResponse) or hasattr(resp, "body_iterator"):
@@ -141,9 +153,7 @@ class Model:
 
         return k, suffix  # type: ignore[return-value]
 
-    def _to_openai_choices(
-        self, payloads: List[Any]
-    ) -> Any:
+    def _to_openai_choices(self, payloads: List[Any]) -> Any:
         """
         payloads: list of openai.types.chat.chat_completion.ChatCompletion objects
         """
@@ -151,7 +161,6 @@ class Model:
 
         # If it's an OpenAI ChatCompletion object, patch it in-place.
         if hasattr(base, "choices") and hasattr(base, "model_dump"):
-            print("Patching OpenAI ChatCompletion response for fanout...")
             new_choices = []
             for i, p in enumerate(payloads):
                 c0 = p.choices[0]
@@ -172,5 +181,6 @@ class Model:
             return base  # return object; caller should serialize it
 
         raise HTTPException(
-            status_code=500, detail=f"Unsupported engine response type for fanout. {type(base)}"
+            status_code=500,
+            detail=f"Unsupported engine response type for fanout. {type(base)}",
         )
