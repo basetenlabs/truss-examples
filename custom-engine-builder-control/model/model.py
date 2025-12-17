@@ -160,19 +160,6 @@ class Model:
             base.choices = new_choices
             return base  # return object; caller should serialize it
 
-        # Fallback: if dict-like
-        if isinstance(base, dict) and "choices" in base:
-            print("Patching dict-like ChatCompletion response for fanout...")
-            out = copy.deepcopy(base)
-            out["choices"] = []
-            for i, p in enumerate(payloads):
-                c0 = copy.deepcopy(
-                    p["choices"][0] if isinstance(p, dict) else p["choices"][0]
-                )
-                c0["index"] = i
-                out["choices"].append(c0)
-            return out
-
         raise HTTPException(
-            status_code=500, detail="Unsupported engine response type for fanout."
+            status_code=500, detail=f"Unsupported engine response type for fanout. {type(base)}"
         )
