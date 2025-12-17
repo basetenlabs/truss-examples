@@ -10,7 +10,7 @@ Message = Dict[str, str]  # {"role": "...", "content": "..."}
 
 
 class Model:
-    """model class implementing fanout via suffix_messages"""
+    # model class implementing fanout via suffix_messages
     def __init__(self, trt_llm, **kwargs) -> None:
         self._secrets = kwargs["secrets"]
         self._engine = trt_llm["engine"]
@@ -76,7 +76,7 @@ class Model:
 
         # Convert to OpenAI-ish multi-choice response
         out = self._to_openai_choices(per_gen_payloads)
-        return JSONResponse(content=out.model_dump_json())
+        return JSONResponse(content=out.model_dump())
 
     # ---------------- helpers ----------------
 
