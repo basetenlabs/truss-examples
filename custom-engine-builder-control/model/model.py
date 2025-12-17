@@ -15,6 +15,12 @@ class Model:
         self._secrets = kwargs["secrets"]
         self._engine = trt_llm["engine"]
 
+    async def chat_completions(
+        self, request: Request, model_input: Dict[str, Any]
+    ) -> Any:
+        # alias to predict, so that both /predict and /v1/chat/completions work
+        return await self.predict(model_input, request)
+
     async def predict(self, model_input: Dict[str, Any], request: Request) -> Any:
         if not isinstance(model_input, dict):
             raise HTTPException(
@@ -156,6 +162,11 @@ class Model:
                     # some objects may be frozen; fallback to dumping/editing dict
                     c0 = c0.model_copy(update={"index": i})
                 new_choices.append(c0)
+
+                # agg usage
+                base.usage.completion_tokens += p.usage.completion_tokens
+                base.usage.prompt_tokens += p.usage.prompt_tokens
+                base.usage.total_tokens += p.usage.total_tokens
 
             base.choices = new_choices
             return base  # return object; caller should serialize it
