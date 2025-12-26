@@ -166,13 +166,20 @@ With BEI you get the following benefits:
         )
 
 
+@dataclasses.dataclass
 class BEIBert(BEI):
     name: str = "BEI-Bert (Baseten-Embeddings-Inference-BERT)"
     nickname: str = "BEI-Bert"
+    use_bei_bert: bool = True
+    make_fp8: bool = False
+    make_fp4: bool = False
 
     def __post_init__(self):
+        if self.make_fp8 or self.make_fp4:
+            raise ValueError("BEI BERT does not support FP4 or FP8 quantization")
         self.use_bei_bert = True
-        super().__post_init__()
+        self.name = "BEI-Bert (Baseten-Embeddings-Inference-BERT)"
+        self.nickname = "BEI-Bert"
 
 
 @dataclasses.dataclass

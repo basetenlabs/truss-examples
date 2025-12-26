@@ -1,6 +1,6 @@
-# BEI (Baseten-Embeddings-Inference) with mixedbread-ai/mxbai-embed-large-v1-embedding
+# BEI-Bert (Baseten-Embeddings-Inference-BERT) with Alibaba-NLP/gte-Qwen2-7B-instruct-embedding
 
-This is a Deployment for BEI (Baseten-Embeddings-Inference) with mixedbread-ai/mxbai-embed-large-v1-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+This is a Deployment for BEI-Bert (Baseten-Embeddings-Inference-BERT) with Alibaba-NLP/gte-Qwen2-7B-instruct-embedding. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
@@ -9,10 +9,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [mixedbread-ai/mxbai-embed-large-v1](https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1).
+This deployment is specifically designed for the Hugging Face model [Alibaba-NLP/gte-Qwen2-7B-instruct](https://huggingface.co/Alibaba-NLP/gte-Qwen2-7B-instruct).
 Suitable models need to have the configurations of the `sentence-transformers` library, which are used for embeddings. Such repos contain e.g. a `sbert_config.json` or a `1_Pooling/config.json` file besides the fast-tokenizer and the safetensors file.
 
-mixedbread-ai/mxbai-embed-large-v1  is a text-embeddings model, producing a 1D embeddings vector, given an input.
+Alibaba-NLP/gte-Qwen2-7B-instruct  is a text-embeddings model, producing a 1D embeddings vector, given an input.
 It's frequently used for downstream tasks like clustering, used with vector databases.
 
 
@@ -27,15 +27,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-embed-large-v1-embedding
+cd 11-embeddings-reranker-classification-tensorrt/BEI-Bert-alibaba-nlp-gte-qwen2-7b-instruct-embedding
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-embed-large-v1-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-Bert-alibaba-nlp-gte-qwen2-7b-instruct-embedding` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example was successfully pushed ✨
+# ✨ Model BEI-Bert-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -154,21 +154,21 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
+model_name: BEI-Bert-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
 trt_llm:
   build:
-    base_model: encoder
+    base_model: encoder_bert
     checkpoint_repository:
-      repo: mixedbread-ai/mxbai-embed-large-v1
+      repo: Alibaba-NLP/gte-Qwen2-7B-instruct
       revision: main
       source: HF
-    max_num_tokens: 16384
+    max_num_tokens: 131072
   runtime:
     webserver_default_route: /v1/embeddings
 

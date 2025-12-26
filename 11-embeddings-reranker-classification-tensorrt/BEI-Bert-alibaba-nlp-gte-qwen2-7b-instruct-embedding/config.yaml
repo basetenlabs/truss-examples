@@ -4,20 +4,20 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
+model_name: BEI-Bert-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: H100_40GB
   cpu: '1'
   memory: 10Gi
   use_gpu: true
 trt_llm:
   build:
-    base_model: encoder
+    base_model: encoder_bert
     checkpoint_repository:
-      repo: mixedbread-ai/mxbai-embed-large-v1
+      repo: Alibaba-NLP/gte-Qwen2-7B-instruct
       revision: main
       source: HF
-    max_num_tokens: 16384
+    max_num_tokens: 131072
   runtime:
     webserver_default_route: /v1/embeddings

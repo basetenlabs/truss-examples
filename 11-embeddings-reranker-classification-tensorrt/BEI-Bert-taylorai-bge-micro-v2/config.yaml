@@ -4,18 +4,18 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
+model_name: BEI-Bert-taylorai-bge-micro-v2-truss-example
 python_version: py39
 resources:
-  accelerator: L4
+  accelerator: A10G
   cpu: '1'
   memory: 10Gi
   use_gpu: true
 trt_llm:
   build:
-    base_model: encoder
+    base_model: encoder_bert
     checkpoint_repository:
-      repo: mixedbread-ai/mxbai-embed-large-v1
+      repo: TaylorAI/bge-micro-v2
       revision: main
       source: HF
     max_num_tokens: 16384

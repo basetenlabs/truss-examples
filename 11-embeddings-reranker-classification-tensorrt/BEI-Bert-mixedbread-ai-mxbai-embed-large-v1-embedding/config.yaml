@@ -4,7 +4,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: BEI-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
+model_name: BEI-Bert-mixedbread-ai-mxbai-embed-large-v1-embedding-truss-example
 python_version: py39
 resources:
   accelerator: L4
@@ -13,7 +13,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: encoder
+    base_model: encoder_bert
     checkpoint_repository:
       repo: mixedbread-ai/mxbai-embed-large-v1
       revision: main
