@@ -1380,7 +1380,7 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
         name="Alibaba-NLP/gte-Qwen2-7B-instruct-embedding",
         hf_model_id="Alibaba-NLP/gte-Qwen2-7B-instruct",
-        accelerator=Accelerator.H100_40GB,
+        accelerator=Accelerator.H100,
         task=Embedder(),
         solution=HFTEI(),
     ),
