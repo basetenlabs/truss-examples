@@ -26,7 +26,7 @@ model_metadata:
 model_name: TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding-truss-example
 python_version: py39
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   cpu: '1'
   memory: 2Gi
   use_gpu: true
