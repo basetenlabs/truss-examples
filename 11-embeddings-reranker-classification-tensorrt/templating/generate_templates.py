@@ -166,6 +166,15 @@ With BEI you get the following benefits:
         )
 
 
+class BEIBert(BEI):
+    name: str = "BEI-BERT (Baseten-Embeddings-Inference-BERT)"
+    nickname: str = "BEI-BERT"
+
+    def __post_init__(self):
+        self.use_bei_bert = True
+        super().__post_init__()
+
+
 @dataclasses.dataclass
 class HFTEI(Solution):
     name: str = "Huggingface's text-embeddings-inference"
@@ -1407,11 +1416,9 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
 DEPLOYMENTS_BEI_BERT = []
 for dep in DEPLOYMENTS_HFTEI:
     dep = copy.deepcopy(dep)
-    dep.solution = BEI(use_bei_bert=True)
+    dep.solution = BEIBert()
     if dep.accelerator == Accelerator.T4:
         dep.accelerator = Accelerator.L4
-    if "Alibaba-NLP/gte-Qwen" in dep.hf_model_id:
-        continue  # skip Qwen-based models for BEI-BERT for now
     DEPLOYMENTS_BEI_BERT.append(dep)
 
 
