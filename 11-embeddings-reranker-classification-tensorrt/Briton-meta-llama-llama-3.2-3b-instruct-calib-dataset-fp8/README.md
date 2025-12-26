@@ -152,7 +152,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: meta-llama/Llama-3.2-3B-Instruct
       revision: main

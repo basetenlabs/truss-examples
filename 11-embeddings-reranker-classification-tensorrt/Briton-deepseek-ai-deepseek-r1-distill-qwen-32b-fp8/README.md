@@ -152,7 +152,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
       revision: main

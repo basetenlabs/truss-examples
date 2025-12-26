@@ -151,7 +151,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: mistralai/Mistral-7B-Instruct-v0.3
       revision: main

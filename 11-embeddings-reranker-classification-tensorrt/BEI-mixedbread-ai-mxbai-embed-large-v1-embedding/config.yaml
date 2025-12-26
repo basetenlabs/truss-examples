@@ -13,7 +13,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: encoder
+    base_model: encoder_bert
     checkpoint_repository:
       repo: mixedbread-ai/mxbai-embed-large-v1
       revision: main

@@ -152,7 +152,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: qwen
+    base_model: decoder
     checkpoint_repository:
       repo: Qwen/Qwen3-8B
       revision: main

@@ -30,6 +30,7 @@ from truss.base.truss_config import (
     TrussConfig,
 )
 import yaml
+import copy
 
 REPO_URL = "https://github.com/basetenlabs/truss-examples"
 SUBFOLDER = Path("11-embeddings-reranker-classification-tensorrt")
@@ -75,10 +76,19 @@ With BEI you get the following benefits:
 """
     make_fp8: bool = False
     make_fp4: bool = False
+    use_bei_bert: bool = False
 
     def __post_init__(self):
         if self.make_fp8 and self.make_fp4:
             raise ValueError("make_fp8 and make_fp4 cannot both be True")
+        if self.use_bei_bert and (self.make_fp4 or self.make_fp8):
+            raise ValueError("BEI BERT does not support FP4 or FP8 quantization")
+
+    def suffix(self):
+        if self.use_bei_bert:
+            return "-bert"
+        else:
+            return ""
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
         hf_cfg = AutoConfig.from_pretrained(
@@ -100,37 +110,43 @@ With BEI you get the following benefits:
             if isinstance(dp.task, Predictor)
             else "/rerank"
         )
-
-        trt_llm = TRTLLMConfiguration(
-            build=TrussTRTLLMBuildConfiguration(
-                base_model=TrussTRTLLMModel.ENCODER,
-                checkpoint_repository=CheckpointRepository(
-                    repo=dp.hf_model_id,
-                    revision="main",
-                    source=CheckpointSource.HF,
-                ),
-                max_num_tokens=max_num_tokens,
-                **(
-                    {
-                        "quantization_type": TrussTRTLLMQuantizationType.FP8,
-                        # give more resources / cpu ram + vram on build if the model uses not-mig
-                        "num_builder_gpus": num_builder_gpus,
-                    }
-                    if self.make_fp8
-                    else (
+        try:
+            trt_llm = TRTLLMConfiguration(
+                build=TrussTRTLLMBuildConfiguration(
+                    base_model=TrussTRTLLMModel.ENCODER_BERT
+                    if self.use_bei_bert
+                    else TrussTRTLLMModel.ENCODER,
+                    checkpoint_repository=CheckpointRepository(
+                        repo=dp.hf_model_id,
+                        revision="main",
+                        source=CheckpointSource.HF,
+                    ),
+                    max_num_tokens=max_num_tokens,
+                    **(
                         {
-                            "quantization_type": TrussTRTLLMQuantizationType.FP4,
+                            "quantization_type": TrussTRTLLMQuantizationType.FP8,
+                            # give more resources / cpu ram + vram on build if the model uses not-mig
                             "num_builder_gpus": num_builder_gpus,
                         }
-                        if self.make_fp4
-                        else {}
-                    )
+                        if self.make_fp8
+                        else (
+                            {
+                                "quantization_type": TrussTRTLLMQuantizationType.FP4,
+                                "num_builder_gpus": num_builder_gpus,
+                            }
+                            if self.make_fp4
+                            else {}
+                        )
+                    ),
                 ),
-            ),
-            runtime=TrussTRTLLMRuntimeConfiguration(
-                webserver_default_route=endpoint,
-            ),
-        )
+                runtime=TrussTRTLLMRuntimeConfiguration(
+                    webserver_default_route=endpoint,
+                ),
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to create TRTLLMConfiguration for model {dp.hf_model_id}"
+            ) from e
         overrides_engine_builder = ENGINE_BUILDER_VERSION
         overrides_bei = BEI_VERSION
         if overrides_engine_builder is not None or overrides_bei is not None:
@@ -891,6 +907,10 @@ class Deployment:
             return False
 
     @cached_property
+    def suffix(self):
+        return ""
+
+    @cached_property
     def is_fp4(self):
         if self.solution.trt_config is not None:
             return "fp4" in self.solution.trt_config.build.quantization_type.value
@@ -929,6 +949,7 @@ class Deployment:
             + ("-fp8" * self.is_fp8)
             + ("-fp4" * self.is_fp4)
             + ("-mlp-only" * self.is_mlp_only)
+            + self.suffix
         )
 
     @property
@@ -1077,13 +1098,13 @@ DEPLOYMENTS_BEI = [
         Embedder(),
         solution=BEI(),
     ),
-    Deployment(
-        "jinaai/jina-code-embeddings-0.5b",
-        "jinaai/jina-code-embeddings-0.5b",
-        Accelerator.H100_40GB,
-        Embedder(),
-        solution=BEI(make_fp8=True),
-    ),
+    # Deployment(
+    #     "jinaai/jina-code-embeddings-0.5b",
+    #     "jinaai/jina-code-embeddings-0.5b",
+    #     Accelerator.H100_40GB,
+    #     Embedder(),
+    #     solution=BEI(make_fp8=True),
+    # ),
     Deployment(
         "WhereIsAI/UAE-Large-V1-embedding",
         "WhereIsAI/UAE-Large-V1",
@@ -1383,6 +1404,15 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
         solution=HFTEI(),
     ),
 ]
+DEPLOYMENTS_BEI_BERT = []
+for dep in DEPLOYMENTS_HFTEI:
+    dep = copy.deepcopy(dep)
+    dep.solution = BEI(use_bei_bert=True)
+    if dep.accelerator == Accelerator.T4:
+        dep.accelerator = Accelerator.L4
+    if "Alibaba-NLP/gte-Qwen" in dep.hf_model_id:
+        continue  # skip Qwen-based models for BEI-BERT for now
+    DEPLOYMENTS_BEI_BERT.append(dep)
 
 
 def llamalike_config(
@@ -1390,7 +1420,7 @@ def llamalike_config(
     tp=1,
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     batch_scheduler_policy: None = None,
-    base_model: TrussTRTLLMModel = TrussTRTLLMModel.LLAMA,
+    base_model: TrussTRTLLMModel = TrussTRTLLMModel.DECODER,
     calib_dataset: str = None,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
@@ -2015,7 +2045,7 @@ DEPLOYMENTS_BRITON = [
                 repoid="Qwen/Qwen2.5-Coder-7B-Instruct",
                 quant=TrussTRTLLMQuantizationType.FP8,
                 use_dynamic_lengths=True,
-                base_model=TrussTRTLLMModel.QWEN,
+                base_model=TrussTRTLLMModel.DECODER,
             )
         ),
     ),
@@ -2064,7 +2094,7 @@ DEPLOYMENTS_BRITON = [
         solution=Briton(
             trt_config=llamalike_lookahead(
                 repoid="Qwen/Qwen3-8B",
-                base_model=TrussTRTLLMModel.QWEN,
+                base_model=TrussTRTLLMModel.DECODER,
                 use_dynamic_lengths=True,
             )
         ),
@@ -2072,10 +2102,11 @@ DEPLOYMENTS_BRITON = [
 ]
 
 
-ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_HFTEI + DEPLOYMENTS_BRITON
+ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_BRITON + DEPLOYMENTS_BEI_BERT
+ALL_DEPLOYMENTS_WITH_TEI = ALL_DEPLOYMENTS + DEPLOYMENTS_HFTEI
 
 if __name__ == "__main__":
-    for dp in ALL_DEPLOYMENTS:
+    for dp in ALL_DEPLOYMENTS_WITH_TEI:
         generate_deployment(dp)
 
     def format_filter(dps: list[Deployment], type_):

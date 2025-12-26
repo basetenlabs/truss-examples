@@ -18,7 +18,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: mistralai/Mistral-Small-24B-Instruct-2501
       revision: main
