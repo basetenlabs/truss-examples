@@ -7,10 +7,10 @@ model_metadata:
   example_model_input:
     max_tokens: 512
     messages:
-    - content: You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
-      role: system
-    - content: What does Tongyi Qianwen mean?
-      role: user
+      - content: You are Qwen, created by Alibaba Cloud. You are a helpful assistant.
+        role: system
+      - content: What does Tongyi Qianwen mean?
+        role: user
     stream: true
     temperature: 0.9
   repo_id: Qwen/Qwen2.5-14B-Instruct
@@ -19,14 +19,14 @@ python_version: py39
 requirements: []
 resources:
   accelerator: H100
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: decoder
     checkpoint_repository:
       repo: Qwen/Qwen2.5-14B-Instruct
       source: HF

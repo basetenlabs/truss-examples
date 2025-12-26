@@ -4,31 +4,33 @@ external_package_dirs: []
 model_metadata:
   tags:
     - openai-compatible
-  example_model_input: {
-    messages: [
-      {
-        role: "user",
-        content: "Which is heavier, a pound of bricks or a pound of feathers?"
-      }
-    ],
-    stream: true,
-    max_tokens: 1024,
-    temperature: 0.6
-  }
+  example_model_input:
+    {
+      messages:
+        [
+          {
+            role: "user",
+            content: "Which is heavier, a pound of bricks or a pound of feathers?",
+          },
+        ],
+      stream: true,
+      max_tokens: 1024,
+      temperature: 0.6,
+    }
   repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
 model_name: DeepSeek R1 Distill Qwen 7B
 python_version: py39
 requirements: []
 resources:
   accelerator: H100_40GB
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: decoder
     checkpoint_repository:
       repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
       source: HF

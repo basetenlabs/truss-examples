@@ -25,7 +25,7 @@ secrets:
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       # presigned url from: https://us-east-2.console.aws.amazon.com/s3/buckets/mp-model-weights-public?bucketType=general&region=us-east-2&tab=objects#
       # feel free to reach out to us if you need access to this bucket

@@ -1,13 +1,12 @@
-
 model_metadata:
   tags:
-  - openai-compatible
+    - openai-compatible
 model_name: briton-spec-dec
 python_version: py310
 requirements: []
 resources:
   accelerator: A10G
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 runtime:
@@ -17,7 +16,7 @@ secrets:
 trt_llm:
   draft:
     build:
-      base_model: deepseek
+      base_model: decoder
       checkpoint_repository:
         repo: deepseek-ai/deepseek-coder-1.3b-instruct
         source: HF
@@ -32,7 +31,7 @@ trt_llm:
       num_draft_tokens: 4
   target:
     build:
-      base_model: deepseek
+      base_model: decoder
       checkpoint_repository:
         repo: deepseek-ai/deepseek-coder-1.3b-instruct
         source: HF

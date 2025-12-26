@@ -38,7 +38,7 @@ runtime:
     ping_timeout_seconds: null
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24

@@ -4,27 +4,29 @@ external_package_dirs: []
 model_metadata:
   tags:
     - openai-compatible
-  example_model_input: {
-    messages: [
-      {
-        role: "user",
-        content: "Which is heavier, a pound of bricks or a pound of feathers?"
-      }
-    ],
-    stream: true,
-    max_tokens: 1024,
-    temperature: 0.6,
-    top_p: 1.0,
-    top_k: 40,
-    frequency_penalty: 1
-  }
+  example_model_input:
+    {
+      messages:
+        [
+          {
+            role: "user",
+            content: "Which is heavier, a pound of bricks or a pound of feathers?",
+          },
+        ],
+      stream: true,
+      max_tokens: 1024,
+      temperature: 0.6,
+      top_p: 1.0,
+      top_k: 40,
+      frequency_penalty: 1,
+    }
   repo_id: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
 model_name: DeepSeek R1 Distill Llama 70B
 python_version: py39
 requirements: []
 resources:
   accelerator: H100:2
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets:
@@ -32,7 +34,7 @@ secrets:
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
       source: HF

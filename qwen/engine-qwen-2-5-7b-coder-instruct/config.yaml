@@ -4,35 +4,34 @@ external_package_dirs: []
 model_metadata:
   tags:
     - openai-compatible
-  example_model_input: {
-    messages: [
-      {
-        role: "system",
-        content: "You are Qwen, created by Alibaba Cloud. You are a helpful assistant."
-      },
-      {
-        role: "user",
-        content: "Write a Python script for fizzbuzz."
-      }
-    ],
-    stream: true,
-    max_tokens: 512,
-    temperature: 0.9
-  }
+  example_model_input:
+    {
+      messages:
+        [
+          {
+            role: "system",
+            content: "You are Qwen, created by Alibaba Cloud. You are a helpful assistant.",
+          },
+          { role: "user", content: "Write a Python script for fizzbuzz." },
+        ],
+      stream: true,
+      max_tokens: 512,
+      temperature: 0.9,
+    }
   repo_id: Qwen/Qwen2.5-Coder-7B-Instruct
 model_name: Qwen Coder 2.5 7B Instruct
 python_version: py39
 requirements: []
 resources:
   accelerator: H100_40GB
-  cpu: '1'
+  cpu: "1"
   memory: 24Gi
   use_gpu: true
 secrets: {}
 system_packages: []
 trt_llm:
   build:
-    base_model: qwen
+    base_model: decoder
     checkpoint_repository:
       repo: Qwen/Qwen2.5-Coder-7B-Instruct
       source: HF

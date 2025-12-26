@@ -24,7 +24,7 @@ resources:
 system_packages: []
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       repo: tiiuae/Falcon3-3B-Instruct
       source: HF

@@ -18,7 +18,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: llama
+    base_model: decoder
     checkpoint_repository:
       # pre-quanitzed checkpoint in plain FP8
       repo: michaelfeil/nemotron-251b-ultra-v2-tp8-fp8-tllm

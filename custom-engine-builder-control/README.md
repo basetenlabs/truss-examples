@@ -15,8 +15,8 @@ Optionally, you can also enable:
 
 
 # Examples:
-This deployment is to showcase the option to generate multiple suffixes based on a previous request. 
-We are going to hit the KV-Cache of a previous request. 
+This deployment is to showcase the option to generate multiple suffixes based on a previous request.
+We are going to hit the KV-Cache of a previous request.
 
 ## Deployment with Truss
 
@@ -106,7 +106,7 @@ resources:
   use_gpu: true
 trt_llm:
   build:
-    base_model: qwen
+    base_model: decoder
     checkpoint_repository:
       repo: Qwen/Qwen3-8B
       revision: main
