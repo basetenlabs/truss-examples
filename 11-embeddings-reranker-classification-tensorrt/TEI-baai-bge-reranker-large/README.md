@@ -1,6 +1,6 @@
-# Huggingface's text-embeddings-inference with BAAI/bge-reranker-large-TEI
+# Huggingface's text-embeddings-inference with BAAI/bge-reranker-large
 
-This is a Deployment for Huggingface's text-embeddings-inference with BAAI/bge-reranker-large-TEI. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
+This is a Deployment for Huggingface's text-embeddings-inference with BAAI/bge-reranker-large. TEI is huggingface's solution for (text) embeddings, reranking models and prediction models.
 
 Supported models are tagged here: https://huggingface.co/models?other=text-embeddings-inference&sort=trending
 
@@ -36,15 +36,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/TEI-baai-bge-reranker-large-tei
+cd 11-embeddings-reranker-classification-tensorrt/TEI-baai-bge-reranker-large
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/TEI-baai-bge-reranker-large-tei` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/TEI-baai-bge-reranker-large` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model TEI-baai-bge-reranker-large-tei-truss-example was successfully pushed ✨
+# ✨ Model TEI-baai-bge-reranker-large-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -190,7 +190,7 @@ model_metadata:
     - Baseten is a fast inference provider
     truncate: true
     truncation_direction: Right
-model_name: TEI-baai-bge-reranker-large-tei-truss-example
+model_name: TEI-baai-bge-reranker-large-truss-example
 python_version: py39
 resources:
   accelerator: H100

@@ -28,7 +28,7 @@ model_metadata:
     - Baseten is a fast inference provider
     truncate: true
     truncation_direction: Right
-model_name: TEI-baai-bge-reranker-large-tei-truss-example
+model_name: TEI-baai-bge-reranker-large-truss-example
 python_version: py39
 resources:
   accelerator: H100

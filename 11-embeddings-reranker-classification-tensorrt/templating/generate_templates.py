@@ -1315,7 +1315,7 @@ DEPLOYMENTS_BEI = [
 
 DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     Deployment(  #
-        name="BAAI/bge-reranker-large-TEI",
+        name="BAAI/bge-reranker-large",
         hf_model_id="BAAI/bge-reranker-large",
         accelerator=Accelerator.H100,
         task=Reranker(),

@@ -50,7 +50,7 @@ You can find the following deployments in this repository:
 ## Reranker Deployments:
  - [Alibaba-NLP/gte-reranker-modernbert-base-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-alibaba-nlp-gte-reranker-modernbert-base)
  - [BAAI/bge-reranker-large-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-large)
- - [BAAI/bge-reranker-large-TEI-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-baai-bge-reranker-large-tei)
+ - [BAAI/bge-reranker-large-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-baai-bge-reranker-large)
  - [BAAI/bge-reranker-v2-m3-multilingual-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-reranker-v2-m3-multilingual)
  - [ncbi/MedCPT-Cross-Encoder-reranker-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-ncbi-medcpt-cross-encoder-reranker)
 
