@@ -1,0 +1,60 @@
+model_name: Deepseek V32-2 FP4 2
+python_version: py39
+resources:
+  accelerator: B200:4
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Who is Warren Buffet?"
+    model: deepseek
+cache_internal:
+  - repo_id: baseten-admin/DeepSeek-V3.2-FP4
+    revision: c69397ecfd1fd142e90e3fbad51f4c7e40b9f3d3
+trt_llm:
+  build:
+    checkpoint_repository:
+      repo: baseten-admin/DeepSeek-V3.2-FP4
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 128
+    max_num_tokens: 8192
+    max_seq_len: 163800
+    tensor_parallel_size: 4
+    served_model_name: deepseek-ai/DeepSeek-V3.2
+    patch_kwargs:
+      model_path: /app/trt_model
+      disable_overlap_scheduler: True
+      guided_decoding_backend: "xgrammar"
+      moe_expert_parallel_size: 4
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
+      kv_cache_config:
+        free_gpu_memory_fraction: 0.7
+        enable_block_reuse: false
+        enable_partial_reuse: false
+      cuda_graph_config:
+        enable_padding: false
+      enable_iter_perf_stats: false
+      autotuner_enabled: false
+      tool_call_parser: deepseekv32
+  version_overrides:
+    v2_llm_version: trtllm-gpu-ece3a8748-05ca7f6a5-bba39360fe
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 1800 # Waits 30 minutes after deployment before starting health checks
+    restart_threshold_seconds: 30 # Triggers a restart if health checks fail for 30 seconds
+    stop_traffic_threshold_seconds: 120 # Stops traffic if health checks fail for 2 minutes
+secrets:
+  hf_access_token: null
+environment_variables:
+  BAD_TOKEN_ID_SEQ_CHECK_ENABLED: 1

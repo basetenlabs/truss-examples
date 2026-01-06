@@ -1,0 +1,39 @@
+model_name: "gcp-us-c1-ABRIDGE-MODELS:qwen-3-32b-fp8"
+python_version: "py312"
+resources:
+  accelerator: "H100:2"
+  use_gpu: true
+secrets:
+  abridge-models-read-sa-key: ""
+  datadog-api-key: ""
+environment_variables:
+  # Datadog Agent configuration (agent is pre-installed in custom vLLM image)
+  # DD_API_KEY will be read from /secrets/datadog-api-key file in setup.sh
+  DD_SITE: "us5.datadoghq.com"
+  DD_ENV: "baseten"
+  DD_SERVICE: "vllm-qwen-3-32b-fp8"
+  DD_TAGS: "model:qwen-3-32b-fp8 baseten_prefix:gcp-us-c1- deployment:baseten platform:baseten gpu:H100 num_gpus:2"
+  DD_LOGS_ENABLED: "true"
+  DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "false"
+base_image:
+  image: "us-docker.pkg.dev/abridge-artifact-registry/abridge-models/vllm:0.11.2.1" # Image tag comes from values-baseten.yaml
+  docker_auth:
+    auth_method: GCP_SERVICE_ACCOUNT_JSON
+    secret_name: "abridge-models-read-sa-key"
+    registry: "us-docker.pkg.dev"
+docker_server:
+  start_command: "sh -c 'bash /app/data/setup.sh'"
+  readiness_endpoint: "/health"
+  liveness_endpoint: "/health"
+  predict_endpoint: "/v1/completions"
+  server_port: 8000
+runtime:
+  predict_concurrency: 256
+model_metadata:
+  example_model_input:
+    prompt: "What is the capital of France?"
+    stream: false
+    max_tokens: 128
+    temperature: 0.7
+  tags:
+    - "openai-compatible"

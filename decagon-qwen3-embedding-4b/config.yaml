@@ -4,10 +4,10 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: Decagon Qwen3 Embedding 4B
+model_name: Decagon Qwen3 Embedding 8B
 python_version: py39
 resources:
-  accelerator: H100_40GB
+  accelerator: H100:1
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -15,7 +15,7 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: michaelfeil/Qwen3-Embedding-4B-auto
+      repo: michaelfeil/Qwen3-Embedding-8B-auto
       revision: main
       source: HF
     max_num_tokens: 40960

@@ -1,0 +1,45 @@
+model_name: Context Engine Prod Qwen3 8B
+base_image:
+  image: lmsysorg/sglang:v0.5.6.post2-runtime
+model_metadata:
+  repo_id: decagon-ai/context-engine-prod
+  example_model_input:
+    messages:
+      - role: user
+        content: "Tell me everything you know about optimized inference."
+    stream: true
+    model: "decagon-ai/context-engine-prod"
+    max_tokens: 512
+    temperature: 0.6
+  tags:
+    - openai-compatible
+model_cache:
+  - repo_id: decagon-ai/context-engine-prod
+    revision: main
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.model"
+      - "tokenizer.model"
+      - "*.tiktoken"
+      - "*.jinja"
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
+    use_volume: true
+    volume_folder: "decagon-context-engine-prod"
+docker_server:
+  start_command: sh -c "truss-transfer-cli && HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path /app/model_cache/decagon-context-engine-prod --host 0.0.0.0 --port 8000 --served-model-name decagon-ai/context-engine-prod --tp 4 --chat-template /app/model_cache/decagon-context-engine-prod/chat_template.jinja"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: B200:4
+  cpu: "4"
+  memory: 40Gi
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
+secrets:
+  hf_access_token: null

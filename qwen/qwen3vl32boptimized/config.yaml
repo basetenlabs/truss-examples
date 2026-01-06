@@ -1,0 +1,7 @@
+model_name: Qwen vl 32b Optimized
+python_version: py311
+resources:
+  accelerator: null
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: false

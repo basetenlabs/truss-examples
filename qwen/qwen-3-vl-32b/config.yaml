@@ -14,7 +14,7 @@ model_metadata:
     stream: true
   tags:
     - openai-compatible
-model_name: Qwen 3 VL 32B
+model_name: Testing Qwen 3 VL 32B 2
 requirements:
   - transformers>=4.55.0
   - accelerate
@@ -32,7 +32,7 @@ model_cache:
       - "original/*"
       - "*.pth"
 docker_server:
-  start_command: vllm serve Qwen/Qwen3-VL-32B-Instruct-FP8 --tensor-parallel-size 1 --served-model-name qwen-3-vl-32b --trust-remote-code --max-model-len 16384 --gpu-memory-utilization 0.9
+  start_command: vllm serve Qwen/Qwen3-VL-32B-Instruct-FP8 --tensor-parallel-size 1 --served-model-name qwen-3-vl-32b --trust-remote-code --max-model-len 16384 --gpu-memory-utilization 0.9 --load-format runai_streamer
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

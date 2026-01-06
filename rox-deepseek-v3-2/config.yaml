@@ -1,0 +1,7 @@
+model_name: Rox-Deepseek-V3-2
+python_version: py311
+resources:
+  accelerator: null
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: false

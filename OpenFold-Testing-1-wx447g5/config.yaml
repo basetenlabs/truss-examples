@@ -1,0 +1,36 @@
+model_name: OpenFold-Testing-9
+python_version: py312
+base_image:
+    image: 125476056637.dkr.ecr.us-west-2.amazonaws.com/mh-jobs-openfold2-nim:2.1.0-0
+    docker_auth:
+      auth_method: AWS_IAM
+      registry: 125476056637.dkr.ecr.us-west-2.amazonaws.com
+      aws_access_key_id_secret_name: docker_registry_aws_access_key_id
+      aws_secret_access_key_secret_name: docker_registry_aws_secret_access_key
+secrets:
+  docker_registry_aws_access_key_id: null
+  docker_registry_aws_secret_access_key: null
+resources:
+  accelerator: H100
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+environment_variables:
+  NIM_CACHE_PATH: /app/model_cache/model_data/2025-12-17
+  NIM_IGNORE_MODEL_DOWNLOAD_FAIL: 'true'
+  NIM_WORKSPACE_PATH: /tmp/nim_workspace
+docker_server:
+  start_command: sh -c "truss-transfer-cli && /bin/bash -c $SERVER_START_SCRIPT_PATH"
+  readiness_endpoint: /v1/health/ready
+  liveness_endpoint: /v1/health/live
+  predict_endpoint: /biology/openfold/openfold2/predict-structure-from-msa-and-template
+  server_port: 8000
+model_cache:
+- repo_id: s3://benchling-dev-us-west-2-untrusted-artifacts/global/services/model-hub-jobs/openfold2/
+  revision: "main"
+  use_volume: true
+  volume_folder: model_data
+  runtime_secret_name: "s3-access"
+  kind: "s3"
+  allow_patterns:
+    - "2025-12-17/*"
