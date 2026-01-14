@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 
 BASE_PROMPT = "Adriana Chechik"
-API_URL = "https://model-4w7e5m6q.api.baseten.co/environments/production/predict"
+API_URL = os.environ.get("BASETEN_API_URL", "YOUR_API_URL")
 API_KEY = os.environ.get("BASETEN_API_KEY")
 
 
