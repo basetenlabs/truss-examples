@@ -1,7 +1,10 @@
 base_image:
-  image: lmsysorg/sglang@sha256:b71419a722c4e5f5910361fd596c2f326ecb64e636c0c631427a299da9f2c7eb
+  image: lmsysorg/sglang:v0.5.7-cu130-runtime
 build_commands:
-  - apt-get update && apt-get install -y git && git clone https://github.com/sgl-project/sglang.git && cd sglang && pip install -e "python[diffusion]" --pre
+  - apt-get update && apt-get install -y git
+  - git clone https://github.com/sgl-project/sglang.git && cd sglang && git checkout a0b4ba9032c40d68c78571d8f287d48363ab2016 && pip install -e "python[diffusion]" --pre
+  - pip install git+https://github.com/huggingface/diffusers.git
+  - pip install git+https://github.com/huggingface/transformers.git@136c621c00b2536d1f608ed3c6de59b9897afbb8
 docker_server:
   start_command: >-
     sh -c 'export HF_TOKEN=$(cat /secrets/hf_access_token) &&
@@ -22,7 +25,7 @@ model_metadata:
     response_format: "b64_json"
     num_inference_steps: 8
 resources:
-  accelerator: H100
+  accelerator: B200
   use_gpu: true
 model_name: GLM Image
 secrets:
