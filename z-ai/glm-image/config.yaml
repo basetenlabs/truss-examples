@@ -1,0 +1,34 @@
+base_image:
+  image: lmsysorg/sglang@sha256:b71419a722c4e5f5910361fd596c2f326ecb64e636c0c631427a299da9f2c7eb
+build_commands:
+  - apt-get update && apt-get install -y git && git clone https://github.com/sgl-project/sglang.git && cd sglang && pip install -e "python[diffusion]" --pre
+docker_server:
+  start_command: >-
+    sh -c 'export HF_TOKEN=$(cat /secrets/hf_access_token) &&
+    sglang serve
+    --model-path zai-org/GLM-Image
+    --num-gpus 1
+    --port 8000
+    --host 0.0.0.0'
+  readiness_endpoint: /health_generate  
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/images/generations
+  server_port: 8000
+model_metadata:
+  example_model_input: 
+    prompt: "A Cat holding Logo With Bold Large Text: Baseten"
+    n: 1
+    size: "1024x1024"
+    response_format: "b64_json"
+    num_inference_steps: 8
+resources:
+  accelerator: H100
+  use_gpu: true
+model_name: GLM Image
+secrets:
+  hf_access_token: null
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 600 # Waits 10 minutes after deployment before starting health checks
+    restart_threshold_seconds: 300 # Triggers a restart if health checks fail for 5 minutes
+    stop_traffic_threshold_seconds: 300 # Stops traffic if health checks fail for 5 minutes
