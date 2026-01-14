@@ -10,12 +10,12 @@ docker_server:
     --num-gpus 1
     --port 8000
     --host 0.0.0.0'
-  readiness_endpoint: /health_generate  
+  readiness_endpoint: /health_generate
   liveness_endpoint: /health_generate
   predict_endpoint: /v1/images/generations
   server_port: 8000
 model_metadata:
-  example_model_input: 
+  example_model_input:
     prompt: "A Cat holding Logo With Bold Large Text: Baseten"
     n: 1
     size: "1024x1024"
