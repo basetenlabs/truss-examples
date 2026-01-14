@@ -10,7 +10,7 @@ from pathlib import Path
 
 import requests
 
-BASE_PROMPT = "Adriana Chechik"
+BASE_PROMPT = "A cute beaver"
 API_URL = os.environ.get("BASETEN_API_URL", "YOUR_API_URL")
 API_KEY = os.environ.get("BASETEN_API_KEY")
 
@@ -127,7 +127,7 @@ def run_benchmark(concurrency, max_runtime, max_requests, output_base_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Benchmark Flux API")
+    parser = argparse.ArgumentParser(description="Benchmark GLM Image API")
     parser.add_argument(
         "--concurrency",
         action="append",
