@@ -30,7 +30,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: "sh -c \"VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve google/gemma-3-27b-it --served-model-name gemma --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --hf-overrides '{\\\"do_pan_and_scan\\\": true}' --gpu-memory-utilization 0.95\""
+  start_command: "sh -c \"truss-transfer-cli && VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve /app/model_cache/gemma --served-model-name gemma --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --hf-overrides '{\\\"do_pan_and_scan\\\": true}' --gpu-memory-utilization 0.95\""
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -38,6 +38,11 @@ docker_server:
 environment_variables:
   VLLM_LOGGING_LEVEL: INFO
   hf_access_token: null
+model_cache:
+  - repo_id: google/gemma-3-27b-it
+    revision: 005ad3404e59d6023443cb575daa05336842228a
+    use_volume: true
+    volume_folder: gemma
 requirements:
 - huggingface_hub
 - hf_transfer
