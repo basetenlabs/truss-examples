@@ -30,7 +30,7 @@ model_metadata:
   tags:
   - openai-compatible
 docker_server:
-  start_command: "bash /app/data/start.sh"
+  start_command: "sh -c \"truss-transfer-cli && VLLM_USE_V1=1 HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve /app/model_cache/gemma --served-model-name gemma --max-num-seqs 8 --max-model-len 16384 --limit_mm_per_prompt 'image=1' --hf-overrides '{\\\"do_pan_and_scan\\\": true}' --gpu-memory-utilization 0.95\""
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -46,7 +46,6 @@ model_cache:
 requirements:
 - huggingface_hub
 - hf_transfer
-- truss_transfer
 - datasets
 resources:
   accelerator: H100
