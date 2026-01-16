@@ -17,11 +17,11 @@ def base64_to_wav(base64_string, output_file_path):
 class WhisperModel(chains.ChainletBase):
     remote_config = chains.RemoteConfig(
         docker_image=chains.DockerImage(
-            base_image="baseten/truss-server-base:3.10-gpu-v0.9.0",
-            apt_requirements=[
-                "ffmpeg",
-            ],
-            pip_requirements=["torch==2.0.1", "openai-whisper==20231106"],
+            base_image=chains.CustomImage(image="baseten/truss-server-base:3.10-gpu-v0.9.0")  #,
+            # apt_requirements=[
+            #     "ffmpeg",
+            # ],
+            # pip_requirements=["torch==2.0.1", "openai-whisper==20231106"],
         ),
         compute=chains.Compute(gpu="T4", cpu_count=2, memory="16Gi"),
         assets=chains.Assets(

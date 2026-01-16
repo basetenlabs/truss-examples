@@ -1,0 +1,44 @@
+model_metadata:
+  example_model_input:
+    model: "Qwen/Qwen3-VL-32B-Instruct"
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          - type: text
+            text: "<|grounding|>Convert the document to markdown."
+    max_tokens: 4096
+    temperature: 0.6
+    scale: 1.0  # This can be overridden per-request
+  openai_compatible: true
+  tags:
+    - openai-compatible
+model_name: Qwen3-VL-32B-Instruct-FP8-Test  # Qwen3-VL-30B-A3B-Instruct-FP8
+model_cache:
+  - repo_id: Qwen/Qwen3-VL-32B-Instruct
+    revision: main
+    use_volume: true
+    volume_folder: "qwen3-vl-32b-unquantized"
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
+base_image:
+  image: lmsysorg/sglang:v0.5.5.post3
+requirements:
+  - sglang
+  - httpx==0.25.2
+  - Pillow==10.1.0
+  - fastapi
+resources:
+  accelerator: H100:2
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  predict_concurrency: 256
+  health_checks:
+    restart_check_delay_seconds: 400   # Wait n seconds after deployment before starting health checks
+    restart_threshold_seconds: 30    # Restart replica if health checks fail for n seconds
+    stop_traffic_threshold_seconds: 10  # Stop traffic if health checks fail for n seconds

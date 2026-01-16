@@ -1,0 +1,41 @@
+base_image:
+  image: vllm/vllm-openai:latest
+#  image: vllm/vllm-openai:nightly-9c2c2287a0767a86b44f9e1b2b1a31c72c20f9f8
+#  image: lmsysorg/sglang
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    model: Qwen/Qwen3-VL-235B-A22B-Instruct-FP8  #"Qwen/Qwen3-VL-30B-A3B-Instruct-FP8"
+    stream: true
+    max_tokens: 512
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "What's in this image?"
+          - type: image_url
+            image_url:
+              url: "https://github.com/sgl-project/sglang/blob/main/test/lang/example_image.png?raw=true"
+    temperature: 0.6
+  tags:
+    - openai-compatible
+docker_server:
+  start_command: sh -c "vllm serve Qwen/Qwen3-VL-235B-A22B-Instruct-FP8 --tensor-parallel-size 1 --mm-encoder-tp-mode data --limit-mm-per-prompt.video 0 --mm-processor-cache-type shm --enable-expert-parallel --quantization fp8 --kv-cache-dtype fp8 --distributed-executor-backend mp --gpu-memory-utilization 0.95 --max-num-seqs 16 --host 0.0.0.0 --port 8000"
+  # start_command: sh -c "vllm serve Qwen/Qwen3-VL-30B-A3B-Instruct-FP8 --tensor-parallel-size 1 --mm-encoder-tp-mode data --limit-mm-per-prompt.video 0 --mm-processor-cache-type shm --enable-expert-parallel --quantization fp8 --kv-cache-dtype fp8 --distributed-executor-backend mp --gpu-memory-utilization 0.95 --max-num-seqs 16 --host 0.0.0.0 --port 8000"
+  #  start_command: sh -c "vllm serve Qwen/Qwen3-VL-235B-A22B-Instruct --tensor-parallel-size 4 --mm-encoder-tp-mode data --enable-expert-parallel --gpu-memory-utilization 0.90 --max-num-seqs 16 --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}' --host 0.0.0.0 --port 8000"
+#  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path Qwen/Qwen3-VL-235B-A22B-Instruct --attention-backend flashinfer --trust-remote-code --tp 4 --mem-fraction-static 0.8 --host 0.0.0.0 --port 8000 --enable-multimodal"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:2
+  use_gpu: true
+runtime:
+  predict_concurrency : 16
+model_name: Qwen3-VL-235B-A22B-Instruct-FP8 #Qwen3-VL-30B-A3B-Instruct-FP8
+environment_variables:
+  hf_access_token: null
+system_packages:
+  - libsm6
+  - libxext6
+  - libnuma-dev

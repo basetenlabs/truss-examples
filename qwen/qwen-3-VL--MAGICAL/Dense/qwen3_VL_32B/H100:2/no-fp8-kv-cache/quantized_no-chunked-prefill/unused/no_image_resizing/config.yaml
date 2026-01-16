@@ -1,0 +1,45 @@
+model_metadata:
+  example_model_input:
+    model: "Qwen/Qwen3-VL-32B-Instruct-FP8"
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          - type: text
+            text: "<|grounding|>Convert the document to markdown."
+    max_tokens: 4096
+    temperature: 0.6
+  tags:
+    - openai-compatible
+model_name: Qwen3-VL-30B-A3B-Instruct-FP8
+base_image:
+  image: lmsysorg/sglang:v0.5.6 # lmsysorg/sglang:dev-x86 lmsysorg/sglang:v0.5.5.post3
+docker_server:
+  start_command:  >
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l);
+           HF_TOKEN=$(cat /secrets/hf_access_token);
+           hf download Qwen/Qwen3-VL-32B-Instruct-FP8 --local-dir /app/Qwen3-VL-32B-Instruct-FP8 --token $HF_TOKEN;
+           python3 -m sglang.launch_server \
+             --model-path /app/Qwen3-VL-32B-Instruct-FP8 \
+             --served-model-name Qwen/Qwen3-VL-32B-Instruct-FP8 \
+             --tool-call-parser qwen \
+             --tp-size $GPU_COUNT \
+             --ep-size 1 \
+             --context-length 24000 \
+             --max-running-requests 8 \
+             --mem-fraction-static 0.8 \
+             --host 0.0.0.0 \
+             --port 8000'
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:2
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  predict_concurrency: 256

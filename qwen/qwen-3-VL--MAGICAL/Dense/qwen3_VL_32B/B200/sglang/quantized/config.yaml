@@ -1,0 +1,52 @@
+base_image:
+  image: lmsysorg/sglang:dev-x86
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    model: "Qwen/Qwen3-VL-32B-Instruct-FP8"
+    stream: false
+    max_tokens: 4096
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "What's in this image?"
+          - type: image_url
+            image_url:
+              url: "https://github.com/sgl-project/sglang/blob/main/test/lang/example_image.png?raw=true"
+    temperature: 0.6
+  tags:
+    - openai-compatible
+python_version: py310
+docker_server:
+#  start_command: sh -c "vllm serve Qwen/Qwen3-VL-235B-A22B-Instruct-FP8 --tensor-parallel-size 4 --limit-mm-per-prompt.video 0 --async-scheduling --gpu-memory-utilization 0.95 --max-num-seqs 32 --host 0.0.0.0 --port 8000"
+  # start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path Qwen/Qwen3-VL-32B-Instruct-FP8 --trust-remote-code --tp 1 --tool-call-parser qwen --mem-fraction-static 0.8 --host 0.0.0.0 --port 8000 --enable-multimodal"
+  # start_command: sh -c "GPU_COUNT=\$(nvidia-smi --list-gpus | wc -l); HF_TOKEN=\$(cat /secrets/hf_access_token) python3 -m sglang.launch_server --model-path Qwen/Qwen3-VL-32B-Instruct-FP8 --trust-remote-code --tp \$GPU_COUNT --tool-call-parser qwen --mem-fraction-static 0.8 --host 0.0.0.0 --port 8000 --enable-multimodal"
+  start_command: >
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l);
+      python3 -m sglang.launch_server \
+        --model-path Qwen/Qwen3-VL-32B-Instruct-FP8 \
+        --trust-remote-code \
+        --tp $GPU_COUNT \
+        --tool-call-parser qwen \
+        --mem-fraction-static 0.8 \
+        --kv-cache-dtype fp8_e5m2 \
+        --host 0.0.0.0 \
+        --port 8000 \
+        --enable-multimodal'
+
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: B200:2
+  use_gpu: true
+runtime:
+  predict_concurrency : 24
+model_name: Qwen3-VL-30B-A3B-Instruct-FP8
+environment_variables:
+  hf_access_token: null
+system_packages:
+  - libsm6
+  - libxext6
+  - libnuma-dev
