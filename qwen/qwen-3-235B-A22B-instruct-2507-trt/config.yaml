@@ -51,4 +51,4 @@ trt_llm:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
   version_overrides:
-    v2_llm_version: trtllm-gpu-1.2.0rc0-30f65c3c-451c407f08
+    v2_llm_version: null
