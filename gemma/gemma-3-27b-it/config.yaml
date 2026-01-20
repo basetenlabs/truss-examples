@@ -37,7 +37,6 @@ docker_server:
   server_port: 8000
 environment_variables:
   VLLM_LOGGING_LEVEL: INFO
-  hf_access_token: null
 model_cache:
   - repo_id: google/gemma-3-27b-it
     revision: 005ad3404e59d6023443cb575daa05336842228a
