@@ -57,4 +57,5 @@ runtime:
     restart_threshold_seconds: 300       # Triggers a restart if health checks fail for 5 minutes
     stop_traffic_threshold_seconds: 120  # Stops traffic if health checks fail for 2 minutes
   predict_concurrency : 8
+  truss_server_version_override: "0.11.4"
 model_name: Gemma 27B Instruct
