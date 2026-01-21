@@ -1,4 +1,4 @@
-model_name: GLM47 TRT
+model_name: GLM47 BISLLM
 python_version: py39
 resources:
   accelerator: B200:4
@@ -8,7 +8,7 @@ resources:
 model_metadata:
   example_model_input:
     {
-      "model": "deepseek-ai/DeepSeek-V3-0324",
+      "model": "glm47",
       "messages":
         [
           {
@@ -20,10 +20,17 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
+model_cache:
+  - repo_id: baseten-admin/glm-4.7-fp4
+    revision: main
+    use_volume: true
+    volume_folder: glm47
+    runtime_secret_name: "hf_access_token"
 trt_llm:
   build:
     checkpoint_repository:
-      repo: baseten-admin/glm-4.7-fp4
+      # repo: baseten-admin/glm-4.7-fp4
+      repo: michaelfeil/empty-model
       revision: main
       source: HF
   inference_stack: v2
@@ -49,3 +56,4 @@ trt_llm:
         enable_padding: false
       enable_iter_perf_stats: true
       autotuner_enabled: false
+      model_path: /app/model_cache/glm47
