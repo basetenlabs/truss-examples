@@ -1,4 +1,4 @@
-model_name: DeepSeek-V3-0324 TRT
+model_name: DeepSeek-V3-0324 BISLLM
 python_version: py39
 resources:
   accelerator: B200:8

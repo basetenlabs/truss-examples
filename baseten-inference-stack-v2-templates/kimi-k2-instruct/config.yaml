@@ -1,4 +1,4 @@
-model_name: Kimi K2 Instruct
+model_name: Kimi K2 Instruct BISLLM
 python_version: py39
 resources:
   accelerator: B200:4

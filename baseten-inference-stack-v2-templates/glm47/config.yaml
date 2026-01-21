@@ -1,14 +1,14 @@
-model_name: LLama-4-maverick-h100 BISLLM
+model_name: GLM47 TRT
 python_version: py39
 resources:
-  accelerator: H100:8
+  accelerator: B200:4
   cpu: "1"
   memory: 10Gi
   use_gpu: true
 model_metadata:
   example_model_input:
     {
-      "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+      "model": "deepseek-ai/DeepSeek-V3-0324",
       "messages":
         [
           {
@@ -20,41 +20,32 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
-model_cache:
-  - repo_id: nvidia/Llama-4-Maverick-17B-128E-Instruct-FP8
-    revision: main
-    use_volume: true
-    volume_folder: llama
-    runtime_secret_name: "hf_access_token"
-    kind: "hf"
 trt_llm:
   build:
     checkpoint_repository:
-      repo: michaelfeil/empty-model
+      repo: baseten-admin/glm-4.7-fp4
       revision: main
       source: HF
   inference_stack: v2
   runtime:
     enable_chunked_prefill: true
-    max_batch_size: 16
+    max_batch_size: 64
     max_num_tokens: 8192
-    max_seq_len: 340000
-    tensor_parallel_size: 8
-    served_model_name: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+    max_seq_len: 202752
+    tensor_parallel_size: 4
+    served_model_name: glm47
     patch_kwargs:
-      enable_trtllm_sampler: True
+      disable_overlap_scheduler: True
       guided_decoding_backend: "xgrammar"
       moe_expert_parallel_size: 4
-
+      moe_config:
+        use_low_precision_moe_combine: true
+        backend: TRTLLM
       kv_cache_config:
         free_gpu_memory_fraction: 0.8
         enable_block_reuse: true
-
+        # host_cache_size: 100000000000
       cuda_graph_config:
-        padding_enabled: true
-      enable_iter_perf_stats: false
+        enable_padding: false
+      enable_iter_perf_stats: true
       autotuner_enabled: false
-      tool_call_parser: pythonic
-
-      # model cache
-      model_path: /app/model_cache/llama
