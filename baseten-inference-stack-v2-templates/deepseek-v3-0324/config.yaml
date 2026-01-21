@@ -6,18 +6,20 @@ resources:
   memory: 10Gi
   use_gpu: true
 model_metadata:
-  example_model_input: {
-    "model": "deepseek-ai/DeepSeek-V3-0324",
-    "messages": [
-      {
-      "role": "user",
-      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
-      }
-    ],
-    "stream": true,
-    "max_tokens": 2048,
-    "temperature": 0.5
-  }
+  example_model_input:
+    {
+      "model": "deepseek-ai/DeepSeek-V3-0324",
+      "messages":
+        [
+          {
+            "role": "user",
+            "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:",
+          },
+        ],
+      "stream": true,
+      "max_tokens": 2048,
+      "temperature": 0.5,
+    }
 trt_llm:
   build:
     checkpoint_repository:
@@ -45,7 +47,7 @@ trt_llm:
         enable_block_reuse: true
 
       cuda_graph_config:
-        padding_enabled: true
+        enable_padding: false
       enable_iter_perf_stats: false
       autotuner_enabled: false
       tool_call_parser: deepseekv3
