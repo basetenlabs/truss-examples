@@ -59,5 +59,4 @@ trt_llm:
     served_model_name: openai/gpt-oss-120b
     tensor_parallel_size: 1
   version_overrides:
-    # Use truss == 0.10.5
-    v2_llm_version: trtllm-gpu-1.1.0rc0-6489f859-00df817e93
+    v2_llm_version: null
