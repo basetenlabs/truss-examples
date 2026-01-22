@@ -130,7 +130,7 @@ print(completion.choices[0].message.tool_calls)
 
 
 ## Config.yaml
-By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
+By default, the following configuration is used for this deployment. This config uses `quantization_type=fp8_kv`. This is optional, remove the `quantization_type` field or set it to `no_quant` for float16/bfloat16.
 
 ```yaml
 model_metadata:
@@ -159,10 +159,11 @@ trt_llm:
       source: HF
     max_seq_len: 40960
     num_builder_gpus: 4
-    quantization_type: fp8
+    plugin_configuration:
+      use_fp8_context_fmha: true
+    quantization_type: fp8_kv
     tensor_parallel_count: 1
   runtime:
-    batch_scheduler_policy: max_utilization
     enable_chunked_context: true
 
 ```

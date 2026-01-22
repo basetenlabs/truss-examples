@@ -1576,7 +1576,9 @@ DEPLOYMENTS_BRITON = [
         Accelerator.H100,
         TextGen(),
         solution=Briton(
-            trt_config=llamalike_config(repoid="meta-llama/Llama-3.3-70B-Instruct")
+            trt_config=llamalike_config(
+                repoid="meta-llama/Llama-3.3-70B-Instruct", tp=2
+            )
         ),
     ),
     Deployment(
@@ -1757,24 +1759,37 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config(
                 repoid="Qwen/Qwen3-30B-A3B",
                 tp=1,
-                quant=TrussTRTLLMQuantizationType.FP8,
-                batch_scheduler_policy="max_utilization",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
             )
         ),
     ),
-    # Deployment(
-    #     "Qwen/Qwen3-30B-A3B",
-    #     "Qwen/Qwen3-30B-A3B",
-    #     Accelerator.B200,
-    #     TextGen(),
-    #     solution=BISV2(
-    #         trt_config=llamalike_config_v2(
-    #             repoid="Qwen/Qwen3-30B-A3B",
-    #             quant=TrussTRTLLMQuantizationType.FP8,
-    #             calib_size=4096,
-    #         )
-    #     ),
-    # ),
+    Deployment(
+        "Qwen/Qwen3-30B-A3B",
+        "Qwen/Qwen3-30B-A3B",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-30B-A3B",
+                tp=2,
+                quant=TrussTRTLLMQuantizationType.NO_QUANT,
+            )
+        ),
+    ),
+    # Qwen/Qwen3-30B-A3B-Instruct-2507
+    Deployment(
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_config(
+                repoid="Qwen/Qwen3-30B-A3B-Instruct-2507",
+                tp=1,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
     Deployment(
         "Qwen/Qwen3-32B",
         "Qwen/Qwen3-32B",

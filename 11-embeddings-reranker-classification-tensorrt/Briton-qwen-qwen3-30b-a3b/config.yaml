@@ -9,7 +9,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: Briton-meta-llama-llama-3.3-70b-instruct-fp8-truss-example
+model_name: Briton-qwen-qwen3-30b-a3b-truss-example
 python_version: py39
 resources:
   accelerator: H100:2
@@ -20,13 +20,11 @@ trt_llm:
   build:
     base_model: decoder
     checkpoint_repository:
-      repo: meta-llama/Llama-3.3-70B-Instruct
+      repo: Qwen/Qwen3-30B-A3B
       revision: main
       source: HF
-    max_seq_len: 131072
-    plugin_configuration:
-      use_fp8_context_fmha: true
-    quantization_type: fp8_kv
+    max_seq_len: 40960
+    quantization_type: no_quant
     tensor_parallel_count: 2
   runtime:
     enable_chunked_context: true
