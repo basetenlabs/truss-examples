@@ -19,7 +19,7 @@ build_commands:
   - pip install git+https://github.com/huggingface/transformers.git@76732b4e7120808ff989edbd16401f61fa6a0afa
 
 docker_server:
-  start_command: python3 -m sglang.launch_server --model-path zai-org/GLM-4.7-Flash --tp-size 2 --tool-call-parser glm47 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.8 --served-model-name zai-org/GLM-4.7-Flash --host 0.0.0.0 --port 8000 --batch-size 32
+  start_command: python3 -m sglang.launch_server --model-path zai-org/GLM-4.7-Flash --tp-size 2 --tool-call-parser glm47 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.8 --served-model-name zai-org/GLM-4.7-Flash --host 0.0.0.0 --port 8000
   readiness_endpoint: /health_generate
   liveness_endpoint: /health_generate
   predict_endpoint: /v1/chat/completions
