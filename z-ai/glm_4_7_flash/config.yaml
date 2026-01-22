@@ -34,4 +34,4 @@ resources:
 runtime:
   predict_concurrency : 256
 
-model_name: llm_as_judge
+model_name: GLM 4.7 Flash
