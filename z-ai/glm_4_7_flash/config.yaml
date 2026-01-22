@@ -28,6 +28,6 @@ resources:
   accelerator: H100:2
   use_gpu: true
 runtime:
-  predict_concurrency : 256
+  predict_concurrency : 32
 
 model_name: GLM 4.7 Flash
