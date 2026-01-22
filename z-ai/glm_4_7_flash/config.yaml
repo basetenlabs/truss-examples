@@ -24,10 +24,6 @@ docker_server:
   liveness_endpoint: /health_generate
   predict_endpoint: /v1/chat/completions
   server_port: 8000
-system_packages:
-- tmux
-- htop
-- nload
 resources:
   accelerator: H100:2
   use_gpu: true
