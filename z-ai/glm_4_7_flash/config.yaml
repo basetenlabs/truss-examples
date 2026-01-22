@@ -1,0 +1,33 @@
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "What is the meaning of life?"
+    stream: true
+    model: zai-org/GLM-4.7-Flash
+    max_tokens: 32768
+    temperature: 0.7
+  tags:
+    - openai-compatible
+base_image:
+  image: lmsysorg/sglang:nightly-dev-20260122-e6ccb294
+
+build_commands:
+  - pip uninstall -y transformers
+  - pip install git+https://github.com/huggingface/transformers.git@76732b4e7120808ff989edbd16401f61fa6a0afa
+
+docker_server:
+  start_command: python3 -m sglang.launch_server --model-path zai-org/GLM-4.7-Flash --tp-size 2 --tool-call-parser glm47 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.8 --served-model-name zai-org/GLM-4.7-Flash --host 0.0.0.0 --port 8000
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:2
+  use_gpu: true
+runtime:
+  predict_concurrency : 32
+
+model_name: GLM 4.7 Flash
