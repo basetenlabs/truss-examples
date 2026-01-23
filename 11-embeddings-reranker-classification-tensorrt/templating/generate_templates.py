@@ -1421,12 +1421,30 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
     ),
 ]
 DEPLOYMENTS_BEI_BERT = []
+DEPLOYMENTS_BEI_BERT_NATIVE = [
+    Deployment(  # qwen 3 bidrectional.
+        "voyageai/voyage-4-nano",
+        "voyageai/voyage-4-nano",
+        Accelerator.L4,
+        Embedder(),
+        solution=BEIBert(),
+    ),
+    Deployment(  # qwen 3 bidrectional.
+        "nvidia/llama-embed-nemotron-8b",
+        "nvidia/llama-embed-nemotron-8b",
+        Accelerator.H100,
+        Embedder(),
+        solution=BEIBert(),
+    ),
+]
+
 for dep in DEPLOYMENTS_HFTEI:
     dep = copy.deepcopy(dep)
     dep.solution = BEIBert()
     if dep.accelerator == Accelerator.T4:
         dep.accelerator = Accelerator.L4
     DEPLOYMENTS_BEI_BERT.append(dep)
+DEPLOYMENTS_BEI_BERT.extend(DEPLOYMENTS_BEI_BERT_NATIVE)
 
 
 def llamalike_config(
