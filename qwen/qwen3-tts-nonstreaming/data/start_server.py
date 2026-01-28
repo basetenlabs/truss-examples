@@ -34,6 +34,5 @@ sys.exit(subprocess.call([
     "--port", "8000",
     "--gpu-memory-utilization", "0.9",
     "--trust-remote-code",
-    "--enforce-eager",
     "--omni"
 ]))
