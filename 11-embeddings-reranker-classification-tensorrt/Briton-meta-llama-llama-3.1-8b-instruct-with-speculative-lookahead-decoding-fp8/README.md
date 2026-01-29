@@ -158,8 +158,8 @@ trt_llm:
       revision: main
       source: HF
     max_batch_size: 64
-    max_num_tokens: 32768
-    max_seq_len: 32768
+    max_num_tokens: 131072
+    max_seq_len: 131072
     num_builder_gpus: 4
     plugin_configuration:
       use_fp8_context_fmha: true
@@ -173,7 +173,7 @@ trt_llm:
       speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
-    enable_chunked_context: false
+    enable_chunked_context: true
 
 ```
 

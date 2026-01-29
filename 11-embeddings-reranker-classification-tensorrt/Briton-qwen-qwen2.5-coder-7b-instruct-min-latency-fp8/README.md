@@ -174,7 +174,7 @@ trt_llm:
       speculative_decoding_mode: LOOKAHEAD_DECODING
     tensor_parallel_count: 1
   runtime:
-    enable_chunked_context: false
+    enable_chunked_context: true
 
 ```
 
