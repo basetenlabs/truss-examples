@@ -1,0 +1,43 @@
+model_metadata:
+  example_model_input:
+    stream: false
+    messages:
+      - role: user
+        content:
+          - type: audio_url
+            audio_url:
+              url: https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-ASR-Repo/asr_en.wav
+  tags:
+    - openai-compatible
+model_name: Qwen3-ASR-1.7B
+secrets:
+  hf_access_token: null
+base_image:
+  image:  vllm/vllm-openai:nightly-070c811d6f74c55302557878f5982411a3346b4d
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100_40GB:1
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+requirements:
+  - --pre --extra-index-url https://wheels.vllm.ai/nightly
+  - vllm[audio]
+  - librosa
+  - torch
+  - torchaudio
+  - pynvml
+  - ffmpeg-python
+system_packages:
+  - python3.10-venv
+  - ffmpeg
+  - openmpi-bin
+  - libopenmpi-dev
+runtime:
+  predict_concurrency: 256
+
