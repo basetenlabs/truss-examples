@@ -1,0 +1,22 @@
+description: Speech-to-speech model powered by NVIDIA Personaplex
+base_image:
+  image: basetenservice/personaplex-7v:fork
+model_metadata:
+  repo_id: nvidia/personaplex-7b-v1
+  tags:
+    - speech-to-speech
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m moshi.server --host 0.0.0.0 --port 8998"
+  readiness_endpoint: /
+  liveness_endpoint: /
+  predict_endpoint: /api/chat
+  server_port: 8998
+resources:
+  accelerator: H100
+  use_gpu: true
+model_name: Personaplex 7V H100
+secrets:
+  hf_access_token: null
+runtime:
+  transport:
+    kind: websocket

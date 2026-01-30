@@ -1,0 +1,4 @@
+websockets>=12.0
+numpy
+sphn>=0.1.4,<0.2
+sounddevice
