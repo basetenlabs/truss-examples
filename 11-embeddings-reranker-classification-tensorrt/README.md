@@ -45,6 +45,7 @@ You can find the following deployments in this repository:
  - [nomic-ai/nomic-embed-text-v1.5-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-nomic-ai-nomic-embed-text-v1.5)
  - [nomic-ai/nomic-embed-text-v2-moe-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-nomic-ai-nomic-embed-text-v2-moe)
  - [nvidia/llama-embed-nemotron-8b-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-nvidia-llama-embed-nemotron-8b)
+ - [nvidia/llama-nemotron-embed-1b-v2-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-nvidia-llama-nemotron-embed-1b-v2)
  - [redis/langcache-embed-v2-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-redis-langcache-embed-v2)
  - [sentence-transformers/all-MiniLM-L6-v2-embedding-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-sentence-transformers-all-minilm-l6-v2-embedding)
  - [voyageai/voyage-4-nano-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-voyageai-voyage-4-nano)

@@ -1435,6 +1435,13 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         Embedder(),
         solution=BEIBert(),
     ),
+    Deployment(  # qwen 3 bidrectional.
+        "nvidia/llama-nemotron-embed-1b-v2",
+        "nvidia/llama-nemotron-embed-1b-v2",
+        Accelerator.H100,
+        Embedder(),
+        solution=BEIBert(),
+    ),
 ]
 
 for dep in DEPLOYMENTS_HFTEI:
