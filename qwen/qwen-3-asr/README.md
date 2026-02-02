@@ -49,4 +49,3 @@ print(response.choices[0].message.content)
 Response: language English<asr_text>Uh huh. Oh yeah, yeah. He wasn't even that big when I started listening to him, but and his solo music didn't do overly well, but he did very well when he started writing for other people.
 
 ```
-
