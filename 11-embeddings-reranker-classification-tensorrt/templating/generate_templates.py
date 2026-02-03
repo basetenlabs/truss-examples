@@ -1567,7 +1567,7 @@ def llamalike_config_v2(
 
     if calib_size is not None:
         build_kwargs["quantization_config"] = dict(calib_size=calib_size)
-    
+
     if calib_dataset is not None:
         if "quantization_config" not in build_kwargs:
             build_kwargs["quantization_config"] = dict()
