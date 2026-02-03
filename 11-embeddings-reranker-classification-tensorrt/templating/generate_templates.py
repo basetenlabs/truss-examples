@@ -1559,6 +1559,7 @@ def llamalike_config_v2(
     repoid="meta-llama/Llama-3.3-70B-Instruct",
     max_batch_size: int = 32,
     calib_size: Optional[int] = None,
+    calib_dataset: str = None,
 ):
     # config for meta-llama/Llama-3.3-70B-Instruct (FP8)
     build_kwargs = dict()
@@ -1566,6 +1567,11 @@ def llamalike_config_v2(
 
     if calib_size is not None:
         build_kwargs["quantization_config"] = dict(calib_size=calib_size)
+    
+    if calib_dataset is not None:
+        if "quantization_config" not in build_kwargs:
+            build_kwargs["quantization_config"] = dict()
+        build_kwargs["quantization_config"].update(dict(calib_dataset=calib_dataset))
 
     config = TRTLLMConfigurationV2(
         build=TrussTRTLLMBuildConfiguration(
@@ -1630,6 +1636,19 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "meta-llama/Llama-3.3-70B-Instruct-calib-dataset",
+        "meta-llama/Llama-3.3-70B-Instruct",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="meta-llama/Llama-3.3-70B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP4,
+                calib_dataset="baseten/quant_calibration_dataset_v1",
+            )
+        ),
+    ),
+    Deployment(
         "meta-llama/Llama-3.3-70B-Instruct-tp4",
         "meta-llama/Llama-3.3-70B-Instruct",
         Accelerator.H100,
@@ -1663,6 +1682,19 @@ DEPLOYMENTS_BRITON = [
                 repoid="meta-llama/Llama-3.2-3B-Instruct",
                 tp=1,
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "meta-llama/Llama-3.2-3B-Instruct-calib-dataset",
+        "meta-llama/Llama-3.2-3B-Instruct",
+        Accelerator.H100_40GB,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="meta-llama/Llama-3.2-3B-Instruct",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                calib_dataset="baseten/quant_calibration_dataset_v1",
             )
         ),
     ),
@@ -1869,6 +1901,19 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-32B",
+        "Qwen/Qwen3-32B",
+        Accelerator.B200,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-32B",
+                quant=TrussTRTLLMQuantizationType.FP4_MLP_ONLY,
+                calib_dataset="baseten/quant_calibration_dataset_v1",
+            )
+        ),
+    ),
+    Deployment(
         "Qwen/Qwen3-4B",
         "Qwen/Qwen3-4B",
         Accelerator.H100,
@@ -1877,6 +1922,19 @@ DEPLOYMENTS_BRITON = [
             trt_config=llamalike_config_v2(
                 repoid="Qwen/Qwen3-4B",
                 quant=TrussTRTLLMQuantizationType.FP8_KV,
+            )
+        ),
+    ),
+    Deployment(
+        "Qwen/Qwen3-4B-calib-dataset",
+        "Qwen/Qwen3-4B",
+        Accelerator.H100,
+        TextGen(),
+        solution=BISV2(
+            trt_config=llamalike_config_v2(
+                repoid="Qwen/Qwen3-4B",
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                calib_dataset="baseten/quant_calibration_dataset_v1",
             )
         ),
     ),
