@@ -1,0 +1,50 @@
+model_name: gpt-oss-120b
+
+base_image:
+  image: vllm/vllm-openai:v0.12.0
+
+# Pull Harmony/tiktoken vocab during build so runtime doesn't need network for this.
+build_commands:
+  - mkdir -p /opt/tiktoken
+  - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken -o /opt/tiktoken/o200k_base.tiktoken
+  - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken -o /opt/tiktoken/cl100k_base.tiktoken
+
+resources:
+  accelerator: B200:4
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 256
+
+environment_variables:
+  VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
+
+  # Harmony vocab location (avoids runtime download) :contentReference[oaicite:6]{index=6}
+  TIKTOKEN_ENCODINGS_BASE: "/opt/tiktoken"
+  TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"
+
+docker_server:
+  server_port: 8000
+
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+
+  start_command: >-
+    bash -lc '
+      exec vllm serve openai/gpt-oss-120b
+        --host 0.0.0.0
+        --port 8000
+        --served-model-name gpt-oss-120b
+        --tensor-parallel-size 4
+        --gpu-memory-utilization 0.95
+        --max-model-len 8192
+        --max-num-batched-tokens 8192
+        --max-num-seqs 256
+        --cuda-graph-capture-size 2048
+        --stream-interval 20
+        --kv-cache-dtype fp8
+        --compilation-config "{\"pass_config\":{\"fuse_allreduce_rms\":true,\"eliminate_noops\":true}}"
+        --async-scheduling
+        --trust-remote-code
+    '
