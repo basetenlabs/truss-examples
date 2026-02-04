@@ -1,0 +1,52 @@
+# Qwen3-TTS via vLLM-Omni
+# Serves OpenAI-compatible /v1/audio/speech
+#
+# Docs: https://docs.vllm.ai/projects/vllm-omni/en/latest/user_guide/examples/online_serving/qwen3_tts/
+
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: "1"
+  # Skip torchaudio CUDA version check (use at own risk)
+  TORCHAUDIO_USE_BACKEND_DISPATCHER: "1"
+
+model_cache:
+  - repo_id: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+    revision: main
+    volume_folder: Qwen3-TTS-12Hz-1.7B-CustomVoice
+    use_volume: true
+
+model_name: Qwen3 TTS Base (vLLM-Omni)
+
+python_version: py312
+
+base_image:
+  image: baseten/truss-server-base:3.12-gpu-v0.12.0
+
+build_commands: 
+  - python3 -m pip install qwen-tts
+  - python3 -m pip install git+https://github.com/iancarrasco-b10/vllm-omni.git
+
+docker_server:
+  start_command: sh -c "truss-transfer-cli && chmod +x /app/data/start_server.sh && /app/data/start_server.sh"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/audio/speech
+  server_port: 8000
+
+resources:
+  accelerator: H100
+  cpu: "4"
+  memory: 32Gi
+  use_gpu: true
+
+secrets:
+  hf_access_token: null
+
+system_packages:
+  - git
+  - ffmpeg
+  - libsndfile1
+  - sox
+  - libsox-fmt-all
+
+runtime:
+  predict_concurrency: 64

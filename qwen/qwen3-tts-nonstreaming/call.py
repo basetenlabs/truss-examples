@@ -34,13 +34,16 @@ Examples:
 import argparse
 import base64
 import os
+import time
+import wave
 
 import httpx
 
-DEFAULT_API_URL_CUSTOM_VOICE = "<CUSTOM_VOICE_API_URL>"  # Custom Voice https://model-....api.baseten.co/deployment/.../sync/
-DEFAULT_API_URL_VOICE_DESIGN = "<VOICE_DESIGN_API_URL>"  # Voice Design https://model-....api.baseten.co/deployment/.../sync/
-DEFAULT_API_URL_BASE = "<BASE_API_URL>"  # Voice Clone https://model-....api.baseten.co/deployment/.../sync/
-DEFAULT_API_KEY = os.environ.get("BASETEN_API_KEY", "")
+DEFAULT_API_URL_CUSTOM_VOICE = "https://model-7wl4ke2q.api.baseten.co/deployment/qrjd810/sync/" # Custom Voice
+DEFAULT_API_URL_VOICE_DESIGN = "https://model-owpk9dlq.api.baseten.co/deployment/qzkp86x/sync/" # Voice Design
+DEFAULT_API_URL_BASE = "https://model-5qeo5jp3.api.baseten.co/deployment/31dym71/sync/" # Voice Clone
+
+DEFAULT_API_KEY = 'uSg8UrUY.qfCGcX909lv45Xnnb2zjtk1v4CjTChhW'
 
 def encode_audio_to_base64(audio_path: str) -> str:
     """Encode a local audio file to base64 data URL."""
@@ -157,8 +160,12 @@ def run_tts_generation(args) -> None:
         "Authorization": f"Api-Key {args.api_key}",
     }
 
+    start_time = time.time()
     with httpx.Client(timeout=300.0) as client:
         response = client.post(api_url, json=payload, headers=headers)
+    end_time = time.time()
+    
+    processing_time = end_time - start_time
 
     if response.status_code != 200:
         print(f"Error: {response.status_code}")
@@ -170,6 +177,21 @@ def run_tts_generation(args) -> None:
     with open(output_path, "wb") as f:
         f.write(response.content)
     print(f"Audio saved to: {output_path}")
+    
+    # Compute RTF (Real-Time Factor)
+    try:
+        with wave.open(output_path, 'rb') as wav_file:
+            frames = wav_file.getnframes()
+            sample_rate = wav_file.getframerate()
+            audio_duration = frames / sample_rate
+        
+        rtf = processing_time / audio_duration
+        print(f"\n--- Performance Metrics ---")
+        print(f"Processing time: {processing_time:.3f}s")
+        print(f"Audio duration:  {audio_duration:.3f}s")
+        print(f"RTF:             {rtf:.3f} ({'faster' if rtf < 1 else 'slower'} than real-time)")
+    except Exception as e:
+        print(f"Could not compute RTF: {e}")
 
 
 def parse_args():
