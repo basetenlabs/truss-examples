@@ -1,7 +1,6 @@
 import asyncio
 import base64
 import json
-import os
 import signal
 
 import numpy as np
@@ -9,14 +8,17 @@ import sounddevice as sd
 import websockets
 
 SAMPLE_RATE = 16_000
-CHUNK_MS = 100                       # send 100ms chunks
+CHUNK_MS = 100  # send 100ms chunks
 CHUNK_SAMPLES = int(SAMPLE_RATE * CHUNK_MS / 1000)
 
-WS_URL = "wss://model-4q9yn803.api.baseten.co/environments/production/websocket"
+model_id = ""  # Place model id here
+BASETEN_API_KEY = ""  # Baseten API key here
+
+WS_URL = f"wss://model-{model_id}.api.baseten.co/environments/production/websocket"
 MODEL = "mistralai/Voxtral-Mini-4B-Realtime-2602"
 
-WARMUP_SECONDS = 2.0                 # optional
-SEND_COMMIT_EVERY_N_CHUNKS = 10      # optional: commit about once per second
+WARMUP_SECONDS = 2.0  # optional
+SEND_COMMIT_EVERY_N_CHUNKS = 10  # optional: commit about once per second
 
 
 def pcm16_to_b64(pcm16: np.ndarray) -> str:
@@ -30,10 +32,14 @@ async def send_warmup_silence(ws):
 
     for i in range(0, total, CHUNK_SAMPLES):
         chunk = silence[i : i + CHUNK_SAMPLES]
-        await ws.send(json.dumps({
-            "type": "input_audio_buffer.append",
-            "audio": pcm16_to_b64(chunk),
-        }))
+        await ws.send(
+            json.dumps(
+                {
+                    "type": "input_audio_buffer.append",
+                    "audio": pcm16_to_b64(chunk),
+                }
+            )
+        )
         await asyncio.sleep(CHUNK_MS / 1000)
 
 
@@ -76,10 +82,14 @@ async def send_audio(ws, audio_q: asyncio.Queue, stop_event: asyncio.Event):
         except asyncio.TimeoutError:
             continue
 
-        await ws.send(json.dumps({
-            "type": "input_audio_buffer.append",
-            "audio": pcm16_to_b64(pcm16),
-        }))
+        await ws.send(
+            json.dumps(
+                {
+                    "type": "input_audio_buffer.append",
+                    "audio": pcm16_to_b64(pcm16),
+                }
+            )
+        )
 
         n += 1
         if n % SEND_COMMIT_EVERY_N_CHUNKS == 0:
@@ -116,14 +126,17 @@ async def main():
     signal.signal(signal.SIGINT, request_stop)
     signal.signal(signal.SIGTERM, request_stop)
 
-    async with websockets.connect(WS_URL, extra_headers={"Authorization": f"Api-Key {BASETEN-API-KEY}"}) as ws:
+    async with websockets.connect(
+        WS_URL, extra_headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"}
+    ) as ws:
         # Some servers send an initial "hello"/ack; we can just try to read once (non-fatal if it times out)
         try:
             _ = await asyncio.wait_for(ws.recv(), timeout=2)
         except Exception:
             pass
 
-        print("\n🎙️  WebSocket connection established — you can speak into the mic now...\n")
+        print("[Connection established]")
+        print("Start speaking 🎙️...")
 
         # Configure session/model
         await ws.send(json.dumps({"type": "session.update", "model": MODEL}))

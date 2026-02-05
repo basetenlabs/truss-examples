@@ -36,4 +36,3 @@ runtime:
     kind: websocket
     ping_interval_seconds: null
     ping_timeout_seconds: null
-
