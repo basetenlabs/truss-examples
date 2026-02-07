@@ -1775,6 +1775,21 @@ DEPLOYMENTS_BRITON = [
         ),
     ),
     Deployment(
+        "Qwen/Qwen3-235B-A22B-Instruct-2507",
+        "Qwen/Qwen3-235B-A22B-Instruct-2507",
+        Accelerator.H100,
+        TextGen(),
+        solution=Briton(
+            trt_config=llamalike_lookahead(
+                repoid="Qwen/Qwen3-235B-A22B-Instruct-2507",
+                tp=8,
+                quant=TrussTRTLLMQuantizationType.FP8_KV,
+                use_dynamic_lengths=True,
+                batch_scheduler_policy="max_utilization",
+            )
+        ),
+    ),
+    Deployment(
         "Qwen/Qwen3-30B-A3B",
         "Qwen/Qwen3-30B-A3B",
         Accelerator.H100,
