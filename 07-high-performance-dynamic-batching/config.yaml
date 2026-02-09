@@ -11,7 +11,7 @@ requirements:
   - tiktoken==0.6.0
   - datasets==2.17.1
   - kaldialign==0.9
-  - openai-whisper==20231117
+  - openai-whisper==20250625
   - soundfile==0.12.1
 model_cache:
   - repo_id: baseten/trtllm-whisper-a10g-large-v2-1
