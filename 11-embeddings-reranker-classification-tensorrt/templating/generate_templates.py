@@ -1164,6 +1164,13 @@ DEPLOYMENTS_BEI = [
         solution=BEI(make_fp8=True),
     ),
     Deployment(
+        "codefuse-ai/F2LLM-4B-embedding",
+        "codefuse-ai/F2LLM-4B",
+        Accelerator.H100,
+        Embedder(),
+        solution=BEI(make_fp8=True),
+    ),
+    Deployment(
         "BAAI/bge-en-icl-embedding",
         "BAAI/bge-en-icl",
         Accelerator.H100,

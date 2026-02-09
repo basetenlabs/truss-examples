@@ -33,6 +33,7 @@ You can find the following deployments in this repository:
  - [Snowflake/snowflake-arctic-embed-l-v2.0-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-snowflake-snowflake-arctic-embed-l-v2.0)
  - [TaylorAI/bge-micro-v2-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-taylorai-bge-micro-v2)
  - [WhereIsAI/UAE-Large-V1-embedding-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-whereisai-uae-large-v1-embedding)
+ - [codefuse-ai/F2LLM-4B-embedding-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-codefuse-ai-f2llm-4b-embedding-fp8)
  - [google/embeddinggemma-300m-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-google-embeddinggemma-300m)
  - [intfloat/e5-mistral-7b-instruct-embedding-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-intfloat-e5-mistral-7b-instruct-embedding-fp8)
  - [intfloat/multilingual-e5-large-instruct-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-intfloat-multilingual-e5-large-instruct)
