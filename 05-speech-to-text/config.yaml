@@ -4,7 +4,7 @@ model_metadata:
 model_name: Whisper
 python_version: py39
 requirements:
-- openai-whisper==20230918
+- openai-whisper==20250625
 - torch==2.0.1
 - numpy==1.26.4
 resources:

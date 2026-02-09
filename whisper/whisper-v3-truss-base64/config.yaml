@@ -13,7 +13,7 @@ model_name: Whisper V3 Base64 Input
 python_version: py310
 requirements:
 - torch==2.0.1
-- openai-whisper==20231106
+- openai-whisper==20250625
 resources:
   accelerator: T4
   cpu: '3'

@@ -21,7 +21,7 @@ class WhisperModel(chains.ChainletBase):
             apt_requirements=[
                 "ffmpeg",
             ],
-            pip_requirements=["torch==2.0.1", "openai-whisper==20231106"],
+            pip_requirements=["torch==2.0.1", "openai-whisper==20250625"],
         ),
         compute=chains.Compute(gpu="T4", cpu_count=2, memory="16Gi"),
         assets=chains.Assets(

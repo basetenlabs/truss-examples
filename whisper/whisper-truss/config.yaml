@@ -15,7 +15,7 @@ model_metadata:
 model_name: Whisper
 python_version: py39
 requirements:
-- openai-whisper==20230314
+- openai-whisper==20250625
 - torch==2.0.1
 resources:
   accelerator: A10G
