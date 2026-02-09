@@ -673,6 +673,142 @@ OpenAI.com does not have a rerank endpoint, therefore no client library is avail
 
 
 @dataclasses.dataclass
+class NER(Task):
+    purpose: str = (
+        " is a Named Entity Recognition (NER) model, used to identify and classify named entities in text. \\n"
+        "It is frequently used for information extraction, entity linking, and document analysis. Common entities include persons, organizations, locations, dates, and more."
+    )
+    model_identification: str = (
+        "Suitable models can be identified by the `ForTokenClassification` suffix in the model name. "
+        "NER models classify each token in the input text into entity categories (e.g., PER, ORG, LOC) or 'O' (outside any entity)."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: dict(
+            example_model_input={
+                "inputs": [
+                    ["Apple is looking at buying U.K. startup for $1 billion"],
+                    ["John works at Google in Mountain View, California"],
+                ],
+                "raw_scores": True,
+                "truncate": True,
+                "truncation_direction": "Right",
+            }
+        )
+    )
+    client_usage: str = r"""
+### API-Schema:
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict_tokens`
+```json
+{
+  "inputs": ["Apple is looking at buying U.K. startup for $1 billion"],
+  "raw_scores": true,
+  "truncate": true,
+  "truncation_direction": "Right"
+}
+```
+
+### Baseten Performance Client
+
+```bash
+pip install baseten-performance-client
+```
+
+```python
+from baseten_performance_client import PerformanceClient
+
+client = PerformanceClient(
+    api_key=os.environ['BASETEN_API_KEY'],
+    base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
+)
+
+response = client.batch_post(
+    route="/predict_tokens",
+    payloads=[{
+        "inputs": [["Apple is looking at buying U.K. startup for $1 billion"]],
+        "raw_scores": False,
+        "truncate": True,
+        "truncation_direction": "Right"
+    }]
+)
+print(response.data)
+```
+
+### Requests python library
+```python
+import requests
+import os
+
+headers = {
+    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
+}
+
+response = requests.post(
+    headers=headers,
+    url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict_tokens",
+    json={
+        "inputs": [["Apple is looking at buying U.K. startup for $1 billion"]],
+        "raw_scores": True,
+        "truncate": True,
+        "truncation_direction": "Right"
+    }
+)
+print(response.json())
+```
+Returns:
+```json
+[
+  [
+    {
+      "token": "[CLS]",
+      "token_id": 101,
+      "start": 0,
+      "end": 0,
+      "results": {
+        "O": 9.4140625,
+        "B-MISC": -1.15625,
+        "I-MISC": -0.859375,
+        "B-PER": -1.2744141,
+        "I-PER": -1.6552734,
+        "B-ORG": -0.88378906,
+        "I-ORG": -0.9345703,
+        "B-LOC": -1.2275391,
+        "I-LOC": -1.4042969
+      }
+    },
+    {
+      "token": "Apple",
+      "token_id": 6207,
+      "start": 0,
+      "end": 5,
+      "results": {
+        "B-ORG": 6.7578125,
+        "O": -1.7929688,
+        "B-LOC": 0.6015625,
+        "B-MISC": 0.2467041,
+        "B-PER": 0.17675781,
+        "I-ORG": -0.6484375,
+        "I-MISC": -1.9873047,
+        "I-LOC": -1.3808594,
+        "I-PER": -2.21875
+      }
+    }
+  ]
+]
+```
+Important, this uses the `predict_tokens` endpoint for token-level classification. The OpenAPI.json is available under https://model-xxxxxx.api.baseten.co/environments/production/sync/openapi.json for more details.
+
+#### Advanced:
+You may also use Baseten's async jobs API, which returns a request_id, which you can use to query the status of the job and get the results.
+
+POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/async/predict_tokens`
+Read more about [Baseten's Async API here](https://docs.baseten.co/invoke/async)
+
+### OpenAI compatible client library
+OpenAI does not have a NER endpoint, therefore no client library is available.
+"""
+
+
+@dataclasses.dataclass
 class Predictor(Task):
     purpose: str = (
         " is a text-classification model, used to classify a text into a category. \\n"
@@ -1449,6 +1585,21 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         Embedder(),
         solution=BEIBert(),
     ),
+    Deployment(
+        name="NER/bert-base-ner-uncased",
+        hf_model_id="baseten-admin/bert-base-ner-uncased",
+        accelerator=Accelerator.L4,
+        task=NER(),
+        solution=BEIBert(),
+    ),
+    # tanaos/tanaos-NER-v1
+    Deployment(
+        name="tanaos/tanaos-NER-v1",
+        hf_model_id="tanaos/tanaos-NER-v1",
+        accelerator=Accelerator.L4,
+        task=NER(),
+        solution=BEIBert(),
+    ),
 ]
 
 for dep in DEPLOYMENTS_HFTEI:
@@ -2200,6 +2351,7 @@ if __name__ == "__main__":
     rerankers_names_fmt = format_filter(ALL_DEPLOYMENTS, Reranker)
     predictors_names_fmt = format_filter(ALL_DEPLOYMENTS, Predictor)
     generation_names_fmt = format_filter(ALL_DEPLOYMENTS, TextGen)
+    ner_names_fmt = format_filter(ALL_DEPLOYMENTS, NER)
 
     readme = f"""
 # Performance Section
@@ -2228,6 +2380,9 @@ You can find the following deployments in this repository:
 
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
+
+## Named Entity Recognition (NER) Deployments:
+{ner_names_fmt}
 
 <sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 <sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)

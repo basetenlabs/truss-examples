@@ -71,6 +71,10 @@ You can find the following deployments in this repository:
  - [mixedbread-ai/mxbai-rerank-large-v2-reranker-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8)
  - [papluca/xlm-roberta-base-language-detection-classification-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification)
 
+## Named Entity Recognition (NER) Deployments:
+ - [NER/bert-base-ner-uncased-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-ner-bert-base-ner-uncased)
+ - [tanaos/tanaos-NER-v1-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-tanaos-tanaos-ner-v1)
+
 <sup>1</sup> measured on H100-HBM3 (bert-large-335M, for MistralModel-7B: 9ms)
 <sup>2</sup> measured on H100-HBM3 (leading model architecture on MTEB, MistralModel-7B)
 
