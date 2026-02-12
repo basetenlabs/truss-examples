@@ -1,0 +1,36 @@
+description: Generate original images from text prompts.
+environment_variables: {}
+external_data:
+- local_data_path: unet/diffusion_pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/unet/diffusion_pytorch_model.bin
+- local_data_path: text_encoder/pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/text_encoder/pytorch_model.bin
+- local_data_path: vae/diffusion_pytorch_model.bin
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/stable-diffusion-truss/vae/diffusion_pytorch_model.bin
+external_package_dirs: []
+model_metadata:
+  repo_id: "stabilityai/stable-diffusion-2-1-base"
+  avatar_url: https://cdn.baseten.co/production/static/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  example_model_input:
+    prompt: A photo of an astronaut riding a horse
+  pretty_name: Stable Diffusion
+  tags:
+  - image-generation
+model_name: Stable Diffusion
+python_version: py39
+requirements:
+- diffusers==0.24.0
+- transformers==4.36.0
+- torch==2.1.0
+- scipy==1.11.4
+- accelerate==0.25.0
+- pillow==10.1.0
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 14Gi
+  use_gpu: true
+secrets: {}
+spec_version: "2.0"
+system_packages: []

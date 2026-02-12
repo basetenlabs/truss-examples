@@ -1,0 +1,18 @@
+description: "Phi-3-Mini-128K-Instruct for text generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "microsoft/Phi-3-mini-128k-instruct"
+  example_model_input: {"messages": [{"role": "user", "content": "What is the meaning of life?"}]}
+model_name: Phi-3-Mini-128K-Instruct
+python_version: py39
+requirements:
+  - accelerate==0.30.1
+  - einops==0.8.0
+  - transformers==4.40.1
+  - torch==2.3.0
+resources:
+  accelerator: T4
+  use_gpu: true
+secrets: {}
+system_packages: []

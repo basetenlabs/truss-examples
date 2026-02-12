@@ -1,0 +1,43 @@
+description: "Qwen3 Omni 30B Instruct (Thinker Only) for audio understanding"
+model_name: Qwen3 Omni 30B Instruct (Thinker Only)
+base_image:
+  image: qwenllm/qwen3-omni:3-cu124
+docker_server:
+  start_command: |
+    sh -c "vllm serve Qwen/Qwen3-Omni-30B-A3B-Instruct --dtype bfloat16 --max-model-len 65536 --served-model-name qwen3-omni"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+model_metadata:
+  repo_id: "Qwen/Qwen3-Omni-30B-A3B-Instruct"
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content:
+          - type: text
+            text: "Describe this image and audio content."
+          - type: image_url
+            image_url:
+              url: "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/demo/cars.jpg"
+          - type: audio_url
+            audio_url:
+              url: "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-Omni/demo/cough.wav"
+          - type: text
+            text: "What can you see and hear? Answer in one sentence."
+
+    stream: false
+    model: "qwen3-omni"
+    max_tokens: 2048
+    temperature: 0.7
+  tags:
+    - openai-compatible
+    - multimodal
+    - image-processing
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency: 32

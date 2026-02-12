@@ -1,0 +1,17 @@
+description: "JSON formatting utility model example"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "databricks/dolly-v2-3b"
+  example_model_input: {"prompt": "Generate a person's information"}
+  llm_model: databricks/dolly-v2-3b
+model_name: JsonFormatter
+python_version: py311
+requirements:
+- jsonformer==0.12.0
+- transformers==4.36.0
+- accelerate==0.25.0
+resources:
+  accelerator: A10G
+secrets: {}
+system_packages: []

@@ -1,0 +1,18 @@
+description: "Example model using gRPC transport"
+model_metadata:
+  example_model_input: {"name": "World"}
+model_name: "gRPC Model Example"
+base_image:
+  image: your/repository:tag
+docker_server:
+  start_command: python model.py
+  server_port: 8080
+  predict_endpoint: /
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+resources:
+  accelerator: A10G  # or your preferred GPU
+  use_gpu: true
+runtime:
+  transport:
+    kind: "grpc"

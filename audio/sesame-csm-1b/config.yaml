@@ -1,0 +1,30 @@
+description: "sesame-csm-1b for text-to-speech"
+model_name: sesame-csm-1b
+python_version: py310
+model_metadata:
+  repo_id: "sesame/csm-1b"
+  example_model_input:
+    text: "Hello from Sesame."
+    speaker: 0
+requirements:
+  - torch==2.4.0
+  - torchaudio==2.4.0
+  - tokenizers==0.21.0
+  - transformers==4.49.0
+  - huggingface_hub==0.28.1
+  - moshi==0.2.2
+  - torchtune==0.4.0
+  - torchao==0.9.0
+  - silentcipher @ git+https://github.com/SesameAILabs/silentcipher@d46d7d0893a583d8968ab3a6626e2289faec9152
+  - ffmpeg==1.4
+  - git+https://github.com/veerbia/csm.git@f747b9652b1c3859ce0f0465176ef8dff4cb32c8
+resources:
+  accelerator: T4
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null
+system_packages: []
+environment_variables: {}
+external_package_dirs: []

@@ -1,0 +1,20 @@
+description: "Llama 3.1 70B vLLM for text generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "meta-llama/Llama-3.1-70B-Instruct"
+  example_model_input: {"prompt": "What is the meaning of life?"}
+model_name: Llama 3.1 70B vLLM
+python_version: py310
+requirements:
+  - vllm==0.5.3post1
+  - accelerate==0.25.0
+resources:
+  accelerator: A100:4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: ""
+system_packages:
+  - python3.10-venv

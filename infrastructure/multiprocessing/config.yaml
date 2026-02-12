@@ -1,0 +1,16 @@
+description: "Example of multiprocessing for pre/post-processing"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"n": 100}
+model_name: Model with multiprocessing pre/post-process
+python_version: py310
+requirements:
+- torch==2.1.0
+resources:
+  accelerator: A10G
+  cpu: '8'
+  memory: 8Gi
+  use_gpu: true
+secrets: {}
+system_packages: []

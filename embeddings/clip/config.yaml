@@ -1,0 +1,20 @@
+description: "CLIP for image-text embedding"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "openai/clip-vit-large-patch14"
+  example_model_input:
+    url: https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=1600
+model_name: clip-example
+python_version: py311
+requirements:
+- transformers==4.47.1
+- pillow==10.1.0
+- torch==2.1.0
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 14Gi
+  use_gpu: true
+secrets: {}
+system_packages: []

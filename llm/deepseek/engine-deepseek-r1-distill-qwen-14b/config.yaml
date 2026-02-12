@@ -1,0 +1,49 @@
+description: "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B for text generation"
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  tags:
+    - openai-compatible
+  example_model_input:
+    {
+      messages:
+        [
+          {
+            role: "user",
+            content: "Which is heavier, a pound of bricks or a pound of feathers?",
+          },
+        ],
+      stream: true,
+      max_tokens: 1024,
+      temperature: 0.6,
+    }
+  repo_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+model_name: DeepSeek R1 Distill Qwen 14B
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100_40GB
+  cpu: "1"
+  memory: 24Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+      source: HF
+    num_builder_gpus: 1
+    quantization_type: fp8
+    max_seq_len: 32768
+    tensor_parallel_count: 1
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: false
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 32768

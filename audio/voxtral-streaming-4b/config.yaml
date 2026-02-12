@@ -1,0 +1,42 @@
+description: "Voxtral Mini 4B for real-time speech interaction"
+model_metadata:
+  repo_id: "mistralai/Voxtral-Mini-4B-Realtime-2602"
+  example_model_input: {"note": "This model uses a WebSocket endpoint at /v1/realtime. Connect via WebSocket and send audio frames for real-time speech interaction."}
+model_name: Voxtral-Mini-4B-Realtime-2602
+secrets:
+  hf_access_token: null
+environment_variables:
+  VLLM_DISABLE_COMPILE_CACHE: "1"
+base_image:
+  image: vllm/vllm-openai:nightly-d88a1df699f68e5284fe3a3170f8ae292a3e9c3f
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) VLLM_DISABLE_COMPILE_CACHE=1 vllm serve mistralai/Voxtral-Mini-4B-Realtime-2602 --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}' --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/realtime
+  server_port: 8000
+resources:
+  accelerator: H100_40GB:1
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+requirements:
+  - --pre --extra-index-url https://wheels.vllm.ai/nightly
+  - vllm[audio]
+  - librosa==0.10.2
+  - torch==2.5.1
+  - torchaudio==2.5.1
+  - pynvml==11.5.3
+  - ffmpeg-python==0.2.0
+  - websockets==13.1
+system_packages:
+  - python3.10-venv
+  - ffmpeg
+  - openmpi-bin
+  - libopenmpi-dev
+runtime:
+  is_websocket_endpoint: true
+  transport:
+    kind: websocket
+    ping_interval_seconds: null
+    ping_timeout_seconds: null

@@ -1,0 +1,28 @@
+description: Transcribe audio files across multiple languages.
+environment_variables: {}
+external_data:
+- local_data_path: models/small.pt
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/whisper/small.pt
+external_package_dirs: []
+model_metadata:
+  repo_id: "openai/whisper-small"
+  avatar_url: https://cdn.baseten.co/production/static/openai.png
+  cover_image_url: https://cdn.baseten.co/production/static/whisper.png
+  example_model_input:
+    url: https://cdn.baseten.co/docs/production/Gettysburg.mp3
+  pretty_name: Whisper
+  tags:
+  - speech-recognition
+model_name: Whisper
+python_version: py39
+requirements:
+- openai-whisper==20250625
+- torch==2.0.1
+resources:
+  accelerator: A10G
+  cpu: '4'
+  memory: 16Gi
+  use_gpu: true
+secrets: {}
+system_packages:
+- ffmpeg

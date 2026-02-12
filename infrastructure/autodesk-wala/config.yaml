@@ -1,0 +1,12 @@
+description: "Autodesk WaLa SV 1B via custom server"
+model_metadata:
+  repo_id: "ADSKAILab/WaLa-SV-1B"
+  example_model_input: {"image_b64": "<base64_encoded_image>", "output_format": "obj", "seed": 42}
+model_name: ADSKAILab/WaLa-SV-1B
+python_version: py311
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+requirements_file: ./requirements.txt # should cover all the dependencies for WaLa, taken from repo
+secrets:
+  hf_access_token: null

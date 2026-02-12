@@ -1,0 +1,17 @@
+description: "Mixtral 8x7B — VLLM TP2 — A100:2 for text generation"
+environment_variables: {}
+external_package_dirs: []
+model_name: Mixtral 8x7B — VLLM TP2 — A100:2
+python_version: py310
+requirements:
+- vllm==0.5.3.post1
+model_metadata:
+  repo_id: "mistralai/Mixtral-8x7B-Instruct-v0.1"
+  example_model_input: {"prompt": "What is machine learning?"}
+resources:
+  accelerator: A100:2
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets: {}
+system_packages: []

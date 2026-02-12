@@ -1,0 +1,40 @@
+# # Setting up the config.yaml
+#
+# The main things that need to be set up in the config are
+# `requirements`, which need to include Hugging Face transformers,
+# and the secrets.
+description: "A tutorial example showing how to deploy private-model on Baseten."
+environment_variables: {}
+model_metadata:
+  repo_id: "baseten/docs-example-gated-model"
+  example_model_input: "It is a [MASK] world"
+model_name: private-model
+python_version: py39
+requirements:
+- torch==2.0.1
+- transformers==4.30.2
+resources:
+  cpu: "1"
+  memory: 2Gi
+  use_gpu: false
+  accelerator: null
+# To make the `hf_access_token` available in the Truss, we need to include
+# it in the config. Setting the value to `null` here means that the value
+# will be set by the Baseten secrets manager.
+secrets:
+  hf_access_token: null
+system_packages: []
+# # Deploying the model
+#
+# An important note for deploying models with secrets is that
+# you must use the `--trusted` flag to give the model access to
+# secrets stored on the remote secrets manager.
+#
+# ```bash
+# $ truss push --trusted
+# ```
+#
+# After the model finishes deploying, you can invoke it with:
+# ```bash
+# $ truss predict -d '"It is a [MASK] world"'
+# ```

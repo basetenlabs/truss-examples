@@ -1,0 +1,45 @@
+description: "Qwen3 VL 32B Instruct for vision-language tasks"
+base_image:
+  image: vllm/vllm-openai:v0.11.0
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    model: ""
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Grayscale_8bits_palette_sample_image.png"
+          - type: text
+            text: "Describe this image in detail."
+    stream: true
+  tags:
+    - openai-compatible
+model_name: Qwen 3 VL 32B
+requirements:
+  - transformers>=4.55.0
+  - accelerate==1.2.1
+  - timm==1.0.12
+  - einops==0.8.0
+  - open-clip-torch==2.29.0
+  - pillow==10.4.0
+python_version: py312
+model_cache:
+  - repo_id: Qwen/Qwen3-VL-32B-Instruct-FP8
+    revision: main
+    use_volume: true
+    volume_folder: "qwen-3-vl-32b"
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
+docker_server:
+  start_command: vllm serve Qwen/Qwen3-VL-32B-Instruct-FP8 --tensor-parallel-size 1 --served-model-name qwen-3-vl-32b --trust-remote-code --max-model-len 16384 --gpu-memory-utilization 0.9
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:1
+  use_gpu: true
+runtime:
+  predict_concurrency: 16

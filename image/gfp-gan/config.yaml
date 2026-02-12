@@ -1,0 +1,34 @@
+description: Restore photos with this image-to-image model.
+environment_variables: {}
+external_data:
+- local_data_path: RealESRGAN_x2plus.pth
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
+- local_data_path: GFPGANv1.3.pth
+  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
+external_package_dirs: []
+model_metadata:
+  repo_id: "TencentARC/gfpgan"
+  avatar_url: https://cdn.baseten.co/production/static/explore/tencent.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/gfp-gan.png
+  example_model_input:
+    image: "<base64-encoded image>"
+  example_model_input_file: input.json
+  tags:
+  - image-restoration
+model_name: GFP-GAN
+python_version: py39
+requirements:
+- gfpgan==1.3.8
+- realesrgan==0.3.0
+- basicsr==1.4.2
+- torchvision==0.16.2
+- numpy==1.26.4
+resources:
+  cpu: '3'
+  memory: 8Gi
+  use_gpu: true
+secrets: {}
+system_packages:
+- ffmpeg
+- libsm6
+- libxext6

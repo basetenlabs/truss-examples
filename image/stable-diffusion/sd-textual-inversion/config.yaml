@@ -1,0 +1,26 @@
+description: "Stable Diffusion with Textual Inversion for image generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "SG161222/Realistic_Vision_V4.0_noVAE"
+  example_model_input:
+    prompt: A photo of an astronaut riding a horse in the style of LulaCipher
+  pretty_name: Stable Diffusion - Textual Inversion
+  tags:
+  - image-generation
+model_name: SD_Textual_Inversion
+python_version: py311
+requirements:
+- diffusers==0.16.1
+- transformers==4.36.0
+- ftfy==6.1.3
+- accelerate==0.25.0
+- torch==2.1.0
+- pillow==10.1.0
+resources:
+  accelerator: T4
+  cpu: 500m
+  memory: 512Mi
+  use_gpu: true
+secrets: {}
+system_packages: []

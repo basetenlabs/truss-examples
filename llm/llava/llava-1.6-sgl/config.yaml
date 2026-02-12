@@ -1,0 +1,17 @@
+description: "LLaVA 1.6 for vision-language tasks"
+environment_variables: {}
+external_package_dirs: []
+model_name: llava 1.6 SGL
+python_version: py310
+requirements: []
+requirements_file: ./requirements.txt
+model_metadata:
+  repo_id: "liuhaotian/llava-v1.6-34b"
+  example_model_input: {"prompt": "Describe this image in detail", "image": "data:image/png;base64,iVBORw0KGgo..."}
+resources:
+  accelerator: A100
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets: {}
+system_packages: []

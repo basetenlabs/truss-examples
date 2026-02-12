@@ -1,0 +1,43 @@
+description: "nvidia/Llama-3.1-Nemotron-70B-Instruct-HF for text generation"
+build_commands: []
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  tags:
+    - openai-compatible
+  example_model_input:
+    {
+      messages: [{ role: "user", content: "How many r in strawberry?" }],
+      stream: true,
+      max_tokens: 512,
+      temperature: 0.6,
+    }
+  repo_id: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+model_name: Llama-3.1-Nemotron-70B-Instruct
+python_version: py39
+requirements: []
+resources:
+  accelerator: H100:2
+  cpu: "1"
+  memory: 24Gi
+  use_gpu: true
+secrets: {}
+system_packages: []
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+      source: HF
+    num_builder_gpus: 4
+    quantization_type: fp8_kv
+    max_seq_len: 131072
+    tensor_parallel_count: 2
+    plugin_configuration:
+      use_paged_context_fmha: true
+      use_fp8_context_fmha: true
+      paged_kv_cache: true
+  runtime:
+    batch_scheduler_policy: max_utilization
+    enable_chunked_context: true
+    request_default_max_tokens: 131072
