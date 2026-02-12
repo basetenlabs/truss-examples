@@ -1,0 +1,12 @@
+model_metadata:
+  example_model_input:
+    { "code": "1 + 1", "max_runtime_ms": 10, "max_memory_mb": 5 }
+model_name: python-code-executor
+base_image:
+  image: baseten/monty:0.0.2
+docker_server:
+  start_command: axum-monty-server
+  server_port: 3000
+  predict_endpoint: /execute
+  readiness_endpoint: /health
+  liveness_endpoint: /health
