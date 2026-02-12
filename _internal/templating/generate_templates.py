@@ -1168,7 +1168,7 @@ def generate_deployment(dp: Deployment):
     raw_folder = dp.folder_name
     prefix = dp.solution.nickname + "-"
     if raw_folder.startswith(prefix):
-        stripped_folder = raw_folder[len(prefix):]
+        stripped_folder = raw_folder[len(prefix) :]
     else:
         stripped_folder = raw_folder
     folder_relative_path = subfolder / stripped_folder
@@ -2364,7 +2364,11 @@ if __name__ == "__main__":
         for dp in sorted_filter:
             subfolder = SUBFOLDER_MAP.get(dp.solution.nickname, Path(""))
             prefix = dp.solution.nickname + "-"
-            folder = dp.folder_name[len(prefix):] if dp.folder_name.startswith(prefix) else dp.folder_name
+            folder = (
+                dp.folder_name[len(prefix) :]
+                if dp.folder_name.startswith(prefix)
+                else dp.folder_name
+            )
             names.append(
                 f"[{dp.name}-{dp.solution.nickname}]({REPO_URL}/tree/main/{subfolder}/{folder})"
             )

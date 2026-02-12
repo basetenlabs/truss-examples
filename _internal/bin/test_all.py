@@ -27,7 +27,9 @@ import yaml
 try:
     import truss
 except ImportError:
-    print("ERROR: truss not installed. Run: uv pip install -e ../truss", file=sys.stderr)
+    print(
+        "ERROR: truss not installed. Run: uv pip install -e ../truss", file=sys.stderr
+    )
     sys.exit(1)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -38,12 +40,30 @@ for i, arg in enumerate(sys.argv):
         CATEGORY_FILTER = sys.argv[i + 1]
 
 SKIP_DIRS = {
-    ".git", ".github", "__pycache__", "node_modules", ".venv", "venv",
-    "templating", "assets", "bin", "dockerfiles", "packages", "sample_images",
+    ".git",
+    ".github",
+    "__pycache__",
+    "node_modules",
+    ".venv",
+    "venv",
+    "templating",
+    "assets",
+    "bin",
+    "dockerfiles",
+    "packages",
+    "sample_images",
     "examples",  # skip nested examples dirs for dir naming checks
 }
 
-CUSTOMER_CATEGORIES = ["tutorials", "llm", "embeddings", "image", "audio", "optimized", "infrastructure"]
+CUSTOMER_CATEGORIES = [
+    "tutorials",
+    "llm",
+    "embeddings",
+    "image",
+    "audio",
+    "optimized",
+    "infrastructure",
+]
 
 # Counters
 passed = 0
@@ -77,7 +97,12 @@ def find_all_configs(root: Path) -> list[Path]:
     """Find all directories containing a config.yaml."""
     configs = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in {".git", ".github", "__pycache__", "node_modules", ".venv", "venv"}]
+        dirnames[:] = [
+            d
+            for d in dirnames
+            if d
+            not in {".git", ".github", "__pycache__", "node_modules", ".venv", "venv"}
+        ]
         if "config.yaml" in filenames:
             rel = Path(dirpath).relative_to(root)
             # Skip _archive
@@ -90,6 +115,7 @@ def find_all_configs(root: Path) -> list[Path]:
 
 
 # ─── Test 1: Config validation ───────────────────────────────────────────────
+
 
 def test_config_validation():
     print("\n== Test 1: Config Validation (YAML + truss.load) ==")
@@ -124,6 +150,7 @@ def test_config_validation():
 
 # ─── Test 2: README existence ────────────────────────────────────────────────
 
+
 def test_readme_existence():
     print("\n== Test 2: README Existence ==")
     configs = find_all_configs(REPO_ROOT)
@@ -131,7 +158,11 @@ def test_readme_existence():
 
     for config_dir in configs:
         rel = config_dir.relative_to(REPO_ROOT)
-        if str(rel).startswith("_internal") or "/_archive/" in str(rel) or str(rel).startswith("_archive"):
+        if (
+            str(rel).startswith("_internal")
+            or "/_archive/" in str(rel)
+            or str(rel).startswith("_archive")
+        ):
             continue
         # Skip _archive at any level
         if "_archive" in rel.parts:
@@ -155,6 +186,7 @@ def test_readme_existence():
 
 
 # ─── Test 3: README ↔ Config consistency ─────────────────────────────────────
+
 
 def test_readme_config_consistency():
     print("\n== Test 3: README ↔ Config Consistency ==")
@@ -183,10 +215,15 @@ def test_readme_config_consistency():
         # Check: if config has hf_access_token secret, README should mention it
         secrets = raw.get("secrets", {})
         if secrets and isinstance(secrets, dict) and "hf_access_token" in secrets:
-            if "hf_access_token" in readme_text or "HuggingFace access token" in readme_text:
+            if (
+                "hf_access_token" in readme_text
+                or "HuggingFace access token" in readme_text
+            ):
                 log_pass(f"{rel}: README mentions HF token (config requires it)")
             else:
-                log_warn(f"{rel}: config has hf_access_token but README doesn't mention it")
+                log_warn(
+                    f"{rel}: config has hf_access_token but README doesn't mention it"
+                )
 
         # Check: endpoint consistency
         docker_server = raw.get("docker_server", {})
@@ -197,7 +234,9 @@ def test_readme_config_consistency():
                 if predict_endpoint in readme_text:
                     log_pass(f"{rel}: README uses correct endpoint {predict_endpoint}")
                 elif "/predict" in readme_text and predict_endpoint not in readme_text:
-                    log_warn(f"{rel}: README uses /predict but config has {predict_endpoint}")
+                    log_warn(
+                        f"{rel}: README uses /predict but config has {predict_endpoint}"
+                    )
 
         # Check: OpenAI-compatible tag should have /v1/chat/completions in README
         tags = []
@@ -208,10 +247,13 @@ def test_readme_config_consistency():
             if "/v1/chat/completions" in readme_text or "OpenAI" in readme_text:
                 log_pass(f"{rel}: OpenAI-compatible model has correct invoke style")
             else:
-                log_warn(f"{rel}: tagged openai-compatible but README lacks /v1/chat/completions")
+                log_warn(
+                    f"{rel}: tagged openai-compatible but README lacks /v1/chat/completions"
+                )
 
 
 # ─── Test 4: Directory naming conventions ────────────────────────────────────
+
 
 def test_directory_naming():
     print("\n== Test 4: Directory Naming Conventions ==")
@@ -221,7 +263,9 @@ def test_directory_naming():
         if not cat_dir.exists():
             continue
         for dirpath, dirnames, filenames in os.walk(cat_dir):
-            dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")]
+            dirnames[:] = [
+                d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")
+            ]
             rel = Path(dirpath).relative_to(REPO_ROOT)
 
             # If this directory contains config.yaml, it's an example root.
@@ -236,18 +280,25 @@ def test_directory_naming():
 
                 # Check underscores (allow go_emotions which is upstream model name)
                 if "_" in d and "go_emotions" not in d:
-                    log_fail(f"{rel}/{d}: directory name contains underscore (use hyphens)")
+                    log_fail(
+                        f"{rel}/{d}: directory name contains underscore (use hyphens)"
+                    )
 
                 # Check for "truss" in name
-                if "truss" in d.lower() and d != "truss":  # allow ngram-speculator/truss
+                if (
+                    "truss" in d.lower() and d != "truss"
+                ):  # allow ngram-speculator/truss
                     log_warn(f"{rel}/{d}: directory name contains 'truss'")
 
                 # Check PascalCase (first char uppercase suggests PascalCase)
                 if d[0].isupper() and "-" in d:
-                    log_warn(f"{rel}/{d}: directory name uses PascalCase (prefer lowercase)")
+                    log_warn(
+                        f"{rel}/{d}: directory name uses PascalCase (prefer lowercase)"
+                    )
 
 
 # ─── Test 5: Link/path validation in READMEs ────────────────────────────────
+
 
 def test_readme_links():
     print("\n== Test 5: README Link Validation ==")
@@ -257,7 +308,7 @@ def test_readme_links():
     if root_readme.exists():
         text = root_readme.read_text()
         # Find all relative links like [text](path/)
-        links = re.findall(r'\[.*?\]\(([^)]+)\)', text)
+        links = re.findall(r"\[.*?\]\(([^)]+)\)", text)
         for link in links:
             if link.startswith("http") or link.startswith("#"):
                 continue
@@ -275,7 +326,7 @@ def test_readme_links():
         if not cat_readme.exists():
             continue
         text = cat_readme.read_text()
-        links = re.findall(r'\[.*?\]\(([^)]+)\)', text)
+        links = re.findall(r"\[.*?\]\(([^)]+)\)", text)
         for link in links:
             if link.startswith("http") or link.startswith("#"):
                 continue
@@ -291,22 +342,34 @@ def test_readme_links():
     if contrib.exists():
         text = contrib.read_text()
         # Find paths in the table (backtick-wrapped)
-        paths = re.findall(r'`([a-z][\w/-]+)`', text)
+        paths = re.findall(r"`([a-z][\w/-]+)`", text)
         for p in paths:
-            if "/" in p and not p.endswith(".py") and not p.endswith(".yaml") and not p.endswith(".yml"):
+            if (
+                "/" in p
+                and not p.endswith(".py")
+                and not p.endswith(".yaml")
+                and not p.endswith(".yml")
+            ):
                 target = REPO_ROOT / p
                 if target.exists():
                     log_pass(f"CONTRIBUTING.md: path {p} exists")
-                elif not any(p.endswith(ext) for ext in [".yaml", ".py", ".md", ".json"]):
+                elif not any(
+                    p.endswith(ext) for ext in [".yaml", ".py", ".md", ".json"]
+                ):
                     # Check if it exists as a subdir within any category
-                    found = any((REPO_ROOT / cat / p).exists() for cat in CUSTOMER_CATEGORIES)
+                    found = any(
+                        (REPO_ROOT / cat / p).exists() for cat in CUSTOMER_CATEGORIES
+                    )
                     if found:
-                        log_pass(f"CONTRIBUTING.md: path {p} exists (relative to category)")
+                        log_pass(
+                            f"CONTRIBUTING.md: path {p} exists (relative to category)"
+                        )
                     else:
                         log_warn(f"CONTRIBUTING.md: path {p} may not exist")
 
 
 # ─── Test 6: example_model_input validation ──────────────────────────────────
+
 
 def test_example_model_input():
     print("\n== Test 6: example_model_input Validation ==")
@@ -342,22 +405,45 @@ def test_example_model_input():
         if rel_str.startswith("llm/"):
             # LLMs: prompt, messages, query, text, message, image_url, queries all valid
             if isinstance(example_input, dict):
-                valid_keys = {"prompt", "messages", "query", "text", "message", "image_url", "queries", "model"}
+                valid_keys = {
+                    "prompt",
+                    "messages",
+                    "query",
+                    "text",
+                    "message",
+                    "image_url",
+                    "queries",
+                    "model",
+                }
                 if valid_keys & set(example_input.keys()):
                     log_pass(f"{rel}: example_model_input has valid LLM format")
                 else:
-                    log_warn(f"{rel}: LLM example_model_input missing prompt/messages/query")
+                    log_warn(
+                        f"{rel}: LLM example_model_input missing prompt/messages/query"
+                    )
             elif isinstance(example_input, str):
                 log_pass(f"{rel}: example_model_input is a string (direct input)")
 
         elif rel_str.startswith("embeddings/"):
             # Embeddings: input (standard), query/texts (rerankers), text/inputs (classifiers/NER), url (CLIP)
             if isinstance(example_input, dict):
-                valid_keys = {"input", "inputs", "encoding_format", "query", "texts", "text", "model", "sentences", "url"}
+                valid_keys = {
+                    "input",
+                    "inputs",
+                    "encoding_format",
+                    "query",
+                    "texts",
+                    "text",
+                    "model",
+                    "sentences",
+                    "url",
+                }
                 if valid_keys & set(example_input.keys()):
                     log_pass(f"{rel}: example_model_input has valid embedding format")
                 else:
-                    log_warn(f"{rel}: embedding example_model_input may have wrong format")
+                    log_warn(
+                        f"{rel}: embedding example_model_input may have wrong format"
+                    )
             elif isinstance(example_input, str):
                 log_pass(f"{rel}: example_model_input is a string (direct input)")
             else:
@@ -366,7 +452,19 @@ def test_example_model_input():
         elif rel_str.startswith("image/"):
             # Image: prompt, image, instances, workflow_values (comfyui), input_image, reference_image, image_url
             if isinstance(example_input, dict):
-                valid_keys = {"prompt", "image", "instances", "workflow", "workflow_values", "url", "input_image", "reference_image", "bbox", "image_url", "text"}
+                valid_keys = {
+                    "prompt",
+                    "image",
+                    "instances",
+                    "workflow",
+                    "workflow_values",
+                    "url",
+                    "input_image",
+                    "reference_image",
+                    "bbox",
+                    "image_url",
+                    "text",
+                }
                 if valid_keys & set(example_input.keys()):
                     log_pass(f"{rel}: example_model_input has valid image format")
                 else:
@@ -388,6 +486,7 @@ def test_example_model_input():
 
 
 # ─── Test 7: Requirements pinning ────────────────────────────────────────────
+
 
 def test_requirements_pinning():
     print("\n== Test 7: Requirements Pinning ==")
@@ -429,7 +528,12 @@ def test_requirements_pinning():
                     unpinned.append(req)
                 continue
             # Check for version pin
-            if "==" not in req and ">=" not in req and "<=" not in req and "~=" not in req:
+            if (
+                "==" not in req
+                and ">=" not in req
+                and "<=" not in req
+                and "~=" not in req
+            ):
                 unpinned.append(req)
 
         if unpinned:
@@ -444,6 +548,7 @@ def test_requirements_pinning():
 
 
 # ─── Test 8: CI path validation ──────────────────────────────────────────────
+
 
 def test_ci_paths():
     print("\n== Test 8: CI Path Validation ==")
@@ -466,12 +571,15 @@ def test_ci_paths():
                 truss.load(str(full_path))
                 log_pass(f"ci.yaml: {test_path} exists and loads")
             except Exception as e:
-                log_fail(f"ci.yaml: {test_path} exists but truss.load() fails: {str(e)[:100]}")
+                log_fail(
+                    f"ci.yaml: {test_path} exists but truss.load() fails: {str(e)[:100]}"
+                )
         else:
             log_fail(f"ci.yaml: {test_path} does not exist")
 
 
 # ─── Test 9: TRT-LLM openai-compatible tag ──────────────────────────────────
+
 
 def test_trt_llm_tags():
     print("\n== Test 9: TRT-LLM openai-compatible Tag ==")
@@ -513,6 +621,7 @@ def test_trt_llm_tags():
 
 # ─── Test 10: model.py syntax validation ────────────────────────────────────
 
+
 def test_model_py_syntax():
     print("\n== Test 10: model.py Syntax Validation ==")
     import ast
@@ -535,6 +644,7 @@ def test_model_py_syntax():
 
 
 # ─── Test 10: CI completeness ───────────────────────────────────────────────
+
 
 def test_ci_completeness():
     print("\n== Test 11: CI Completeness (ci.yaml covers all examples) ==")
@@ -568,6 +678,7 @@ def test_ci_completeness():
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
+
 
 def main():
     print("=" * 60)

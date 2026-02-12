@@ -38,8 +38,8 @@ class DDIMSampler(object):
         assert alphas_cumprod.shape[0] == self.ddpm_num_timesteps, (
             "alphas have to be defined for each timestep"
         )
-        to_torch = (
-            lambda x: x.clone().detach().to(torch.float32).to(self.model.betas.device)
+        to_torch = lambda x: (
+            x.clone().detach().to(torch.float32).to(self.model.betas.device)
         )
 
         self.register_buffer("betas", to_torch(self.model.betas))

@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import sys
 from pathlib import Path
 
 import yaml
@@ -18,6 +17,7 @@ SKIP_DIRS = {"_archive", "_internal", ".git", ".github", ".venv", "__pycache__"}
 # ---------------------------------------------------------------------------
 # Metadata extraction helpers
 # ---------------------------------------------------------------------------
+
 
 def extract_hf_id(config: dict) -> str | None:
     # 1. model_metadata.repo_id
@@ -52,7 +52,11 @@ def extract_hf_id(config: dict) -> str | None:
 
 
 def detect_engine(config: dict) -> str:
-    base_image = str(config.get("base_image", {}).get("image", "") if isinstance(config.get("base_image"), dict) else "")
+    base_image = str(
+        config.get("base_image", {}).get("image", "")
+        if isinstance(config.get("base_image"), dict)
+        else ""
+    )
     start_cmd = config.get("docker_server", {}).get("start_command", "")
     requirements = [str(r) for r in config.get("requirements", [])]
     req_str = " ".join(requirements)
@@ -67,7 +71,10 @@ def detect_engine(config: dict) -> str:
         return "vLLM"
     if "sglang" in start_cmd.lower() or "sglang" in req_str.lower():
         return "SGLang"
-    if "text-embeddings" in base_image.lower() or "text-embeddings-router" in start_cmd.lower():
+    if (
+        "text-embeddings" in base_image.lower()
+        or "text-embeddings-router" in start_cmd.lower()
+    ):
         return "TEI (HuggingFace)"
     if config.get("docker_server"):
         return "Docker Server"
@@ -103,13 +110,25 @@ def infer_task_type(config: dict, category: str, dir_name: str) -> str:
         # Check if it's a reranker
         if "rerank" in dir_name.lower():
             return "Reranking"
-        if "classification" in dir_name.lower() or "reward" in dir_name.lower() or "ner" in dir_name.lower():
+        if (
+            "classification" in dir_name.lower()
+            or "reward" in dir_name.lower()
+            or "ner" in dir_name.lower()
+        ):
             return "Classification"
         return "Embeddings"
     if "image" in cat_l:
         return "Image generation"
     if "audio" in cat_l:
-        if "tts" in dir_name.lower() or "voice" in dir_name.lower() or "speech" in dir_name.lower() or "kokoro" in dir_name.lower() or "chatterbox" in dir_name.lower() or "metavoice" in dir_name.lower() or "sesame" in dir_name.lower():
+        if (
+            "tts" in dir_name.lower()
+            or "voice" in dir_name.lower()
+            or "speech" in dir_name.lower()
+            or "kokoro" in dir_name.lower()
+            or "chatterbox" in dir_name.lower()
+            or "metavoice" in dir_name.lower()
+            or "sesame" in dir_name.lower()
+        ):
             return "Text-to-speech"
         if "whisper" in dir_name.lower() or "transcri" in dir_name.lower():
             return "Speech-to-text"
@@ -211,6 +230,7 @@ def get_subcategory(example_dir: Path) -> str:
 # Config highlights
 # ---------------------------------------------------------------------------
 
+
 def build_config_highlights(config: dict, engine: str) -> list[str]:
     highlights = []
 
@@ -263,7 +283,9 @@ def build_config_highlights(config: dict, engine: str) -> list[str]:
     if caches and isinstance(caches, list):
         for c in caches:
             if c.get("use_volume"):
-                highlights.append("Model cache: **volume-mounted** for fast cold starts")
+                highlights.append(
+                    "Model cache: **volume-mounted** for fast cold starts"
+                )
                 break
 
     # Concurrency
@@ -284,9 +306,13 @@ def build_config_highlights(config: dict, engine: str) -> list[str]:
     # Environment variables (non-secret)
     envs = config.get("environment_variables", {})
     if isinstance(envs, dict):
-        notable = {k: v for k, v in envs.items() if k != "hf_access_token" and v is not None}
+        notable = {
+            k: v for k, v in envs.items() if k != "hf_access_token" and v is not None
+        }
         if notable:
-            highlights.append(f"Environment variables: {', '.join(f'`{k}`' for k in notable)}")
+            highlights.append(
+                f"Environment variables: {', '.join(f'`{k}`' for k in notable)}"
+            )
 
     if not highlights:
         highlights.append(f"Engine: **{engine}**")
@@ -297,6 +323,7 @@ def build_config_highlights(config: dict, engine: str) -> list[str]:
 # ---------------------------------------------------------------------------
 # Invoke section
 # ---------------------------------------------------------------------------
+
 
 def build_invoke_section(
     config: dict,
@@ -440,7 +467,15 @@ curl -X POST https://model-<model_id>.api.baseten.co{endpoint} \\
 # Description generation
 # ---------------------------------------------------------------------------
 
-def build_description(model_name: str, config: dict, category: str, engine: str, hf_id: str | None, task: str) -> str:
+
+def build_description(
+    model_name: str,
+    config: dict,
+    category: str,
+    engine: str,
+    hf_id: str | None,
+    task: str,
+) -> str:
     desc = config.get("description")
     if desc:
         return desc
@@ -477,6 +512,7 @@ def build_description(model_name: str, config: dict, category: str, engine: str,
 # ---------------------------------------------------------------------------
 # README rendering
 # ---------------------------------------------------------------------------
+
 
 def render_readme(
     model_name: str,
@@ -517,7 +553,9 @@ def render_readme(
     # Deploy
     lines.append("## Deploy\n")
     if hf_token:
-        lines.append("> **Note:** This model requires a HuggingFace access token. Set `hf_access_token` in your Baseten secrets before deploying.\n")
+        lines.append(
+            "> **Note:** This model requires a HuggingFace access token. Set `hf_access_token` in your Baseten secrets before deploying.\n"
+        )
     lines.append("```sh\ntruss push\n```\n")
 
     # Invoke
@@ -537,6 +575,7 @@ def render_readme(
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def find_example_dirs() -> list[Path]:
     """Find all directories containing config.yaml, excluding archive/internal."""
@@ -558,7 +597,9 @@ def process_example(example_dir: Path) -> dict:
     dir_name = example_dir.name
     category = get_category(example_dir)
 
-    model_name = config.get("model_name") or dir_name.replace("-", " ").replace("_", " ").title()
+    model_name = (
+        config.get("model_name") or dir_name.replace("-", " ").replace("_", " ").title()
+    )
     hf_id = extract_hf_id(config)
     engine = detect_engine(config)
     task = infer_task_type(config, category, dir_name)
@@ -626,7 +667,7 @@ def main():
         if not result["hf_id"]:
             missing_hf.append(str(rel))
 
-    print(f"\n--- Summary ---")
+    print("\n--- Summary ---")
     print(f"Generated: {generated}/{len(examples)}")
     print(f"Missing HuggingFace ID: {len(missing_hf)}")
     if missing_hf:

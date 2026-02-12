@@ -21,7 +21,9 @@ try:
     import truss
     from truss.base.truss_config import TrussConfig
 except ImportError:
-    print("ERROR: truss not installed. Run: uv pip install -e ../truss", file=sys.stderr)
+    print(
+        "ERROR: truss not installed. Run: uv pip install -e ../truss", file=sys.stderr
+    )
     sys.exit(1)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -337,7 +339,9 @@ def main():
                 "warnings": r.warnings,
             }
         )
-    report_path.write_text(json.dumps({"summary": status_counts, "results": data}, indent=2))
+    report_path.write_text(
+        json.dumps({"summary": status_counts, "results": data}, indent=2)
+    )
     print(f"\nReport also saved to {report_path}", file=sys.stderr)
 
 

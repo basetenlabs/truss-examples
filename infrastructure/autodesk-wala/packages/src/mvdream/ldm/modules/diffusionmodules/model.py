@@ -233,11 +233,13 @@ class MemoryEfficientAttnBlock(nn.Module):
         q, k, v = map(lambda x: rearrange(x, "b c h w -> b (h w) c"), (q, k, v))
 
         q, k, v = map(
-            lambda t: t.unsqueeze(3)
-            .reshape(B, t.shape[1], 1, C)
-            .permute(0, 2, 1, 3)
-            .reshape(B * 1, t.shape[1], C)
-            .contiguous(),
+            lambda t: (
+                t.unsqueeze(3)
+                .reshape(B, t.shape[1], 1, C)
+                .permute(0, 2, 1, 3)
+                .reshape(B * 1, t.shape[1], C)
+                .contiguous()
+            ),
             (q, k, v),
         )
         out = xformers.ops.memory_efficient_attention(

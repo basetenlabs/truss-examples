@@ -202,10 +202,8 @@ class NoiseScheduleVP:
             return t.reshape((-1,))
         else:
             log_alpha = -0.5 * torch.logaddexp(-2.0 * lamb, torch.zeros((1,)).to(lamb))
-            t_fn = (
-                lambda log_alpha_t: torch.arccos(
-                    torch.exp(log_alpha_t + self.cosine_log_alpha_0)
-                )
+            t_fn = lambda log_alpha_t: (
+                torch.arccos(torch.exp(log_alpha_t + self.cosine_log_alpha_0))
                 * 2.0
                 * (1.0 + self.cosine_s)
                 / math.pi

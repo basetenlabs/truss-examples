@@ -220,11 +220,13 @@ class MemoryEfficientCrossAttention(nn.Module):
 
         b, _, _ = q.shape
         q, k, v = map(
-            lambda t: t.unsqueeze(3)
-            .reshape(b, t.shape[1], self.heads, self.dim_head)
-            .permute(0, 2, 1, 3)
-            .reshape(b * self.heads, t.shape[1], self.dim_head)
-            .contiguous(),
+            lambda t: (
+                t.unsqueeze(3)
+                .reshape(b, t.shape[1], self.heads, self.dim_head)
+                .permute(0, 2, 1, 3)
+                .reshape(b * self.heads, t.shape[1], self.dim_head)
+                .contiguous()
+            ),
             (q, k, v),
         )
 
