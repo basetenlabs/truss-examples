@@ -9,7 +9,7 @@ Runs all validation that can be done locally without deploying models:
   5. Link/path validation (README links point to real dirs)
   6. example_model_input format validation
   7. Requirements pinning check
-  8. CI path validation
+  8. CI excludes validation
 
 Usage:
     python _internal/bin/test_all.py
@@ -547,35 +547,35 @@ def test_requirements_pinning():
         print(f"   {unpinned_count} configs have unpinned requirements")
 
 
-# ─── Test 8: CI path validation ──────────────────────────────────────────────
+# ─── Test 8: CI excludes validation ──────────────────────────────────────────
 
 
-def test_ci_paths():
-    print("\n== Test 8: CI Path Validation ==")
-    ci_path = REPO_ROOT / "ci.yaml"
-    if not ci_path.exists():
-        log_fail("ci.yaml not found")
+def test_ci_excludes():
+    print("\n== Test 8: CI Excludes Validation ==")
+    excludes_path = REPO_ROOT / "ci_excludes.yaml"
+    if not excludes_path.exists():
+        log_pass("ci_excludes.yaml not found (no excludes, OK)")
         return
 
-    with open(ci_path) as f:
-        ci = yaml.safe_load(f)
+    with open(excludes_path) as f:
+        data = yaml.safe_load(f)
 
-    tests = ci.get("tests", [])
-    print(f"   {len(tests)} CI test paths")
+    if not data or not isinstance(data, dict):
+        log_pass("ci_excludes.yaml is empty (OK)")
+        return
 
-    for test_path in tests:
-        full_path = REPO_ROOT / test_path
-        if full_path.exists():
-            # Also verify it loads
-            try:
-                truss.load(str(full_path))
-                log_pass(f"ci.yaml: {test_path} exists and loads")
-            except Exception as e:
-                log_fail(
-                    f"ci.yaml: {test_path} exists but truss.load() fails: {str(e)[:100]}"
-                )
+    excludes = data.get("exclude", []) or []
+    print(f"   {len(excludes)} excluded paths")
+
+    for path in excludes:
+        full_path = REPO_ROOT / path
+        config_path = full_path / "config.yaml"
+        if not full_path.exists():
+            log_fail(f"ci_excludes.yaml: {path} does not exist")
+        elif not config_path.exists():
+            log_fail(f"ci_excludes.yaml: {path} has no config.yaml")
         else:
-            log_fail(f"ci.yaml: {test_path} does not exist")
+            log_pass(f"ci_excludes.yaml: {path} is a valid example")
 
 
 # ─── Test 9: TRT-LLM openai-compatible tag ──────────────────────────────────
@@ -643,38 +643,29 @@ def test_model_py_syntax():
     print(f"   Checked {checked} model.py files")
 
 
-# ─── Test 10: CI completeness ───────────────────────────────────────────────
+# ─── Test 11: Discovery sanity ──────────────────────────────────────────────
 
 
-def test_ci_completeness():
-    print("\n== Test 11: CI Completeness (ci.yaml covers all examples) ==")
-    ci_path = REPO_ROOT / "ci.yaml"
-    if not ci_path.exists():
-        log_fail("ci.yaml not found")
-        return
-
-    with open(ci_path) as f:
-        ci = yaml.safe_load(f)
-
-    ci_paths = set(ci.get("tests", []))
+def test_discovery_sanity():
+    print("\n== Test 11: Discovery Sanity Check ==")
     configs = find_all_configs(REPO_ROOT)
-    missing_from_ci = []
+    # Filter same way as discovery script
+    examples = [
+        str(c.relative_to(REPO_ROOT))
+        for c in configs
+        if not str(c.relative_to(REPO_ROOT)).startswith("_internal")
+        and "_archive" not in c.relative_to(REPO_ROOT).parts
+    ]
+    count = len(examples)
+    print(f"   Auto-discovery found {count} examples")
 
-    for config_dir in configs:
-        rel = config_dir.relative_to(REPO_ROOT)
-        rel_str = str(rel)
-        if rel_str.startswith("_internal") or "_archive" in rel.parts:
-            continue
-        if rel_str not in ci_paths:
-            missing_from_ci.append(rel_str)
-            log_fail(f"ci.yaml missing: {rel_str}")
-        else:
-            log_pass(f"ci.yaml covers: {rel_str}")
-
-    if missing_from_ci:
-        print(f"   {len(missing_from_ci)} examples not in ci.yaml")
+    if count > 100:
+        log_pass(f"Discovery found {count} examples (> 100 threshold)")
     else:
-        print(f"   ci.yaml covers all {len(ci_paths)} examples")
+        log_fail(
+            f"Discovery found only {count} examples (expected > 100) — "
+            "discovery logic may be broken"
+        )
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────
@@ -692,10 +683,10 @@ def main():
     test_readme_links()
     test_example_model_input()
     test_requirements_pinning()
-    test_ci_paths()
+    test_ci_excludes()
     test_trt_llm_tags()
     test_model_py_syntax()
-    test_ci_completeness()
+    test_discovery_sanity()
 
     print("\n" + "=" * 60)
     print(f"  Results: {passed} passed, {failed} failed, {warnings} warnings")

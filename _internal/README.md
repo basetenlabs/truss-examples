@@ -26,7 +26,7 @@ _internal/
 |--------|-------------|
 | `test_all.py` | Comprehensive local test suite: config validation, README checks, naming conventions, link validation, CI completeness |
 | `validate_all.py` | Walks every config.yaml and produces a structured validation report (markdown, JSON, or CSV) |
-| `validate_ci.py` | Loads every path listed in the top-level `ci.yaml` with `truss.load()` to verify CI paths are valid |
+| `discover_examples.py` | Auto-discovers all testable example directories and outputs a JSON array; used by CI to generate the test matrix |
 | `test_example.py` | CI script: detects changed model from git diff, pushes to staging, runs inference, cleans up old deployments |
 | `test_truss_deploy.py` | Deploys a truss to staging via `truss push`, invokes inference with `example_model_input`, deactivates after |
 | `generate_readmes.py` | Auto-generates standardized README.md files for every non-archived example from config.yaml metadata |
@@ -73,10 +73,10 @@ The test suite runs 11 checks:
 5. README link/path validation
 6. `example_model_input` format validation
 7. Requirements version pinning
-8. CI path validation against `ci.yaml`
+8. CI excludes validation against `ci_excludes.yaml`
 9. TRT-LLM OpenAI-compatible tag presence
 10. `model.py` syntax validation (AST parse)
-11. CI completeness (every example appears in `ci.yaml`)
+11. Discovery sanity check (auto-discovery finds >100 examples)
 
 ### Other validation commands
 
@@ -86,8 +86,8 @@ python _internal/bin/validate_all.py
 python _internal/bin/validate_all.py --json
 python _internal/bin/validate_all.py --csv
 
-# Quick CI path check
-python _internal/bin/validate_ci.py
+# List all auto-discovered examples
+python _internal/bin/discover_examples.py --pretty
 ```
 
 ### README generation

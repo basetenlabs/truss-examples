@@ -1,0 +1,4 @@
+# Paths to exclude from CI auto-discovery.
+# Examples are discovered automatically by finding directories with config.yaml.
+# Add paths here to opt specific examples out of CI.
+exclude: []

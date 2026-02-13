@@ -8,7 +8,6 @@ We welcome new models and improvements to existing examples. Please open a PR.
 2. Include a `config.yaml` with `model_name`, `description`, and `example_model_input`.
 3. Include a `README.md` with deploy and invoke instructions.
 4. Pin all Python requirements to specific versions.
-5. Add your example path to `ci.yaml` at the repo root.
 
 ## Validate locally
 

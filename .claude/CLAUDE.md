@@ -105,7 +105,7 @@ Reference example: `image/stable-diffusion/stable-diffusion-xl-1.0`
 
 ## CI
 
-Active examples should be listed in `ci.yaml` at the repo root. The test suite (`_internal/bin/test_all.py`) validates all configs, READMEs, naming, links, pinning, and CI completeness.
+CI auto-discovers examples by finding directories with `config.yaml`, skipping `_archive/` and `_internal/`. To exclude a specific example from CI, add its path to `ci_excludes.yaml` at the repo root. The test suite (`_internal/bin/test_all.py`) validates all configs, READMEs, naming, links, and pinning.
 
 Run tests locally:
 ```bash
