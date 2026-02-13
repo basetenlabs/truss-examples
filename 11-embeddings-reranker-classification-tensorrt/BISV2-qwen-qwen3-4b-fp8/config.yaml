@@ -8,7 +8,7 @@ model_metadata:
     temperature: 0.5
   tags:
   - openai-compatible
-model_name: nginx_test
+model_name: BISV2-qwen-qwen3-4b-fp8-truss-example
 python_version: py39
 resources:
   accelerator: H100

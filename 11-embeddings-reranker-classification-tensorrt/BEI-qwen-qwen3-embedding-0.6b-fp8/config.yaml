@@ -3,7 +3,7 @@ model_metadata:
     encoding_format: float
     input: text string
     model: model
-model_name: nginx_test
+model_name: BEI-qwen-qwen3-embedding-0.6b-fp8-truss-example
 python_version: py39
 resources:
   accelerator: L4
