@@ -1,0 +1,17 @@
+description: "XTTS Streaming - High Performance for text-to-speech"
+base_image:
+  image: htrivedi05/xtts-streaming
+  python_executable_path: /opt/conda/bin/python
+environment_variables:
+  COQUI_TOS_AGREED: '1'
+external_package_dirs: []
+model_metadata:
+  repo_id: "coqui/XTTS-v2"
+  example_model_input: {"text": "Hello, how are you today?", "language": "en"}
+model_name: XTTS Streaming - High Performance
+resources:
+  accelerator: H100
+  cpu: '3'
+  memory: 10Gi
+  use_gpu: true
+secrets: {}

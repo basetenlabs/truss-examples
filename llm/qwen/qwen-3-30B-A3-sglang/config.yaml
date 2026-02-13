@@ -1,0 +1,38 @@
+description: "Qwen/Qwen3-30B-A3B-FP8 for text generation"
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "What does Tongyi Qianwen mean?"
+    stream: false
+    model: "Qwen/Qwen3-32B"
+    max_tokens: 512
+    temperature: 0.6
+  tags:
+    - openai-compatible
+model_name: Qwen 3 30B-A3 SGLang
+environment_variables:
+  hf_access_token: null
+base_image:
+  image: lmsysorg/sglang:v0.4.6.post1-cu124
+model_cache:
+  - repo_id: Qwen/Qwen3-30B-A3B-FP8
+    revision: 2daf1706ac267bae18c90a217a060817c0cebb66
+    use_volume: true
+    volume_folder: "qwen3"
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
+docker_server:
+  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3 --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-30B-A3B --tp 1 --reasoning-parser qwen3"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:1
+  use_gpu: true
+runtime:
+  predict_concurrency: 32

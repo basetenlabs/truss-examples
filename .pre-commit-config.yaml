@@ -13,24 +13,21 @@ repos:
       - id: check-merge-conflict
       - id: check-symlinks
       - id: debug-statements
-        exclude: ^sana/
+        exclude: ^image/sana/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.11.6
     hooks:
-      # Run the linter.
       - id: ruff
         args: [--fix, --fix-only]
-      # Run the formatter.
       - id: ruff-format
         types_or: [ python, pyi ]
 
   - repo: local
     hooks:
       - id: validate-ci
-        name: validate-ci-local
-        entry: poetry run python ./bin/validate_ci.py
+        name: validate-ci
+        entry: python _internal/bin/test_all.py
         language: python
-        additional_dependencies: ['truss', 'pyyaml']
+        additional_dependencies: [truss, pyyaml]
         pass_filenames: false

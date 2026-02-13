@@ -6,25 +6,51 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Set up Python environment
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11.4'
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install git+https://github.com/basetenlabs/truss.git pyyaml --upgrade
+      - name: Run local validation (test_all.py)
+        run: |
+          python _internal/bin/test_all.py
+
   generate_tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       tests: ${{ steps.generate-matrix.outputs.tests }}
 
     steps:
-      - uses: actions/checkout@v4
-      - name: yq - portable yaml processor
-        uses: mikefarah/yq@v4.35.2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11.4'
+      - run: pip install pyyaml
       - name: Generate all tests that need to be run
         id: generate-matrix
         run: |
-          TESTS=$(cat ci.yaml | yq e ".tests" | yq eval -o=json | jq -c .)
+          TESTS=$(python _internal/bin/discover_examples.py)
           echo "tests=$TESTS" >> $GITHUB_OUTPUT
 
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs:
+      - validate
       - generate_tests
     strategy:
       fail-fast: false
@@ -32,28 +58,29 @@ jobs:
       matrix:
         test: ${{ fromJSON(needs.generate_tests.outputs.tests) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Set up Python environment
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11.4'
-      - name: Install dependencies (if any)
+          cache: 'pip'
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install git+https://github.com/basetenlabs/truss.git requests tenacity --upgrade
-      - name: Test => (${{ matrix.test }}
+      - name: Test ${{ matrix.test }}
         run: |
-          python ./bin/test_example.py ${{secrets.BASETEN_API_KEY}} ${{matrix.test}}
+          python _internal/bin/test_example.py ${{ secrets.BASETEN_API_KEY }} ${{ matrix.test }}
+
   report_to_slack:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: always() && github.ref == 'refs/heads/main'
     needs:
       - ci
     steps:
-      - name: get-branch
-        run: echo ${{ github.ref }}
-      - name: show-slack-status
-        uses: 8398a7/action-slack@v3
+      - name: Report CI result
+        uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3.19.0
         with:
           status: custom
           fields: author, job, commit, repo

@@ -1,0 +1,24 @@
+description: "mistralai/Mixtral-8x22B-Instruct-v0.1 for text generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: mistralai/Mixtral-8x22B-Instruct-v0.1
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  example_model_input:
+    prompt: What is the Mistral wind?
+  pretty_name: Mistral 8x22B
+  tags:
+  - text-generation
+model_name: Mixtral 8x22
+python_version: py310
+requirements:
+  - accelerate==0.25.0
+  - transformers==4.42.3
+  - torch==2.2.0
+resources:
+  accelerator: A100:4
+  use_gpu: true
+secrets:
+  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
+system_packages: []

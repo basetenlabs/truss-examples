@@ -1,0 +1,25 @@
+description: "Stable Diffusion XL with LoRA for image generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "stabilityai/stable-diffusion-xl-base-1.0"
+  example_model_input:
+    prompt: A photo of an astronaut riding a horse
+model_name: Stable Diffusion XL with LoRA
+python_version: py311
+requirements:
+- accelerate==0.25.0
+- transformers==4.36.0
+- safetensors==0.4.1
+- opencv-python==4.8.1.78
+- diffusers==0.24.0
+resources:
+  accelerator: A10G
+  cpu: 3500m
+  memory: 20Gi
+  use_gpu: true
+secrets: {}
+system_packages:
+- ffmpeg
+- libsm6
+- libxext6

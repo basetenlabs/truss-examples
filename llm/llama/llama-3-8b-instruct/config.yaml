@@ -1,0 +1,26 @@
+description: "meta-llama/Meta-Llama-3-8B-Instruct for text generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  avatar_url: https://cdn.baseten.co/production/static/explore/meta.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/llama.png
+  repo_id: meta-llama/Meta-Llama-3-8B-Instruct
+  tags:
+  - text-generation
+  example_model_input: {"messages": [{"role": "user", "content": "What is the meaning of life?"}]}
+model_name: Llama 3 8B Instruct
+python_version: py310
+model_cache:
+  - repo_id: meta-llama/Meta-Llama-3-8B-Instruct
+    use_volume: false
+requirements:
+  - accelerate==0.25.0
+  - einops==0.7.0
+  - transformers==4.36.0
+  - torch==2.1.0
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: "your-hf-access-token"
+system_packages: []

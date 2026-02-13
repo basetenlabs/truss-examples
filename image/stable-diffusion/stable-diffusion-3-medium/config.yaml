@@ -1,0 +1,27 @@
+description: "stabilityai/stable-diffusion-3-medium-diffusers for image generation"
+environment_variables:
+  HF_HUB_OFFLINE: 1
+external_package_dirs: []
+model_metadata:
+  example_model_input:
+    prompt: A photo of an astronaut riding a horse
+model_cache:
+  - repo_id: stabilityai/stable-diffusion-3-medium-diffusers
+    use_volume: false
+model_name: Stable Diffusion 3 Medium
+python_version: py310
+requirements:
+  - diffusers==0.29.0
+  - transformers==4.36.0
+  - accelerate==0.25.0
+  - sentencepiece==0.1.99
+  - protobuf==4.25.1
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets:
+  hf_access_token: ""
+system_packages:
+  - ffmpeg
+  - libsm6
+  - libxext6

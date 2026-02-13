@@ -1,0 +1,19 @@
+description: "microsoft/Phi-3.5-mini-instruct for text generation"
+model_name: "Phi 3.5 Mini Instruct VLLM openai compatible"
+python_version: py311
+model_metadata:
+  example_model_input: {"messages": [{"role": "user", "content": "what is the meaning of life"}]}
+  repo_id: microsoft/Phi-3.5-mini-instruct
+  openai_compatible: true
+  vllm_config:
+    tensor_parallel_size: 1
+    max_model_len: 10000
+requirements:
+  - vllm==0.5.4
+resources:
+  accelerator: A10G
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null

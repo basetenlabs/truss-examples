@@ -1,0 +1,18 @@
+description: "Stable Diffusion Inpainting with TensorRT for image inpainting"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "runwayml/stable-diffusion-inpainting"
+  example_model_input:
+    prompt: A beautiful vase of flowers on a table
+    image: "<base64-encoded image>"
+    mask: "<base64-encoded mask image>"
+model_name: Stable Diffusion Inpainting TRT
+python_version: py310
+requirements: []
+requirements_file: requirements.txt
+resources:
+  accelerator: A10G
+  use_gpu: true
+secrets: {}
+system_packages: []

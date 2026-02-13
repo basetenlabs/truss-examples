@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-python/
-      - run: poetry install
-      - run: poetry run pre-commit run --all-files
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.4'
+      - run: pip install truss pre-commit
+      - run: pre-commit run --all-files

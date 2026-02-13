@@ -1,0 +1,42 @@
+base_image:
+  image: docker.io/baseten/triton_trt_llm:4062d46_20240401
+  python_executable_path: /usr/bin/python3
+description: Mixtral 8x22B Instruct, with INT8 weights only quantization, optimized
+  with TRT-LLM!
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "mistralai/Mixtral-8x22B-Instruct-v0.1"
+  avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
+  engine_repository: baseten/mixtral-8x22B_i60000_o4000_bs2_tp4_int8_weights_only_A100-tllm_0.9.0.dev2024022000
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: What is your favourite condiment?
+      role: user
+    - content: Well, I'm quite partial to a good squeeze of fresh lemon juice. It
+        adds just the right amount of zesty flavour to whatever I'm cooking up in
+        the kitchen!
+      role: assistant
+    - content: Do you have mayonnaise recipes?
+      role: user
+  tags:
+  - text-generation
+  - openai-compatible
+  tensor_parallelism: 4
+  tokenizer_repository: mistralai/Mixtral-8x22B-Instruct-v0.1
+model_name: Mixtral 8x22B Instruct TRT-LLM Weights Only Quantized
+python_version: py311
+requirements:
+- tritonclient[all]==2.42.0
+- transformers==4.42.3
+resources:
+  accelerator: A100:4
+  use_gpu: true
+runtime:
+  num_workers: 1
+  predict_concurrency: 256
+secrets:
+  hf_access_token: "your-hf-access-token"
+system_packages: []

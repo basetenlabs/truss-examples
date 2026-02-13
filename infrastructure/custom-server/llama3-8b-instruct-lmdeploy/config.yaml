@@ -1,0 +1,20 @@
+description: "Llama 3.1 8B Instruct via custom LMDeploy server"
+base_image:
+  image: openmmlab/lmdeploy:v0.6.4-cu12
+model_metadata:
+  example_model_input: {"model": "meta-llama/Llama-3.1-8B-Instruct", "prompt": "What is machine learning?", "max_tokens": 512}
+  repo_id: meta-llama/Llama-3.1-8B-Instruct
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) python3 -m lmdeploy serve api_server meta-llama/Llama-3.1-8B-Instruct --server-port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/completions
+  server_port: 8000
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency : 32
+model_name: Llama 3.1 8B Instruct LMDeploy
+environment_variables:
+  hf_access_token: null

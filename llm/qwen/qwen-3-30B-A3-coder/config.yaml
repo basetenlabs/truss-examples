@@ -1,0 +1,36 @@
+description: "Qwen3 Coder 30B A3B Instruct for code generation"
+model_metadata:
+  example_model_input: # Loads sample request into Baseten playground
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Write a quick sort algorithm."
+    stream: true
+    model: "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+    max_tokens: 1024
+    temperature: 0.7
+  tags:
+    - openai-compatible
+model_name: Qwen 3 Coder
+base_image:
+  image: lmsysorg/sglang:v0.4.10.post2-cu126
+model_cache:
+  - repo_id: Qwen/Qwen3-Coder-30B-A3B-Instruct
+    revision: main
+    use_volume: true
+    volume_folder: "qwen3-coder"
+    ignore_patterns:
+      - "original/*"
+      - "*.pth"
+docker_server:
+  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3-coder --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-Coder-30B-A3B-Instruct --tp 1 --reasoning-parser qwen3"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:1
+  use_gpu: true
+runtime:
+  predict_concurrency: 32

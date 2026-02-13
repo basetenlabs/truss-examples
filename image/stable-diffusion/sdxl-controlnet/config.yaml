@@ -1,0 +1,32 @@
+description: "SDXL ControlNet for image generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "stabilityai/stable-diffusion-xl-base-1.0"
+  avatar_url: https://cdn.baseten.co/production/static/stability.png
+  cover_image_url: https://cdn.baseten.co/production/static/sd.png
+  example_model_input:
+    prompt: aerial view, a futuristic research complex in a bright foggy jungle, hard
+      lighting
+    image: "<base64-encoded PNG image>"
+  pretty_name: Stable Diffusion ControlNet
+  tags:
+  - image-generation
+model_name: SDXL ControlNet
+python_version: py39
+requirements:
+- accelerate==0.25.0
+- transformers==4.36.0
+- safetensors==0.4.1
+- opencv-python==4.8.1.78
+- diffusers==0.24.0
+resources:
+  accelerator: A10G
+  cpu: 3500m
+  memory: 20Gi
+  use_gpu: true
+secrets: {}
+system_packages:
+- ffmpeg
+- libsm6
+- libxext6

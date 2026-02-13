@@ -1,0 +1,37 @@
+description: "deepcogito/cogito-v2-preview-deepseek-671B-MoE-FP8 for text generation"
+base_image:
+  image: vllm/vllm-openai:v0.9.2
+model_metadata:
+  example_model_input: {
+    model: "deepseek",
+    "messages": [
+      {
+      "role": "user",
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
+      }
+    ],
+    stream: true,
+    max_tokens: 10000,
+    temperature: 0.6
+  }
+  repo_id: deepcogito/cogito-v2-preview-deepseek-671B-MoE-FP8
+  tags:
+    - openai-compatible
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve deepcogito/cogito-v2-preview-deepseek-671B-MoE-FP8 --served-model-name deepseek --max-model-len 131072 --port 8000 --gpu-memory-utilization 0.90 --disable-custom-all-reduce --trust-remote-code --tensor-parallel-size 8 --distributed-executor-backend mp --enable-auto-tool-choice --tool-call-parser deepseek_v3"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+cache_internal:
+  - repo_id: deepcogito/cogito-v2-preview-deepseek-671B-MoE-FP8
+resources:
+  accelerator: B200:8
+  cpu: '1'
+  memory: 24Gi
+  use_gpu: true
+runtime:
+  predict_concurrency : 32
+model_name: Cogito V2 Preview DeepSeek 671B MoE FP8 vLLM
+environment_variables:
+  hf_access_token: null

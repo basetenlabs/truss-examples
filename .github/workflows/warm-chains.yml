@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11.4'
       - name: Install dependencies (if any)
@@ -29,5 +29,5 @@ jobs:
           EOF
       - name: Warm up chains
         run: |
-          truss chains deploy chains-examples/docs/poems/poems.py
-          truss chains deploy chains-examples/docs/audio-transcription/whisper_chainlet.py
+          truss chains deploy infrastructure/chains-examples/docs/poems/poems.py
+          truss chains deploy infrastructure/chains-examples/docs/audio-transcription/whisper_chainlet.py

@@ -31,4 +31,4 @@ jobs:
             - name: Run tests
               env:
                 BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
-              run: python bin/test_truss_deploy.py
+              run: python _internal/bin/test_truss_deploy.py

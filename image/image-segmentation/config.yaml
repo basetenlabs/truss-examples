@@ -1,0 +1,19 @@
+description: "Image segmentation for image generation"
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "nvidia/segformer-b0-finetuned-ade-512-512"
+  example_model_input:
+    instances:
+    - image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg
+model_name: Image segmentation
+python_version: py39
+requirements:
+- torchvision==0.9.1
+resources:
+  cpu: 3000m
+  memory: 8Gi
+  use_gpu: false
+secrets: {}
+spec_version: "2.0"
+system_packages: []

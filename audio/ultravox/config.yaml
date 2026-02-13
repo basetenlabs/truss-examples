@@ -1,0 +1,24 @@
+description: "Ultravox v0.2 for audio understanding"
+base_image:
+  image: vshulman/vllm-openai-fixie:latest
+  python_executable_path: /usr/bin/python3
+model_metadata:
+  repo_id: "fixie-ai/ultravox-v0_4_1-llama-3_1-8b"
+  example_model_input: {"messages": [{"role": "user", "content": "Describe the audio clip."}], "model": "fixie-ai/ultravox-v0.2", "max_tokens": 512}
+  arguments:
+    model: fixie-ai/ultravox-v0.2
+    audio_token_id: 128002
+environment_variables: {}
+external_package_dirs: []
+model_name: Ultravox v0.2
+python_version: py310
+runtime:
+  predict_concurrency: 512
+requirements:
+  - httpx==0.27.0
+resources:
+  accelerator: A100
+  use_gpu: true
+secrets: {}
+system_packages:
+- python3.10-venv

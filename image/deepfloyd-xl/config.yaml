@@ -1,0 +1,32 @@
+description: Generate original images from text prompts.
+environment_variables: {}
+external_package_dirs: []
+model_metadata:
+  repo_id: "DeepFloyd/IF-I-XL-v1.0"
+  avatar_url: https://cdn.baseten.co/production/static/explore/deep-floyd.png
+  cover_image_url: https://cdn.baseten.co/production/static/explore/deepfloyd-cover.png
+  example_model_input:
+    prompt: A photo of an astronaut riding a horse
+  tags:
+  - image-generation
+model_name: Deepfloyd XL
+python_version: py39
+requirements:
+- diffusers==0.24.0
+- transformers==4.36.0
+- torch==2.1.0
+- scipy==1.11.4
+- accelerate==0.25.0
+- pillow==10.1.0
+- bitsandbytes==0.41.3
+- sentencepiece==0.1.99
+- huggingface_hub==0.19.4
+resources:
+  accelerator: A10G
+  cpu: '3'
+  memory: 14Gi
+  use_gpu: true
+secrets:
+  hf_access_token: ENTER HF API KEY HERE
+spec_version: "2.0"
+system_packages: []

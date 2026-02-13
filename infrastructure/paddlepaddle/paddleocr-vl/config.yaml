@@ -1,0 +1,34 @@
+description: "PaddleOCR VL for optical character recognition"
+base_image:
+  image: public.ecr.aws/q9t5s3a7/vllm-ci-postmerge-repo:0bf29fadf5f8b28817fbccb037fb70adaef3f7f1
+# build_commands:
+#   - pip uninstall -y vllm
+#   - VLLM_USE_PRECOMPILED=1 VLLM_TEST_USE_PRECOMPILED_NIGHTLY_WHEEL=1 pip install git+https://github.com/vllm-project/vllm.git
+model_metadata:
+  repo_id: PaddlePaddle/PaddleOCR-VL
+  example_model_input: # Loads sample request into Baseten playground
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "https://ofasys-multimodal-wlcb-3-toshanghai.oss-accelerate.aliyuncs.com/wpf272043/keepme/image/receipt.png"
+          - type: text
+            text: "OCR:"
+    model: "PaddlePaddle/PaddleOCR-VL"
+    max_tokens: 4096
+    temperature: 0.0
+  tags:
+    - openai-compatible
+docker_server:
+  start_command: vllm serve PaddlePaddle/PaddleOCR-VL --trust-remote-code --max-num-batched-tokens 16384 --no-enable-prefix-caching --mm-processor-cache-gb 0 --tensor-parallel-size 1 --served-model-name PaddlePaddle/PaddleOCR-VL --host 0.0.0.0 --port 8000
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+model_name: PaddleOCR-VL
