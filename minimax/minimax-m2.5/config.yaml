@@ -1,0 +1,57 @@
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "What is the meaning of life?"
+    stream: true
+    model: MiniMaxAI/MiniMax-M2.5
+    max_tokens: 32768
+    temperature: 0.7
+  tags:
+    - openai-compatible
+
+model_name: MiniMaxAI/MiniMax-M2.5
+
+base_image:
+  image: vllm/vllm-openai:nightly-dcf6ee8592b4f33593feb579b7a420d155ada374
+
+docker_server:
+  start_command: >
+    sh -c "SAFETENSORS_FAST_GPU=1 python3 -m vllm.entrypoints.openai.api_server
+    --model /models/MiniMax-M2.5
+    --host 0.0.0.0 --port 8000
+    --served-model-name MiniMaxAI/MiniMax-M2.5
+    --tensor-parallel-size $(nvidia-smi -L | wc -l)
+    --enable_expert_parallel
+    --trust-remote-code
+    --load-format runai_streamer
+    --disable-log-stats
+    --max-num-seqs 64
+    --max-num-batched-tokens 8192
+    --tool-call-parser minimax_m2
+    --reasoning-parser minimax_m2_append_think
+    --enable-auto-tool-choice"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+weights:
+  - source: "hf://MiniMaxAI/MiniMax-M2.5@main"
+    mount_location: "/models/MiniMax-M2.5"
+    ignore_patterns:
+      - "*.md"
+      - "*.txt"
+
+resources:
+  accelerator: H100:4
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
