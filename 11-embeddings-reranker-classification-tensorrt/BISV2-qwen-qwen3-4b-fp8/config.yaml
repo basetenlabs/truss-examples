@@ -16,13 +16,13 @@ resources:
   memory: 10Gi
   use_gpu: true
 trt_llm:
+  inference_stack: v2
   build:
     checkpoint_repository:
       repo: Qwen/Qwen3-4B
       revision: main
       source: HF
     quantization_type: fp8_kv
-  inference_stack: v2
   runtime:
     max_batch_size: 32
     max_num_tokens: 32768
