@@ -19,24 +19,6 @@ truss push --publish
 # https://docs.baseten.co/development/model/build-your-first-model
 ```
 
-### 2. Test with the OpenAI Client
-
-Replace the `api_key` and `base_url` in `test.py` with your specific deployment credentials and URL.
-
-```bash
-pip install openai
-python test.py
-```
-
-### 3. Project Structure
-
-```
-glm-ocr/
-├── config.yaml              # Truss configuration
-├── test.py                  # Test script (OpenAI client)
-└── README.md                # Documentation
-```
-
 ## Model Information
 
 - **Model**: [zai-org/GLM-OCR](https://huggingface.co/zai-org/GLM-OCR)
@@ -62,11 +44,10 @@ response = client.chat.completions.create(
     messages=[{
         "role": "user",
         "content": [
-            {"type": "image_url", "image_url": {"url": "https://example.com/document.png"}},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}},
             {"type": "text", "text": "Text Recognition:"}
         ]
     }],
-    max_tokens=4096
 )
 
 print(response.choices[0].message.content)
