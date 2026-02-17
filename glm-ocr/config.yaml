@@ -1,0 +1,33 @@
+model_name: GLM-OCR
+model_metadata:
+  example_model_input:
+    model: "zai-org/GLM-OCR"
+    messages:
+      - role: user
+        content:
+          - type: image_url
+            image_url:
+              url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          - type: text
+            text: "Text Recognition:"
+    max_tokens: 4096
+  tags:
+    - openai-compatible
+base_image:
+  image: vllm/vllm-openai:nightly-d00df624f313a6a5a7a6245b71448b068b080cd7
+build_commands:
+  - apt-get update && apt-get install -y git
+  - pip install git+https://github.com/huggingface/transformers.git@83eb94c1febf98b25338622b14522b7288f1f3fd
+docker_server:
+  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve zai-org/GLM-OCR --served-model-name zai-org/GLM-OCR --host 0.0.0.0 --port 8000 --max-model-len 8192 --trust-remote-code --enable-prefix-caching"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: L4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
