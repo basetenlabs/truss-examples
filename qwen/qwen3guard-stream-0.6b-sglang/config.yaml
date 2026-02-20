@@ -1,0 +1,50 @@
+# Qwen3Guard-Stream-0.6B — Custom Docker deployment
+#
+# This model is a classification model (Qwen3ForGuardModel), NOT a causal LM.
+# SGLang's launch_server does not support it (crashes — sgl-project/sglang#15339).
+# We use a custom Docker image with a thin FastAPI wrapper around SGLang's Engine.
+#
+# API:  POST /predict   — unified endpoint (dispatches on payload)
+#       POST /v1/guard  — classify messages for safety (messages-based)
+#       POST /generate  — resumable streaming classification (input_ids-based)
+#       GET  /health    — health check
+#
+# Output: risk_level (Safe/Unsafe/Controversial) + category per query & response.
+# Does NOT generate text.
+#
+# Build the Docker image before deploying:
+#   docker build --platform linux/amd64 -t <your-registry>/qwen3guard-stream:v1 .
+#   docker push <your-registry>/qwen3guard-stream:v1
+# Then update base_image.image below with your image tag.
+
+model_name: Qwen3Guard-Stream-0.6B SGLang
+model_metadata:
+  example_model_input:
+    messages:
+      - role: user
+        content: "How do I hack into someone's account?"
+    model: "Qwen/Qwen3Guard-Stream-0.6B"
+  tags:
+    - guard-model
+    - classification
+
+# Custom image built from Dockerfile in this directory.
+# Uses lmsysorg/sglang:dev-x86 base + SGLang support_qwen3_guard branch.
+# Replace with your own registry/tag after building.
+base_image:
+  image: <your-registry>/qwen3guard-stream:v1
+docker_server:
+  start_command: >
+    python3 /app/server.py
+    --model-path Qwen/Qwen3Guard-Stream-0.6B
+    --host 0.0.0.0
+    --port 8000
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /predict
+  server_port: 8000
+resources:
+  accelerator: A10G
+  use_gpu: true
+runtime:
+  predict_concurrency: 256

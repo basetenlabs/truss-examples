@@ -1,0 +1,57 @@
+model_metadata:
+  example_model_input:
+    {
+      model: "gemma-3-12b-novision",
+      messages:
+        [
+          {
+            role: "system",
+            content: "You are a knowledgable, engaging, history teacher.",
+          },
+          {
+            role: "user",
+            content: "What was the role of Llamas in the Inca empire?",
+          },
+        ],
+      stream: true,
+      max_tokens: 512,
+      temperature: 0.6,
+      top_p: 1.0,
+      top_k: 40,
+      frequency_penalty: 1,
+    }
+  tags:
+    - openai-compatible
+
+model_name: gemma-3-12b-novision
+
+base_image:
+  image: vllm/vllm-openai:latest
+
+docker_server:
+  start_command: >
+    sh -c "python3 -m vllm.entrypoints.openai.api_server
+    --model gghfez/gemma-3-12b-novision
+    --host 0.0.0.0 --port 8000
+    --served-model-name gemma-3-12b-novision
+    --tensor-parallel-size 1
+    --trust-remote-code
+    --max-model-len 8192
+    --max-num-seqs 64
+    --dtype auto
+    --disable-log-stats"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+resources:
+  accelerator: H100:1
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
