@@ -16,7 +16,6 @@ Requires SGLang installed from the support_qwen3_guard branch:
 import argparse
 import json
 import logging
-import os
 import time
 import traceback
 from contextlib import asynccontextmanager
@@ -41,13 +40,26 @@ from sglang.srt.entrypoints.engine import Engine
 RISK_LABELS = ["Safe", "Controversial", "Unsafe"]
 
 RESPONSE_CATEGORY_LABELS = [
-    "Violent", "Sexual Content", "Self-Harm", "Political",
-    "PII", "Copyright", "Illegal Acts", "Unethical",
+    "Violent",
+    "Sexual Content",
+    "Self-Harm",
+    "Political",
+    "PII",
+    "Copyright",
+    "Illegal Acts",
+    "Unethical",
 ]
 
 QUERY_CATEGORY_LABELS = [
-    "Violent", "Sexual Content", "Self-Harm", "Political",
-    "PII", "Copyright", "Illegal Acts", "Unethical", "Jailbreak",
+    "Violent",
+    "Sexual Content",
+    "Self-Harm",
+    "Political",
+    "PII",
+    "Copyright",
+    "Illegal Acts",
+    "Unethical",
+    "Jailbreak",
 ]
 
 # ---------------------------------------------------------------------------
@@ -75,10 +87,13 @@ class GenerateRequest(BaseModel):
     Allows sending raw token IDs with a persistent request ID to reuse
     KV cache across incremental calls (resumable mode).
     """
+
     input_ids: list[int]
     rid: Optional[str] = None
     resumable: bool = False
-    sampling_params: dict = Field(default_factory=lambda: {"max_new_tokens": 1, "temperature": 0.0})
+    sampling_params: dict = Field(
+        default_factory=lambda: {"max_new_tokens": 1, "temperature": 0.0}
+    )
 
 
 class ClassificationResult(BaseModel):
@@ -167,8 +182,12 @@ async def guard(req: GuardRequest):
             logger.info(f"Raw result keys: {list(result.keys())}")
             for k, v in result.items():
                 vtype = type(v).__name__
-                vshape = getattr(v, 'shape', None)
-                vlen = len(v) if hasattr(v, '__len__') and not isinstance(v, str) else 'N/A'
+                vshape = getattr(v, "shape", None)
+                vlen = (
+                    len(v)
+                    if hasattr(v, "__len__") and not isinstance(v, str)
+                    else "N/A"
+                )
                 logger.info(f"  {k}: type={vtype}, shape={vshape}, len={vlen}")
         else:
             logger.info(f"Raw result value: {result}")
@@ -284,8 +303,10 @@ def _serialize(obj):
         return items
     if isinstance(obj, torch.Tensor):
         return {"tensor_shape": list(obj.shape), "values": obj.tolist()[:50]}
-    if hasattr(obj, '__dict__'):
-        return {k: _serialize(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
+    if hasattr(obj, "__dict__"):
+        return {
+            k: _serialize(v) for k, v in obj.__dict__.items() if not k.startswith("_")
+        }
     try:
         json.dumps(obj)
         return obj
