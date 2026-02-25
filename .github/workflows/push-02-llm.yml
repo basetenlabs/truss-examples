@@ -20,7 +20,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install git+https://github.com/basetenlabs/truss.git --upgrade
 
-      - name: Push 02-llm
+      - name: Configure trussrc
         env:
           BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
-        run: truss push 02-llm --trusted
+        run: |
+          cat > ~/.trussrc <<EOF
+          [baseten]
+          remote_provider = baseten
+          api_key = ${BASETEN_API_KEY}
+          remote_url = https://app.baseten.co
+          EOF
+
+      - name: Push 02-llm
+        run: truss push 02-llm --trusted --remote baseten
