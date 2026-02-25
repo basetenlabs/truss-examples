@@ -10,26 +10,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install git+https://github.com/basetenlabs/truss.git --upgrade
-
       - name: Configure trussrc
         env:
           BASETEN_API_KEY: ${{ secrets.BASETEN_API_KEY }}
         run: |
-          cat > ~/.trussrc <<EOF
-          [baseten]
-          remote_provider = baseten
-          api_key = ${BASETEN_API_KEY}
-          remote_url = https://app.baseten.co
-          EOF
-
-      - name: Push 02-llm
-        run: truss push 02-llm --trusted --remote baseten
+          echo $BASETEN_API_KEY > api_key.txt
