@@ -1,10 +1,14 @@
 description: Restore photos with this image-to-image model.
 environment_variables: {}
 external_data:
-- local_data_path: RealESRGAN_x2plus.pth
-  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
-- local_data_path: GFPGANv1.3.pth
-  url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
+- url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/RealESRGAN_x2plus.pth
+  local_data_path: RealESRGAN_x2plus.pth
+- url: https://baseten-public.s3.us-west-2.amazonaws.com/models/gfp-gan/GFPGANv1.3.pth
+  local_data_path: GFPGANv1.3.pth
+- url: https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth
+  local_data_path: /app/gfpgan/weights/parsing_parsenet.pth
+- url: https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth
+  local_data_path: /app/gfpgan/weights/detection_Resnet50_Final.pth
 external_package_dirs: []
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/tencent.png
