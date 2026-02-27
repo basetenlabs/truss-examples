@@ -46,7 +46,7 @@ class Model:
         self.tts = Qwen3TTSModel.from_pretrained(
             MODEL_ID,
             device_map="cuda:0",
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,
             attn_implementation="flash_attention_2",
         )
         logger.info("Qwen3-TTS Base model loaded")
