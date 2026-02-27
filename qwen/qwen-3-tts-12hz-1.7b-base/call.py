@@ -34,7 +34,7 @@ import tempfile
 
 import httpx
 
-DEFAULT_API_BASE = "https://model-w5ddzoj3.api.baseten.co/development/predict"
+DEFAULT_API_BASE = "https://model-<model-id>.api.baseten.co/production/predict"
 DEFAULT_API_KEY = os.getenv("BASETEN_API_KEY")
 
 
