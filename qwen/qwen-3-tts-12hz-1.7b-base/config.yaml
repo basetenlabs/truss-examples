@@ -1,0 +1,15 @@
+model_name: Qwen3-TTS 1.7B 12Hz Base
+python_version: py312
+secrets:
+  hf_access_token: null
+system_packages:
+  - sox
+  - ffmpeg
+requirements:
+  - qwen-tts
+  - https://github.com/mjun0812/flash-attention-prebuild-wheels/releases/download/v0.7.16/flash_attn-2.6.3+cu128torch2.10-cp312-cp312-linux_x86_64.whl
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
