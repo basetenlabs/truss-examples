@@ -9,9 +9,12 @@ model_metadata:
   tags:
   - text-to-speech
 model_name: XTTS V2
-python_version: py310
+python_version: py311
 requirements:
-  - git+https://github.com/htrivedi99/TTS.git
+  - torch>=2.0.0,<2.6.0
+  - transformers==4.39.3
+  - requests
+  - TTS==0.22.0
 resources:
   accelerator: T4
   cpu: '3'
