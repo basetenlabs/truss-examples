@@ -8,7 +8,7 @@ model_metadata:
     max_tokens: 100
     temperature: 0.7
 base_image:
-  image: vllm/vllm-openai:qwen3_5
+  image: vllm/vllm-openai:cu130-nightly-8fa68a8ce45641420a080920fccd9139aba80613
 weights:
   - source: "hf://Qwen/Qwen3.5-9B@ef3d031a90d340a92d71f83ec17d054e100ce713"
     mount_location: "/app/model_cache/qwen3.5-9b"
@@ -16,7 +16,7 @@ weights:
 build_commands: []
 docker_server:
   start_command: >-
-    sh -c "vllm serve /app/model_cache/qwen3.5-9b
+    sh -c "vllm serve /app/checkpoint/qwen3.5-9b
     --served-model-name Qwen/Qwen3.5-9B
     --host 0.0.0.0
     --port 8000
