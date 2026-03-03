@@ -11,7 +11,7 @@ base_image:
   image: vllm/vllm-openai:cu130-nightly-8fa68a8ce45641420a080920fccd9139aba80613
 weights:
   - source: "hf://Qwen/Qwen3.5-9B@ef3d031a90d340a92d71f83ec17d054e100ce713"
-    mount_location: "/app/model_cache/qwen3.5-9b"
+    mount_location: "/app/checkpoint/qwen3.5-9b"
     auth_secret_name: "hf_access_token"
 build_commands: []
 docker_server:
