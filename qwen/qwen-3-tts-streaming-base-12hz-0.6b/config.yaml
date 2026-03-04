@@ -1,5 +1,11 @@
 model_name: Qwen3 TTS 12Hz Base (0.6B)
 python_version: py312
+model_metadata:
+  example_model_input:
+    task_type: Base
+    voice_name: my_voice
+    ref_text: "Transcript of the reference audio."
+    ref_audio: "data:audio/wav;base64,<base64-encoded-reference-audio>"
 secrets:
   hf_access_token: null
 system_packages:
