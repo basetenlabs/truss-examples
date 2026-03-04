@@ -270,7 +270,7 @@ async def sweep(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Sweep concurrency & plot TTFA percentiles (voice cloning)")
-    parser.add_argument("--url", default="wss://model-wgl5y7o3.api.baseten.co/deployment/q41xjd5/websocket")
+    parser.add_argument("--url", default="wss://model-<model_id>.api.baseten.co/deployment/<deployment_id>/websocket")
     parser.add_argument(
         "--text",
         default="Hello world. How are you today? I am doing very well, thank you for asking.",
