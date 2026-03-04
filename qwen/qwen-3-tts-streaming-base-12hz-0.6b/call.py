@@ -233,7 +233,7 @@ def main():
     parser = argparse.ArgumentParser(description="Streaming text-input TTS client")
     parser.add_argument(
         "--url",
-        default="wss://model-wgl5y7o3.api.baseten.co/deployment/q41xjd5/websocket",
+        default="wss://model-<model_id>.api.baseten.co/deployment/<deployment_id>/websocket",
         help="WebSocket endpoint URL",
     )
     parser.add_argument(
