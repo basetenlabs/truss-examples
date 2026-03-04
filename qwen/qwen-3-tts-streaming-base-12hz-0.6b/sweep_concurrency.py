@@ -35,6 +35,7 @@ except ImportError:
 
 try:
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 except ImportError:
@@ -100,7 +101,11 @@ async def run_one_session(url: str, text: str, config: dict) -> dict:
 
 
 async def run_at_concurrency(
-    url: str, text: str, config: dict, concurrency: int, rounds: int,
+    url: str,
+    text: str,
+    config: dict,
+    concurrency: int,
+    rounds: int,
 ) -> list[dict]:
     all_results: list[dict] = []
     for _ in range(rounds):
@@ -174,7 +179,11 @@ async def sweep(args):
     rows: list[dict] = []
 
     for conc in concurrencies:
-        print(f"\n  [c={conc:>2}] benchmarking ({args.rounds} rounds × {conc} sessions)...", end="", flush=True)
+        print(
+            f"\n  [c={conc:>2}] benchmarking ({args.rounds} rounds × {conc} sessions)...",
+            end="",
+            flush=True,
+        )
         results = await run_at_concurrency(args.url, text, config, conc, args.rounds)
         print(" done")
 
@@ -182,8 +191,11 @@ async def sweep(args):
         ttfas = [r["ttfa_ms"] for r in ok if r.get("ttfa_ms") is not None]
         totals = [r["total_ms"] for r in ok]
         audio_secs = [r["audio_duration_s"] for r in ok]
-        rtfs = [r["total_ms"] / 1000 / r["audio_duration_s"]
-                for r in ok if r.get("audio_duration_s", 0) > 0]
+        rtfs = [
+            r["total_ms"] / 1000 / r["audio_duration_s"]
+            for r in ok
+            if r.get("audio_duration_s", 0) > 0
+        ]
         errors = len(results) - len(ok)
 
         p50 = percentile(ttfas, 50)
@@ -269,16 +281,25 @@ async def sweep(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Sweep concurrency & plot TTFA percentiles (voice cloning)")
-    parser.add_argument("--url", default="wss://model-<model_id>.api.baseten.co/deployment/<deployment_id>/websocket")
+    parser = argparse.ArgumentParser(
+        description="Sweep concurrency & plot TTFA percentiles (voice cloning)"
+    )
+    parser.add_argument(
+        "--url",
+        default="wss://model-<model_id>.api.baseten.co/deployment/<deployment_id>/websocket",
+    )
     parser.add_argument(
         "--text",
         default="Hello world. How are you today? I am doing very well, thank you for asking.",
     )
     parser.add_argument("--max-concurrency", type=int, default=16)
     parser.add_argument("--step", type=int, default=2)
-    parser.add_argument("--rounds", type=int, default=3, help="Measured rounds per concurrency level")
-    parser.add_argument("--warmup", type=int, default=1, help="Warmup rounds (discarded) per level")
+    parser.add_argument(
+        "--rounds", type=int, default=3, help="Measured rounds per concurrency level"
+    )
+    parser.add_argument(
+        "--warmup", type=int, default=1, help="Warmup rounds (discarded) per level"
+    )
     parser.add_argument(
         "--voice-name",
         default=None,
@@ -314,7 +335,9 @@ def main():
             args.ref_text = f.read().strip()
 
     if not args.voice_name and not args.ref_audio:
-        print("Note: No --voice-name or --ref-audio set. Using built-in voice (not cloning). Use --voice-name NAME or --ref-audio PATH for clone sweep.")
+        print(
+            "Note: No --voice-name or --ref-audio set. Using built-in voice (not cloning). Use --voice-name NAME or --ref-audio PATH for clone sweep."
+        )
     asyncio.run(sweep(args))
 
 

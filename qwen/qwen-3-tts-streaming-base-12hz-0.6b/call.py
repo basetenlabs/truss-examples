@@ -104,12 +104,17 @@ async def stream_tts(
     """Connect to the streaming TTS endpoint and process audio responses."""
     os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
 
-    async with websockets.connect(url, additional_headers={"Authorization": f"Api-Key {os.getenv('BASETEN_API_KEY')}"}) as ws:
+    async with websockets.connect(
+        url,
+        additional_headers={"Authorization": f"Api-Key {os.getenv('BASETEN_API_KEY')}"},
+    ) as ws:
         # 1. Send session config
         config_msg = {"type": "session.config", **config}
         t_request = time.perf_counter()
         await ws.send(json.dumps(config_msg))
-        print(f"Sent session config: { {k: (v[:60] + '...' if isinstance(v, str) and len(v) > 60 else v) for k, v in config.items()} }")
+        print(
+            f"Sent session config: { {k: (v[:60] + '...' if isinstance(v, str) and len(v) > 60 else v) for k, v in config.items()} }"
+        )
 
         # Ensure text ends with punctuation to prevent cutoff
         def ensure_ending_punctuation(t: str) -> str:
@@ -176,10 +181,14 @@ async def stream_tts(
                     msg_type = msg.get("type")
 
                     if msg_type == "voice.registered":
-                        print(f"  Voice '{msg.get('voice_name')}' registered (cached={msg.get('cached')})")
+                        print(
+                            f"  Voice '{msg.get('voice_name')}' registered (cached={msg.get('cached')})"
+                        )
 
                     elif msg_type == "audio.start":
-                        print(f"  [sentence {msg['sentence_index']}] Generating: {msg['sentence_text']!r}")
+                        print(
+                            f"  [sentence {msg['sentence_index']}] Generating: {msg['sentence_text']!r}"
+                        )
 
                     elif msg_type == "audio.done":
                         idx = msg["sentence_index"]
@@ -190,10 +199,18 @@ async def stream_tts(
                     elif msg_type == "session.done":
                         t_total = time.perf_counter() - t_request
                         pcm_data = b"".join(all_pcm)
-                        _write_wav(output_file, pcm_data, sample_rate=sample_rate, channels=1)
-                        audio_duration = len(pcm_data) / (sample_rate * 2) if pcm_data else 0
-                        print(f"\nSession complete: {msg['total_sentences']} sentence(s) generated")
-                        print(f"  Saved {output_file} ({len(pcm_data)} PCM bytes, {audio_duration:.2f}s)")
+                        _write_wav(
+                            output_file, pcm_data, sample_rate=sample_rate, channels=1
+                        )
+                        audio_duration = (
+                            len(pcm_data) / (sample_rate * 2) if pcm_data else 0
+                        )
+                        print(
+                            f"\nSession complete: {msg['total_sentences']} sentence(s) generated"
+                        )
+                        print(
+                            f"  Saved {output_file} ({len(pcm_data)} PCM bytes, {audio_duration:.2f}s)"
+                        )
                         if ttfa is not None:
                             print(f"  TTFA:       {ttfa * 1000:.1f} ms")
                         print(f"  Total time: {t_total * 1000:.1f} ms")
@@ -220,10 +237,14 @@ async def stream_tts(
                 print(f"\nInterrupted after {t_total * 1000:.0f} ms")
                 pcm_data = b"".join(all_pcm)
                 if pcm_data:
-                    _write_wav(output_file, pcm_data, sample_rate=sample_rate, channels=1)
+                    _write_wav(
+                        output_file, pcm_data, sample_rate=sample_rate, channels=1
+                    )
                     audio_duration = len(pcm_data) / (sample_rate * 2)
-                    print(f"  Saved partial audio: {output_file} "
-                          f"({len(pcm_data)} PCM bytes, {audio_duration:.2f}s)")
+                    print(
+                        f"  Saved partial audio: {output_file} "
+                        f"({len(pcm_data)} PCM bytes, {audio_duration:.2f}s)"
+                    )
                 else:
                     print("  No audio received yet.")
                 await ws.close(code=1000, reason="Client interrupted")
@@ -256,7 +277,9 @@ def main():
         choices=["wav", "pcm", "flac", "mp3", "aac", "opus"],
         help="Audio format",
     )
-    parser.add_argument("--speed", type=float, default=1.0, help="Playback speed (0.25-4.0)")
+    parser.add_argument(
+        "--speed", type=float, default=1.0, help="Playback speed (0.25-4.0)"
+    )
     parser.add_argument("--max-new-tokens", type=int, default=None, help="Max tokens")
 
     # Voice cloning options (Base task)
@@ -316,7 +339,9 @@ def main():
     if args.ref_text and os.path.isfile(args.ref_text):
         with open(args.ref_text) as f:
             args.ref_text = f.read().strip()
-        print(f"Read ref_text from file: {args.ref_text[:80]}{'...' if len(args.ref_text) > 80 else ''}")
+        print(
+            f"Read ref_text from file: {args.ref_text[:80]}{'...' if len(args.ref_text) > 80 else ''}"
+        )
 
     # Encode local reference audio as base64 data URI
     ref_audio_data_uri = None
