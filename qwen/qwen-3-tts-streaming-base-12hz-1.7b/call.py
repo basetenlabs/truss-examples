@@ -117,7 +117,9 @@ async def stream_tts(
 ) -> None:
     """Connect to the streaming TTS endpoint and process audio responses."""
     if play and not HAS_PLAYBACK:
-        print("Error: --play requires sounddevice and numpy. pip install sounddevice numpy")
+        print(
+            "Error: --play requires sounddevice and numpy. pip install sounddevice numpy"
+        )
         raise SystemExit(1)
 
     os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
