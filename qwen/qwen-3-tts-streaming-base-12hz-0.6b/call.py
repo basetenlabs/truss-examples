@@ -13,7 +13,7 @@ Usage:
     python call.py \
         --text "Hello world. How are you?" \
         --ref-audio /path/to/reference.wav \
-        --ref-text "Transcript of the reference audio." \
+        --ref-text /path/to/transcript.txt \
         --voice-name my_voice
 
     # Voice cloning (subsequent: uses cached voice, no ref-audio needed)
@@ -27,8 +27,12 @@ Usage:
         --voice-name my_voice \
         --simulate-stt --stt-delay 0.1
 
+    # Play audio as it streams (requires: pip install sounddevice numpy)
+    python call.py --text "Hello world." --voice-name my_voice --play
+
 Requirements:
     pip install websockets
+    pip install sounddevice numpy  # optional, for --play
 """
 
 import argparse
@@ -45,6 +49,15 @@ try:
 except ImportError:
     print("Please install websockets: pip install websockets")
     raise SystemExit(1)
+
+# Optional: for --play (streaming playback)
+try:
+    import numpy as np
+    import sounddevice as sd
+
+    HAS_PLAYBACK = True
+except ImportError:
+    HAS_PLAYBACK = False
 
 
 def _write_wav(path: str, pcm_data: bytes, sample_rate: int, channels: int) -> None:
@@ -100,21 +113,23 @@ async def stream_tts(
     output_file: str,
     simulate_stt: bool = False,
     stt_delay: float = 0.1,
+    play: bool = False,
 ) -> None:
     """Connect to the streaming TTS endpoint and process audio responses."""
+    if play and not HAS_PLAYBACK:
+        print("Error: --play requires sounddevice and numpy. pip install sounddevice numpy")
+        raise SystemExit(1)
+
     os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
 
     async with websockets.connect(
         url,
-        additional_headers={"Authorization": f"Api-Key {os.getenv('BASETEN_API_KEY')}"},
+        additional_headers={"Authorization": f"Api-Key PxEWHi76.iuIzJ5uxLe8uxZb2c7HMXddGPVKhGbyb"},
     ) as ws:
         # 1. Send session config
         config_msg = {"type": "session.config", **config}
         t_request = time.perf_counter()
         await ws.send(json.dumps(config_msg))
-        print(
-            f"Sent session config: { {k: (v[:60] + '...' if isinstance(v, str) and len(v) > 60 else v) for k, v in config.items()} }"
-        )
 
         # Ensure text ends with punctuation to prevent cutoff
         def ensure_ending_punctuation(t: str) -> str:
@@ -139,7 +154,6 @@ async def stream_tts(
                             }
                         )
                     )
-                    print(f"  Sent: {chunk!r}")
                     await asyncio.sleep(stt_delay)
             else:
                 await ws.send(
@@ -150,11 +164,9 @@ async def stream_tts(
                         }
                     )
                 )
-                print(f"Sent full text: {text_to_send!r}")
 
             # 3. Signal end of input
             await ws.send(json.dumps({"type": "input.done"}))
-            print("Sent input.done")
 
         # Run sender and receiver concurrently
         sender_task = asyncio.create_task(send_text())
@@ -163,6 +175,7 @@ async def stream_tts(
         ttfa: float | None = None
         sample_rate: int = 24000
         interrupted = False
+        play_stream = None
 
         # Accumulate all PCM chunks across all sentences into a single buffer.
         all_pcm: list[bytes] = []
@@ -174,29 +187,37 @@ async def stream_tts(
                 if isinstance(message, bytes):
                     if ttfa is None:
                         ttfa = time.perf_counter() - t_request
-                        print(f"  [TTFA] Time to first audio: {ttfa * 1000:.1f} ms")
                     all_pcm.append(message)
+                    if play:
+                        if play_stream is None:
+                            play_stream = sd.OutputStream(
+                                samplerate=sample_rate,
+                                channels=1,
+                                dtype="int16",
+                                blocksize=2048,
+                            )
+                            play_stream.start()
+                        buf = np.frombuffer(message, dtype=np.int16)
+                        await asyncio.to_thread(play_stream.write, buf)
                 else:
                     msg = json.loads(message)
                     msg_type = msg.get("type")
 
                     if msg_type == "voice.registered":
-                        print(
-                            f"  Voice '{msg.get('voice_name')}' registered (cached={msg.get('cached')})"
-                        )
+                        pass
 
                     elif msg_type == "audio.start":
-                        print(
-                            f"  [sentence {msg['sentence_index']}] Generating: {msg['sentence_text']!r}"
-                        )
+                        pass
 
                     elif msg_type == "audio.done":
-                        idx = msg["sentence_index"]
                         sample_rate = msg.get("sample_rate", 24000)
-                        print(f"  [sentence {idx}] Done")
                         sentence_count += 1
 
                     elif msg_type == "session.done":
+                        if play_stream is not None:
+                            await asyncio.to_thread(play_stream.stop)
+                            play_stream.close()
+                            play_stream = None
                         t_total = time.perf_counter() - t_request
                         pcm_data = b"".join(all_pcm)
                         _write_wav(
@@ -219,8 +240,6 @@ async def stream_tts(
                         break
                     elif msg_type == "error":
                         print(f"  ERROR: {msg['message']}")
-                    else:
-                        print(f"  Unknown message: {msg}")
 
         except (asyncio.CancelledError, KeyboardInterrupt):
             interrupted = True
@@ -231,6 +250,13 @@ async def stream_tts(
                 await sender_task
             except asyncio.CancelledError:
                 pass
+
+            if play_stream is not None:
+                try:
+                    await asyncio.to_thread(play_stream.stop)
+                    play_stream.close()
+                except Exception:
+                    pass
 
             if interrupted:
                 t_total = time.perf_counter() - t_request
@@ -327,6 +353,11 @@ def main():
         default=0.1,
         help="Delay between words in STT simulation (seconds)",
     )
+    parser.add_argument(
+        "--play",
+        action="store_true",
+        help="Play audio as it streams (requires: pip install sounddevice numpy)",
+    )
 
     args = parser.parse_args()
 
@@ -383,6 +414,7 @@ def main():
                 output_file=args.output,
                 simulate_stt=args.simulate_stt,
                 stt_delay=args.stt_delay,
+                play=args.play,
             )
         )
     except KeyboardInterrupt:
