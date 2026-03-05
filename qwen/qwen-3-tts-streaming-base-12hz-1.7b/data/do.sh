@@ -16,4 +16,4 @@ git pull origin main || true
 pip install -e .
 
 chmod +x ./examples/online_serving/qwen3_tts/run_server.sh
-./examples/online_serving/qwen3_tts/run_server.sh 
+./examples/online_serving/qwen3_tts/run_server.sh Base 1.7B
