@@ -124,7 +124,7 @@ async def stream_tts(
 
     async with websockets.connect(
         url,
-        additional_headers={"Authorization": f"Api-Key PxEWHi76.iuIzJ5uxLe8uxZb2c7HMXddGPVKhGbyb"},
+        additional_headers={"Authorization": f"Api-Key {os.getenv('BASETEN_API_KEY')}"},
     ) as ws:
         # 1. Send session config
         config_msg = {"type": "session.config", **config}
