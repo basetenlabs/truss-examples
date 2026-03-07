@@ -20,6 +20,8 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
+environment_variables:
+  TRTLLM_ENABLE_PDL: 1
 model_cache:
   - repo_id: baseten-admin/glm-4.7-fp4
     revision: main
@@ -42,18 +44,19 @@ trt_llm:
     tensor_parallel_size: 4
     served_model_name: glm47
     patch_kwargs:
-      disable_overlap_scheduler: True
       guided_decoding_backend: "xgrammar"
       moe_expert_parallel_size: 4
       moe_config:
         use_low_precision_moe_combine: true
         backend: TRTLLM
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
       kv_cache_config:
         free_gpu_memory_fraction: 0.8
         enable_block_reuse: true
         # host_cache_size: 100000000000
       cuda_graph_config:
-        enable_padding: false
+        enable_padding: true
       enable_iter_perf_stats: true
-      autotuner_enabled: false
       model_path: /app/model_cache/glm47
