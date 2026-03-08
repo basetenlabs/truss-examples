@@ -1,0 +1,8 @@
+model_name: Flash Attn 2 Base Truss
+base_image:
+  image: bolabaseten/flash-attn2:2.0.0.post1
+  python_executable_path: /usr/bin/python3
+resources:
+  accelerator: T4
+  use_gpu: true
+secrets: {}
