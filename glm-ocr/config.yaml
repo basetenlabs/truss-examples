@@ -14,7 +14,7 @@ model_metadata:
   tags:
     - openai-compatible
 base_image:
-  image: vllm/vllm-openai:nightly-d00df624f313a6a5a7a6245b71448b068b080cd7
+  image: vllm/vllm-openai:nightly-36735fd77224467e6580f3bd48eb32d4fca8c72e
 build_commands:
   - apt-get update && apt-get install -y git
   - pip install git+https://github.com/huggingface/transformers.git@83eb94c1febf98b25338622b14522b7288f1f3fd
