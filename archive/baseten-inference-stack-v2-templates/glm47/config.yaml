@@ -1,14 +1,14 @@
-model_name: GLM47 BISLLM
+model_name: Palmyra x5.5 H200 BIS 6
 python_version: py39
 resources:
-  accelerator: B200:4
+  accelerator: H200:8
   cpu: "1"
   memory: 10Gi
   use_gpu: true
 model_metadata:
   example_model_input:
     {
-      "model": "glm47",
+      "model": "Writer/Palmyra_x5.5",
       "messages":
         [
           {
@@ -20,40 +20,44 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
-model_cache:
-  - repo_id: baseten-admin/glm-4.7-fp4
-    revision: main
-    use_volume: true
-    volume_folder: glm47
-    runtime_secret_name: "hf_access_token"
+weights:
+  - source: "hf://Writer/Palmyra_x5.5@main"
+    auth_secret_name: "hf_access_token"
+    mount_location: "/app/models/palmyra"
+    ignore_patterns: ["*.md", "*.txt"]
 trt_llm:
   build:
     checkpoint_repository:
-      # repo: baseten-admin/glm-4.7-fp4
       repo: michaelfeil/empty-model
       revision: main
       source: HF
   inference_stack: v2
   runtime:
     enable_chunked_prefill: true
-    max_batch_size: 64
+    max_batch_size: 32
     max_num_tokens: 8192
     max_seq_len: 202752
-    tensor_parallel_size: 4
-    served_model_name: glm47
+    tensor_parallel_size: 8
+    served_model_name: Writer/Palmyra_x5.5
     patch_kwargs:
-      disable_overlap_scheduler: True
       guided_decoding_backend: "xgrammar"
-      moe_expert_parallel_size: 4
-      moe_config:
-        use_low_precision_moe_combine: true
-        backend: TRTLLM
+      moe_expert_parallel_size: 8
       kv_cache_config:
         free_gpu_memory_fraction: 0.8
         enable_block_reuse: true
-        # host_cache_size: 100000000000
+        event_buffer_max_size: 16384
+        host_cache_size: 100000000000
       cuda_graph_config:
         enable_padding: false
       enable_iter_perf_stats: true
-      autotuner_enabled: false
-      model_path: /app/model_cache/glm47
+      tool_call_parser: glm47
+      reasoning_parser: glm47
+      router_mode: kv
+      opt_num_tokens: null
+      tokenizer_limit_length: 202752
+      moe_config:
+        backend: CUTLASS
+      model_level_stop_words:
+        - "<|user|>"
+        - "<|observation|>"
+      model_path: /app/models/palmyra
