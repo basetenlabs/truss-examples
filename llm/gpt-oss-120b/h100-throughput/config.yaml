@@ -1,0 +1,58 @@
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Write FizzBuzz in Python"
+    stream: true
+    model: "openai/gpt-oss-120b"
+    max_tokens: 4096
+    temperature: 0.5
+  tags:
+    - openai-compatible
+model_name: "model:gpt-oss-120b preset:h100-throughput"
+weights:
+  - source: "hf://openai/gpt-oss-120b@b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
+    mount_location: "/models/gpt-oss-120b"
+    ignore_patterns: ["original/*", "metal/model.bin"]
+build_commands:
+  - mkdir -p /opt/tiktoken
+  - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken -o /opt/tiktoken/o200k_base.tiktoken
+  - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken -o /opt/tiktoken/cl100k_base.tiktoken
+base_image:
+  image: vllm/vllm-openai:v0.18.0
+environment_variables:
+  TIKTOKEN_ENCODINGS_BASE: "/opt/tiktoken"
+  TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"
+docker_server:
+  start_command: >
+    sh -c "export COMPILATION_CONFIG='{\"pass_config\":{\"fuse_allreduce_rms\":true,\"eliminate_noops\":true}}' &&
+    vllm serve /models/gpt-oss-120b
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name openai/gpt-oss-120b
+    --tensor-parallel-size 4
+    --gpu-memory-utilization 0.90
+    --max-model-len 16384
+    --max-num-batched-tokens 16384
+    --max-num-seqs 256
+    --stream-interval 20
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --compilation-config \"$COMPILATION_CONFIG\"
+    --async-scheduling
+    --trust-remote-code"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:4
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
+  health_checks:
+    restart_check_delay_seconds: 1500
+    restart_threshold_seconds: 30
+    stop_traffic_threshold_seconds: 30

@@ -1,0 +1,35 @@
+base_image:
+  image: vllm/vllm-openai:latest
+build_commands:
+  - pip install -U --pre transformers==5.0.0
+docker_server:
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health
+  server_port: 8000
+  start_command: vllm serve zai-org/GLM-4.7-Flash --tensor-parallel-size 2 --gpu-memory-utilization 0.8 --tool-call-parser glm47 --enable-auto-tool-choice --served-model-name zai-org/GLM-4.7-Flash --host 0.0.0.0 --port 8000 --trust-remote-code --max-model-len auto
+model_metadata:
+  example_model_input:
+    max_tokens: 32768
+    messages:
+    - content: You are a helpful assistant.
+      role: system
+    - content: What is the meaning of life?
+      role: user
+    model: zai-org/GLM-4.7-Flash
+    stream: true
+    temperature: 0.7
+  tags:
+  - openai-compatible
+model_name: "model:glm-4.7-flash preset:latency"
+python_version: py39
+resources:
+  accelerator: H100:2
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+runtime:
+  is_websocket_endpoint: false
+  predict_concurrency: 32
+  transport:
+    kind: http

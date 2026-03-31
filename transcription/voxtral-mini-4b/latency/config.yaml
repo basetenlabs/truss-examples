@@ -1,0 +1,43 @@
+model_name: "model:voxtral-mini-4b preset:latency"
+model_metadata:
+  repo_id: mistralai/Voxtral-Mini-4B-Realtime-2602
+secrets:
+  hf_access_token: null
+weights:
+  - source: "hf://mistralai/Voxtral-Mini-4B-Realtime-2602@main"
+    mount_location: "/app/models/mistralai/Voxtral-Mini-4B-Realtime-2602"
+    auth_secret_name: "hf_access_token"
+environment_variables:
+  VLLM_DISABLE_COMPILE_CACHE: "1"
+base_image:
+  image: vllm/vllm-openai:latest
+docker_server:
+  start_command: sh -c "VLLM_DISABLE_COMPILE_CACHE=1 vllm serve /app/models/mistralai/Voxtral-Mini-4B-Realtime-2602 --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}' --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/realtime
+  server_port: 8000
+resources:
+  accelerator: H100_40GB:1
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+requirements:
+  - vllm[audio]
+  - librosa
+  - torch
+  - torchaudio
+  - pynvml
+  - ffmpeg-python
+  - websockets
+system_packages:
+  - python3.10-venv
+  - ffmpeg
+  - openmpi-bin
+  - libopenmpi-dev
+runtime:
+  is_websocket_endpoint: true
+  transport:
+    kind: websocket
+    ping_interval_seconds: null
+    ping_timeout_seconds: null

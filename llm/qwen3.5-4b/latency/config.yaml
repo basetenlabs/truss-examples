@@ -1,0 +1,43 @@
+model_name: "model:qwen3.5-4b preset:latency"
+model_metadata:
+  example_model_input:
+    model: "Qwen/Qwen3.5-4B"
+    messages:
+      - role: user
+        content: "What is the capital of France?"
+    max_tokens: 100
+    temperature: 0.7
+base_image:
+  image: vllm/vllm-openai:v0.18.0
+weights:
+  - source: "hf://Qwen/Qwen3.5-4B@main"
+    mount_location: "/app/checkpoint/qwen3.5-4b"
+    auth_secret_name: "hf_access_token"
+build_commands: []
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /app/checkpoint/qwen3.5-4b
+    --served-model-name Qwen/Qwen3.5-4B
+    --host 0.0.0.0
+    --port 8000
+    --gpu-memory-utilization 0.95
+    --max-model-len 32768
+    --dtype bfloat16
+    --reasoning-parser qwen3
+    --enable-auto-tool-choice
+    --tool-call-parser qwen3_coder
+    --trust-remote-code"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  HF_HUB_ENABLE_HF_TRANSFER: '1'
+  VLLM_LOGGING_LEVEL: WARNING
+runtime:
+  predict_concurrency: 128
+resources:
+  accelerator: H100:1
+  use_gpu: true
+secrets:
+  hf_access_token: null

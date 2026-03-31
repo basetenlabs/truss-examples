@@ -1,0 +1,47 @@
+base_image:
+  image: vllm/vllm-openai:latest
+build_commands:
+  - pip install hf-xet
+model_metadata:
+  repo_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  example_model_input: {
+    "model": "llama",
+    "messages": [
+      {
+      "role": "user",
+      "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:"
+      }
+    ],
+    "stream": true,
+    "max_tokens": 512,
+    "temperature": 0.5
+  }
+  tags:
+  - openai-compatible
+docker_server:
+  start_command: >-
+    sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve meta-llama/Llama-4-Scout-17B-16E-Instruct
+    --served-model-name llama
+    --max-model-len 131072
+    --tensor-parallel-size 4
+    --distributed-executor-backend mp
+    --gpu-memory-utilization 0.95
+    --kv-cache-dtype fp8
+    --limit-mm-per-prompt '{\"image\": 10}'
+    --override-generation-config='{\"attn_temperature_tuning\": true}'
+    --host 0.0.0.0
+    --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  hf_access_token: null
+resources:
+  accelerator: H100:4
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  predict_concurrency: 256
+model_name: "model:llama-4-scout preset:latency"

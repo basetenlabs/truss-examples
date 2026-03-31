@@ -1,0 +1,53 @@
+########################################################
+# Remove ( --language-model-only ) from the start command to turn on multimodal mode
+########################################################
+
+model_name: "model:qwen3.5-35b preset:throughput"
+model_metadata:
+  example_model_input:
+    model: "Qwen/Qwen3.5-35B-A3B-FP8"
+    messages:
+      - role: user
+        content: "What is the capital of France?"
+    max_tokens: 100
+    temperature: 0.7
+base_image:
+  image: vllm/vllm-openai:v0.18.0
+weights:
+  - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@main"
+    mount_location: "/app/model_cache/qwen3.5-35b-a3b-fp8"
+    auth_secret_name: "hf_access_token"
+build_commands:
+  - pip install --upgrade transformers
+environment_variables:
+  VLLM_USE_FLASHINFER_MOE_FP8: "0"
+  PYTORCH_ALLOC_CONF: "expandable_segments:True"
+docker_server:
+  start_command: >-
+    vllm serve /app/model_cache/qwen3.5-35b-a3b-fp8
+    --served-model-name Qwen/Qwen3.5-35B-A3B-FP8
+    --host 0.0.0.0
+    --language-model-only
+    --port 8000
+    --gpu-memory-utilization 0.95
+    --kv-cache-dtype fp8
+    --reasoning-parser qwen3
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --max-num-seqs 512
+    --trust-remote-code
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+runtime:
+  predict_concurrency: 1000
+  health_checks:
+    restart_check_delay_seconds: 1500
+    restart_threshold_seconds: 1500
+    stop_traffic_threshold_seconds: 120
+resources:
+  accelerator: B200
+  use_gpu: true
+secrets:
+  hf_access_token: null

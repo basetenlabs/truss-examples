@@ -1,0 +1,56 @@
+model_name: "model:glm-4.7 preset:latency"
+resources:
+  accelerator: B200:4
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+model_metadata:
+  example_model_input:
+    {
+      "model": "glm47",
+      "messages":
+        [
+          {
+            "role": "user",
+            "content": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. class Solution: def twoSum(self, nums: List[int], target: int) -> List[int]:",
+          },
+        ],
+      "stream": true,
+      "max_tokens": 2048,
+      "temperature": 0.5,
+    }
+weights:
+  - source: "hf://baseten-admin/glm-4.7-fp4@main"
+    mount_location: "/app/model_cache/glm47"
+    auth_secret_name: "hf_access_token"
+trt_llm:
+  build:
+    checkpoint_repository:
+      # repo: baseten-admin/glm-4.7-fp4
+      repo: michaelfeil/empty-model
+      revision: main
+      source: HF
+  inference_stack: v2
+  runtime:
+    enable_chunked_prefill: true
+    max_batch_size: 64
+    max_num_tokens: 8192
+    max_seq_len: 202752
+    tensor_parallel_size: 4
+    served_model_name: glm47
+    patch_kwargs:
+      disable_overlap_scheduler: True
+      guided_decoding_backend: "xgrammar"
+      moe_expert_parallel_size: 4
+      moe_config:
+        use_low_precision_moe_combine: true
+        backend: TRTLLM
+      kv_cache_config:
+        free_gpu_memory_fraction: 0.8
+        enable_block_reuse: true
+        # host_cache_size: 100000000000
+      cuda_graph_config:
+        enable_padding: false
+      enable_iter_perf_stats: true
+      autotuner_enabled: false
+      model_path: /app/model_cache/glm47
