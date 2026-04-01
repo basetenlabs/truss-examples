@@ -1,0 +1,23 @@
+model_name: vscode-remote-tunnel-test
+base_image:
+  image: python:3.14-slim
+docker_server:
+  # Starts uvicorn with auto-reload and VS Code tunnel login; see container logs for auth URL
+  start_command: sh /app/data/server-start.sh
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /predict
+  server_port: 8090
+build_commands:
+  # Install VS Code CLI (standalone tunnel binary)
+  - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates procps && update-ca-certificates
+  - curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' -o /tmp/vscode_cli.tar.gz
+  - tar -xzf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+  - rm /tmp/vscode_cli.tar.gz
+  # Install uv for running the server with pyproject.toml deps
+  - pip install uv
+resources:
+  cpu: "1"
+  memory: 2Gi
+  use_gpu: false
+  accelerator: null

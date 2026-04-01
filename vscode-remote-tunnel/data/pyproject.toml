@@ -1,0 +1,7 @@
+[project]
+name = "vscode-tunnel-server"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.135.2",
+]
