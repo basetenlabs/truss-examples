@@ -10,7 +10,7 @@ Install the Truss CLI and push:
 
 ```bash
 pip install truss
-truss push orpheus-3b-websockets --publish
+truss push
 ```
 
 This builds a TensorRT-LLM engine with FP8 quantization on an H100 GPU. The engine build takes roughly 15 minutes on first deploy.
@@ -39,15 +39,6 @@ python call.py
 ```
 
 The client connects, sends text word-by-word, and plays audio through your speakers as it arrives.
-
-### websocat
-
-For quick testing without audio playback:
-
-```bash
-websocat -H="Authorization: Api-Key $BASETEN_API_KEY" \
-  wss://model-<MODEL_ID>.api.baseten.co/environments/production/websocket
-```
 
 ## Configuration
 
