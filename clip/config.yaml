@@ -7,8 +7,8 @@ model_name: clip-example
 python_version: py311
 requirements:
 - transformers==4.47.1
-- pillow
-- torch
+- pillow==11.1.0
+- torch==2.5.1
 resources:
   accelerator: A10G
   cpu: '3'

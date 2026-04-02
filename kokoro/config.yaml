@@ -11,8 +11,8 @@ requirements:
 - scipy==1.15.1
 - phonemizer==3.3.0
 - nltk==3.9.1
-- numpy
-- huggingface_hub[hf_transfer]
+- numpy==1.26.4
+- huggingface_hub[hf_transfer]==0.27.0
 - hf_transfer==0.1.9
 - munch==4.0.0
 resources:
