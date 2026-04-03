@@ -2,6 +2,8 @@ build_commands:
   - apt-get update && apt-get install git git-lfs -y
   - git lfs install
   - git clone https://huggingface.co/hubertsiuzdak/snac_24khz /app/snac_24khz
+  - mkdir -p /app/data/tokenization && cd /app/data/tokenization && for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json; do curl -sL "https://huggingface.co/baseten/orpheus-3b-0.1-ft/resolve/b9eb57a06083cb9e5a083885fad991aa79c0bd24/$f" -o "$f"; done
+  - /usr/local/briton/venv/bin/pip install "huggingface-hub>=0.25.2,<0.26.0"
 environment_variables:
   ENABLE_EXECUTOR_API: "1"
 model_metadata:
@@ -18,13 +20,12 @@ model_name: Orpheus-3b Websockets
 python_version: py39
 requirements:
   - snac==1.2.1
-  - torch==2.7.0
   - batched==0.1.4
   - httpx
   - websockets
   - pysbd
 resources:
-  accelerator: H100_40GB
+  accelerator: H100
   cpu: "1"
   memory: 10Gi
   use_gpu: true
@@ -43,7 +44,7 @@ trt_llm:
       repo: baseten/orpheus-3b-0.1-ft
       revision: b9eb57a06083cb9e5a083885fad991aa79c0bd24
       source: HF
-    max_batch_size: 256
+    max_batch_size: 64
     # set higher, so we can always use the max batch size in a single iter.
     max_num_tokens: 16384
     # 65536 would be around 600s of audio, typically model produces max 120s.

@@ -45,7 +45,7 @@ The client connects, sends text word-by-word, and plays audio through your speak
 Key settings in `config.yaml`:
 
 - `runtime.transport.kind: websocket`: Enables WebSocket transport instead of HTTP.
-- `resources.accelerator: H100_40GB`: Required for TensorRT-LLM engine build and inference.
+- `resources.accelerator: H100`: Full H100 (80GB) required for TensorRT-LLM engine build with 65K sequence length.
 - `trt_llm.build.quantization_type: fp8_kv`: FP8 quantization for lower memory usage and faster inference.
 
 ## Connection parameters
