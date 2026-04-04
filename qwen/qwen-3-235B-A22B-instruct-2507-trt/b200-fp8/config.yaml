@@ -61,8 +61,6 @@ trt_llm:
         event_buffer_max_size: 1024
       cuda_graph_config:
         enable_padding: true
-  version_overrides:
-    v2_llm_version: trtllm-gpu-1.3.0rc2-6bfe58f1a-d40e7fc8d3
 runtime:
   predict_concurrency: 32
   health_checks:
