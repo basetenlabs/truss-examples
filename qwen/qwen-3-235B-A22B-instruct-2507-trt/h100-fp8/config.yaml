@@ -50,5 +50,3 @@ trt_llm:
       kv_cache_config:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
-  version_overrides:
-    v2_llm_version: null

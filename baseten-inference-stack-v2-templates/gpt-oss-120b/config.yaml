@@ -60,5 +60,3 @@ trt_llm:
         backend: TRTLLM
     served_model_name: openai/gpt-oss-120b
     tensor_parallel_size: 1
-  version_overrides:
-    v2_llm_version: null
