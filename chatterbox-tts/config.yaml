@@ -4,7 +4,7 @@ base_image:
   python_executable_path: /usr/bin/python3
 python_version: py312
 requirements:
-  - chatterbox-tts
+  - chatterbox-tts==0.1.7
 resources:
   accelerator: H100
   cpu: '1'
