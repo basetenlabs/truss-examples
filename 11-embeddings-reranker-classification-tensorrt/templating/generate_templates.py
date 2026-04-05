@@ -698,6 +698,10 @@ class NER(Task):
     client_usage: str = r"""
 ### API-Schema:
 POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/predict_tokens`
+
+Two modes are available:
+
+**1. Token-level predictions** (`raw_scores: true`) — returns scores for every token and every label:
 ```json
 {
   "inputs": ["Apple is looking at buying U.K. startup for $1 billion"],
@@ -705,6 +709,30 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
   "truncate": true,
   "truncation_direction": "Right"
 }
+```
+
+**2. Aggregated entity spans** (`aggregation_strategy: "max"`) — merges consecutive tokens into named entity spans,
+matching the behavior of `transformers.pipeline("ner", aggregation_strategy="max")`:
+```json
+{
+  "inputs": ["Apple is looking at buying U.K. startup for $1 billion", "j.d. vance is living in New York City"],
+  "raw_scores": false,
+  "truncate": true,
+  "aggregation_strategy": "max"
+}
+```
+Returns grouped entities:
+```json
+[
+  [
+    {"token": "Apple", "token_id": 0, "start": 0, "end": 5, "results": {"ORG": 0.9936684}},
+    {"token": "U.K.", "token_id": 0, "start": 27, "end": 31, "results": {"LOC": 0.9969613}}
+  ],
+  [
+    {"token": "j.d. vance", "token_id": 0, "start": 0, "end": 10, "results": {"PER": 0.9950024}},
+    {"token": "New York City", "token_id": 0, "start": 24, "end": 37, "results": {"LOC": 0.9955471}}
+  ]
+]
 ```
 
 ### Baseten Performance Client
@@ -721,16 +749,23 @@ client = PerformanceClient(
     base_url="https://model-xxxxxx.api.baseten.co/environments/production/sync"
 )
 
+# Aggregated entity spans (recommended for production use)
 response = client.batch_post(
     route="/predict_tokens",
     payloads=[{
         "inputs": [["Apple is looking at buying U.K. startup for $1 billion"]],
         "raw_scores": False,
         "truncate": True,
-        "truncation_direction": "Right"
+        "truncation_direction": "Right",
+        "aggregation_strategy": "max"
     }]
 )
 print(response.data)
+
+# For high-concurrency / batch workloads, send multiple texts per request:
+# payloads=[{"inputs": [[text1], [text2], [text3]], "raw_scores": False, "aggregation_strategy": "max"}]
+# or fan out multiple requests in parallel:
+# payloads=[{"inputs": [[text1]], ...}, {"inputs": [[text2]], ...}]
 ```
 
 ### Requests python library
@@ -738,10 +773,9 @@ print(response.data)
 import requests
 import os
 
-headers = {
-    f"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"
-}
+headers = {"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"}
 
+# Token-level classification (all tokens + all label scores)
 response = requests.post(
     headers=headers,
     url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict_tokens",
@@ -754,7 +788,7 @@ response = requests.post(
 )
 print(response.json())
 ```
-Returns:
+Returns per-token predictions:
 ```json
 [
   [
