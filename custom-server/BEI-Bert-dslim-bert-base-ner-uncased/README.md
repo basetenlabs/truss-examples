@@ -1,6 +1,6 @@
-# BEI-Bert (Baseten-Embeddings-Inference-BERT) with tanaos/tanaos-NER-v1
+# BEI-Bert (Baseten-Embeddings-Inference-BERT) with dslim/bert-base-NER-uncased
 
-This is a Deployment for BEI-Bert (Baseten-Embeddings-Inference-BERT) with tanaos/tanaos-NER-v1. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+This is a Deployment for BEI-Bert (Baseten-Embeddings-Inference-BERT) with dslim/bert-base-NER-uncased. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
@@ -9,10 +9,10 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [tanaos/tanaos-NER-v1](https://huggingface.co/tanaos/tanaos-NER-v1).
+This deployment is specifically designed for the Hugging Face model [baseten-admin/bert-base-ner-uncased](https://huggingface.co/baseten-admin/bert-base-ner-uncased).
 Suitable models can be identified by the `ForTokenClassification` suffix in the model name. NER models classify each token in the input text into entity categories (e.g., PER, ORG, LOC) or 'O' (outside any entity).
 
-tanaos/tanaos-NER-v1  is a Named Entity Recognition (NER) model, used to identify and classify named entities in text. \nIt is frequently used for information extraction, entity linking, and document analysis. Common entities include persons, organizations, locations, dates, and more.
+baseten-admin/bert-base-ner-uncased  is a Named Entity Recognition (NER) model, used to identify and classify named entities in text. \nIt is frequently used for information extraction, entity linking, and document analysis. Common entities include persons, organizations, locations, dates, and more.
 
 
 ## Deployment with Truss
@@ -26,15 +26,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd 11-embeddings-reranker-classification-tensorrt/BEI-Bert-tanaos-tanaos-ner-v1
+cd custom-server/BEI-Bert-dslim-bert-base-ner-uncased
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-Bert-tanaos-tanaos-ner-v1` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `custom-server/BEI-Bert-dslim-bert-base-ner-uncased` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-Bert-tanaos-tanaos-ner-v1-truss-example was successfully pushed ✨
+# ✨ Model BEI-Bert-dslim-bert-base-ner-uncased-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -173,7 +173,7 @@ model_metadata:
     - John works at Google in Mountain View, California
     raw_scores: false
     truncate: true
-model_name: BEI-Bert-tanaos-tanaos-ner-v1-truss-example
+model_name: BEI-Bert-dslim-bert-base-ner-uncased-truss-example
 python_version: py39
 resources:
   accelerator: L4
@@ -184,12 +184,15 @@ trt_llm:
   build:
     base_model: encoder_bert
     checkpoint_repository:
-      repo: tanaos/tanaos-NER-v1
+      repo: baseten-admin/bert-base-ner-uncased
       revision: main
       source: HF
     max_num_tokens: 16384
   runtime:
     webserver_default_route: /predict_tokens
+  version_overrides:
+    bei_version: null
+    engine_builder_version: 1.1.0.dev51
 
 ```
 

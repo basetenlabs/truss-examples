@@ -7,7 +7,7 @@ model_metadata:
     - John works at Google in Mountain View, California
     raw_scores: false
     truncate: true
-model_name: BEI-Bert-tanaos-tanaos-ner-v1-truss-example
+model_name: BEI-Bert-lcampillos-roberta-es-clinical-trials-ner-truss-example
 python_version: py39
 resources:
   accelerator: L4
@@ -18,7 +18,7 @@ trt_llm:
   build:
     base_model: encoder_bert
     checkpoint_repository:
-      repo: tanaos/tanaos-NER-v1
+      repo: lcampillos/roberta-es-clinical-trials-ner
       revision: main
       source: HF
     max_num_tokens: 16384

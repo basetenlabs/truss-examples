@@ -3,24 +3,27 @@ model_metadata:
   example_model_input:
     aggregation_strategy: max
     inputs:
-    - Apple is looking at buying U.K. startup for $1 billion
-    - John works at Google in Mountain View, California
+      - Apple is looking at buying U.K. startup for $1 billion
+      - John works at Google in Mountain View, California
     raw_scores: false
     truncate: true
-model_name: BEI-Bert-tanaos-tanaos-ner-v1-truss-example
+model_name: BEI-Bert-dslim-bert-base-ner-uncased-truss-example
 python_version: py39
 resources:
-  accelerator: L4
-  cpu: '1'
+  accelerator: H100
+  cpu: "1"
   memory: 10Gi
   use_gpu: true
 trt_llm:
   build:
     base_model: encoder_bert
     checkpoint_repository:
-      repo: tanaos/tanaos-NER-v1
+      repo: baseten-admin/bert-base-ner-uncased
       revision: main
       source: HF
     max_num_tokens: 16384
   runtime:
     webserver_default_route: /predict_tokens
+  version_overrides:
+    bei_version: null
+    engine_builder_version: 1.1.0.dev51

@@ -103,13 +103,18 @@ With BEI you get the following benefits:
             num_builder_gpus = 2
         elif dp.accelerator in [Accelerator.L4]:
             num_builder_gpus = 4
-        endpoint = (
-            "/v1/embeddings"
-            if isinstance(dp.task, Embedder)
-            else "/predict"
-            if isinstance(dp.task, Predictor)
-            else "/rerank"
-        )
+        if isinstance(dp.task, Embedder):
+            endpoint = "/v1/embeddings"
+        elif isinstance(dp.task, Predictor):
+            endpoint = "/predict"
+        elif isinstance(dp.task, Reranker):
+            endpoint = "/rerank"
+        elif isinstance(dp.task, NER):
+            endpoint = "/predict_tokens"
+        else:
+            raise ValueError(
+                f"Unknown task type {type(dp.task)} for deployment {dp.name}"
+            )
         try:
             trt_llm = TRTLLMConfiguration(
                 build=TrussTRTLLMBuildConfiguration(
@@ -686,12 +691,12 @@ class NER(Task):
         default_factory=lambda: dict(
             example_model_input={
                 "inputs": [
-                    ["Apple is looking at buying U.K. startup for $1 billion"],
-                    ["John works at Google in Mountain View, California"],
+                    "Apple is looking at buying U.K. startup for $1 billion",
+                    "John works at Google in Mountain View, California",
                 ],
-                "raw_scores": True,
                 "truncate": True,
-                "truncation_direction": "Right",
+                "raw_scores": False,
+                "aggregation_strategy": "max",
             }
         )
     )
@@ -701,13 +706,15 @@ POST-Route: `https://model-xxxxxx.api.baseten.co/environments/production/sync/pr
 ```json
 {
   "inputs": ["Apple is looking at buying U.K. startup for $1 billion"],
-  "raw_scores": true,
   "truncate": true,
-  "truncation_direction": "Right"
+  "raw_scores": false,
+  "aggregation_strategy": "max"
 }
 ```
+- `aggregation_strategy`: Controls how sub-word tokens are aggregated into entities. One of `"none"`, `"simple"`, `"first"`, `"average"`, `"max"`. Use `"none"` to get per-token results without aggregation.
+- `raw_scores`: When `true`, returns raw logit scores for all labels per token. When `false`, returns only the top predicted label with its probability.
 
-### Baseten Performance Client
+### Baseten Performance Client (Recommended)
 
 ```bash
 pip install baseten-performance-client
@@ -725,9 +732,9 @@ response = client.batch_post(
     route="/predict_tokens",
     payloads=[{
         "inputs": [["Apple is looking at buying U.K. startup for $1 billion"]],
-        "raw_scores": False,
         "truncate": True,
-        "truncation_direction": "Right"
+        "raw_scores": False,
+        "aggregation_strategy": "max"
     }]
 )
 print(response.data)
@@ -747,34 +754,42 @@ response = requests.post(
     url="https://model-xxxxxx.api.baseten.co/environments/production/sync/predict_tokens",
     json={
         "inputs": [["Apple is looking at buying U.K. startup for $1 billion"]],
-        "raw_scores": True,
         "truncate": True,
-        "truncation_direction": "Right"
+        "raw_scores": False,
+        "aggregation_strategy": "max"
     }
 )
 print(response.json())
 ```
-Returns:
+Returns (with `aggregation_strategy: "max"` and `raw_scores: false`):
 ```json
 [
   [
     {
-      "token": "[CLS]",
-      "token_id": 101,
+      "token": "Apple",
+      "token_id": 0,
       "start": 0,
-      "end": 0,
+      "end": 5,
       "results": {
-        "O": 9.4140625,
-        "B-MISC": -1.15625,
-        "I-MISC": -0.859375,
-        "B-PER": -1.2744141,
-        "I-PER": -1.6552734,
-        "B-ORG": -0.88378906,
-        "I-ORG": -0.9345703,
-        "B-LOC": -1.2275391,
-        "I-LOC": -1.4042969
+        "ORG": 0.9975586
       }
     },
+    {
+      "token": "U.K.",
+      "token_id": 0,
+      "start": 27,
+      "end": 31,
+      "results": {
+        "LOC": 0.9980469
+      }
+    }
+  ]
+]
+```
+With `raw_scores: true` and `aggregation_strategy: "none"`, the response includes all label scores per sub-word token:
+```json
+[
+  [
     {
       "token": "Apple",
       "token_id": 6207,
@@ -1586,16 +1601,22 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         solution=BEIBert(),
     ),
     Deployment(
-        name="NER/bert-base-ner-uncased",
+        name="dslim/bert-base-NER-uncased",
         hf_model_id="baseten-admin/bert-base-ner-uncased",
         accelerator=Accelerator.L4,
         task=NER(),
         solution=BEIBert(),
     ),
-    # tanaos/tanaos-NER-v1
     Deployment(
-        name="tanaos/tanaos-NER-v1",
-        hf_model_id="tanaos/tanaos-NER-v1",
+        name="Babelscape/wikineural-multilingual-ner",
+        hf_model_id="Babelscape/wikineural-multilingual-ner",
+        accelerator=Accelerator.L4,
+        task=NER(),
+        solution=BEIBert(),
+    ),
+    Deployment(
+        name="lcampillos/roberta-es-clinical-trials-ner",
+        hf_model_id="lcampillos/roberta-es-clinical-trials-ner",
         accelerator=Accelerator.L4,
         task=NER(),
         solution=BEIBert(),
