@@ -1607,10 +1607,16 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         task=NER(),
         solution=BEIBert(),
     ),
-    # tanaos/tanaos-NER-v1
     Deployment(
-        name="tanaos/tanaos-NER-v1",
-        hf_model_id="tanaos/tanaos-NER-v1",
+        name="Babelscape/wikineural-multilingual-ner",
+        hf_model_id="Babelscape/wikineural-multilingual-ner",
+        accelerator=Accelerator.L4,
+        task=NER(),
+        solution=BEIBert(),
+    ),
+    Deployment(
+        name="lcampillos/roberta-es-clinical-trials-ner",
+        hf_model_id="lcampillos/roberta-es-clinical-trials-ner",
         accelerator=Accelerator.L4,
         task=NER(),
         solution=BEIBert(),
