@@ -691,8 +691,8 @@ class NER(Task):
         default_factory=lambda: dict(
             example_model_input={
                 "inputs": [
-                    ["Apple is looking at buying U.K. startup for $1 billion"],
-                    ["John works at Google in Mountain View, California"],
+                    "Apple is looking at buying U.K. startup for $1 billion",
+                    "John works at Google in Mountain View, California",
                 ],
                 "truncate": True,
                 "raw_scores": False,
@@ -1601,7 +1601,7 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         solution=BEIBert(),
     ),
     Deployment(
-        name="baseten-admin/bert-base-ner-uncased",
+        name="dslim/bert-base-NER-uncased",
         hf_model_id="baseten-admin/bert-base-ner-uncased",
         accelerator=Accelerator.L4,
         task=NER(),
