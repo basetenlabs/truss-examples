@@ -1,0 +1,70 @@
+model_name: nemotron-parse-v1-2-vllm
+python_version: py311
+
+model_metadata:
+  example_model_input:
+    model: nvidia/NVIDIA-Nemotron-Parse-v1.2
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "</s><s><predict_bbox><predict_classes><output_markdown><predict_no_text_in_pic>"
+          - type: image_url
+            image_url:
+              url: "https://github.com/michaelfeil/infinity/blob/main/docs/assets/cats_coco_sample.jpg"
+    max_tokens: 8192
+    temperature: 0.0
+  tags:
+    - openai-compatible
+    - vlm
+    - document-parsing
+    - vllm
+    - bdn
+build_commands:
+  - pip install albumentations==2.0.8 timm==1.0.22 open_clip_torch timm==1.0.22
+base_image:
+  image: vllm/vllm-openai:v0.14.1
+
+docker_server:
+  start_command: >-
+    sh -c '
+    vllm serve /models/nemotron-parse
+    --port 8000
+    --max-num-seqs 4
+    --attention-backend=TRITON_ATTN
+    --served-model-name nvidia/NVIDIA-Nemotron-Parse-v1.2
+    --limit-mm-per-prompt "{\"image\":1}"
+    --gpu-memory-utilization 0.85
+    --trust-remote-code
+    '
+  # should be able to add these logit processors back, in case they are needed.
+  # --logits-processors nemotron_parse_vllm_logitprocs:NemotronParseTableInsertionLogitsProcessor
+  # --logits-processors nemotron_parse_vllm_logitprocs:NemotronParseRepetitionStopProcessor
+  #
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+weights:
+  - source: "hf://nvidia/NVIDIA-Nemotron-Parse-v1.2@main"
+    mount_location: "/models/nemotron-parse"
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
+
+resources:
+  instance_type: "H100"
+
+runtime:
+  predict_concurrency: 32
+  health_checks:
+    restart_threshold_seconds: 600
+    stop_traffic_threshold_seconds: 240
+
+environment_variables: {}
+requirements: []
+system_packages: []
+external_package_dirs: []
+secrets:
+  hf_access_token: null
