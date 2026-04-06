@@ -1,3 +1,11 @@
+"""Control group: identical to faster-whisper-v3 EXCEPT transcribe params
+are passed explicitly (the old way) instead of relying on faster-whisper defaults.
+
+Deploy both v3 and v3-control, run the same test with/without --per-vad-chunk,
+and compare to isolate which change affects segmentation:
+  - If v3 == v3-control (same params): param simplification doesn't matter
+  - If --per-vad-chunk makes the difference on both: per_vad_chunk is the fix
+"""
 import base64
 import logging
 import os
@@ -10,11 +18,7 @@ import ctranslate2
 import faster_whisper
 from faster_whisper import WhisperModel
 from faster_whisper.audio import decode_audio
-try:
-    from faster_whisper.vad import VadOptions, get_speech_timestamps
-    _HAS_VAD_API = True
-except ImportError:
-    _HAS_VAD_API = False
+from faster_whisper.vad import VadOptions, get_speech_timestamps
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +29,7 @@ _COMPRESSION_RATIO_THRESHOLD = 2.4
 
 MODEL_CACHE_PATH = "/app/model_cache/faster-whisper-large-v3"
 SAMPLE_RATE = 16000
-
-_UNSET = object()
-
-
-def _env_get(name: str):
-    """Return env var value or _UNSET if not configured."""
-    raw = os.getenv(name)
-    if raw is None or raw == "":
-        return _UNSET
-    return raw
+TEMPERATURE_FALLBACK = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 
 
 def _is_segment_valid(
@@ -86,22 +81,8 @@ class Model:
 
         self._model = WhisperModel(model_path, device="cuda", compute_type="float16")
         logger.info("WhisperModel loaded")
-        logger.info(
-            f"Versions: faster_whisper={faster_whisper.__version__} "
-            f"ctranslate2={ctranslate2.__version__} "
-            f"VAD API available={_HAS_VAD_API}"
-        )
-        if _HAS_VAD_API:
-            import torch
-            vad_model = self._model.model if hasattr(self._model, 'model') else None
-            logger.info(f"Silero VAD via faster_whisper.vad (torch={torch.__version__})")
-        else:
-            logger.info("Silero VAD API not available in this faster-whisper version")
 
     def preprocess(self, request: Dict) -> Dict:
-        # Support both flat format and production nested format:
-        #   flat:   {"audio": "<base64>"}  or  {"url": "<url>"}
-        #   nested: {"whisper_input": {"audio": {"url": "<url>"}}}
         whisper_input = request.get("whisper_input") or {}
         audio_obj = whisper_input.get("audio") or {}
 
@@ -147,113 +128,40 @@ class Model:
         duration_s = len(audio) / SAMPLE_RATE
 
         req_params = request.get("whisper_params") or {}
-        req_vad = request.get("vad_parameters") or {}
         debug_mode = _as_bool(request.get("debug"), default=False)
         disable_segment_filter = _as_bool(
             request.get("disable_segment_filter"), default=False
         )
         per_vad_chunk = _as_bool(request.get("per_vad_chunk"), default=False)
 
-        # ── Build transcribe kwargs ──────────────────────────────────────
-        # Production only passes beam_size=1, vad_filter=True, word_timestamps=True.
-        # All other params use faster-whisper's built-in defaults unless
-        # explicitly overridden via request params or env vars.
+        # ── CONTROL: always pass ALL params explicitly (the old way) ─────
         transcribe_kwargs = {
             "audio": audio,
             "beam_size": 1,
             "vad_filter": True,
             "word_timestamps": True,
+            "temperature": TEMPERATURE_FALLBACK,
+            "compression_ratio_threshold": 2.4,
+            "log_prob_threshold": -1.0,
+            "no_speech_threshold": 0.6,
+            "condition_on_previous_text": True,
+            "language": None,
         }
-
-        # Optional overrides — only added when explicitly set via request or env.
-        _OPTIONAL_PARAMS = {
-            # (request_key, env_var, type)
-            "temperature": ("FW_TEMPERATURE", "float_list"),
-            "compression_ratio_threshold": ("FW_COMPRESSION_RATIO_THRESHOLD", "float"),
-            "log_prob_threshold": ("FW_LOG_PROB_THRESHOLD", "float"),
-            "no_speech_threshold": ("FW_NO_SPEECH_THRESHOLD", "float"),
-            "condition_on_previous_text": ("FW_CONDITION_ON_PREVIOUS_TEXT", "bool"),
-            "beam_size": ("FW_BEAM_SIZE", "int"),
-            "vad_filter": ("FW_VAD_FILTER", "bool"),
-            "word_timestamps": ("FW_WORD_TIMESTAMPS", "bool"),
-            "language": ("FW_LANGUAGE", "str"),
-        }
-
-        effective_overrides = {}
-        for param_name, (env_name, ptype) in _OPTIONAL_PARAMS.items():
-            val = req_params.get(param_name)
-            if val is None:
-                env_val = _env_get(env_name)
-                if env_val is _UNSET:
-                    continue
-                val = env_val
-
-            if ptype == "float":
-                val = float(val)
-            elif ptype == "int":
-                val = int(val)
-            elif ptype == "bool":
-                val = _as_bool(val)
-            elif ptype == "float_list":
-                if isinstance(val, (int, float)):
-                    val = [float(val)]
-                elif isinstance(val, str):
-                    val = [float(x.strip()) for x in val.split(",")]
-
-            transcribe_kwargs[param_name] = val
-            effective_overrides[param_name] = val
-
-        # VAD sub-parameters — only passed when explicitly set
-        vad_parameters = {}
-        _VAD_PARAMS = {
-            "threshold": ("FW_VAD_THRESHOLD", "float"),
-            "neg_threshold": ("FW_VAD_NEG_THRESHOLD", "float"),
-            "min_speech_duration_ms": ("FW_VAD_MIN_SPEECH_MS", "int"),
-            "max_speech_duration_s": ("FW_VAD_MAX_SPEECH_S", "float"),
-            "min_silence_duration_ms": ("FW_VAD_MIN_SILENCE_MS", "int"),
-            "speech_pad_ms": ("FW_VAD_SPEECH_PAD_MS", "int"),
-        }
-        for param_name, (env_name, ptype) in _VAD_PARAMS.items():
-            val = req_vad.get(param_name)
-            if val is None:
-                env_val = _env_get(env_name)
-                if env_val is _UNSET:
-                    continue
-                val = env_val
-            if ptype == "float":
-                val = float(val)
-            elif ptype == "int":
-                val = int(val)
-            if val is not None:
-                vad_parameters[param_name] = val
-
-        if vad_parameters:
-            transcribe_kwargs["vad_parameters"] = vad_parameters
-
-        if effective_overrides or vad_parameters:
-            logger.info(
-                "Overrides: whisper=%s vad=%s",
-                effective_overrides or "(none)",
-                vad_parameters or "(none)",
-            )
 
         # ── Run VAD upfront for diagnostics and per-chunk mode ───────────
-        vad_chunks = []
-        total_speech_s = 0.0
-        if _HAS_VAD_API:
-            vad_opts = VadOptions(**vad_parameters) if vad_parameters else VadOptions()
-            vad_chunks = get_speech_timestamps(audio, vad_options=vad_opts)
-            total_speech_s = sum(
-                (c["end"] - c["start"]) / SAMPLE_RATE for c in vad_chunks
-            )
-            logger.info(
-                f"VAD: {len(vad_chunks)} speech chunks, "
-                f"{total_speech_s:.1f}s speech / {duration_s:.1f}s total "
-                f"({total_speech_s / duration_s * 100:.0f}%)"
-            )
+        vad_opts = VadOptions()
+        vad_chunks = get_speech_timestamps(audio, vad_options=vad_opts)
+        total_speech_s = sum(
+            (c["end"] - c["start"]) / SAMPLE_RATE for c in vad_chunks
+        )
+        logger.info(
+            f"VAD: {len(vad_chunks)} speech chunks, "
+            f"{total_speech_s:.1f}s speech / {duration_s:.1f}s total "
+            f"({total_speech_s / duration_s * 100:.0f}%)"
+        )
 
         # ── Transcribe ───────────────────────────────────────────────────
-        if per_vad_chunk and _HAS_VAD_API and vad_chunks:
+        if per_vad_chunk:
             all_segments, info = self._transcribe_per_vad_chunk(
                 audio, vad_chunks, transcribe_kwargs
             )
@@ -340,12 +248,12 @@ class Model:
             ]
 
             response["debug"] = {
+                "variant": "CONTROL (explicit params)",
                 "faster_whisper_version": faster_whisper.__version__,
                 "ctranslate2_version": ctranslate2.__version__,
                 "effective_params": {
                     k: v for k, v in transcribe_kwargs.items() if k != "audio"
                 },
-                "effective_overrides": effective_overrides,
                 "disable_segment_filter": disable_segment_filter,
                 "per_vad_chunk": per_vad_chunk,
                 "segment_counts": {
@@ -385,12 +293,7 @@ class Model:
     def _transcribe_per_vad_chunk(
         self, audio: np.ndarray, vad_chunks: list, transcribe_kwargs: dict
     ) -> tuple:
-        """Transcribe each VAD chunk independently, then stitch results.
-
-        This bypasses faster-whisper's internal concatenate-all-speech approach,
-        producing one transcription call per VAD chunk. Gives finer segmentation
-        and is more robust to GPU float16 differences.
-        """
+        """Transcribe each VAD chunk independently, then stitch results."""
         from collections import namedtuple
 
         Seg = namedtuple(
@@ -440,7 +343,7 @@ class Model:
                 ))
 
         logger.info(
-            f"Per-VAD-chunk transcription: {len(vad_chunks)} chunks → "
+            f"Per-VAD-chunk transcription: {len(vad_chunks)} chunks -> "
             f"{len(all_segs)} segments"
         )
         return all_segs, last_info

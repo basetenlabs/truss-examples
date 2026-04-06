@@ -14,7 +14,7 @@ environment_variables:
   FW_VAD_SPEECH_PAD_MS: ''
   HF_HOME: /cache/org
   HF_HUB_CACHE: /cache/org
-  LD_LIBRARY_PATH: ''
+  LD_LIBRARY_PATH: '/usr/local/lib/python3.9/site-packages/nvidia/cudnn/lib:/usr/local/lib/python3.9/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.9/dist-packages/nvidia/cudnn/lib:/usr/local/lib/python3.9/dist-packages/nvidia/cublas/lib'
 external_package_dirs: []
 model_cache:
 - repo_id: Systran/faster-whisper-large-v3
@@ -32,9 +32,13 @@ model_metadata:
   - speech-recognition
 model_name: Faster Whisper v3 (EliseAI)
 python_version: py39
-requirements_file: ./requirements.txt
-build_commands:
-- pip install "Cython<3.0" && pip install --no-build-isolation faster-whisper==0.9.0
+requirements:
+- torch==2.5.1
+- faster-whisper==1.2.1
+- ctranslate2==4.6.0
+- nvidia-cudnn-cu12==9.1.0.70
+- numpy==1.26.4
+- huggingface_hub>=0.22.0
 resources:
   accelerator: A10G
   cpu: 500m
@@ -42,12 +46,4 @@ resources:
   use_gpu: true
 secrets:
   hf_access_token: null
-system_packages:
-- pkg-config
-- libavformat-dev
-- libavcodec-dev
-- libavdevice-dev
-- libavutil-dev
-- libavfilter-dev
-- libswscale-dev
-- libswresample-dev
+system_packages: []

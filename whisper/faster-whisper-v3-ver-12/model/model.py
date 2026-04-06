@@ -10,11 +10,7 @@ import ctranslate2
 import faster_whisper
 from faster_whisper import WhisperModel
 from faster_whisper.audio import decode_audio
-try:
-    from faster_whisper.vad import VadOptions, get_speech_timestamps
-    _HAS_VAD_API = True
-except ImportError:
-    _HAS_VAD_API = False
+from faster_whisper.vad import VadOptions, get_speech_timestamps
 
 logger = logging.getLogger(__name__)
 
@@ -86,17 +82,6 @@ class Model:
 
         self._model = WhisperModel(model_path, device="cuda", compute_type="float16")
         logger.info("WhisperModel loaded")
-        logger.info(
-            f"Versions: faster_whisper={faster_whisper.__version__} "
-            f"ctranslate2={ctranslate2.__version__} "
-            f"VAD API available={_HAS_VAD_API}"
-        )
-        if _HAS_VAD_API:
-            import torch
-            vad_model = self._model.model if hasattr(self._model, 'model') else None
-            logger.info(f"Silero VAD via faster_whisper.vad (torch={torch.__version__})")
-        else:
-            logger.info("Silero VAD API not available in this faster-whisper version")
 
     def preprocess(self, request: Dict) -> Dict:
         # Support both flat format and production nested format:
@@ -238,22 +223,19 @@ class Model:
             )
 
         # ── Run VAD upfront for diagnostics and per-chunk mode ───────────
-        vad_chunks = []
-        total_speech_s = 0.0
-        if _HAS_VAD_API:
-            vad_opts = VadOptions(**vad_parameters) if vad_parameters else VadOptions()
-            vad_chunks = get_speech_timestamps(audio, vad_options=vad_opts)
-            total_speech_s = sum(
-                (c["end"] - c["start"]) / SAMPLE_RATE for c in vad_chunks
-            )
-            logger.info(
-                f"VAD: {len(vad_chunks)} speech chunks, "
-                f"{total_speech_s:.1f}s speech / {duration_s:.1f}s total "
-                f"({total_speech_s / duration_s * 100:.0f}%)"
-            )
+        vad_opts = VadOptions(**vad_parameters) if vad_parameters else VadOptions()
+        vad_chunks = get_speech_timestamps(audio, vad_options=vad_opts)
+        total_speech_s = sum(
+            (c["end"] - c["start"]) / SAMPLE_RATE for c in vad_chunks
+        )
+        logger.info(
+            f"VAD: {len(vad_chunks)} speech chunks, "
+            f"{total_speech_s:.1f}s speech / {duration_s:.1f}s total "
+            f"({total_speech_s / duration_s * 100:.0f}%)"
+        )
 
         # ── Transcribe ───────────────────────────────────────────────────
-        if per_vad_chunk and _HAS_VAD_API and vad_chunks:
+        if per_vad_chunk:
             all_segments, info = self._transcribe_per_vad_chunk(
                 audio, vad_chunks, transcribe_kwargs
             )

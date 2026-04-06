@@ -1,0 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cu117
+ctranslate2==3.24.0
+torch==1.13.1+cu117
+torchaudio==0.13.1+cu117
+numpy==1.23.5
+onnxruntime==1.19.2
+huggingface_hub>=0.22.0
+requests
