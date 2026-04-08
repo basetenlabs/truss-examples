@@ -37,6 +37,6 @@ This will prompt you for an API Key -- fetch one from the
 
 Invocation depends on the model's input and output specifications. See individual model READMEs for invocation details.
 
-# Contibuting
+# Contributing
 
 We welcome contributions of new models and improvements to existing models. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
