@@ -11,6 +11,14 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
+runtime:
+  health_checks:
+    restart_threshold_seconds: 30
+    startup_threshold_seconds: 1800
+    stop_traffic_threshold_seconds: 30
+  is_websocket_endpoint: false
+  transport:
+    kind: http
 trt_llm:
   build:
     base_model: encoder
