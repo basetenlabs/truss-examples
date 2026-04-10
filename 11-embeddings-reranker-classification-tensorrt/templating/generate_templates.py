@@ -168,6 +168,13 @@ With BEI you get the following benefits:
                 memory="10Gi",
             ),
             model_name=dp.model_nickname,
+            runtime=dict(
+                health_checks=dict(
+                    startup_threshold_seconds=1800,
+                    restart_threshold_seconds=30,
+                    stop_traffic_threshold_seconds=30,
+                )
+            ),
         )
 
 
@@ -265,6 +272,11 @@ For larger models, we recommend downloading the weights at runtime for faster au
             model_name=dp.model_nickname,
             runtime=dict(
                 predict_concurrency=32,
+                health_checks=dict(
+                    startup_threshold_seconds=1800,
+                    restart_threshold_seconds=30,
+                    stop_traffic_threshold_seconds=30,
+                ),
             ),
         )
 
@@ -341,6 +353,13 @@ Optionally, you can also enable:
             ),
             model_name=dp.model_nickname,
             trt_llm=self.trt_config,
+            runtime=dict(
+                health_checks=dict(
+                    startup_threshold_seconds=1800,
+                    restart_threshold_seconds=30,
+                    stop_traffic_threshold_seconds=30,
+                )
+            ),
         )
 
 
@@ -417,6 +436,13 @@ Optionally, you can also enable:
             ),
             model_name=dp.model_nickname,
             trt_llm=self.trt_config,
+            runtime=dict(
+                health_checks=dict(
+                    startup_threshold_seconds=1800,
+                    restart_threshold_seconds=30,
+                    stop_traffic_threshold_seconds=30,
+                )
+            ),
         )
 
 
