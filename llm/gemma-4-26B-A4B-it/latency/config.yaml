@@ -1,0 +1,58 @@
+model_name: model:gemma-4-26B-A4B-it preset:latency
+base_image:
+  image: vllm/vllm-openai:gemma4
+model_metadata:
+  repo_id: google/gemma-4-26B-A4B-it
+  example_model_input:
+    model: google/gemma-4-26B-A4B-it
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "Describe this image in one sentence."
+          - type: image_url
+            image_url:
+              url: "https://picsum.photos/id/237/200/300"
+    stream: true
+    max_tokens: 512
+    temperature: 1.0
+  tags:
+    - openai-compatible
+weights:
+  - source: "hf://google/gemma-4-26B-A4B-it@main"
+    mount_location: "/app/checkpoint/gemma"
+    auth_secret_name: "hf_access_token"
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /app/checkpoint/gemma
+    --served-model-name google/gemma-4-26B-A4B-it
+    --max-num-seqs 16
+    --max-model-len auto
+    --limit-mm-per-prompt '{\"image\": 1}'
+    --gpu-memory-utilization 0.9
+    --dtype bfloat16
+    --trust-remote-code
+    --enable-auto-tool-choice
+    --reasoning-parser gemma4
+    --tool-call-parser gemma4"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+requirements:
+  - huggingface_hub
+  - hf_transfer
+  - datasets
+resources:
+  accelerator: H100
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 300
+    restart_threshold_seconds: 300
+    stop_traffic_threshold_seconds: 120
+  predict_concurrency: 8
