@@ -1,6 +1,6 @@
 model_name: model:gemma-4-E4B-it preset:latency
 base_image:
-  image: vllm/vllm-openai:gemma4
+  image: vllm/vllm-openai:nightly-18013df6ae27c3fb941307c46c975227126d641f
 model_metadata:
   repo_id: google/gemma-4-E4B-it
   example_model_input:
@@ -22,15 +22,18 @@ weights:
   - source: "hf://google/gemma-4-E4B-it@main"
     mount_location: "/app/checkpoint/gemma"
     auth_secret_name: "hf_access_token"
+build_commands:
+  - pip install --upgrade transformers==5.5.4
 docker_server:
   start_command: >-
-    sh -c "vllm serve /app/checkpoint/gemma
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/gemma
+    --tensor-parallel-size $GPU_COUNT
     --served-model-name google/gemma-4-E4B-it
     --max-num-seqs 16
     --max-model-len auto
-    --limit-mm-per-prompt '{\"image\": 1}'
+    --limit-mm-per-prompt.image 1
     --gpu-memory-utilization 0.9
-    --dtype bfloat16
+    --async-scheduling
     --trust-remote-code
     --enable-auto-tool-choice
     --reasoning-parser gemma4
@@ -56,3 +59,4 @@ runtime:
     restart_threshold_seconds: 300
     stop_traffic_threshold_seconds: 120
   predict_concurrency: 8
+# Updated with nightly image and async scheduling
