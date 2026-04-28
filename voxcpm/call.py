@@ -5,7 +5,7 @@ from pathlib import Path
 
 import aiohttp
 
-API_BASE = "https://model-q957kn9w.api.baseten.co/deployment/31d4m09/sync"
+API_BASE = "https://model-xxxx.api.baseten.co/deployment/31d4m09/sync"
 MODEL_NAME = "voxcpm2"
 
 
