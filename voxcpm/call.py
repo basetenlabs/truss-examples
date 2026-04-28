@@ -81,7 +81,9 @@ async def main() -> None:
     ]
 
     async with aiohttp.ClientSession() as session:
-        await asyncio.gather(*[synthesize(session, payload, out_path) for payload, out_path in jobs])
+        await asyncio.gather(
+            *[synthesize(session, payload, out_path) for payload, out_path in jobs]
+        )
 
 
 if __name__ == "__main__":
