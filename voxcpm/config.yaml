@@ -1,0 +1,25 @@
+model_name: VoxCPM2
+python_version: py312
+secrets:
+  hf_access_token: null
+weights:
+  - source: "hf://openbmb/VoxCPM2@main"
+    mount_location: "/models/VoxCPM2"
+system_packages:
+  - sox
+  - ffmpeg
+requirements:
+  - vllm[audio]==0.19.0
+  - voxcpm>=2.0
+resources:
+  accelerator: H100_40GB
+  use_gpu: true
+build_commands:
+  - git clone https://github.com/vllm-project/vllm-omni.git /app/data/vllm-omni
+  - cd /app/data/vllm-omni && pip install -e .
+docker_server:
+  start_command: bash -c "cd /app/data/vllm-omni && vllm serve /models/VoxCPM2 --omni --trust-remote-code --host 0.0.0.0 --port 8091 --served-model-name voxcpm2"
+  server_port: 8091
+  liveness_endpoint: /health
+  readiness_endpoint: /health
+  predict_endpoint: /v1/audio/speech
