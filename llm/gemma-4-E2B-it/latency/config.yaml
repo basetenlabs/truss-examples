@@ -1,6 +1,6 @@
 model_name: model:gemma-4-E2B-it preset:latency
 base_image:
-  image: vllm/vllm-openai:nightly-18013df6ae27c3fb941307c46c975227126d641f
+  image: vllm/vllm-openai:v0.20.0
 model_metadata:
   repo_id: google/gemma-4-E2B-it
   example_model_input:
@@ -36,6 +36,7 @@ docker_server:
     --async-scheduling
     --trust-remote-code
     --enable-auto-tool-choice
+    --enable-prefix-caching
     --reasoning-parser gemma4
     --tool-call-parser gemma4"
   readiness_endpoint: /health
