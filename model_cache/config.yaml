@@ -1,4 +1,4 @@
-model_name: Hello Model Cache Qwen
+model_name: Hello Weights SDXL
 python_version: py311
 requirements: ["torch"]
 resources:
