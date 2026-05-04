@@ -17,15 +17,16 @@ class Model:
         self._hf_access_token = kwargs["secrets"]["hf_access_token"]
 
     def load(self):
+        model_path = self._config["weights"][0]["mount_location"]
         self.model = AutoModelForCausalLM.from_pretrained(
-            self._config["model_cache"][0]["repo_id"],
+            model_path,
             torch_dtype=torch.float16,
             device_map="auto",
             token=self._hf_access_token,
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self._config["model_cache"][0]["repo_id"],
+            model_path,
             device_map="auto",
             torch_dtype=torch.float16,
             token=self._hf_access_token,

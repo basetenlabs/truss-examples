@@ -1,9 +1,9 @@
 description: Faster Whisper v2
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- repo_id: Systran/faster-whisper-large-v2
-  use_volume: false
+weights:
+  - source: "hf://Systran/faster-whisper-large-v2@main"
+    mount_location: "/models/faster-whisper-large-v2"
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/openai.png
   cover_image_url: https://cdn.baseten.co/production/static/whisper.png

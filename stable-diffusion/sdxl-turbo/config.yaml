@@ -1,12 +1,12 @@
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.fp16.safetensors'
-  - '*.txt'
-  repo_id: stabilityai/sdxl-turbo
-  use_volume: false
+weights:
+  - source: "hf://stabilityai/sdxl-turbo@main"
+    mount_location: "/models/sdxl-turbo"
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - "*.txt"
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/stability.png
   cover_image_url: https://cdn.baseten.co/production/static/sd.png

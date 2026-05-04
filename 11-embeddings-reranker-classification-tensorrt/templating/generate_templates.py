@@ -24,8 +24,6 @@ from truss.base.trt_llm_config import (
 from truss.base.truss_config import (
     Accelerator,
     AcceleratorSpec,
-    ModelCache,
-    ModelRepo,
     Resources,
     TrussConfig,
 )
@@ -241,19 +239,15 @@ For larger models, we recommend downloading the weights at runtime for faster au
         return TrussConfig(
             base_image=dict(image=docker_image),
             model_metadata=dp.task.model_metadata,
-            model_cache=ModelCache(
-                [
-                    ModelRepo(
-                        revision="main",
-                        repo_id=dp.hf_model_id,
-                        use_volume=True,
-                        volume_folder="cached_model",
-                        ignore_patterns=["*.pt", "*.ckpt", "*.onnx"],
-                    )
-                ]
-            ),
+            weights=[
+                {
+                    "source": f"hf://{dp.hf_model_id}@main",
+                    "mount_location": "/app/model_cache/cached_model",
+                    "ignore_patterns": ["*.pt", "*.ckpt", "*.onnx"],
+                }
+            ],
             docker_server=dict(
-                start_command=f'bash -c "truss-transfer-cli && text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate{low_cpu_instructions}"',
+                start_command=f'bash -c "text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate{low_cpu_instructions}"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,

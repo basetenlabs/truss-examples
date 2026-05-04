@@ -13,9 +13,9 @@ requirements:
 resources:
   accelerator: T4
   use_gpu: true
-model_cache:
-  - repo_id: htrivedi99/whisper-torchserve
-    use_volume: false
+weights:
+  - source: "hf://htrivedi99/whisper-torchserve@main"
+    mount_location: "/models/whisper-torchserve"
 secrets: {}
 system_packages:
   - ffmpeg

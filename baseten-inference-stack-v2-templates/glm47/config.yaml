@@ -20,12 +20,10 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
-model_cache:
-  - repo_id: baseten-admin/glm-4.7-fp4
-    revision: main
-    use_volume: true
-    volume_folder: glm47
-    runtime_secret_name: "hf_access_token"
+weights:
+  - source: "hf://baseten-admin/glm-4.7-fp4@main"
+    mount_location: "/app/model_cache/glm47"
+    auth_secret_name: "hf_access_token"
 trt_llm:
   build:
     checkpoint_repository:

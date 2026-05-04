@@ -22,11 +22,9 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-model_cache:
-  - repo_id: openai/gpt-oss-20b
-    revision: refs/pr/36
-    use_volume: true
-    volume_folder: trt_model
+weights:
+  - source: "hf://openai/gpt-oss-20b@refs/pr/36"
+    mount_location: "/app/model_cache/trt_model"
 trt_llm:
   build:
     checkpoint_repository:

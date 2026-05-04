@@ -20,11 +20,9 @@ resources:
 environment_variables:
   BAD_TOKEN_ID_SEQ_CHECK_ENABLED: 1
   TRTLLM_ENABLE_PDL: 1
-model_cache:
-  - repo_id: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
-    revision: e156cb4efae43fbee1a1ab073f946a1377e6b969
-    use_volume: true
-    volume_folder: qwen3_fp8
+weights:
+  - source: "hf://Qwen/Qwen3-235B-A22B-Instruct-2507-FP8@e156cb4efae43fbee1a1ab073f946a1377e6b969"
+    mount_location: "/app/model_cache/qwen3_fp8"
 trt_llm:
   build:
     checkpoint_repository:

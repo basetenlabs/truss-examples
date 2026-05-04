@@ -20,13 +20,10 @@ model_metadata:
       "max_tokens": 2048,
       "temperature": 0.5,
     }
-model_cache:
-  - repo_id: nvidia/Llama-4-Maverick-17B-128E-Instruct-FP8
-    revision: main
-    use_volume: true
-    volume_folder: llama
-    runtime_secret_name: "hf_access_token"
-    kind: "hf"
+weights:
+  - source: "hf://nvidia/Llama-4-Maverick-17B-128E-Instruct-FP8@main"
+    mount_location: "/app/model_cache/llama"
+    auth_secret_name: "hf_access_token"
 trt_llm:
   build:
     checkpoint_repository:

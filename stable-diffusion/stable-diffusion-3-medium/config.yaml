@@ -2,9 +2,9 @@ environment_variables:
   HF_HUB_OFFLINE: 1
 external_package_dirs: []
 model_metadata: {}
-model_cache:
-  - repo_id: stabilityai/stable-diffusion-3-medium-diffusers
-    use_volume: false
+weights:
+  - source: "hf://stabilityai/stable-diffusion-3-medium-diffusers@main"
+    mount_location: "/models/stable-diffusion-3-medium-diffusers"
 model_name: Stable Diffusion 3 Medium
 python_version: py310
 requirements:

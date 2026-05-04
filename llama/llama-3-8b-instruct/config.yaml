@@ -8,9 +8,9 @@ model_metadata:
   - text-generation
 model_name: Llama 3 8B Instruct
 python_version: py310
-model_cache:
-  - repo_id: meta-llama/Meta-Llama-3-8B-Instruct
-    use_volume: false
+weights:
+  - source: "hf://meta-llama/Meta-Llama-3-8B-Instruct@main"
+    mount_location: "/models/Meta-Llama-3-8B-Instruct"
 requirements:
   - accelerate
   - einops

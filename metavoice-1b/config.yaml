@@ -6,18 +6,19 @@ model_metadata:
   example_model_input: '"text to speech models are cool"'
 python_version: py311
 data_dir: data
-model_cache:
-  - repo_id: metavoiceio/metavoice-1B-v0.1
-    use_volume: false
+weights:
+  - source: "hf://metavoiceio/metavoice-1B-v0.1@main"
+    mount_location: "/models/metavoice-1B-v0.1"
     allow_patterns:
       - "*.pt"
-  - repo_id: facebook/multiband-diffusion
+  - source: "hf://facebook/multiband-diffusion@main"
+    mount_location: "/models/multiband-diffusion"
     allow_patterns:
-      - mbd_comp_8.pt
-  - repo_id: facebook/encodec_24khz
+      - "mbd_comp_8.pt"
+  - source: "hf://facebook/encodec_24khz@main"
+    mount_location: "/models/encodec_24khz"
     allow_patterns:
       - "*.safetensors"
-
 requirements_file: ./requirements.txt
 resources:
   accelerator: "A10G"

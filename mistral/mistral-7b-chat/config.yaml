@@ -1,13 +1,13 @@
 description: Mistral 7B, optimized for chat! Compatible with OpenAI Client
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.safetensors'
-  - '*.model'
-  use_volume: false
-  repo_id: mistralai/Mistral-7B-Instruct-v0.1
+weights:
+  - source: "hf://mistralai/Mistral-7B-Instruct-v0.1@main"
+    mount_location: "/models/Mistral-7B-Instruct-v0.1"
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.model"
 model_metadata:
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png
   cover_image_url: https://cdn.baseten.co/production/static/explore/mistral.png
