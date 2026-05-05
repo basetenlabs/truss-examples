@@ -25,7 +25,7 @@ requirements:
 # Check out the [guide](https://truss.baseten.co/guides/model-cache) for more info.
 weights:
   - source: "hf://NousResearch/Llama-2-7b-chat-hf@main"
-    mount_location: "/app/model_cache/llama-2-7b-chat-hf"
+    mount_location: "/cache/model/llama-2-7b-chat-hf"
     ignore_patterns:
       - "*.bin"
 resources:

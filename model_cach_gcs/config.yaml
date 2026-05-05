@@ -12,5 +12,5 @@ build:
 secrets: { gcs-service-account-jsn: null } # null is encouraged, as this will automatically use the one provided by baseten.co
 weights:
   - source: "gs://llama-3-2-1b-instruct/"
-    mount_location: "/app/model_cache/llama"
+    mount_location: "/cache/model/llama"
     auth_secret_name: "gcs-service-account-jsn"

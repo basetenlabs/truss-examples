@@ -22,7 +22,7 @@ environment_variables:
   TRTLLM_ENABLE_PDL: 1
 weights:
   - source: "hf://Qwen/Qwen3-235B-A22B-Instruct-2507-FP8@e156cb4efae43fbee1a1ab073f946a1377e6b969"
-    mount_location: "/app/model_cache/qwen3_fp8"
+    mount_location: "/cache/model/qwen3_fp8"
 trt_llm:
   build:
     checkpoint_repository:
@@ -38,7 +38,7 @@ trt_llm:
     tensor_parallel_size: 4
     served_model_name: Qwen/Qwen3-235B-A22B-Instruct-2507
     patch_kwargs:
-      model_path: /app/model_cache/qwen3_fp8
+      model_path: /cache/model/qwen3_fp8
       backend: pytorch
       max_beam_width: 1
       max_input_len: 32768

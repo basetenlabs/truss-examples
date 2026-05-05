@@ -7,11 +7,11 @@ docker_server:
   readiness_endpoint: /health
   server_port: 7997
   start_command: bash -c "text-embeddings-router --port 7997
-    --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
+    --model-id /cache/model/cached_model --max-client-batch-size 128 --max-concurrent-requests
     1024 --max-batch-tokens 16384 --auto-truncate --tokenization-workers 3"
 weights:
   - source: "hf://intfloat/multilingual-e5-large-instruct@main"
-    mount_location: "/app/model_cache/cached_model"
+    mount_location: "/cache/model/cached_model"
     ignore_patterns:
       - "*.pt"
       - "*.ckpt"

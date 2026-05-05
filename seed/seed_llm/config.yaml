@@ -31,5 +31,5 @@ runtime:
   predict_concurrency: 128
 weights:
   - source: "hf://ByteDance-Seed/Seed-OSS-36B-Instruct@497f1dca95ebdec98e41d517b9f060ee753c902f"
-    mount_location: "/app/model_cache/glm"
+    mount_location: "/cache/model/glm"
 model_name: Seed-OSS-36B-Instruct

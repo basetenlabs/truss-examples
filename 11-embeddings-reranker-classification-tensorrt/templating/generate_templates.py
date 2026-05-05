@@ -242,12 +242,12 @@ For larger models, we recommend downloading the weights at runtime for faster au
             weights=[
                 {
                     "source": f"hf://{dp.hf_model_id}@main",
-                    "mount_location": "/app/model_cache/cached_model",
+                    "mount_location": "/cache/model/cached_model",
                     "ignore_patterns": ["*.pt", "*.ckpt", "*.onnx"],
                 }
             ],
             docker_server=dict(
-                start_command=f'bash -c "text-embeddings-router --port 7997 --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate{low_cpu_instructions}"',
+                start_command=f'bash -c "text-embeddings-router --port 7997 --model-id /cache/model/cached_model --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384 --auto-truncate{low_cpu_instructions}"',
                 readiness_endpoint="/health",
                 liveness_endpoint="/health",
                 predict_endpoint=predict_endpoint,

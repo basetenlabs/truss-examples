@@ -15,7 +15,7 @@ model_metadata:
 model_name: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
 weights:
   - source: "hf://Qwen/Qwen3-235B-A22B-Instruct-2507-FP8@main"
-    mount_location: "/app/model_cache/trt_model"
+    mount_location: "/cache/model/trt_model"
 resources:
   accelerator: H100:8
   cpu: "1"
@@ -37,7 +37,7 @@ trt_llm:
     tensor_parallel_size: 8
     patch_kwargs:
       disable_overlap_scheduler: True
-      model_path: /app/model_cache/trt_model
+      model_path: /cache/model/trt_model
       moe_expert_parallel_size: 8
       cuda_graph_config:
         enable_padding: true

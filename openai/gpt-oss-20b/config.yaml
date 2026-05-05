@@ -24,7 +24,7 @@ resources:
   use_gpu: true
 weights:
   - source: "hf://openai/gpt-oss-20b@refs/pr/36"
-    mount_location: "/app/model_cache/trt_model"
+    mount_location: "/cache/model/trt_model"
 trt_llm:
   build:
     checkpoint_repository:
@@ -38,7 +38,7 @@ trt_llm:
     max_num_tokens: 8192
     max_seq_len: 131072
     patch_kwargs:
-      model_path: /app/model_cache/trt_model
+      model_path: /cache/model/trt_model
       chat_processor: harmony
       moe_expert_parallel_size: 1
       backend: pytorch

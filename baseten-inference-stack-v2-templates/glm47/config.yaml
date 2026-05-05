@@ -22,7 +22,7 @@ model_metadata:
     }
 weights:
   - source: "hf://baseten-admin/glm-4.7-fp4@main"
-    mount_location: "/app/model_cache/glm47"
+    mount_location: "/cache/model/glm47"
     auth_secret_name: "hf_access_token"
 trt_llm:
   build:
@@ -54,4 +54,4 @@ trt_llm:
         enable_padding: false
       enable_iter_perf_stats: true
       autotuner_enabled: false
-      model_path: /app/model_cache/glm47
+      model_path: /cache/model/glm47
