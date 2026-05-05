@@ -28,7 +28,7 @@ requirements:
 python_version: py312
 weights:
   - source: "hf://nvidia/Llama-3.1-Nemotron-Nano-VL-8B-V1@main"
-    mount_location: "/cache/model/llama-3-1-nemotron-nano-vl-8b-v1"
+    mount_location: "/weights/llama-3-1-nemotron-nano-vl-8b-v1"
     ignore_patterns:
       - "original/*"
       - "*.pth"

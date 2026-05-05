@@ -22,7 +22,7 @@ model_metadata:
     }
 weights:
   - source: "hf://nvidia/Llama-4-Maverick-17B-128E-Instruct-FP8@main"
-    mount_location: "/cache/model/llama"
+    mount_location: "/weights/llama"
     auth_secret_name: "hf_access_token"
 trt_llm:
   build:
@@ -54,4 +54,4 @@ trt_llm:
       tool_call_parser: pythonic
 
       # model cache
-      model_path: /cache/model/llama
+      model_path: /weights/llama
