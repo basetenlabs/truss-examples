@@ -12,7 +12,7 @@ declare -A ARCHES=(
 )
 
 # Define version and target
-VERSION="1.8.3"
+VERSION="1.9.3"
 TARGET="baseten/text-embeddings-inference-mirror"
 
 # Build and push images
