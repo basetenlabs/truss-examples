@@ -2,6 +2,8 @@
 
 [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M) is an open-weight TTS model with 82 million parameters that runs on a single T4 GPU. This Truss serves Kokoro v1.0 over HTTP and returns base64-encoded WAV audio at 24 kHz.
 
+Model weights are mounted via the [Baseten Delivery Network](https://docs.baseten.co/development/model/bdn) and pinned to a specific Hugging Face commit, so cold starts skip the upstream download.
+
 ## Deploy
 
 ```bash
@@ -20,11 +22,11 @@ response:
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `text` | string | `"Hi, I'm Kokoro."` | Text to synthesize. KPipeline chunks long input automatically. |
+| `text` | string | `"Hi, I'm Kokoro."` | Text to synthesize. `KPipeline` chunks long input automatically. |
 | `voice` | string | `"af_heart"` | Voice name. See [VOICES.md](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md) for the full list. |
 | `speed` | float | `1.0` | Speech speed multiplier. |
 
-The voice prefix encodes the language: `a` is American English, `b` is British English, `j` is Japanese, `z` is Mandarin, `e` is Spanish, `f` is French, `h` is Hindi, `i` is Italian, `p` is Portuguese. Non-English voices load on demand the first time you request them.
+The voice prefix encodes the language: `a` is American English, `b` is British English, `j` is Japanese, `z` is Mandarin, `e` is Spanish, `f` is French, `h` is Hindi, `i` is Italian, `p` is Portuguese. All voicepacks are preloaded at startup from the BDN mount, so the first request for any voice has no extra download cost.
 
 ## Language support
 
@@ -37,4 +39,4 @@ The voice prefix encodes the language: `a` is American English, `b` is British E
 
 ## Cold-start behavior
 
-The first inference call after a cold start can take up to a minute while Kokoro compiles its CUDA kernels. Subsequent calls return audio in a few seconds.
+The first inference call after a cold start takes a few seconds while Kokoro compiles its CUDA kernels. Subsequent calls return audio in under a second.
