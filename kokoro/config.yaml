@@ -18,3 +18,10 @@ runtime:
 secrets: {}
 system_packages:
 - espeak-ng
+weights:
+- source: "hf://hexgrad/Kokoro-82M@f3ff3571791e39611d31c381e3a41a3af07b4987"
+  mount_location: "/weights/kokoro"
+  allow_patterns:
+    - "config.json"
+    - "kokoro-v1_0.pth"
+    - "voices/*.pt"
