@@ -12,9 +12,9 @@ SAMPLE_RATE = 16_000
 CHUNK_MS = 100  # send 100ms chunks
 CHUNK_SAMPLES = int(SAMPLE_RATE * CHUNK_MS / 1000)
 
-BASETEN_API_KEY = os.getenv("BASETEN_API_KEY") # Baseten API key here
+BASETEN_API_KEY = os.getenv("BASETEN_API_KEY")  # Baseten API key here
 
-WS_URL = "wss://model-abc.api.baseten.co/deployment/abcde/websocket" # Replace with your model id and deployment id
+WS_URL = "wss://model-abc.api.baseten.co/deployment/abcde/websocket"  # Replace with your model id and deployment id
 MODEL = "mistralai/Voxtral-Mini-4B-Realtime-2602"
 
 WARMUP_SECONDS = 2.0  # optional
