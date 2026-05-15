@@ -6,15 +6,15 @@ import signal
 import numpy as np
 import sounddevice as sd
 import websockets
+import os
 
 SAMPLE_RATE = 16_000
 CHUNK_MS = 100  # send 100ms chunks
 CHUNK_SAMPLES = int(SAMPLE_RATE * CHUNK_MS / 1000)
 
-model_id = ""  # Place model id here
-BASETEN_API_KEY = ""  # Baseten API key here
+BASETEN_API_KEY = os.getenv("BASETEN_API_KEY") # Baseten API key here
 
-WS_URL = f"wss://model-{model_id}.api.baseten.co/environments/production/websocket"
+WS_URL = f"wss://model-abc.api.baseten.co/deployment/abcde/websocket" # Replace with your model id and deployment id
 MODEL = "mistralai/Voxtral-Mini-4B-Realtime-2602"
 
 WARMUP_SECONDS = 2.0  # optional
@@ -127,7 +127,7 @@ async def main():
     signal.signal(signal.SIGTERM, request_stop)
 
     async with websockets.connect(
-        WS_URL, extra_headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"}
+        WS_URL, additional_headers={"Authorization": f"Api-Key {BASETEN_API_KEY}"}
     ) as ws:
         # Some servers send an initial "hello"/ack; we can just try to read once (non-fatal if it times out)
         try:
