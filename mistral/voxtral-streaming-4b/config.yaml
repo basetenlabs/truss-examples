@@ -25,6 +25,7 @@ system_packages:
   - libopenmpi-dev
 runtime:
   is_websocket_endpoint: true
+  predict_concurrency: 64
   transport:
     kind: websocket
     ping_interval_seconds: null
