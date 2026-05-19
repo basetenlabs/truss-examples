@@ -1,0 +1,11 @@
+# Triton model config for the vLLM backend.
+# See: https://github.com/triton-inference-server/vllm_backend
+
+backend: "vllm"
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_MODEL
+  }
+]

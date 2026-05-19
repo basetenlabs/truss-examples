@@ -1,0 +1,7 @@
+{
+  "model": "/models/llama",
+  "gpu_memory_utilization": 0.9,
+  "max_model_len": 8192,
+  "dtype": "auto",
+  "disable_log_stats": false
+}

@@ -1,0 +1,67 @@
+model_name: Triton vLLM Backend - Llama 3.2 1B
+description: NVIDIA Triton Inference Server with the vLLM backend on Baseten (custom docker_server).
+
+model_metadata:
+  example_model_input:
+    text_input: "What is Baseten?"
+    parameters:
+      stream: false
+      temperature: 0.7
+      max_tokens: 128
+  tags:
+    - triton
+    - vllm
+    - text-generation
+    - bdn
+    - custom-server
+
+base_image:
+  image: nvcr.io/nvidia/tritonserver:24.08-vllm-python-py3
+
+docker_server:
+  run_as_user_id: 1000
+  start_command: >-
+    tritonserver
+    --model-repository=/app/data/model_repository
+    --http-port=8000
+    --grpc-port=8001
+    --metrics-port=8002
+    --allow-http=true
+    --allow-grpc=true
+  server_port: 8000
+  predict_endpoint: /v2/models/vllm_model/generate
+  readiness_endpoint: /v2/health/ready
+  liveness_endpoint: /v2/health/live
+
+weights:
+  - source: hf://meta-llama/Llama-3.2-1B-Instruct@main
+    mount_location: /models/llama
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
+    allow_patterns:
+      - "*.safetensors"
+      - "config.json"
+      - "tokenizer*"
+      - "*.json"
+    ignore_patterns:
+      - "*.bin"
+      - "original/*"
+
+resources:
+  accelerator: A10G
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 32
+  health_checks:
+    restart_threshold_seconds: 900
+    stop_traffic_threshold_seconds: 300
+
+secrets:
+  hf_access_token: null
+
+environment_variables: {}
+requirements: []
+system_packages: []
+external_package_dirs: []
