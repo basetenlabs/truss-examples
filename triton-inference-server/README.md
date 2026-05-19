@@ -7,7 +7,7 @@ The vLLM and TensorRT-LLM **backends** speak Triton's native APIs (for example t
 | Example | Backend | OpenAI model name |
 |---------|---------|-------------------|
 | [vllm-backend](./vllm-backend/) | [vLLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/vllm_backend/README.html) | `qwen3-8b` |
-| [tensorrtllm-backend](./tensorrtllm-backend/) | [TensorRT-LLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html) | `ensemble` |
+| [tensorrtllm-backend](./tensorrtllm-backend/) | [TensorRT-LLM LLMAPI (PyTorch)](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/llmapi.html) | `tensorrt_llm` |
 
 ## Shared conventions
 
@@ -32,10 +32,11 @@ The vLLM and TensorRT-LLM **backends** speak Triton's native APIs (for example t
 
 | | vLLM backend | TensorRT-LLM backend |
 |---|--------------|----------------------|
-| Container | `tritonserver:25.08-vllm-python-py3` | `tritonserver:24.11-trtllm-python-py3` |
-| Weights | `Qwen/Qwen3-8B` (HF) | Qwen3-8B TRT-LLM engine + `Qwen/Qwen3-8B` tokenizer |
+| Container | `tritonserver:25.08-vllm-python-py3` | `tritonserver:25.08-trtllm-python-py3` |
+| Weights | `Qwen/Qwen3-8B` (HF) | `Qwen/Qwen3-8B` (HF, no TRT engine) |
 | GPU | H100 | H100 |
-| Setup | Lower (HF weights only) | Higher (pre-built engine required) |
+| Backend runtime | vLLM in Triton | TensorRT-LLM PyTorch (`backend: pytorch`) |
+| Setup | HF weights only | HF weights only (LLMAPI) |
 
 ## Related examples in this repo
 

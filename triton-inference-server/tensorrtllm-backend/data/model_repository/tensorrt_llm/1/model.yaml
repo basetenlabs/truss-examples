@@ -1,0 +1,15 @@
+# TensorRT-LLM LLMAPI (PyTorch backend) — loads HF weights at runtime; no TRT engine required.
+# See: https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/llmapi.html
+
+model: /models/qwen
+backend: pytorch
+
+tensor_parallel_size: 1
+pipeline_parallel_size: 1
+
+kv_cache_config:
+  free_gpu_memory_fraction: 0.9
+
+triton_config:
+  max_batch_size: 0
+  decoupled: false

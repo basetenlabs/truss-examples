@@ -6,8 +6,8 @@ from openai import OpenAI
 
 MODEL_ID = os.environ.get("BASETEN_MODEL_ID", "YOUR_MODEL_ID")
 API_KEY = os.environ["BASETEN_API_KEY"]
-# Must match the Triton model name in data/model_repository/ (default ensemble).
-SERVED_MODEL = os.environ.get("SERVED_MODEL", "ensemble")
+# Must match the Triton model name in config.pbtxt (LLMAPI default: tensorrt_llm).
+SERVED_MODEL = os.environ.get("SERVED_MODEL", "tensorrt_llm")
 
 client = OpenAI(
     base_url=(

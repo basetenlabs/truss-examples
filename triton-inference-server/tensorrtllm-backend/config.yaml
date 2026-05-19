@@ -1,9 +1,9 @@
 model_name: Triton TensorRT-LLM OpenAI - Qwen3 8B
-description: NVIDIA Triton with TensorRT-LLM backend and OpenAI-compatible API on Baseten.
+description: NVIDIA Triton with TensorRT-LLM PyTorch (LLMAPI) backend and OpenAI-compatible API on Baseten.
 
 model_metadata:
   example_model_input:
-    model: ensemble
+    model: tensorrt_llm
     messages:
       - role: user
         content: What is machine learning?
@@ -12,13 +12,15 @@ model_metadata:
   tags:
     - triton
     - tensorrt-llm
+    - pytorch
+    - llmapi
     - openai-compatible
     - text-generation
     - bdn
     - custom-server
 
 base_image:
-  image: nvcr.io/nvidia/tritonserver:24.11-trtllm-python-py3
+  image: nvcr.io/nvidia/tritonserver:25.08-trtllm-python-py3
 
 docker_server:
   run_as_user_id: 1000
@@ -28,29 +30,20 @@ docker_server:
   readiness_endpoint: /health/ready
   liveness_endpoint: /health/ready
 
-environment_variables:
-  ENGINE_DIR: /models/engine
-  TOKENIZER_DIR: /models/tokenizer
-  TRTLLM_ORCHESTRATOR: "1"
-
-# Replace with a HuggingFace repo (or s3://) containing a Qwen3-8B TensorRT-LLM
-# engine built for H100.
 weights:
-  - source: hf://YOUR_ORG/qwen3-8b-trtllm-engine-h100@main
-    mount_location: /models/engine
-    auth:
-      auth_method: CUSTOM_SECRET
-      auth_secret_name: hf_access_token
   - source: hf://Qwen/Qwen3-8B@main
-    mount_location: /models/tokenizer
+    mount_location: /models/qwen
     auth:
       auth_method: CUSTOM_SECRET
       auth_secret_name: hf_access_token
     allow_patterns:
-      - "tokenizer*"
+      - "*.safetensors"
       - "config.json"
-      - "special_tokens_map.json"
+      - "tokenizer*"
       - "*.json"
+    ignore_patterns:
+      - "*.bin"
+      - "original/*"
 
 resources:
   accelerator: H100
