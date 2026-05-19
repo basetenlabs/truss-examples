@@ -1,4 +1,4 @@
-model_name: Triton TensorRT-LLM OpenAI
+model_name: Triton TensorRT-LLM OpenAI - Qwen3 8B
 description: NVIDIA Triton with TensorRT-LLM backend and OpenAI-compatible API on Baseten.
 
 model_metadata:
@@ -33,15 +33,15 @@ environment_variables:
   TOKENIZER_DIR: /models/tokenizer
   TRTLLM_ORCHESTRATOR: "1"
 
-# Replace YOUR_ORG/your-trtllm-engine-repo with a HuggingFace repo (or s3://) that
-# contains a TensorRT-LLM engine built for your target GPU topology.
+# Replace with a HuggingFace repo (or s3://) containing a Qwen3-8B TensorRT-LLM
+# engine built for H100.
 weights:
-  - source: hf://YOUR_ORG/your-trtllm-engine-repo@main
+  - source: hf://YOUR_ORG/qwen3-8b-trtllm-engine-h100@main
     mount_location: /models/engine
     auth:
       auth_method: CUSTOM_SECRET
       auth_secret_name: hf_access_token
-  - source: hf://meta-llama/Llama-3.1-8B-Instruct@main
+  - source: hf://Qwen/Qwen3-8B@main
     mount_location: /models/tokenizer
     auth:
       auth_method: CUSTOM_SECRET
@@ -53,7 +53,7 @@ weights:
       - "*.json"
 
 resources:
-  accelerator: A100
+  accelerator: H100
   use_gpu: true
 
 runtime:

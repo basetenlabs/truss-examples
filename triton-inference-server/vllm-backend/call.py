@@ -6,7 +6,7 @@ from openai import OpenAI
 
 MODEL_ID = os.environ.get("BASETEN_MODEL_ID", "YOUR_MODEL_ID")
 API_KEY = os.environ["BASETEN_API_KEY"]
-SERVED_MODEL = os.environ.get("SERVED_MODEL", "llama-3.2-1b-instruct")
+SERVED_MODEL = os.environ.get("SERVED_MODEL", "qwen3-8b")
 
 client = OpenAI(
     base_url=(
