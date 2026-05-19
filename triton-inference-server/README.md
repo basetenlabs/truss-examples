@@ -31,7 +31,7 @@ Examples for serving LLMs with [NVIDIA Triton Inference Server](https://github.c
 ## Related examples in this repo
 
 - [`templates/trt-llm`](../../templates/trt-llm/) — older Truss `model.py` that subprocesses Triton (not `docker_server`).
-- [`custom-server/nemotron-parse-v1-2-vllm`](../nemotron-parse-v1-2-vllm/) — native vLLM OpenAI server (no Triton).
+- [`custom-server/nemotron-parse-v1-2-vllm`](../custom-server/nemotron-parse-v1-2-vllm/) — native vLLM OpenAI server (no Triton).
 - [`vllm/`](../../vllm/) — Truss-native vLLM `AsyncLLMEngine`.
 
 ## References

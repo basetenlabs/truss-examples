@@ -22,7 +22,7 @@ vllm-backend/
 ## Deploy
 
 ```bash
-cd custom-server/triton/vllm-backend
+cd triton-inference-server/vllm-backend
 export HF_ACCESS_TOKEN=...   # used when truss prompts for hf_access_token secret
 truss push
 ```

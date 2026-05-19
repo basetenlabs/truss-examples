@@ -36,7 +36,7 @@ tensorrtllm-backend/
 ## Deploy
 
 ```bash
-cd custom-server/triton/tensorrtllm-backend
+cd triton-inference-server/tensorrtllm-backend
 # Edit config.yaml: engine weights source + tokenizer repo
 truss push
 ```
@@ -67,4 +67,4 @@ python call.py
 
 ## Performance tuning
 
-Edit `data/model_repository/tensorrt_llm/config.pbtxt` parameters such as `max_num_sequences`, `kv_cache_free_gpu_mem_fraction`, and `max_tokens_in_paged_kv_cache`. See [TRT-LLM model config](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/model_config.html) and the legacy [`templates/trt-llm`](../../../templates/trt-llm/TRT-LLM-README.md) notes in this repo.
+Edit `data/model_repository/tensorrt_llm/config.pbtxt` parameters such as `max_num_sequences`, `kv_cache_free_gpu_mem_fraction`, and `max_tokens_in_paged_kv_cache`. See [TRT-LLM model config](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/model_config.html) and the legacy [`templates/trt-llm`](../../templates/trt-llm/TRT-LLM-README.md) notes in this repo.
