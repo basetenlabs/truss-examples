@@ -57,6 +57,79 @@ input [
     dims: [ 1 ]
     optional: true
   },
+  # Aliases used by Triton's OpenAI-compatible frontend (inflight_batcher names).
+  {
+    name: "stream"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "max_tokens"
+    data_type: TYPE_INT32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "temperature"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "top_k"
+    data_type: TYPE_INT32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "top_p"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "frequency_penalty"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "presence_penalty"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "seed"
+    data_type: TYPE_UINT64
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "stop_words"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+    optional: true
+  },
+  {
+    name: "exclude_input_in_output"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "return_num_input_tokens"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "return_num_output_tokens"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+    optional: true
+  },
   ## SamplingParams Arguments for Each Request ##
   {
     name: "sampling_param_best_of"

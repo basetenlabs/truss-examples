@@ -39,9 +39,11 @@ curl -s http://localhost:8000/v1/chat/completions \
   -d '{
     "model": "tensorrt_llm",
     "messages": [{"role": "user", "content": "What is ML?"}],
-    "max_tokens": 64
+    "max_completion_tokens": 64
   }'
 ```
+
+The LLMAPI `config.pbtxt` also accepts OpenAI-frontend aliases (`temperature`, `max_tokens`, `stream`, etc.) via `helpers.py`.
 
 ## Client
 
