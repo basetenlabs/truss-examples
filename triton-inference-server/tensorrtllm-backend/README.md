@@ -1,22 +1,16 @@
-# Triton Inference Server — TensorRT-LLM backend on Baseten
+# Triton + TensorRT-LLM — OpenAI-compatible API on Baseten
 
-Deploy [NVIDIA Triton](https://github.com/triton-inference-server/server) with the [TensorRT-LLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html) (`inflight_batcher_llm` ensemble) as a [Baseten custom server](https://docs.baseten.co/development/model/custom-server).
+Deploy [NVIDIA Triton](https://github.com/triton-inference-server/server) with the [TensorRT-LLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html) (`inflight_batcher_llm` **ensemble**) and Triton's [OpenAI-compatible frontend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/client_guide/openai_readme.html) on Baseten.
 
-This example uses:
-
-- **BDN** (`weights:`) for the TRT-LLM engine and Hugging Face tokenizer
-- **`data/model_repository/`** for the ensemble, preprocessing, postprocessing, and `tensorrt_llm` configs
-- **`data/start-triton.sh`** to copy the engine into the repo and set `triton_tokenizer_repository` before starting `tritonserver`
+The TensorRT-LLM backend alone exposes Triton's generate API on `ensemble`. This example runs `openai_frontend/main.py` with `--backend tensorrtllm` for `/v1/chat/completions`.
 
 ## Prerequisites
 
-1. Build a TensorRT-LLM engine for your GPU topology (see [TensorRT-LLM docs](https://github.com/NVIDIA/TensorRT-LLM) and the Triton [quick start](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html)).
-2. Upload the engine artifacts to Hugging Face or S3.
-3. Update `config.yaml`:
-   - Replace `hf://YOUR_ORG/your-trtllm-engine-repo@main` with your engine source.
-   - Point `TOKENIZER_DIR` / tokenizer `weights` at a repo that matches the engine.
+1. Build a TensorRT-LLM engine for your GPU ([quick start](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html)).
+2. Upload engine artifacts via BDN (`weights`).
+3. Update `config.yaml`: replace `hf://YOUR_ORG/your-trtllm-engine-repo@main` and align tokenizer weights with the engine.
 
-The Triton image tag (`24.07-trtllm-python-py3`) must match the TensorRT-LLM version used to build the engine ([support matrix](https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html)).
+Match the Triton image tag to your engine's TensorRT-LLM version ([support matrix](https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html)).
 
 ## Layout
 
@@ -25,46 +19,48 @@ tensorrtllm-backend/
 ├── config.yaml
 ├── call.py
 └── data/
-    ├── start-triton.sh
+    ├── start-openai.sh
     └── model_repository/
-        ├── ensemble/
-        ├── preprocessing/1/model.py
-        ├── postprocessing/1/model.py
-        └── tensorrt_llm/          # engine copied here at startup
+        ├── ensemble/           # OpenAI "model" name (default)
+        ├── preprocessing/
+        ├── postprocessing/
+        └── tensorrt_llm/
 ```
 
 ## Deploy
 
 ```bash
 cd triton-inference-server/tensorrtllm-backend
-# Edit config.yaml: engine weights source + tokenizer repo
 truss push
 ```
 
-`run_as_user_id: 1000` is set because NVIDIA Triton images run as UID 1000 ([Baseten custom server docs](https://docs.baseten.co/development/model/custom-server#non-root-user)).
+`TRTLLM_ORCHESTRATOR=1` is set for tensor-parallel engines (see [orchestrator mode](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/README.html#orchestrator-mode)).
 
 ## Inference
 
-The ensemble model uses Triton's generate API:
-
 ```bash
-curl -X POST localhost:8000/v2/models/ensemble/generate \
-  -d '{"text_input": "What is ML?", "max_tokens": 32, "bad_words": "", "stop_words": ""}'
+curl -s http://localhost:8000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "ensemble",
+    "messages": [{"role": "user", "content": "What is ML?"}],
+    "max_tokens": 64
+  }'
 ```
 
-On Baseten, POST the same JSON to `/environments/production/predict`.
-
-For multi-GPU tensor parallel engines, use `mpirun` / `launch_triton_server.py` as in NVIDIA's docs and adjust `docker_server.start_command` accordingly.
+On Baseten, use `/environments/production/predict` or `/environments/production/sync/v1/chat/completions`.
 
 ## Client
 
 ```bash
-pip install httpx
+pip install openai
 export BASETEN_API_KEY=...
 export BASETEN_MODEL_ID=<model_id>
 python call.py
 ```
 
+Set `SERVED_MODEL` if you rename the ensemble directory in `data/model_repository/`.
+
 ## Performance tuning
 
-Edit `data/model_repository/tensorrt_llm/config.pbtxt` parameters such as `max_num_sequences`, `kv_cache_free_gpu_mem_fraction`, and `max_tokens_in_paged_kv_cache`. See [TRT-LLM model config](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/model_config.html) and the legacy [`templates/trt-llm`](../../templates/trt-llm/TRT-LLM-README.md) notes in this repo.
+Edit `data/model_repository/tensorrt_llm/config.pbtxt` (`max_num_sequences`, KV cache fractions, etc.). See [TRT-LLM model config](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/tensorrtllm_backend/docs/model_config.html).

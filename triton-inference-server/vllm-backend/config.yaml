@@ -1,37 +1,32 @@
-model_name: Triton vLLM Backend - Llama 3.2 1B
-description: NVIDIA Triton Inference Server with the vLLM backend on Baseten (custom docker_server).
+model_name: Triton vLLM OpenAI - Llama 3.2 1B
+description: NVIDIA Triton with vLLM backend and OpenAI-compatible API on Baseten.
 
 model_metadata:
   example_model_input:
-    text_input: "What is Baseten?"
-    parameters:
-      stream: false
-      temperature: 0.7
-      max_tokens: 128
+    model: llama-3.2-1b-instruct
+    messages:
+      - role: user
+        content: What is Baseten?
+    max_tokens: 128
+    temperature: 0.7
   tags:
     - triton
     - vllm
+    - openai-compatible
     - text-generation
     - bdn
     - custom-server
 
 base_image:
-  image: nvcr.io/nvidia/tritonserver:24.08-vllm-python-py3
+  image: nvcr.io/nvidia/tritonserver:25.08-vllm-python-py3
 
 docker_server:
   run_as_user_id: 1000
-  start_command: >-
-    tritonserver
-    --model-repository=/app/data/model_repository
-    --http-port=8000
-    --grpc-port=8001
-    --metrics-port=8002
-    --allow-http=true
-    --allow-grpc=true
+  start_command: bash /app/data/start-openai.sh
   server_port: 8000
-  predict_endpoint: /v2/models/vllm_model/generate
-  readiness_endpoint: /v2/health/ready
-  liveness_endpoint: /v2/health/live
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health/ready
+  liveness_endpoint: /health/ready
 
 weights:
   - source: hf://meta-llama/Llama-3.2-1B-Instruct@main
@@ -65,3 +60,7 @@ environment_variables: {}
 requirements: []
 system_packages: []
 external_package_dirs: []
+
+build_commands:
+  - pip install -r /opt/tritonserver/python/openai/requirements.txt
+  - chmod +x /app/data/start-openai.sh

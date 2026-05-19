@@ -1,28 +1,31 @@
-"""Call a Triton TensorRT-LLM ensemble deployment on Baseten via /predict."""
+"""Call a Triton TensorRT-LLM deployment via the OpenAI-compatible API on Baseten."""
 
 import os
 
-import httpx
+from openai import OpenAI
 
 MODEL_ID = os.environ.get("BASETEN_MODEL_ID", "YOUR_MODEL_ID")
 API_KEY = os.environ["BASETEN_API_KEY"]
+# Must match the Triton model name in data/model_repository/ (default ensemble).
+SERVED_MODEL = os.environ.get("SERVED_MODEL", "ensemble")
 
-PREDICT_URL = (
-    f"https://model-{MODEL_ID}.api.baseten.co/environments/production/predict"
+client = OpenAI(
+    base_url=(
+        f"https://model-{MODEL_ID}.api.baseten.co/environments/production/sync/v1"
+    ),
+    api_key=API_KEY,
 )
 
-payload = {
-    "text_input": "What is machine learning?",
-    "max_tokens": 64,
-    "bad_words": "",
-    "stop_words": "",
-}
+response = client.chat.completions.create(
+    model=SERVED_MODEL,
+    messages=[
+        {
+            "role": "user",
+            "content": "What is machine learning?",
+        }
+    ],
+    max_tokens=64,
+    temperature=0.0,
+)
 
-with httpx.Client(timeout=300.0) as client:
-    response = client.post(
-        PREDICT_URL,
-        json=payload,
-        headers={"Authorization": f"Api-Key {API_KEY}"},
-    )
-    response.raise_for_status()
-    print(response.json())
+print(response.choices[0].message.content)

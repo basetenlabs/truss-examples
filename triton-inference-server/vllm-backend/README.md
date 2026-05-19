@@ -1,8 +1,8 @@
-# Triton Inference Server — vLLM backend on Baseten
+# Triton + vLLM — OpenAI-compatible API on Baseten
 
-Deploy [NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server) with the [vLLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/vllm_backend/README.html) as a [Baseten custom server](https://docs.baseten.co/development/model/custom-server).
+Deploy [NVIDIA Triton](https://github.com/triton-inference-server/server) with the [vLLM backend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/vllm_backend/README.html) and Triton's [OpenAI-compatible frontend](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/client_guide/openai_readme.html) on Baseten.
 
-Weights are delivered with [BDN](https://docs.baseten.co/reference/truss-configuration#weights) (`weights:`). The Triton model repository lives under `data/model_repository/`.
+The vLLM backend alone exposes Triton's `/v2/models/.../generate` API. This example runs `openai_frontend/main.py` so clients can use `/v1/chat/completions` and the OpenAI Python SDK.
 
 ## Layout
 
@@ -11,44 +11,44 @@ vllm-backend/
 ├── config.yaml
 ├── call.py
 └── data/
+    ├── start-openai.sh
     └── model_repository/
-        └── vllm_model/
+        └── llama-3.2-1b-instruct/    # OpenAI "model" name
             ├── config.pbtxt
-            └── 1/model.json      # vLLM AsyncLLMEngine args
+            └── 1/model.json
 ```
 
-`model.json` points vLLM at `/models/llama`, where BDN mounts `meta-llama/Llama-3.2-1B-Instruct`.
+`model.json` points the vLLM engine at `/models/llama` (BDN-mounted weights).
 
 ## Deploy
 
 ```bash
 cd triton-inference-server/vllm-backend
-export HF_ACCESS_TOKEN=...   # used when truss prompts for hf_access_token secret
 truss push
 ```
 
-Use a GPU that fits the model (default: `A10G`). Align the Triton container tag with the vLLM version you need — see the [NGC tritonserver tags](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tritonserver/tags) (`*-vllm-python-py3`).
+Requires a Hugging Face token for `meta-llama/Llama-3.2-1B-Instruct` (`hf_access_token` secret).
 
 ## Inference
 
-Triton exposes the [generate extension](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/protocol/extension_generate.html) on the vLLM model:
+OpenAI chat completions (local, port 8000):
 
 ```bash
-curl -X POST localhost:8000/v2/models/vllm_model/generate \
-  -d '{"text_input": "Hello", "parameters": {"stream": false, "max_tokens": 32}}'
+curl -s http://localhost:8000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "llama-3.2-1b-instruct",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "max_tokens": 64
+  }'
 ```
 
-On Baseten, the same body is sent to `/environments/production/predict` (mapped to that route via `docker_server.predict_endpoint`).
-
-Other Triton routes are available under `/environments/production/sync/`, for example:
-
-- `/environments/production/sync/v2/health/ready`
-- `/environments/production/sync/v2/models/vllm_model/generate`
+On Baseten, POST the same body to `/environments/production/predict`, or use the sync route `/environments/production/sync/v1/chat/completions`.
 
 ## Client
 
 ```bash
-pip install httpx
+pip install openai
 export BASETEN_API_KEY=...
 export BASETEN_MODEL_ID=<model_id>
 python call.py
@@ -58,7 +58,9 @@ python call.py
 
 | Goal | Where to change |
 |------|-----------------|
-| Different HF model | `weights`, `data/.../1/model.json` (`model` path) |
-| vLLM engine args | `data/model_repository/vllm_model/1/model.json` |
-| Triton / vLLM version | `base_image.image` |
-| GPU | `resources.accelerator` |
+| OpenAI model name | Rename `data/model_repository/<name>/` |
+| HF weights path | `weights`, `model.json` (`model` field) |
+| vLLM engine args | `1/model.json` |
+| Triton / vLLM version | `base_image.image` (use `*-vllm-python-py3` tags) |
+
+Also supports `/v1/completions` and `/v1/models`. See the [OpenAI frontend docs](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/client_guide/openai_readme.html).

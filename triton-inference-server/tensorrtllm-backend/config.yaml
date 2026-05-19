@@ -1,33 +1,37 @@
-model_name: Triton TensorRT-LLM Backend
-description: NVIDIA Triton Inference Server with the TensorRT-LLM inflight batcher ensemble on Baseten (custom docker_server).
+model_name: Triton TensorRT-LLM OpenAI
+description: NVIDIA Triton with TensorRT-LLM backend and OpenAI-compatible API on Baseten.
 
 model_metadata:
   example_model_input:
-    text_input: "What is machine learning?"
+    model: ensemble
+    messages:
+      - role: user
+        content: What is machine learning?
     max_tokens: 64
-    bad_words: ""
-    stop_words: ""
+    temperature: 0.0
   tags:
     - triton
     - tensorrt-llm
+    - openai-compatible
     - text-generation
     - bdn
     - custom-server
 
 base_image:
-  image: nvcr.io/nvidia/tritonserver:24.07-trtllm-python-py3
+  image: nvcr.io/nvidia/tritonserver:24.11-trtllm-python-py3
 
 docker_server:
   run_as_user_id: 1000
-  start_command: bash /app/data/start-triton.sh
+  start_command: bash /app/data/start-openai.sh
   server_port: 8000
-  predict_endpoint: /v2/models/ensemble/generate
-  readiness_endpoint: /v2/health/ready
-  liveness_endpoint: /v2/health/live
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health/ready
+  liveness_endpoint: /health/ready
 
 environment_variables:
   ENGINE_DIR: /models/engine
   TOKENIZER_DIR: /models/tokenizer
+  TRTLLM_ORCHESTRATOR: "1"
 
 # Replace YOUR_ORG/your-trtllm-engine-repo with a HuggingFace repo (or s3://) that
 # contains a TensorRT-LLM engine built for your target GPU topology.
@@ -66,4 +70,6 @@ system_packages: []
 external_package_dirs: []
 
 build_commands:
-  - chmod +x /app/data/start-triton.sh
+  - pip install /opt/tritonserver/python/triton*.whl
+  - pip install -r /opt/tritonserver/python/openai/requirements.txt
+  - chmod +x /app/data/start-openai.sh

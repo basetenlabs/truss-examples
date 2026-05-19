@@ -1,30 +1,30 @@
-"""Call a Triton vLLM backend deployment on Baseten via the /predict route."""
+"""Call a Triton vLLM deployment via the OpenAI-compatible API on Baseten."""
 
 import os
 
-import httpx
+from openai import OpenAI
 
 MODEL_ID = os.environ.get("BASETEN_MODEL_ID", "YOUR_MODEL_ID")
 API_KEY = os.environ["BASETEN_API_KEY"]
+SERVED_MODEL = os.environ.get("SERVED_MODEL", "llama-3.2-1b-instruct")
 
-PREDICT_URL = (
-    f"https://model-{MODEL_ID}.api.baseten.co/environments/production/predict"
+client = OpenAI(
+    base_url=(
+        f"https://model-{MODEL_ID}.api.baseten.co/environments/production/sync/v1"
+    ),
+    api_key=API_KEY,
 )
 
-payload = {
-    "text_input": "What is NVIDIA Triton Inference Server?",
-    "parameters": {
-        "stream": False,
-        "temperature": 0.0,
-        "max_tokens": 128,
-    },
-}
+response = client.chat.completions.create(
+    model=SERVED_MODEL,
+    messages=[
+        {
+            "role": "user",
+            "content": "What is NVIDIA Triton Inference Server?",
+        }
+    ],
+    max_tokens=128,
+    temperature=0.0,
+)
 
-with httpx.Client(timeout=300.0) as client:
-    response = client.post(
-        PREDICT_URL,
-        json=payload,
-        headers={"Authorization": f"Api-Key {API_KEY}"},
-    )
-    response.raise_for_status()
-    print(response.json())
+print(response.choices[0].message.content)
