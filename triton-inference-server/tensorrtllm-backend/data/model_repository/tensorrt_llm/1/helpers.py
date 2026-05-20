@@ -105,13 +105,13 @@ def get_input_scalar_by_name(request,
     tensor = pb_utils.get_input_tensor_by_name(request, name)
     if tensor is None:
         return None
-    tensor = tensor.as_numpy()
+    tensor = np.squeeze(tensor.as_numpy())
 
     if tensor.size != expected_batch_size:
         raise pb_utils.TritonModelException(
             f"Expected a scalar tensor for tensor {name}")
 
-    return tensor.item(batch_index)
+    return tensor.reshape(-1)[batch_index]
 
 
 def get_input_tensor_by_name(request,
