@@ -555,18 +555,18 @@ class TritonPythonModel:
             prompt: A LLM PromptInputs object
 
         Notes:
-            - The current implementation only supports text_input being a 1D tensor(a single prompt).
+            - Supports a single prompt per request (1D or [1,1] from the OpenAI frontend).
         """
         text_input = get_input_tensor_by_name(request, 'text_input')
         if text_input is None:
             raise pb_utils.TritonModelException(
                 f"text_input is missing from the request")
-        if len(text_input.shape) > 1:
-            raise pb_utils.TritonModelException(
-                f"The current implementation only supports text_input being a 1D tensor."
-            )
 
-        prompt = text_input[0]
+        flat = np.squeeze(text_input).reshape(-1)
+        if flat.size == 0:
+            raise pb_utils.TritonModelException(
+                "text_input must contain at least one prompt")
+        prompt = flat[0]
 
         if isinstance(prompt, bytes):
             prompt = prompt.decode("utf-8")
