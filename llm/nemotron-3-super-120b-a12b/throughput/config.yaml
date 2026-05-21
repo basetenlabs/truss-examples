@@ -1,27 +1,28 @@
-model_name: "model:nemotron-3-super-120b-a12b preset:throughput"
+model_name: model:nemotron-3-super-120b-a12b preset:throughput
 
 model_metadata:
   example_model_input:
     model: "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4"
     max_tokens: 512
     messages:
-      - content: Tell me everything you know about optimized inference.
-        role: user
+      - role: user
+        content: Tell me everything you know about optimized inference.
     stream: true
     temperature: 0.5
   tags:
     - openai-compatible
 
 resources:
-  accelerator: B200:2
+  accelerator: B200:4
   cpu: "1"
   memory: 10Gi
   use_gpu: true
 
-weights:
-  - source: "hf://nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4@main"
-    mount_location: "/app/model_cache/trt_model"
-    auth_secret_name: "hf_access_token"
+environment_variables:
+  PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+  TRTLLM_ENABLE_PDL: "1"
+  BAD_TOKEN_ID_SEQ_CHECK_ENABLED: "1"
+  ENABLE_B10_LOOKAHEAD: "0"
 
 secrets:
   hf_access_token: null
@@ -30,45 +31,44 @@ trt_llm:
   inference_stack: v2
   build:
     checkpoint_repository:
-      repo: michaelfeil/empty-model
+      repo: nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
       revision: main
       source: HF
+      runtime_secret_name: hf_access_token
   runtime:
-    max_batch_size: 128
-    max_num_tokens: 8192
-    max_seq_len: 8192
-    tensor_parallel_size: 2
+    enable_chunked_prefill: true
+    max_batch_size: 32
+    max_num_tokens: 16384
+    max_seq_len: 131072
+    tensor_parallel_size: 4
     served_model_name: nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4
     patch_kwargs:
-      model_path: /app/model_cache/trt_model
+      reasoning_parser: nemotron3
+      tool_call_parser: qwen3_coder
+      tokenizer_limit_length: 131072
+      arguments_as_json: true
       engine_config:
-        enable_attention_dp: true
-        max_num_tokens: 8192
-        max_seq_len: 8192
-        max_input_len: 8192
-        max_batch_size: 128
-        attention_dp_config:
-          enable_balance: true
-          batching_wait_iters: 1
-          timeout_iters: 5
+        backend: pytorch
+        enable_chunked_prefill: true
+        enable_iter_perf_stats: true
+        max_batch_size: 32
+        max_beam_width: 1
+        max_input_len: 131072
+        max_num_tokens: 16384
+        max_seq_len: 131072
+        trust_remote_code: true
+        moe_expert_parallel_size: 4
         cuda_graph_config:
           enable_padding: true
-          max_batch_size: 128
+          max_batch_size: 32
         kv_cache_config:
-          free_gpu_memory_fraction: 0.8
+          dtype: fp8
           enable_block_reuse: false
+          free_gpu_memory_fraction: 0.8
+          mamba_ssm_cache_dtype: float32
+        moe_config:
+          backend: TRTLLM
         speculative_config:
           decoding_type: MTP
           num_nextn_predict_layers: 3
           allow_advanced_sampling: true
-        moe_expert_parallel_size: 2
-        tool_call_parser: qwen3_coder
-        reasoning_parser: nemotron3
-        trust_remote_code: true
-        stream_interval: 10
-        enable_chunked_prefill: true
-        moe_config:
-          backend: TRTLLM
-
-runtime:
-  predict_concurrency: 128
