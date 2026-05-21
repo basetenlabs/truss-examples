@@ -1,11 +1,16 @@
 """Call a Triton TensorRT-LLM deployment via the OpenAI-compatible API on Baseten."""
 
 import os
+import sys
 
 from openai import OpenAI
 
 MODEL_ID = os.environ.get("BASETEN_MODEL_ID", "YOUR_MODEL_ID")
-API_KEY = os.environ["BASETEN_API_KEY"]
+API_KEY = os.environ.get("BASETEN_API_KEY")
+if not API_KEY:
+    sys.exit("BASETEN_API_KEY must be set")
+
+STREAM = os.environ.get("STREAM", "").lower() in ("1", "true", "yes")
 # Must match the Triton model name in config.pbtxt (LLMAPI default: tensorrt_llm).
 SERVED_MODEL = os.environ.get("SERVED_MODEL", "tensorrt_llm")
 
@@ -16,7 +21,7 @@ client = OpenAI(
     api_key=API_KEY,
 )
 
-response = client.chat.completions.create(
+kwargs = dict(
     model=SERVED_MODEL,
     messages=[
         {
@@ -28,4 +33,13 @@ response = client.chat.completions.create(
     temperature=0.0,
 )
 
-print(response.choices[0].message.content)
+if STREAM:
+    stream = client.chat.completions.create(**kwargs, stream=True)
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            print(delta, end="", flush=True)
+    print()
+else:
+    response = client.chat.completions.create(**kwargs)
+    print(response.choices[0].message.content)

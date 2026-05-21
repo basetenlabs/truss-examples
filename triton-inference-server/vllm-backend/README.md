@@ -13,7 +13,7 @@ vllm-backend/
 └── data/
     ├── start-openai.sh
     └── model_repository/
-        └── qwen3-8b/              # OpenAI "model" name
+        └── qwen3-8b/              # OpenAI "model" name (matches config.pbtxt `name`)
             ├── config.pbtxt
             └── 1/model.json
 ```
@@ -46,6 +46,9 @@ pip install openai
 export BASETEN_API_KEY=...
 export BASETEN_MODEL_ID=<model_id>
 python call.py
+
+# SSE streaming
+STREAM=1 python call.py
 ```
 
 ## Customize
