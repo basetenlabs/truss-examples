@@ -1,0 +1,61 @@
+model_name: "model:qwen3.6-35b-a3b preset:throughput"
+model_metadata:
+  example_model_input:
+    model: "RedHatAI/Qwen3.6-35B-A3B-NVFP4"
+    messages:
+      - role: user
+        content: "What is the capital of France?"
+    max_tokens: 100
+    temperature: 0.7
+  tags:
+    - openai-compatible
+    - vllm
+    - qwen3.6
+    - nvfp4
+    - b200
+base_image:
+  image: vllm/vllm-openai:nightly
+weights:
+  - source: "hf://RedHatAI/Qwen3.6-35B-A3B-NVFP4@main"
+    mount_location: "/app/model_cache/qwen3.6-35b-a3b-nvfp4"
+    auth_secret_name: "hf_access_token"
+build_commands: []
+environment_variables:
+  PYTORCH_ALLOC_CONF: "expandable_segments:True"
+  VLLM_FLASHINFER_MOE_BACKEND: throughput
+  VLLM_USE_FLASHINFER_MOE_FP4: 1
+  VLLM_USE_FLASHINFER_MOE_FP8: 1
+docker_server:
+  start_command: >-
+    vllm serve /app/model_cache/qwen3.6-35b-a3b-nvfp4
+    --served-model-name RedHatAI/Qwen3.6-35B-A3B-NVFP4
+    --host 0.0.0.0
+    --port 8000
+    --gpu-memory-utilization 0.95
+    --max-model-len 262144
+    --max-num-batched-tokens 32768
+    --dtype auto
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --max-num-seqs 512
+    --reasoning-parser qwen3
+    --enable-auto-tool-choice
+    --tool-call-parser qwen3_coder
+    --moe_backend flashinfer_cutlass
+    --speculative-config '{"method":"qwen3_5_mtp","num_speculative_tokens":3}'
+    --trust-remote-code
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+runtime:
+  predict_concurrency: 1000
+  health_checks:
+    restart_check_delay_seconds: 1500
+    restart_threshold_seconds: 1500
+    stop_traffic_threshold_seconds: 120
+resources:
+  accelerator: B200
+  use_gpu: true
+secrets:
+  hf_access_token: null
