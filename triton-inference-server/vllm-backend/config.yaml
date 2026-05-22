@@ -1,0 +1,66 @@
+model_name: Triton vLLM OpenAI - Qwen3 8B
+description: NVIDIA Triton with vLLM backend and OpenAI-compatible API on Baseten.
+
+model_metadata:
+  example_model_input:
+    model: qwen3-8b
+    messages:
+      - role: user
+        content: What is Baseten?
+    max_tokens: 128
+    temperature: 0.7
+  tags:
+    - triton
+    - vllm
+    - openai-compatible
+    - text-generation
+    - bdn
+    - custom-server
+
+base_image:
+  image: nvcr.io/nvidia/tritonserver:25.08-vllm-python-py3
+
+docker_server:
+  run_as_user_id: 1000
+  start_command: bash /app/data/start-openai.sh
+  server_port: 8000
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health/ready
+  liveness_endpoint: /health/ready
+
+weights:
+  - source: hf://Qwen/Qwen3-8B@main
+    mount_location: /models/qwen
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
+    allow_patterns:
+      - "*.safetensors"
+      - "config.json"
+      - "tokenizer*"
+      - "*.json"
+    ignore_patterns:
+      - "*.bin"
+      - "original/*"
+
+resources:
+  accelerator: H100
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 32
+  health_checks:
+    restart_threshold_seconds: 900
+    stop_traffic_threshold_seconds: 300
+
+secrets:
+  hf_access_token: null
+
+environment_variables: {}
+requirements: []
+system_packages: []
+external_package_dirs: []
+
+build_commands:
+  - pip install -r /opt/tritonserver/python/openai/requirements.txt
+  - chmod +x /app/data/start-openai.sh

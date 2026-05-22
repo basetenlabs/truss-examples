@@ -1,0 +1,7 @@
+{
+  "model": "/models/qwen",
+  "gpu_memory_utilization": 0.9,
+  "max_model_len": 32768,
+  "dtype": "auto",
+  "disable_log_stats": false
+}

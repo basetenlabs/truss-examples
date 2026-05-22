@@ -1,0 +1,13 @@
+# Triton model config for the vLLM backend.
+# See: https://github.com/triton-inference-server/vllm_backend
+# OpenAI `model` field must match this name (and the repository directory name).
+
+name: "qwen3-8b"
+backend: "vllm"
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_MODEL
+  }
+]
