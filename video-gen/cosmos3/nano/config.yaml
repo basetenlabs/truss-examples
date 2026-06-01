@@ -1,0 +1,81 @@
+model_name: "model:cosmos3 preset:nano"
+
+# Private base image built from NVIDIA's upstream Dockerfile (cosmos3-ea-external
+# at upstream SHA 61fb84f / mirror SHA 1e4841b). Bakes Python 3.13, the
+# uv-installed cu130 dep group (torch 2.10+cu130, flash-attn-3-nv, natten
+# 0.21.6.dev6 with libnatten, ...), and the gated cosmos3 package source
+# itself into /workspace. Must stay private (contains NVIDIA EA-licensed
+# source). Baseten pulls using a base64 secret named
+# DOCKER_REGISTRY_https://index.docker.io/v1/ on the FDE-internal team.
+base_image:
+  image: baseten/cosmos3-nano:v1
+  python_executable_path: /workspace/.venv/bin/python
+
+model_metadata:
+  repo_id: nvidia-cosmos-ea/Cosmos3-Nano
+  example_model_input:
+    prompt: "A bustling city street at night, neon signs reflecting on wet pavement, light rain falling."
+    model_mode: text2video
+    resolution: "720"
+    aspect_ratio: "16,9"
+    num_frames: 189
+    fps: 24
+    seed: 0
+  tags:
+    - world-model
+    - text-to-video
+    - image-to-video
+    - video-generation
+    - physical-ai
+
+weights:
+  # Main Cosmos3-Nano DCP checkpoint. Loaded directly from this local mount
+  # via OmniSetupOverrides(checkpoint_path=...) — the broken `uvx hf` path is
+  # never invoked for this one.
+  - source: "hf://nvidia-cosmos-ea/Cosmos3-Nano@ebbe03fe665661d0eab87130a341184efecca365"
+    mount_location: "/app/model_cache/cosmos3-nano"
+    auth_secret_name: "hf_access_token"
+
+  # Wan2.2 VAE (video tokenizer). cosmos3 looks up a single file from this
+  # repo (`cosmos3/common/checkpoints.py` registers it as `CheckpointFileHf`,
+  # filename="Wan2.2_VAE.pth"). Mounting at the HF Hub cache path makes
+  # snapshot_download return a cache hit; no network at load time.
+  - source: "hf://Wan-AI/Wan2.2-TI2V-5B@921dbaf3f1674a56f47e83fb80a34bac8a8f203e"
+    mount_location: "/app/.hf-cache/hub/models--Wan-AI--Wan2.2-TI2V-5B/snapshots/921dbaf3f1674a56f47e83fb80a34bac8a8f203e"
+    allow_patterns:
+      - "Wan2.2_VAE.pth"
+
+  # Qwen3-VL-8B-Instruct tokenizer / processor configs only — cosmos3's
+  # `register_checkpoints` filters to `*.json` and `*.txt` at inference (it
+  # only needs the processor, not the model weights, since the Reasoner
+  # tower's weights live inside the Cosmos3-Nano DCP). ~10 MB total.
+  - source: "hf://Qwen/Qwen3-VL-8B-Instruct@0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
+    mount_location: "/app/.hf-cache/hub/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
+    allow_patterns:
+      - "*.json"
+      - "*.txt"
+      - "*.model"
+
+resources:
+  accelerator: H100
+  use_gpu: true
+
+secrets:
+  hf_access_token: null
+  # Docker Hub pull credential for the private baseten/cosmos3-deps image.
+  # Value is `echo -n 'fredbaseten:<docker-hub-pat>' | base64`, stored on the
+  # Baseten FDE-internal team.
+  DOCKER_REGISTRY_https://index.docker.io/v1/: null
+
+environment_variables:
+  HF_HOME: "/app/.hf-cache"
+  COSMOS_EARLY_ACCESS: "1"
+  COSMOS3_CHECKPOINT_PATH: "/app/model_cache/cosmos3-nano"
+  PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+
+runtime:
+  predict_concurrency: 1
+  health_checks:
+    restart_check_delay_seconds: 1200
+    restart_threshold_seconds: 1799
+    stop_traffic_threshold_seconds: 600
