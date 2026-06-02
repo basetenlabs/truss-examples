@@ -10,9 +10,9 @@ weights:
 environment_variables:
   VLLM_DISABLE_COMPILE_CACHE: "1"
 base_image:
-  image: vllm/vllm-openai:latest
+  image: vllm/vllm-openai:v0.22.0-cu129
 docker_server:
-  start_command: sh -c "VLLM_DISABLE_COMPILE_CACHE=1 vllm serve /app/models/mistralai/Voxtral-Mini-4B-Realtime-2602 --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}' --host 0.0.0.0 --port 8000"
+  start_command: sh -c "VLLM_DISABLE_COMPILE_CACHE=1 vllm serve /app/models/mistralai/Voxtral-Mini-4B-Realtime-2602 --host 0.0.0.0 --port 8000 --load-format runai_streamer"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/realtime

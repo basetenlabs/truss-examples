@@ -1,31 +1,52 @@
-base_image:
-  image: vllm/vllm-openai:latest
-build_commands:
-  - pip install -U --pre transformers==5.0.0
-docker_server:
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  readiness_endpoint: /health
-  server_port: 8000
-  start_command: vllm serve zai-org/GLM-4.7-Flash --tensor-parallel-size 2 --gpu-memory-utilization 0.8 --tool-call-parser glm47 --enable-auto-tool-choice --served-model-name zai-org/GLM-4.7-Flash --host 0.0.0.0 --port 8000 --trust-remote-code --max-model-len auto
+model_name: "model:glm-4.7-flash preset:latency"
 model_metadata:
+  description: >-
+    Zhipu GLM-4.7 Flash via vLLM (H100 × 2 TP), fast GLM tool calling and auto tool choice from BDN-mounted weights.
+  repo_id: zai-org/GLM-4.7-Flash
   example_model_input:
-    max_tokens: 32768
-    messages:
-    - content: You are a helpful assistant.
-      role: system
-    - content: What is the meaning of life?
-      role: user
     model: zai-org/GLM-4.7-Flash
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "What is the meaning of life?"
     stream: true
+    max_tokens: 32768
     temperature: 0.7
   tags:
-  - openai-compatible
-model_name: "model:glm-4.7-flash preset:latency"
-python_version: py39
+    - openai-compatible
+base_image:
+  image: vllm/vllm-openai:v0.22.0-cu129
+weights:
+  - source: "hf://zai-org/GLM-4.7-Flash@main"
+    mount_location: "/models/glm-4.7-flash"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /models/glm-4.7-flash
+    --tensor-parallel-size 2
+    --gpu-memory-utilization 0.8
+    --tool-call-parser glm47
+    --enable-auto-tool-choice
+    --served-model-name zai-org/GLM-4.7-Flash
+    --host 0.0.0.0
+    --port 8000
+    --trust-remote-code
+    --max-model-len auto
+    --enable-prefix-caching
+    --load-format runai_streamer"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
 resources:
   accelerator: H100:2
-  cpu: '1'
+  cpu: "1"
   memory: 2Gi
   use_gpu: true
 runtime:
@@ -33,3 +54,7 @@ runtime:
   predict_concurrency: 32
   transport:
     kind: http
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120

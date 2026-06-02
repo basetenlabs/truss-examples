@@ -18,9 +18,9 @@ weights:
     mount_location: "/app/models/Qwen/Qwen3-ASR-1.7B"
     auth_secret_name: "hf_access_token"
 base_image:
-  image: vllm/vllm-openai:v0.18.0
+  image: vllm/vllm-openai:v0.22.0-cu129
 docker_server:
-  start_command: sh -c "vllm serve /app/models/Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000"
+  start_command: sh -c "vllm serve /app/models/Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000 --load-format runai_streamer"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

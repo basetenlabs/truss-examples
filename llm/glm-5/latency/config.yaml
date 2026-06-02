@@ -15,7 +15,7 @@ model_metadata:
 model_name: "model:glm-5 preset:latency"
 
 base_image:
-  image: vllm/vllm-openai:glm5
+  image: vllm/vllm-openai:v0.22.0
 
 docker_server:
   start_command: >

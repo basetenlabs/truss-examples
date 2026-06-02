@@ -1,19 +1,26 @@
 model_name: "model:qwen3.5-9b preset:latency"
 model_metadata:
+  description: >-
+    Qwen 3.5 9B instruct (dense), OpenAI-compatible chat via vLLM with Qwen tooling parsers.
+  repo_id: Qwen/Qwen3.5-9B
   example_model_input:
     model: "Qwen/Qwen3.5-9B"
     messages:
       - role: user
         content: "What is the capital of France?"
+    stream: true
     max_tokens: 100
     temperature: 0.7
+  tags:
+    - openai-compatible
 base_image:
-  image: vllm/vllm-openai:v0.18.0
+  image: vllm/vllm-openai:v0.22.0-cu129
 weights:
   - source: "hf://Qwen/Qwen3.5-9B@main"
     mount_location: "/app/checkpoint/qwen3.5-9b"
     auth_secret_name: "hf_access_token"
-build_commands: []
+secrets:
+  hf_access_token: null
 docker_server:
   start_command: >-
     sh -c "vllm serve /app/checkpoint/qwen3.5-9b
@@ -26,18 +33,22 @@ docker_server:
     --reasoning-parser qwen3
     --enable-auto-tool-choice
     --tool-call-parser qwen3_coder
-    --trust-remote-code"
+    --trust-remote-code
+    --enable-prefix-caching
+    --load-format runai_streamer"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
   server_port: 8000
 environment_variables:
-  HF_HUB_ENABLE_HF_TRANSFER: '1'
   VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 runtime:
   predict_concurrency: 128
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
 resources:
   accelerator: H100:1
   use_gpu: true
-secrets:
-  hf_access_token: null

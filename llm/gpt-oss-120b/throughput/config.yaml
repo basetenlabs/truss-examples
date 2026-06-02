@@ -1,59 +1,65 @@
 model_name: "model:gpt-oss-120b preset:throughput"
 model_metadata:
+  description: >-
+    GPT-OSS 120B on vLLM Blackwell (B200 × 4), Harmony recipe with FlashInfer MoE MXFP paths.
+  repo_id: openai/gpt-oss-120b
   tags:
     - openai-compatible
-
+  example_model_input:
+    messages:
+      - role: user
+        content: "Write FizzBuzz in Python."
+    stream: true
+    model: openai/gpt-oss-120b
+    max_tokens: 4096
+    temperature: 0.5
 base_image:
-  # Pin instead of :latest for reproducibility
-  image: vllm/vllm-openai:v0.12.0 # GPT-OSS recipe for Blackwell :contentReference[oaicite:4]{index=4}
-
-# Pull Harmony/tiktoken vocab during build so runtime doesn't need network for this.
+  image: vllm/vllm-openai:v0.22.0
 build_commands:
   - mkdir -p /opt/tiktoken
   - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken -o /opt/tiktoken/o200k_base.tiktoken
   - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken -o /opt/tiktoken/cl100k_base.tiktoken
-
+weights:
+  - source: "hf://openai/gpt-oss-120b@b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
+    mount_location: "/models/gpt-oss-120b"
+    auth_secret_name: "hf_access_token"
+    ignore_patterns: ["original/*", "metal/model.bin"]
+secrets:
+  hf_access_token: null
+environment_variables:
+  TIKTOKEN_ENCODINGS_BASE: "/opt/tiktoken"
+  TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+  VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /models/gpt-oss-120b
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name gpt-oss-120b
+    --tensor-parallel-size 4
+    --gpu-memory-utilization 0.95
+    --max-model-len 8192
+    --max-num-batched-tokens 8192
+    --max-num-seqs 256
+    --cuda-graph-capture-size 2048
+    --stream-interval 20
+    --kv-cache-dtype fp8
+    --enable-prefix-caching
+    --async-scheduling
+    --trust-remote-code
+    --load-format runai_streamer"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
 resources:
   accelerator: B200:4
   use_gpu: true
-
 runtime:
   predict_concurrency: 256
-
-environment_variables:
-  # Blackwell GPT-OSS perf: enable FlashInfer MXFP4+MXFP8 MoE path :contentReference[oaicite:5]{index=5}
-  VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
-
-  # Harmony vocab location (avoids runtime download) :contentReference[oaicite:6]{index=6}
-  TIKTOKEN_ENCODINGS_BASE: "/opt/tiktoken"
-  TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"
-
-docker_server:
-  # Standard vLLM OpenAI server port
-  server_port: 8000
-
-  # Map Baseten /predict to OpenAI-compatible chat completions.
-  # (If you prefer /v1/responses, change this accordingly.)
-  predict_endpoint: /v1/chat/completions
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-
-  # IMPORTANT: one shell command (newlines are OK only with \ continuations)
-  start_command: >-
-    bash -lc '
-      exec vllm serve openai/gpt-oss-120b
-        --host 0.0.0.0
-        --port 8000
-        --served-model-name gpt-oss-120b
-        --tensor-parallel-size 4
-        --gpu-memory-utilization 0.95
-        --max-model-len 8192
-        --max-num-batched-tokens 8192
-        --max-num-seqs 256
-        --cuda-graph-capture-size 2048
-        --stream-interval 20
-        --kv-cache-dtype fp8
-        --compilation-config "{\"pass_config\":{\"fuse_allreduce_rms\":true,\"eliminate_noops\":true}}"
-        --async-scheduling
-        --trust-remote-code
-    '
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
