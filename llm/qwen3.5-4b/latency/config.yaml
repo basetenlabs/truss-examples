@@ -17,13 +17,13 @@ base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
   - source: "hf://Qwen/Qwen3.5-4B@main"
-    mount_location: "/app/checkpoint/qwen3.5-4b"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
   hf_access_token: null
 docker_server:
   start_command: >-
-    sh -c "vllm serve /app/checkpoint/qwen3.5-4b
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model --tensor-parallel-size $GPU_COUNT
     --served-model-name Qwen/Qwen3.5-4B
     --host 0.0.0.0
     --port 8000

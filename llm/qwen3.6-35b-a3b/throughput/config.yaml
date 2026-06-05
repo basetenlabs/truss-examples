@@ -17,7 +17,7 @@ base_image:
   image: vllm/vllm-openai:nightly
 weights:
   - source: "hf://RedHatAI/Qwen3.6-35B-A3B-NVFP4@main"
-    mount_location: "/app/model_cache/qwen3.6-35b-a3b-nvfp4"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 build_commands: []
 environment_variables:
@@ -27,7 +27,8 @@ environment_variables:
   VLLM_USE_FLASHINFER_MOE_FP8: 1
 docker_server:
   start_command: >-
-    vllm serve /app/model_cache/qwen3.6-35b-a3b-nvfp4
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    --tensor-parallel-size $GPU_COUNT
     --served-model-name RedHatAI/Qwen3.6-35B-A3B-NVFP4
     --host 0.0.0.0
     --port 8000
@@ -42,8 +43,8 @@ docker_server:
     --enable-auto-tool-choice
     --tool-call-parser qwen3_coder
     --moe_backend flashinfer_cutlass
-    --speculative-config '{"method":"qwen3_5_mtp","num_speculative_tokens":3}'
-    --trust-remote-code
+    --speculative-config '{\"method\":\"qwen3_5_mtp\",\"num_speculative_tokens\":3}'
+    --trust-remote-code"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

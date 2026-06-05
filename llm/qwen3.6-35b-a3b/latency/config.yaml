@@ -18,7 +18,7 @@ base_image:
 
 weights:
   - source: "hf://Qwen/Qwen3.6-35B-A3B@main"
-    mount_location: "/app/checkpoint/qwen3.6-35b-a3b"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 
 resources:
@@ -37,12 +37,12 @@ secrets:
 
 docker_server:
   start_command: >-
-    sh -c "vllm serve /app/checkpoint/qwen3.6-35b-a3b
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --served-model-name Qwen/Qwen3.6-35B-A3B
     --host 0.0.0.0
     --port 8000
     --trust-remote-code
-    --tensor-parallel-size 4
+    --tensor-parallel-size $GPU_COUNT
     --max-model-len 262144
     --language-model-only
     --reasoning-parser qwen3

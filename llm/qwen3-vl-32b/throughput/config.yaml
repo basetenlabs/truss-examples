@@ -1,10 +1,11 @@
-model_name: model:gemma-4-E4B-it preset:latency
+model_name: "model:qwen3-vl-32b preset:throughput"
 model_metadata:
   description: >-
-    Gemma 4 multimodal instruct (preview E4B), OpenAI-compatible chat with vision via vLLM.
-  repo_id: google/gemma-4-E4B-it
+    Qwen3-VL-32B-Instruct (NVFP4), an OpenAI-compatible multimodal chat model with
+    vision served via vLLM.
+  repo_id: RedHatAI/Qwen3-VL-32B-Instruct-NVFP4
   example_model_input:
-    model: google/gemma-4-E4B-it
+    model: Qwen/Qwen3-VL-32B-Instruct
     messages:
       - role: user
         content:
@@ -21,7 +22,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://google/gemma-4-E4B-it@main"
+  - source: "hf://RedHatAI/Qwen3-VL-32B-Instruct-NVFP4@main"
     mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
@@ -30,17 +31,15 @@ docker_server:
   start_command: >-
     sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --tensor-parallel-size $GPU_COUNT
-    --served-model-name google/gemma-4-E4B-it
+    --served-model-name Qwen/Qwen3-VL-32B-Instruct
     --max-num-seqs 16
     --max-model-len auto
-    --limit-mm-per-prompt.image 1
+    --limit-mm-per-prompt.image 2
     --gpu-memory-utilization 0.9
-    --async-scheduling
+    --enable-prefix-caching
     --trust-remote-code
     --enable-auto-tool-choice
-    --enable-prefix-caching
-    --reasoning-parser gemma4
-    --tool-call-parser gemma4
+    --tool-call-parser hermes
     --load-format runai_streamer"
   readiness_endpoint: /health
   liveness_endpoint: /health
@@ -50,7 +49,7 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 resources:
-  accelerator: H100
+  accelerator: RTX_PRO_6000
   use_gpu: true
 runtime:
   health_checks:

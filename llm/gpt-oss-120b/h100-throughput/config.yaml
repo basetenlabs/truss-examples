@@ -23,7 +23,7 @@ build_commands:
   - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken -o /opt/tiktoken/cl100k_base.tiktoken
 weights:
   - source: "hf://openai/gpt-oss-120b@b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
-    mount_location: "/models/gpt-oss-120b"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
     ignore_patterns: ["original/*", "metal/model.bin"]
 secrets:
@@ -35,11 +35,11 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "vllm serve /models/gpt-oss-120b
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --host 0.0.0.0
     --port 8000
     --served-model-name openai/gpt-oss-120b
-    --tensor-parallel-size 4
+    --tensor-parallel-size $GPU_COUNT
     --gpu-memory-utilization 0.90
     --max-model-len 16384
     --max-num-batched-tokens 16384

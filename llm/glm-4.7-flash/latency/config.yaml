@@ -19,7 +19,7 @@ base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
   - source: "hf://zai-org/GLM-4.7-Flash@main"
-    mount_location: "/models/glm-4.7-flash"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
   hf_access_token: null
@@ -28,8 +28,8 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "vllm serve /models/glm-4.7-flash
-    --tensor-parallel-size 2
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    --tensor-parallel-size $GPU_COUNT
     --gpu-memory-utilization 0.8
     --tool-call-parser glm47
     --enable-auto-tool-choice

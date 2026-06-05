@@ -20,7 +20,7 @@ base_image:
   image: vllm/vllm-openai:v0.22.0
 weights:
   - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@main"
-    mount_location: "/app/model_cache/qwen3.5-35b-a3b-fp8"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
   hf_access_token: null
@@ -31,7 +31,8 @@ environment_variables:
   PYTORCH_ALLOC_CONF: "expandable_segments:True"
 docker_server:
   start_command: >-
-    sh -c "vllm serve /app/model_cache/qwen3.5-35b-a3b-fp8
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    --tensor-parallel-size $GPU_COUNT
     --served-model-name Qwen/Qwen3.5-35B-A3B-FP8
     --host 0.0.0.0
     --port 8000

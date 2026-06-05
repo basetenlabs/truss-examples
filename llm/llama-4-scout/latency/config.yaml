@@ -18,7 +18,7 @@ base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
   - source: "hf://RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic@main"
-    mount_location: "/models/llama-4-scout"
+    mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
   hf_access_token: null
@@ -27,13 +27,13 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "vllm serve /models/llama-4-scout
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --served-model-name llama
     --host 0.0.0.0
     --port 8000
     --trust-remote-code
     --max-model-len 131072
-    --tensor-parallel-size 4
+    --tensor-parallel-size $GPU_COUNT
     --distributed-executor-backend mp
     --gpu-memory-utilization 0.95
     --kv-cache-dtype fp8
