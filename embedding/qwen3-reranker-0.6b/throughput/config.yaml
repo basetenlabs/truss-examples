@@ -7,10 +7,10 @@ model_metadata:
     raw_scores: true
     truncate: true
     truncation_direction: Right
-model_name: "model:qwen3-reranker-8b preset:latency"
+model_name: "model:qwen3-reranker-0.6b preset:throughput"
 python_version: py39
 resources:
-  accelerator: B200
+  accelerator: L4
   cpu: '1'
   memory: 10Gi
   use_gpu: true
@@ -18,11 +18,11 @@ trt_llm:
   build:
     base_model: encoder
     checkpoint_repository:
-      repo: michaelfeil/Qwen3-Reranker-8B-seq
+      repo: michaelfeil/Qwen3-Reranker-0.6B-seq
       revision: main
       source: HF
-    max_num_tokens: 40960
+    max_num_tokens: 32768
     num_builder_gpus: 1
-    quantization_type: fp4
+    quantization_type: fp8
   runtime:
     webserver_default_route: /predict

@@ -1,0 +1,25 @@
+model_metadata:
+  example_model_input:
+    input:
+      - Baseten is a fast inference provider
+      - Embeddings let you do semantic search.
+    model: qwen3-embedding-8b
+model_name: "model:qwen3-embedding-8b preset:throughput"
+python_version: py39
+resources:
+  accelerator: H100_40GB
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: michaelfeil/Qwen3-Embedding-8B-auto
+      revision: main
+      source: HF
+    max_num_tokens: 40960
+    num_builder_gpus: 1
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /v1/embeddings
