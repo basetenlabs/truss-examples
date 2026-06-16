@@ -1,0 +1,101 @@
+model_name: VibeVoice-ASR
+description: Microsoft VibeVoice-ASR — OpenAI-compatible audio transcription via vLLM
+python_version: py310
+
+base_image:
+  image: vllm/vllm-openai:v0.14.1
+  python_executable_path: /usr/bin/python3
+
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  TRANSFORMERS_CACHE: /cache/org
+  VIBEVOICE_FFMPEG_MAX_CONCURRENCY: "64"
+  VLLM_MEDIA_LOADING_THREAD_COUNT: "16"
+  PYTORCH_ALLOC_CONF: "expandable_segments:True"
+
+requirements:
+  - transformers==4.57.6
+  - accelerate>=0.30.0
+  - safetensors
+  - huggingface-hub>=0.23.0
+  - librosa>=0.10.0
+  - soundfile
+  - scipy
+  - pydub
+  - diffusers
+  - git+https://github.com/microsoft/VibeVoice.git@main
+
+resources:
+  accelerator: H100
+  cpu: "4"
+  memory: 32Gi
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 32
+
+secrets:
+  hf_access_token: null
+
+system_packages:
+  - ffmpeg
+  - git
+
+# Pass-through mode: no model.py, Truss just runs vllm serve and proxies
+# /predict requests to /v1/chat/completions on the container's localhost.
+docker_server:
+  server_port: 8000
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /v1/models
+  liveness_endpoint: /v1/models
+  start_command: |
+    bash -c '
+    set -e
+    echo "[entrypoint] Applying microsoft/VibeVoice plugin patches..."
+    python3 /app/data/patch.py
+    echo "[entrypoint] Downloading microsoft/VibeVoice-ASR snapshot..."
+    MODEL_PATH=$(python3 -c "from huggingface_hub import snapshot_download; print(snapshot_download(\"microsoft/VibeVoice-ASR\"))")
+    echo "[entrypoint] Model snapshot at: $MODEL_PATH"
+    echo "[entrypoint] Generating tokenizer files..."
+    python3 -m vllm_plugin.tools.generate_tokenizer_files --output "$MODEL_PATH"
+    echo "[entrypoint] Starting vLLM serve..."
+    exec vllm serve "$MODEL_PATH" \
+      --served-model-name vibevoice \
+      --trust-remote-code \
+      --dtype bfloat16 \
+      --max-num-seqs 16 \
+      --max-model-len 32768 \
+      --gpu-memory-utilization 0.85 \
+      --num-gpu-blocks-override 4096 \
+      --no-enable-prefix-caching \
+      --enable-chunked-prefill \
+      --chat-template-content-format openai \
+      --allowed-local-media-path /app \
+      --media-io-kwargs "{\"audio\": {\"target_sr\": 24000}}" \
+      --enforce-eager \
+      --skip-mm-profiling \
+      --host 0.0.0.0 \
+      --port 8000
+    '
+
+model_metadata:
+  tags:
+    - openai-compatible
+    - audio
+    - asr
+    - speech-to-text
+  example_model_input:
+    model: vibevoice
+    messages:
+      - role: system
+        content: You are a helpful assistant that transcribes audio input into text output in JSON format.
+      - role: user
+        content:
+          - type: audio_url
+            audio_url:
+              url: https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav
+          - type: text
+            text: Transcribe this audio.
+    max_tokens: 64
+    temperature: 0.0
