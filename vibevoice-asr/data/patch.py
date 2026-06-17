@@ -26,6 +26,7 @@ of silent miscompile.
 Once Microsoft fixes the plugin upstream, delete this file and remove the
 patch.py call from config.yaml's start_command.
 """
+
 import os
 import sys
 import vllm_plugin
@@ -59,34 +60,38 @@ INSERT_1 = """
     def model(self):
         return self.language_model.model"""
 
-assert ANCHOR_1 in src, "Patch 1 anchor (compute_logits signature) not found in plugin — upstream may have changed"
+assert ANCHOR_1 in src, (
+    "Patch 1 anchor (compute_logits signature) not found in plugin — upstream may have changed"
+)
 src = src.replace(ANCHOR_1, ANCHOR_1 + INSERT_1)
 
 
 # ── Patch 2: get_data_parser on Info class (forward-compat for vLLM 0.21+) ──
 ANCHOR_2 = (
-    'class VibeVoiceProcessingInfo(BaseProcessingInfo):\n'
+    "class VibeVoiceProcessingInfo(BaseProcessingInfo):\n"
     '    """Processing info for VibeVoice multimodal model."""'
 )
-INSERT_2 = '''
+INSERT_2 = """
 
     # [Truss local patch] vLLM 0.21+ calls info.get_data_parser() on this
     # class (the plugin only defines _get_data_parser on the Processor).
     # No-op on v0.14.1 which uses the older API.
     def get_data_parser(self) -> MultiModalDataParser:
-        return MultiModalDataParser(target_sr=24000)'''
+        return MultiModalDataParser(target_sr=24000)"""
 
-assert ANCHOR_2 in src, "Patch 2 anchor (VibeVoiceProcessingInfo class) not found in plugin"
+assert ANCHOR_2 in src, (
+    "Patch 2 anchor (VibeVoiceProcessingInfo class) not found in plugin"
+)
 src = src.replace(ANCHOR_2, ANCHOR_2 + INSERT_2)
 
 
 # ── Patch 3: mm_data_items rename try/except (forward-compat for vLLM 0.15+) ─
 ANCHOR_3 = (
     '        """Build ProcessorInputs for dummy profiling."""\n'
-    '        return ProcessorInputs(\n'
-    '            prompt=self.get_dummy_text(mm_counts),\n'
-    '            mm_data=self.get_dummy_mm_data(seq_len, mm_counts, mm_options),\n'
-    '        )'
+    "        return ProcessorInputs(\n"
+    "            prompt=self.get_dummy_text(mm_counts),\n"
+    "            mm_data=self.get_dummy_mm_data(seq_len, mm_counts, mm_options),\n"
+    "        )"
 )
 REPLACE_3 = '''        """[Truss local patch] vLLM 0.15+ renamed mm_data → mm_data_items.
         Try the new signature first, fall back to legacy for v0.14.1."""
@@ -103,7 +108,9 @@ REPLACE_3 = '''        """[Truss local patch] vLLM 0.15+ renamed mm_data → mm_
                 mm_data=mm_data_dict,
             )'''
 
-assert ANCHOR_3 in src, "Patch 3 anchor (get_dummy_processor_inputs body) not found in plugin"
+assert ANCHOR_3 in src, (
+    "Patch 3 anchor (get_dummy_processor_inputs body) not found in plugin"
+)
 src = src.replace(ANCHOR_3, REPLACE_3)
 
 
