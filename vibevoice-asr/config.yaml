@@ -42,6 +42,15 @@ system_packages:
   - ffmpeg
   - git
 
+# Weights are pre-downloaded at build time and mounted at /models/vibevoice-asr,
+# so cold starts skip the 9.2 GB HF download entirely.
+weights:
+  - source: hf://microsoft/VibeVoice-ASR@main
+    mount_location: /models/vibevoice-asr
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
+
 # Pass-through mode: no model.py, Truss just runs vllm serve and proxies
 # /predict requests to /v1/chat/completions on the container's localhost.
 docker_server:
@@ -54,13 +63,10 @@ docker_server:
     set -e
     echo "[entrypoint] Applying microsoft/VibeVoice plugin patches..."
     python3 /app/data/patch.py
-    echo "[entrypoint] Downloading microsoft/VibeVoice-ASR snapshot..."
-    MODEL_PATH=$(python3 -c "from huggingface_hub import snapshot_download; print(snapshot_download(\"microsoft/VibeVoice-ASR\"))")
-    echo "[entrypoint] Model snapshot at: $MODEL_PATH"
     echo "[entrypoint] Generating tokenizer files..."
-    python3 -m vllm_plugin.tools.generate_tokenizer_files --output "$MODEL_PATH"
+    python3 -m vllm_plugin.tools.generate_tokenizer_files --output /models/vibevoice-asr
     echo "[entrypoint] Starting vLLM serve..."
-    exec vllm serve "$MODEL_PATH" \
+    exec vllm serve /models/vibevoice-asr \
       --served-model-name vibevoice \
       --trust-remote-code \
       --dtype bfloat16 \
