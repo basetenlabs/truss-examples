@@ -1,0 +1,62 @@
+model_name: "model:step-3.7-flash preset:latency"
+model_metadata:
+  description: >-
+    StepFun Step-3.7-Flash 201B sparse MoE vision-language model served with vLLM (H100 × 4 TP/EP),
+    FP8-quantized (~201GB), OpenAI-compatible chat with tooling, multimodal image input, and MTP speculative decoding.
+    Supports 256k context and selectable reasoning levels (low, medium, high).
+  repo_id: stepfun-ai/Step-3.7-Flash-FP8
+  example_model_input:
+    model: stepfun-ai/Step-3.7-Flash-FP8
+    messages:
+      - role: user
+        content: "What is the meaning of life?"
+    stream: true
+    max_tokens: 32768
+    temperature: 1.0
+  tags:
+    - openai-compatible
+    - multimodal
+base_image:
+  image: vllm/vllm-openai:stepfun37
+weights:
+  - source: "hf://stepfun-ai/Step-3.7-Flash-FP8@main"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+resources:
+  accelerator: H100:4
+  use_gpu: true
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+docker_server:
+  start_command: >-
+    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    --served-model-name stepfun-ai/Step-3.7-Flash-FP8
+    --trust-remote-code
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --enable-expert-parallel
+    --disable-cascade-attn
+    --tensor-parallel-size $GPU_COUNT
+    --max-model-len auto
+    --max-num-seqs 32
+    --max-num-batched-tokens 8192
+    --gpu-memory-utilization 0.95
+    --reasoning-parser step3p5
+    --enable-auto-tool-choice
+    --tool-call-parser step3p5
+    --speculative-config.method mtp
+    --speculative-config.num_speculative_tokens 3
+    --load-format runai_streamer"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    startup_threshold_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
