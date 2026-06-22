@@ -1,5 +1,11 @@
 external_package_dirs: []
 model_metadata:
+  output_media:
+    - json_path: "data"
+      media_type: "image/jpeg"
+      encoding: "base64"
+      label: "Generated Image"
+
   example_model_input: {"prompt": 'black forest gateau cake spelling out the words "FLUX SCHNELL", tasty, food photography, dynamic shot'}
   repo_id: black-forest-labs/FLUX.1-schnell
 model_name: "model:flux1-schnell preset:throughput"
