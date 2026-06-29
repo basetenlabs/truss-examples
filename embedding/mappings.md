@@ -4,39 +4,39 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_embedder.yaml`
-`base_model: encoder` · `/v1/embeddings` · no quantization
+## `bei-embedder.yaml`
+`base-model: encoder` · `/v1/embeddings` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
 | BEI-baai-bge-large-en-v1.5-embedding | L4 |
 | BEI-baai-bge-m3-embedding-dense | H100 |
-| BEI-baai-bge-multilingual-gemma2-multilingual-embedding | H100_40GB |
+| BEI-baai-bge-multilingual-gemma2-multilingual-embedding | H100-40GB |
 | BEI-mixedbread-ai-mxbai-embed-large-v1-embedding | L4 |
 | BEI-snowflake-snowflake-arctic-embed-l-v2.0 | H100 |
 | BEI-whereisai-uae-large-v1-embedding | L4 |
 
 ---
 
-## `bei_embedder_fp8.yaml`
-`base_model: encoder` · `/v1/embeddings` · `quantization_type: fp8`
+## `bei-embedder-fp8.yaml`
+`base-model: encoder` · `/v1/embeddings` · `quantization-type: fp8`
 
 | Config folder | Accelerator |
 |---|---|
 | BEI-baai-bge-en-icl-embedding-fp8 | H100 |
 | BEI-codefuse-ai-f2llm-4b-embedding-fp8 | H100 |
 | BEI-intfloat-e5-mistral-7b-instruct-embedding-fp8 | H100 |
-| BEI-jinaai-jina-code-embeddings-0.5b-fp8 | H100_40GB |
-| BEI-nomic-ai-nomic-embed-code-fp8 | H100_40GB |
+| BEI-jinaai-jina-code-embeddings-0.5b-fp8 | H100-40GB |
+| BEI-nomic-ai-nomic-embed-code-fp8 | H100-40GB |
 | BEI-qwen-qwen3-embedding-0.6b-fp8 | L4 |
-| BEI-qwen-qwen3-embedding-4b-fp8 | H100_40GB |
-| BEI-qwen-qwen3-embedding-8b-fp8 | H100_40GB |
-| BEI-salesforce-sfr-embedding-mistral-fp8 | H100_40GB |
+| BEI-qwen-qwen3-embedding-4b-fp8 | H100-40GB |
+| BEI-qwen-qwen3-embedding-8b-fp8 | H100-40GB |
+| BEI-salesforce-sfr-embedding-mistral-fp8 | H100-40GB |
 
 ---
 
-## `bei_embedder_fp4.yaml`
-`base_model: encoder` · `/v1/embeddings` · `quantization_type: fp4` · B200 only
+## `bei-embedder-fp4.yaml`
+`base-model: encoder` · `/v1/embeddings` · `quantization-type: fp4` · B200 only
 
 | Config folder | Accelerator |
 |---|---|
@@ -44,8 +44,8 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_reranker.yaml`
-`base_model: encoder` · `/rerank` · no quantization
+## `bei-reranker.yaml`
+`base-model: encoder` · `/rerank` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
@@ -55,35 +55,35 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_predictor.yaml`
-`base_model: encoder` · `/predict` · no quantization
+## `bei-predictor.yaml`
+`base-model: encoder` · `/predict` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
 | BEI-papluca-xlm-roberta-base-language-detection-classification | L4 |
-| BEI-samlowe-roberta-base-go_emotions-classification | L4 |
+| BEI-samlowe-roberta-base-go-emotions-classification | L4 |
 
 ---
 
-## `bei_predictor_fp8.yaml`
-`base_model: encoder` · `/predict` · `quantization_type: fp8`
+## `bei-predictor-fp8.yaml`
+`base-model: encoder` · `/predict` · `quantization-type: fp8`
 
 | Config folder | Accelerator | Notes |
 |---|---|---|
-| BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8 | H100_40GB | Reward model |
+| BEI-allenai-llama-3.1-tulu-3-8b-reward-model-fp8 | H100-40GB | Reward model |
 | BEI-baseten-example-meta-llama-3-70b-instructforsequenceclassification-fp8 | H100 | Reward model |
 | BEI-mixedbread-ai-mxbai-rerank-base-v2-reranker-fp8 | L4 | Causal reranker via /predict |
 | BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8 | L4 | Causal reranker via /predict |
 | BEI-qwen-qwen3-reranker-0.6b-fp8 | L4 | Causal reranker via /predict |
-| BEI-qwen-qwen3-reranker-4b-fp8 | H100_40GB | Causal reranker via /predict |
-| BEI-qwen-qwen3-reranker-8b-fp8 | H100_40GB | Causal reranker via /predict |
-| BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8 | H100_40GB | Reward model |
-| BEI-qwen-qwen3-reranker-8b-fp4 | B200 | FP4 variant — change `quantization_type` to `fp4` |
+| BEI-qwen-qwen3-reranker-4b-fp8 | H100-40GB | Causal reranker via /predict |
+| BEI-qwen-qwen3-reranker-8b-fp8 | H100-40GB | Causal reranker via /predict |
+| BEI-skywork-skywork-reward-llama-3.1-8b-v0.2-reward-model-fp8 | H100-40GB | Reward model |
+| BEI-qwen-qwen3-reranker-8b-fp4 | B200 | FP4 variant — change `quantization-type` to `fp4` |
 
 ---
 
-## `bei_bert_embedder.yaml`
-`base_model: encoder_bert` · `/v1/embeddings` · no quantization
+## `bei-bert-embedder.yaml`
+`base-model: encoder-bert` · `/v1/embeddings` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
@@ -106,8 +106,8 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_bert_reranker.yaml`
-`base_model: encoder_bert` · `/rerank` · no quantization
+## `bei-bert-reranker.yaml`
+`base-model: encoder-bert` · `/rerank` · no quantization
 
 | Config folder | Accelerator | Notes |
 |---|---|---|
@@ -117,8 +117,8 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_bert_predictor.yaml`
-`base_model: encoder_bert` · `/predict` · no quantization
+## `bei-bert-predictor.yaml`
+`base-model: encoder-bert` · `/predict` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
@@ -126,8 +126,8 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `bei_bert_ner.yaml`
-`base_model: encoder_bert` · `/predict_tokens` · no quantization
+## `bei-bert-ner.yaml`
+`base-model: encoder-bert` · `/predict-tokens` · no quantization
 
 | Config folder | Accelerator |
 |---|---|
@@ -138,7 +138,7 @@ Maps every config in `archive/11-embeddings-reranker-classification-tensorrt` to
 
 ---
 
-## `tei_embedder.yaml`
+## `tei-embedder.yaml`
 Docker-based HuggingFace TEI · weights baked in at build time
 
 | Config folder | Accelerator | Task |
@@ -146,8 +146,8 @@ Docker-based HuggingFace TEI · weights baked in at build time
 | TEI-alibaba-nlp-gte-modernbert-base-embedding | L4 | Embedding |
 | TEI-alibaba-nlp-gte-qwen2-1.5b-instruct-embedding | L4 | Embedding |
 | TEI-alibaba-nlp-gte-qwen2-7b-instruct-embedding | H100 | Embedding |
-| TEI-alibaba-nlp-gte-reranker-modernbert-base | L4 | Reranker (change `predict_endpoint` to `/rerank`) |
-| TEI-baai-bge-reranker-large | H100 | Reranker (change `predict_endpoint` to `/rerank`) |
+| TEI-alibaba-nlp-gte-reranker-modernbert-base | L4 | Reranker (change `predict-endpoint` to `/rerank`) |
+| TEI-baai-bge-reranker-large | H100 | Reranker (change `predict-endpoint` to `/rerank`) |
 | TEI-google-embeddinggemma-300m | L4 | Embedding |
 | TEI-intfloat-multilingual-e5-large-instruct | L4 | Embedding |
 | TEI-jina-ai-jina-embeddings-v2-base-en | L4 | Embedding |
@@ -160,4 +160,4 @@ Docker-based HuggingFace TEI · weights baked in at build time
 | TEI-taylorai-bge-micro-v2 | A10G | Embedding |
 
 
-> Briton and BISV2 configs are mapped in `briton_bisv2/` instead.
+> Briton and BISV2 configs are mapped in `briton-bisv2-decoder/` instead.
