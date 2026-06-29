@@ -6,18 +6,16 @@ docker_server:
   predict_endpoint: /rerank
   readiness_endpoint: /health
   server_port: 7997
-  start_command: bash -c "truss-transfer-cli && text-embeddings-router --port 7997
-    --model-id /app/model_cache/cached_model --max-client-batch-size 128 --max-concurrent-requests
+  start_command: bash -c "text-embeddings-router --port 7997
+    --model-id /weights/cached_model --max-client-batch-size 128 --max-concurrent-requests
     1024 --max-batch-tokens 16384 --auto-truncate"
-model_cache:
-- ignore_patterns:
-  - '*.pt'
-  - '*.ckpt'
-  - '*.onnx'
-  repo_id: BAAI/bge-reranker-large
-  revision: main
-  use_volume: true
-  volume_folder: cached_model
+weights:
+  - source: "hf://BAAI/bge-reranker-large@main"
+    mount_location: "/weights/cached_model"
+    ignore_patterns:
+      - "*.pt"
+      - "*.ckpt"
+      - "*.onnx"
 model_metadata:
   example_model_input:
     query: What is Baseten?

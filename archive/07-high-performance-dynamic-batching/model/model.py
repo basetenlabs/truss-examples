@@ -40,7 +40,7 @@ class Model:
         gc.freeze()
 
     def load(self):
-        self._model = WhisperTRTLLM("/app/model_cache/trtllm-whisper-a10g-large-v2-1")
+        self._model = WhisperTRTLLM("/weights/trtllm-whisper-a10g-large-v2-1")
         self._batcher = MlBatcher(
             model=self._model,
             max_batch_size=MAX_BATCH_SIZE,

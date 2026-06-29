@@ -1,12 +1,12 @@
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.safetensors'
-  - '*.model'
-  repo_id: meta-llama/Llama-2-70b-hf
-  use_volume: false
+weights:
+  - source: "hf://meta-llama/Llama-2-70b-hf@main"
+    mount_location: "/models/Llama-2-70b-hf"
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.model"
 model_metadata:
   repo_id: meta-llama/Llama-2-70b-hf
 model_name: Llama 70B

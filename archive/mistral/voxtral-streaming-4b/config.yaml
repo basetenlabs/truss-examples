@@ -4,7 +4,7 @@ secrets:
 environment_variables:
   VLLM_DISABLE_COMPILE_CACHE: "1"
 base_image:
-  image: vllm/vllm-openai:v0.16.0
+  image: vllm/vllm-openai:v0.20.0
 docker_server:
   start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) VLLM_DISABLE_COMPILE_CACHE=1 vllm serve mistralai/Voxtral-Mini-4B-Realtime-2602 --compilation-config '{\"cudagraph_mode\":\"PIECEWISE\"}' --host 0.0.0.0 --port 8000"
   readiness_endpoint: /health
@@ -12,18 +12,12 @@ docker_server:
   predict_endpoint: /v1/realtime
   server_port: 8000
 resources:
-  accelerator: H100_40GB:1
+  accelerator: H100
   cpu: "1"
   memory: 10Gi
   use_gpu: true
 requirements:
-  - vllm[audio]
-  - librosa
-  - torch
-  - torchaudio
-  - pynvml
-  - ffmpeg-python
-  - websockets
+  - vllm[audio]==0.20.0
 system_packages:
   - python3.10-venv
   - ffmpeg
@@ -31,6 +25,7 @@ system_packages:
   - libopenmpi-dev
 runtime:
   is_websocket_endpoint: true
+  predict_concurrency: 64
   transport:
     kind: websocket
     ping_interval_seconds: null

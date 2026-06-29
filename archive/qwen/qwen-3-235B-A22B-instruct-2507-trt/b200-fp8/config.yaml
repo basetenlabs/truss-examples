@@ -20,11 +20,9 @@ resources:
 environment_variables:
   BAD_TOKEN_ID_SEQ_CHECK_ENABLED: 1
   TRTLLM_ENABLE_PDL: 1
-model_cache:
-  - repo_id: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
-    revision: e156cb4efae43fbee1a1ab073f946a1377e6b969
-    use_volume: true
-    volume_folder: qwen3_fp8
+weights:
+  - source: "hf://Qwen/Qwen3-235B-A22B-Instruct-2507-FP8@e156cb4efae43fbee1a1ab073f946a1377e6b969"
+    mount_location: "/weights/qwen3_fp8"
 trt_llm:
   build:
     checkpoint_repository:
@@ -40,7 +38,7 @@ trt_llm:
     tensor_parallel_size: 4
     served_model_name: Qwen/Qwen3-235B-A22B-Instruct-2507
     patch_kwargs:
-      model_path: /app/model_cache/qwen3_fp8
+      model_path: /weights/qwen3_fp8
       backend: pytorch
       max_beam_width: 1
       max_input_len: 32768
@@ -61,8 +59,6 @@ trt_llm:
         event_buffer_max_size: 1024
       cuda_graph_config:
         enable_padding: true
-  version_overrides:
-    v2_llm_version: trtllm-gpu-1.3.0rc2-6bfe58f1a-d40e7fc8d3
 runtime:
   predict_concurrency: 32
   health_checks:

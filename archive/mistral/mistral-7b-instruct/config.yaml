@@ -1,13 +1,13 @@
 description: Generate text with an instruction-tuned version of Mistral 7B.
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.safetensors'
-  - '*.model'
-  repo_id: mistralai/Mistral-7B-Instruct-v0.2
-  use_volume: false
+weights:
+  - source: "hf://mistralai/Mistral-7B-Instruct-v0.2@main"
+    mount_location: "/models/Mistral-7B-Instruct-v0.2"
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.model"
 model_metadata:
   repo_id: mistralai/Mistral-7B-Instruct-v0.2
   avatar_url: https://cdn.baseten.co/production/static/explore/mistral_logo.png

@@ -30,9 +30,7 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 128
-model_cache:
-  - repo_id: Qwen/Qwen3-Next-80B-A3B-Instruct-FP8
-    revision: c5f5f263bdd5cc134092897864e8905d8fe7b928
-    use_volume: true
-    volume_folder: qwen
+weights:
+  - source: "hf://Qwen/Qwen3-Next-80B-A3B-Instruct-FP8@c5f5f263bdd5cc134092897864e8905d8fe7b928"
+    mount_location: "/weights/qwen"
 model_name: Qwen3-Next-80B-A3B-Instruct

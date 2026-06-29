@@ -24,6 +24,3 @@ trt_llm:
     max_num_tokens: 16384
   runtime:
     webserver_default_route: /rerank
-  version_overrides:
-    engine_builder_version: null
-    bei_bert_version: 1.8.6.ner

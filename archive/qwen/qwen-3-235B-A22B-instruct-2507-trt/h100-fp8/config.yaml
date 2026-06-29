@@ -13,11 +13,9 @@ model_metadata:
     - openai-compatible
   repo_id: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
 model_name: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
-model_cache:
-  - repo_id: Qwen/Qwen3-235B-A22B-Instruct-2507-FP8
-    use_volume: true
-    revision: main
-    volume_folder: trt_model
+weights:
+  - source: "hf://Qwen/Qwen3-235B-A22B-Instruct-2507-FP8@main"
+    mount_location: "/weights/trt_model"
 resources:
   accelerator: H100:8
   cpu: "1"
@@ -39,7 +37,7 @@ trt_llm:
     tensor_parallel_size: 8
     patch_kwargs:
       disable_overlap_scheduler: True
-      model_path: /app/model_cache/trt_model
+      model_path: /weights/trt_model
       moe_expert_parallel_size: 8
       cuda_graph_config:
         enable_padding: true
@@ -50,5 +48,3 @@ trt_llm:
       kv_cache_config:
         enable_block_reuse: true
         free_gpu_memory_fraction: 0.8
-  version_overrides:
-    v2_llm_version: null

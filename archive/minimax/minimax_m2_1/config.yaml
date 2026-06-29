@@ -5,21 +5,19 @@ docker_server:
   predict_endpoint: /v1/chat/completions
   readiness_endpoint: /health_generate
   server_port: 8000
-  start_command: sh -c "truss-transfer-cli && find /app/model_cache/checkpoint -type f -print0 | xargs -0 -P 0 -I {} dd if={} of=/dev/null bs=4M && python3 -m sglang.launch_server --model-path /app/model_cache/checkpoint --tp-size 8 --ep-size 8 --tool-call-parser minimax-m2 --trust-remote-code --host 0.0.0.0 --reasoning-parser minimax --port 8000 --mem-fraction-static 0.85"
+  start_command: sh -c "find /weights/checkpoint -type f -print0 | xargs -0 -P 0 -I {} dd if={} of=/dev/null bs=4M && python3 -m sglang.launch_server --model-path /weights/checkpoint --tp-size 8 --ep-size 8 --tool-call-parser minimax-m2 --trust-remote-code --host 0.0.0.0 --reasoning-parser minimax --port 8000 --mem-fraction-static 0.85"
 #environment_variables:
 #  SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN: 1
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.safetensors'
-  - '*.txt'
-  - '*.model'
-  - '*.py'
-  - '*.jinja'
-  repo_id: MiniMaxAI/MiniMax-M2.1
-  revision: 927ea2b64008fe4a1e31a4e107a6b75916b3b44a
-  use_volume: true
-  volume_folder: checkpoint
+weights:
+  - source: "hf://MiniMaxAI/MiniMax-M2.1@927ea2b64008fe4a1e31a4e107a6b75916b3b44a"
+    mount_location: "/weights/checkpoint"
+    allow_patterns:
+      - "*.json"
+      - "*.safetensors"
+      - "*.txt"
+      - "*.model"
+      - "*.py"
+      - "*.jinja"
 model_metadata:
   example_model_input:
     max_tokens: 4096

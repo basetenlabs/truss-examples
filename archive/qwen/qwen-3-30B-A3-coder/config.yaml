@@ -14,16 +14,14 @@ model_metadata:
 model_name: Qwen 3 Coder
 base_image:
   image: lmsysorg/sglang:v0.4.10.post2-cu126
-model_cache:
-  - repo_id: Qwen/Qwen3-Coder-30B-A3B-Instruct
-    revision: main
-    use_volume: true
-    volume_folder: "qwen3-coder"
+weights:
+  - source: "hf://Qwen/Qwen3-Coder-30B-A3B-Instruct@main"
+    mount_location: "/weights/qwen3-coder"
     ignore_patterns:
       - "original/*"
       - "*.pth"
 docker_server:
-  start_command: sh -c "truss-transfer-cli && python3 -m sglang.launch_server --model-path /app/model_cache/qwen3-coder --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-Coder-30B-A3B-Instruct --tp 1 --reasoning-parser qwen3"
+  start_command: sh -c "python3 -m sglang.launch_server --model-path /weights/qwen3-coder --host 0.0.0.0 --port 8000 --served-model-name Qwen/Qwen3-Coder-30B-A3B-Instruct --tp 1 --reasoning-parser qwen3"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

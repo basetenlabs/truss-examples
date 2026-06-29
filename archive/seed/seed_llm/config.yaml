@@ -29,9 +29,7 @@ resources:
   use_gpu: true
 runtime:
   predict_concurrency: 128
-model_cache:
-  - repo_id: ByteDance-Seed/Seed-OSS-36B-Instruct
-    revision: 497f1dca95ebdec98e41d517b9f060ee753c902f
-    use_volume: true
-    volume_folder: glm
+weights:
+  - source: "hf://ByteDance-Seed/Seed-OSS-36B-Instruct@497f1dca95ebdec98e41d517b9f060ee753c902f"
+    mount_location: "/weights/glm"
 model_name: Seed-OSS-36B-Instruct

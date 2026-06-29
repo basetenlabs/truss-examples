@@ -14,13 +14,13 @@ class Model:
         # work that does not require the download may be done beforehand
         # important to collect the download before using any incomplete data
         self._lazy_data_resolver.block_until_download_complete()
-        # after the call, you may use the /app/model_cache directory and the contents
+        # after the call, you may use the /weights directory and the contents
         # torch.load(
-        #     "/app/model_cache/stable-diffusion-xl-base/vae_1_0/diffusion_pytorch_model.fp16.safetensors",
+        #     "/weights/stable-diffusion-xl-base/vae_1_0/diffusion_pytorch_model.fp16.safetensors",
         #     weights_only=True
         # )
         self.tensor_size = (
-            pathlib.Path("/app/model_cache/llama/model.safetensors").stat().st_size
+            pathlib.Path("/weights/llama/model.safetensors").stat().st_size
         )
         print(
             "Model loaded successfully with size of {} bytes".format(self.tensor_size)

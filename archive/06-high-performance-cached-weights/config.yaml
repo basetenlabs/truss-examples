@@ -15,25 +15,19 @@ requirements:
   - transformers==4.34.0
   - sentencepiece==0.1.99
   - numpy==1.26.4
-# # Configuring the model_cache
+# # Configuring the weights
 #
-# To cache model weights, set the `model_cache` key.
-# The `repo_id` field allows you to specify a Huggingface
-# repo to pull down and cache at build-time, and the `ignore_patterns`
-# field allows you to specify files to ignore. If this is specified, then
-# this repo won't have to be pulled during runtime.
+# To cache model weights, set the `weights` key.
+# The `source` field allows you to specify a Hugging Face
+# repo to mount with BDN, and the `ignore_patterns` field allows you
+# to specify files to ignore.
 #
 # Check out the [guide](https://truss.baseten.co/guides/model-cache) for more info.
-model_cache:
-  - repo_id: "NousResearch/Llama-2-7b-chat-hf"
-    revision: main
+weights:
+  - source: "hf://NousResearch/Llama-2-7b-chat-hf@main"
+    mount_location: "/weights/llama-2-7b-chat-hf"
     ignore_patterns:
       - "*.bin"
-    use_volume: true
-    volume_folder: "llama-2-7b-chat-hf"
-
-# The remaining config options are again, similar to what you would
-# configure for the model without the weight caching.
 resources:
   cpu: "4"
   memory: 30Gi

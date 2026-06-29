@@ -23,11 +23,9 @@ requirements:
   - open-clip-torch
   - pillow
 python_version: py312
-model_cache:
-  - repo_id: Qwen/Qwen3-VL-32B-Instruct-FP8
-    revision: main
-    use_volume: true
-    volume_folder: "qwen-3-vl-32b"
+weights:
+  - source: "hf://Qwen/Qwen3-VL-32B-Instruct-FP8@main"
+    mount_location: "/weights/qwen-3-vl-32b"
     ignore_patterns:
       - "original/*"
       - "*.pth"

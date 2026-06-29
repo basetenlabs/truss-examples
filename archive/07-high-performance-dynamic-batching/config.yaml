@@ -13,11 +13,9 @@ requirements:
   - kaldialign==0.9
   - openai-whisper==20250625
   - soundfile==0.12.1
-model_cache:
-  - repo_id: baseten/trtllm-whisper-a10g-large-v2-1
-    revision: main
-    use_volume: true
-    volume_folder: trtllm-whisper-a10g-large-v2-1
+weights:
+  - source: "hf://baseten/trtllm-whisper-a10g-large-v2-1@main"
+    mount_location: "/weights/trtllm-whisper-a10g-large-v2-1"
 system_packages:
   - python3.10-venv
   - ffmpeg

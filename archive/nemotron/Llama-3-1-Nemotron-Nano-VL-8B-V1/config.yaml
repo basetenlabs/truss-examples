@@ -26,11 +26,9 @@ requirements:
   - open-clip-torch
   - pillow
 python_version: py312
-model_cache:
-  - repo_id: nvidia/Llama-3.1-Nemotron-Nano-VL-8B-V1
-    revision: main
-    use_volume: true
-    volume_folder: "llama-3-1-nemotron-nano-vl-8b-v1"
+weights:
+  - source: "hf://nvidia/Llama-3.1-Nemotron-Nano-VL-8B-V1@main"
+    mount_location: "/weights/llama-3-1-nemotron-nano-vl-8b-v1"
     ignore_patterns:
       - "original/*"
       - "*.pth"

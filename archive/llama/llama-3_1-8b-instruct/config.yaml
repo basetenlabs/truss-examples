@@ -6,9 +6,9 @@ model_metadata:
   tensor_parallel: 1
 requirements:
   - vllm==0.5.3post1
-model_cache:
-  - repo_id: meta-llama/Llama-3.1-8B-Instruct
-    use_volume: false
+weights:
+  - source: "hf://meta-llama/Llama-3.1-8B-Instruct@main"
+    mount_location: "/models/Llama-3.1-8B-Instruct"
     ignore_patterns:
       - "original/*"
       - "*.pth"

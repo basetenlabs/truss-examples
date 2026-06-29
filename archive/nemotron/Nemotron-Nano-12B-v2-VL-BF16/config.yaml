@@ -23,11 +23,9 @@ requirements:
   - open-clip-torch
   - pillow
 python_version: py312
-model_cache:
-  - repo_id: nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16
-    revision: main
-    use_volume: true
-    volume_folder: "nvidia-nemotron-nano-12b-v2-vl-bf16"
+weights:
+  - source: "hf://nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16@main"
+    mount_location: "/weights/nvidia-nemotron-nano-12b-v2-vl-bf16"
     ignore_patterns:
       - "original/*"
       - "*.pth"

@@ -1,14 +1,14 @@
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.fp16.safetensors'
-  - '*.bin'
-  - '*.tiktoken'
-  - '*.py'
-  repo_id: Qwen/Qwen-VL
-  use_volume: false
+weights:
+  - source: "hf://Qwen/Qwen-VL@main"
+    mount_location: "/models/Qwen-VL"
+    allow_patterns:
+      - "*.json"
+      - "*.fp16.safetensors"
+      - "*.bin"
+      - "*.tiktoken"
+      - "*.py"
 model_name: Qwen VL
 python_version: py310
 requirements:

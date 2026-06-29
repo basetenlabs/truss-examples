@@ -22,11 +22,9 @@ resources:
   cpu: '1'
   memory: 10Gi
   use_gpu: true
-model_cache:
-  - repo_id: openai/gpt-oss-20b
-    revision: refs/pr/36
-    use_volume: true
-    volume_folder: trt_model
+weights:
+  - source: "hf://openai/gpt-oss-20b@refs/pr/36"
+    mount_location: "/weights/trt_model"
 trt_llm:
   build:
     checkpoint_repository:
@@ -40,7 +38,7 @@ trt_llm:
     max_num_tokens: 8192
     max_seq_len: 131072
     patch_kwargs:
-      model_path: /app/model_cache/trt_model
+      model_path: /weights/trt_model
       chat_processor: harmony
       moe_expert_parallel_size: 1
       backend: pytorch
@@ -65,5 +63,3 @@ trt_llm:
         backend: CUTLASS
     served_model_name: openai/gpt-oss-20b
     tensor_parallel_size: 1
-  version_overrides:
-    v2_llm_version: null

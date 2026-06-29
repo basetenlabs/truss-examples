@@ -1,11 +1,11 @@
 environment_variables: {}
 external_package_dirs: []
-model_cache:
-- allow_patterns:
-  - '*.json'
-  - '*.bin'
-  repo_id: NousResearch/Nous-Capybara-34B
-  use_volume: false
+weights:
+  - source: "hf://NousResearch/Nous-Capybara-34B@main"
+    mount_location: "/models/Nous-Capybara-34B"
+    allow_patterns:
+      - "*.json"
+      - "*.bin"
 model_name: Nous Capybara 34B OpenAI
 python_version: py310
 requirements:

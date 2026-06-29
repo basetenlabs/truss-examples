@@ -7,9 +7,9 @@ model_metadata:
 requirements:
   - sglang[all]==0.3.0
   - https://github.com/flashinfer-ai/flashinfer/releases/download/v0.1.6/flashinfer-0.1.6+cu121torch2.4-cp311-cp311-linux_x86_64.whl
-model_cache:
-  - repo_id: meta-llama/Llama-3.1-8B-Instruct
-    use_volume: false
+weights:
+  - source: "hf://meta-llama/Llama-3.1-8B-Instruct@main"
+    mount_location: "/models/Llama-3.1-8B-Instruct"
     ignore_patterns:
       - "original/*"
       - "*.pth"
