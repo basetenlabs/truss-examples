@@ -1,0 +1,29 @@
+# Base template: BEI (causal encoder) - Reranker model, no quantization
+# Varies per model: model_name, resources.accelerator, checkpoint_repository.repo, max_num_tokens
+model_metadata:
+  example_model_input:
+    query: What is Baseten?
+    raw_scores: true
+    return_text: true
+    texts:
+    - Deep Learning is ...
+    - Baseten is a fast inference provider
+    truncate: true
+    truncation_direction: Right
+model_name: BEI-<org>-<model-name>-reranker-truss-example
+python_version: py39
+resources:
+  accelerator: L4  # or H100 for larger models
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+  runtime:
+    webserver_default_route: /rerank

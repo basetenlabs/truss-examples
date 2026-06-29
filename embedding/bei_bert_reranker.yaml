@@ -1,0 +1,30 @@
+# Base template: BEI-Bert (BERT/bidirectional encoder) - Reranker model
+# Use for: BERT-family cross-encoder rerankers (ForSequenceClassification, ≤1 label)
+# No fp8/fp4 support. Varies per model: model_name, accelerator, repo, max_num_tokens
+model_metadata:
+  example_model_input:
+    query: What is Baseten?
+    raw_scores: true
+    return_text: true
+    texts:
+    - Deep Learning is ...
+    - Baseten is a fast inference provider
+    truncate: true
+    truncation_direction: Right
+model_name: BEI-Bert-<org>-<model-name>-reranker-truss-example
+python_version: py39
+resources:
+  accelerator: H100  # Use H100 for models with long context (>8K tokens)
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+  runtime:
+    webserver_default_route: /rerank

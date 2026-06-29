@@ -1,0 +1,25 @@
+# Base template: BEI-Bert (BERT/bidirectional encoder) - Embedding model
+# Use for: sentence-transformers, BERT-family embedding models
+# No fp8/fp4 support. Varies per model: model_name, accelerator, repo, max_num_tokens
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-Bert-<org>-<model-name>-embedding-truss-example
+python_version: py39
+resources:
+  accelerator: L4  # or H100 for models with long context (>8K tokens, >24GB VRAM)
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384  # max(16384, model.max_position_embeddings)
+  runtime:
+    webserver_default_route: /v1/embeddings

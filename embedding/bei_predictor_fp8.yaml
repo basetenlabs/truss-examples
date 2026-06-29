@@ -1,0 +1,31 @@
+# Base template: BEI (causal encoder) - Classifier/Predictor model, FP8 quantization
+# Used for: reward models, large rerankers exposed via /predict (e.g. mxbai-rerank-v2)
+# Varies per model: model_name, resources.accelerator, checkpoint_repository.repo,
+#                   max_num_tokens, num_builder_gpus
+model_metadata:
+  example_model_input:
+    inputs:
+    - - Baseten is a fast inference provider
+    - - Classify this separately.
+    raw_scores: true
+    truncate: true
+    truncation_direction: Right
+model_name: BEI-<org>-<model-name>-fp8-truss-example
+python_version: py39
+resources:
+  accelerator: H100_40GB  # or H100, L4
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 32768
+    num_builder_gpus: 2    # 2 for H100, 4 for L4
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /predict

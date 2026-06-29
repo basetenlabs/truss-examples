@@ -1,0 +1,42 @@
+# Base template: HuggingFace TEI (text-embeddings-inference) - Embedding model
+# Use for: models not yet supported by BEI; weights baked into Docker image
+# Docker image varies by GPU:
+#   L4/Ada:  baseten/text-embeddings-inference-mirror:89-1.8.3   (+ --tokenization-workers 3)
+#   A10G:    baseten/text-embeddings-inference-mirror:86-1.8.3   (+ --tokenization-workers 3)
+#   H100:    baseten/text-embeddings-inference-mirror:hopper-1.8.3
+#   A100:    baseten/text-embeddings-inference-mirror:1.8.3
+# Varies per model: base_image, model_name, accelerator, hf source in weights
+base_image:
+  image: baseten/text-embeddings-inference-mirror:89-1.8.3  # pick for your GPU
+docker_server:
+  liveness_endpoint: /health
+  predict_endpoint: /v1/embeddings
+  readiness_endpoint: /health
+  server_port: 7997
+  start_command: bash -c "text-embeddings-router --port 7997 --model-id /weights/cached_model
+    --max-client-batch-size 128 --max-concurrent-requests 1024 --max-batch-tokens 16384
+    --auto-truncate --tokenization-workers 3"  # remove --tokenization-workers 3 for H100/A100
+weights:
+  - source: "hf://<org>/<model-name>@main"
+    mount_location: "/weights/cached_model"
+    ignore_patterns:
+      - "*.pt"
+      - "*.ckpt"
+      - "*.onnx"
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: TEI-<org>-<model-name>-embedding-truss-example
+python_version: py39
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 2Gi
+  use_gpu: true
+runtime:
+  is_websocket_endpoint: false
+  predict_concurrency: 32
+  transport:
+    kind: http

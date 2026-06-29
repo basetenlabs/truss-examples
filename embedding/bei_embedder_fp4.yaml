@@ -1,0 +1,27 @@
+# Base template: BEI (causal encoder) - Embedding model, FP4 quantization
+# FP4 requires B200 GPU. Varies per model: model_name, checkpoint_repository.repo,
+#                   max_num_tokens, num_builder_gpus
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-<org>-<model-name>-embedding-fp4-truss-example
+python_version: py39
+resources:
+  accelerator: B200
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 40960  # max(16384, model.max_position_embeddings)
+    num_builder_gpus: 1
+    quantization_type: fp4
+  runtime:
+    webserver_default_route: /v1/embeddings

@@ -1,0 +1,28 @@
+# Base template: BEI (causal encoder) - Classifier/Predictor model, no quantization
+# Used for: sequence classification, reward models (without fp8)
+# Varies per model: model_name, resources.accelerator, checkpoint_repository.repo, max_num_tokens
+model_metadata:
+  example_model_input:
+    inputs:
+    - - Baseten is a fast inference provider
+    - - Classify this separately.
+    raw_scores: true
+    truncate: true
+    truncation_direction: Right
+model_name: BEI-<org>-<model-name>-classification-truss-example
+python_version: py39
+resources:
+  accelerator: L4  # or A10G, H100 depending on model size
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+  runtime:
+    webserver_default_route: /predict

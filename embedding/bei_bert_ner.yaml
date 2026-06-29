@@ -1,0 +1,28 @@
+# Base template: BEI-Bert (BERT/bidirectional encoder) - NER / token classification model
+# Use for: ForTokenClassification models (NER, POS tagging, etc.)
+# No fp8/fp4 support. Varies per model: model_name, accelerator, repo, max_num_tokens
+model_metadata:
+  example_model_input:
+    aggregation_strategy: max
+    inputs:
+    - Apple is looking at buying U.K. startup for $1 billion
+    - John works at Google in Mountain View, California
+    raw_scores: false
+    truncate: true
+model_name: BEI-Bert-<org>-<model-name>-ner-truss-example
+python_version: py39
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384
+  runtime:
+    webserver_default_route: /predict_tokens

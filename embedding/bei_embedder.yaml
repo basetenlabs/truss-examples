@@ -1,0 +1,25 @@
+# Base template: BEI (causal encoder) - Embedding model, no quantization
+# Varies per model: model_name, resources.accelerator, checkpoint_repository.repo,
+#                   max_num_tokens (= max(16384, model.max_position_embeddings))
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-<org>-<model-name>-embedding-truss-example
+python_version: py39
+resources:
+  accelerator: L4  # or H100 / H100_40GB for large models
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 16384  # max(16384, model.max_position_embeddings)
+  runtime:
+    webserver_default_route: /v1/embeddings

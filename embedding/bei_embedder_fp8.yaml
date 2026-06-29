@@ -1,0 +1,27 @@
+# Base template: BEI (causal encoder) - Embedding model, FP8 quantization
+# Varies per model: model_name, resources.accelerator, checkpoint_repository.repo,
+#                   max_num_tokens, num_builder_gpus (2 for H100, 4 for L4)
+model_metadata:
+  example_model_input:
+    encoding_format: float
+    input: text string
+    model: model
+model_name: BEI-<org>-<model-name>-embedding-fp8-truss-example
+python_version: py39
+resources:
+  accelerator: H100  # or H100_40GB; L4 also supported
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_num_tokens: 32768  # max(16384, model.max_position_embeddings)
+    num_builder_gpus: 2    # 2 for H100, 4 for L4
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /v1/embeddings
