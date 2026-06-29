@@ -1,0 +1,42 @@
+# Base template: Briton - Causal LLM (decoder), FP4 quantization (B200 only)
+# Use for: Llama, Qwen, Mistral, Gemma text generation on Blackwell (B200)
+# Varies per model: model_name, repo, max_seq_len, tensor_parallel_count
+#
+# quantization_type options:
+#   fp4           — standard NVFP4 weight quantization
+#   fp4_kv        — also quantizes the KV cache to FP4 (more memory savings)
+#   fp4_mlp_only  — quantizes only the MLP layers; conservative, better quality
+#
+# num_builder_gpus: 4 for single-GPU builds (tp=1); omit when tensor_parallel_count > 1
+# Optional: add a quantization_config block (calib_dataset or calib_size) for better
+#           calibration — see the Briton-*-calib-dataset-* examples.
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-<org>-<model-name>-fp4-truss-example
+python_version: py39
+resources:
+  accelerator: B200  # FP4 requires Blackwell (B200)
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_seq_len: 131072       # set to model.max_position_embeddings
+    num_builder_gpus: 4       # omit if tensor_parallel_count > 1
+    quantization_type: fp4    # fp4 | fp4_kv | fp4_mlp_only
+    tensor_parallel_count: 1  # set equal to number of GPUs
+  runtime:
+    enable_chunked_context: true

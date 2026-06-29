@@ -1,0 +1,37 @@
+# Base template: BISV2 (Baseten Inference Stack v2) - Causal LLM, FP8 quantization
+# Use for: dense + MoE models on H100. inference_stack v2 auto-manages most build params —
+#          only checkpoint_repository, quantization_type, and num_builder_gpus are settable
+#          under build; sequence/batch sizing lives under runtime.
+# Varies per model: model_name, repo, max_seq_len / max_num_tokens
+#
+# quantization_type: fp8_kv (default). Use fp8 (not fp8_kv) for Qwen2-family models, and add a
+#   quantization_config block with calib_size: 2048 for them.
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: BISV2-<org>-<model-name>-fp8-truss-example
+python_version: py39
+resources:
+  accelerator: H100  # H100 / H100_40GB
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  inference_stack: v2
+  build:
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    quantization_type: fp8_kv  # use fp8 for Qwen2 models
+  runtime:
+    max_batch_size: 32
+    max_num_tokens: 32768   # = max_seq_len
+    max_seq_len: 32768      # set to min(model.max_position_embeddings, 32768)

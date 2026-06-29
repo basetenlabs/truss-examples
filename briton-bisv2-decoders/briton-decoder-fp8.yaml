@@ -1,0 +1,41 @@
+# Base template: Briton - Causal LLM (decoder), FP8 quantization
+# Use for: Llama, Qwen, Mistral on H100/H200/L4
+# Varies per model: model_name, accelerator, repo, max_seq_len, tensor_parallel_count
+#
+# quantization_type options:
+#   fp8_kv  — recommended for most models; enables fp8 context FMHA
+#   fp8     — use for Qwen2-family models (fp8_kv has quality issues with Qwen2)
+#
+# num_builder_gpus: 4 for single-GPU builds (tp=1), omit for tp>1
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-<org>-<model-name>-fp8-truss-example
+python_version: py39
+resources:
+  accelerator: H100  # H100, H100_40GB, H200, or L4 (fp8-capable GPUs)
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_seq_len: 131072      # set to model.max_position_embeddings
+    num_builder_gpus: 4      # omit if tensor_parallel_count > 1
+    quantization_type: fp8_kv  # use fp8 (not fp8_kv) for Qwen2 models
+    tensor_parallel_count: 1   # set equal to number of GPUs
+    plugin_configuration:
+      use_fp8_context_fmha: true  # set to false if using plain fp8
+  runtime:
+    enable_chunked_context: true

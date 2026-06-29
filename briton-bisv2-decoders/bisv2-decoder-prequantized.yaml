@@ -1,0 +1,34 @@
+# Base template: BISV2 (Baseten Inference Stack v2) - Causal LLM, pre-quantized weights
+# Use when the HuggingFace checkpoint already ships quantized (e.g. nvidia/Llama-3.1-8B-Instruct-FP4,
+# nvidia/Qwen3-8B-FP4). The quantization happened offline, so set quantization_type: no_quant —
+# the engine loads the weights as-is rather than quantizing at build time.
+# Varies per model: model_name, repo, max_seq_len / max_num_tokens
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: BISV2-<org>-<model-name>-truss-example
+python_version: py39
+resources:
+  accelerator: B200  # match the GPU the checkpoint was quantized for (FP4 → B200)
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  inference_stack: v2
+  build:
+    checkpoint_repository:
+      repo: <org>/<model-name>  # e.g. nvidia/Qwen3-8B-FP4
+      revision: main
+      source: HF
+    quantization_type: no_quant  # weights are already quantized offline
+  runtime:
+    max_batch_size: 32
+    max_num_tokens: 32768   # = max_seq_len
+    max_seq_len: 32768      # set to min(model.max_position_embeddings, 32768)

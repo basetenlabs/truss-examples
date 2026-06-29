@@ -1,0 +1,51 @@
+# Base template: Briton - Causal LLM (decoder) with lookahead speculative decoding
+# Use for: latency-sensitive workloads (coding, predictable content). Self-speculative —
+#          no draft model required.
+# Built on briton_decoder_fp8.yaml: any quantization_type works (no_quant, fp8, fp8_kv).
+# Varies per model: model_name, repo, max_seq_len, tensor_parallel_count, quantization_type
+#
+# Lookahead tuning (defaults from arXiv:2402.02057):
+#   Standard:        windows_size=3, ngram_size=8,  verification_set_size=3
+#   Dynamic lengths: windows_size=1, ngram_size=32, verification_set_size=1  (min-latency variants)
+# num_draft_tokens is auto-derived from the lookahead params — no need to set it.
+# When a speculator is present, max_seq_len/max_num_tokens are capped at 262144 and
+# max_batch_size is pinned to 64.
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: Briton-<org>-<model-name>-speculative-lookahead-truss-example
+python_version: py39
+resources:
+  accelerator: H100  # H100 / H100_40GB / H200
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: decoder
+    checkpoint_repository:
+      repo: <org>/<model-name>
+      revision: main
+      source: HF
+    max_batch_size: 64        # pinned to 64 for lookahead
+    max_num_tokens: 131072    # = max_seq_len
+    max_seq_len: 131072       # set to model.max_position_embeddings (capped at 262144)
+    quantization_type: fp8_kv # no_quant | fp8 | fp8_kv (use fp8 for Qwen2 models)
+    tensor_parallel_count: 1  # set equal to number of GPUs
+    plugin_configuration:
+      use_fp8_context_fmha: true  # only with fp8_kv; remove for no_quant / plain fp8
+    speculator:
+      speculative_decoding_mode: LOOKAHEAD_DECODING
+      enable_b10_lookahead: true
+      lookahead_windows_size: 3
+      lookahead_ngram_size: 8
+      lookahead_verification_set_size: 3
+  runtime:
+    enable_chunked_context: true
