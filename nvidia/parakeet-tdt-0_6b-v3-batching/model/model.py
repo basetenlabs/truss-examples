@@ -132,10 +132,21 @@ def download_and_decode_audio(audio_url: str) -> np.ndarray:
         tmp.flush()
         result = subprocess.run(
             [
-                "ffmpeg", "-i", tmp.name, "-ar", str(SAMPLE_RATE), "-ac", "1",
-                "-f", "f32le", "-loglevel", "error", "-",
+                "ffmpeg",
+                "-i",
+                tmp.name,
+                "-ar",
+                str(SAMPLE_RATE),
+                "-ac",
+                "1",
+                "-f",
+                "f32le",
+                "-loglevel",
+                "error",
+                "-",
             ],
-            capture_output=True, check=True,
+            capture_output=True,
+            check=True,
         )
         return np.frombuffer(result.stdout, dtype=np.float32)
 
@@ -152,10 +163,21 @@ def decode_base64_audio(audio_b64: str) -> np.ndarray:
             tmp.flush()
             result = subprocess.run(
                 [
-                    "ffmpeg", "-i", tmp.name, "-ar", str(SAMPLE_RATE), "-ac", "1",
-                    "-f", "f32le", "-loglevel", "error", "-",
+                    "ffmpeg",
+                    "-i",
+                    tmp.name,
+                    "-ar",
+                    str(SAMPLE_RATE),
+                    "-ac",
+                    "1",
+                    "-f",
+                    "f32le",
+                    "-loglevel",
+                    "error",
+                    "-",
                 ],
-                capture_output=True, check=True,
+                capture_output=True,
+                check=True,
             )
             return np.frombuffer(result.stdout, dtype=np.float32)
     return audio_data
@@ -188,8 +210,11 @@ class _BatchRequest:
 
 
 def _load_nemo_model(
-    model_path: str, dtype: torch.dtype, use_compile: bool,
-    compile_mode: str, enable_cuda_graphs: bool = True,
+    model_path: str,
+    dtype: torch.dtype,
+    use_compile: bool,
+    compile_mode: str,
+    enable_cuda_graphs: bool = True,
 ):
     """Load a NeMo .nemo file, configure it for fast inference, and warm up.
 
@@ -267,18 +292,24 @@ class Model:
         model_path = os.path.join(MODEL_CACHE_DIR, MODEL_NEMO_FILE)
 
         dtype = _detect_dtype()
-        gpu = (torch.cuda.get_device_name()
-               if torch.cuda.is_available() else "cpu")
+        gpu = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
         logger.info(
             "Config: max_batch=%d  collect_ms=%.0f  dtype=%s  "
             "compile=%s  cuda_graphs=%s  gpu=%s",
-            self._max_batch_size, self._batch_collect_s * 1000, dtype,
-            self._use_compile, self._cuda_graphs, gpu,
+            self._max_batch_size,
+            self._batch_collect_s * 1000,
+            dtype,
+            self._use_compile,
+            self._cuda_graphs,
+            gpu,
         )
 
         t0 = time.time()
         self.model = _load_nemo_model(
-            model_path, dtype, self._use_compile, self._compile_mode,
+            model_path,
+            dtype,
+            self._use_compile,
+            self._compile_mode,
             enable_cuda_graphs=self._cuda_graphs,
         )
         self._device = next(self.model.parameters()).device
@@ -286,10 +317,14 @@ class Model:
 
         if self._batch_enabled:
             threading.Thread(
-                target=self._batch_collector, daemon=True, name="collector",
+                target=self._batch_collector,
+                daemon=True,
+                name="collector",
             ).start()
             threading.Thread(
-                target=self._batch_inference, daemon=True, name="inference",
+                target=self._batch_inference,
+                daemon=True,
+                name="inference",
             ).start()
             logger.info("Pipelined batch worker started (collector + inference)")
 
@@ -358,17 +393,19 @@ class Model:
                 padded = np.zeros((len(audios), max_len), dtype=np.float32)
                 lengths = np.zeros(len(audios), dtype=np.int64)
                 for i, a in enumerate(audios):
-                    padded[i, :len(a)] = a
+                    padded[i, : len(a)] = a
                     lengths[i] = len(a)
 
                 input_signal = torch.from_numpy(padded).to(
-                    device=self._device, dtype=torch.float32,
+                    device=self._device,
+                    dtype=torch.float32,
                 )
                 input_lengths = torch.from_numpy(lengths).to(device=self._device)
 
                 with torch.inference_mode():
                     processed, proc_len = self.model.preprocessor(
-                        input_signal=input_signal, length=input_lengths,
+                        input_signal=input_signal,
+                        length=input_lengths,
                     )
 
                 self._ready_queue.put((processed, proc_len, batch))
@@ -400,7 +437,8 @@ class Model:
 
                 with torch.inference_mode():
                     encoded, encoded_len = self.model.encoder(
-                        audio_signal=processed, length=proc_len,
+                        audio_signal=processed,
+                        length=proc_len,
                     )
                     dec_result = self.model.decoding.rnnt_decoder_predictions_tensor(
                         encoder_output=encoded,
@@ -409,8 +447,7 @@ class Model:
                     )
 
                 raw_hyps = (
-                    dec_result[0] if isinstance(dec_result, tuple)
-                    else dec_result
+                    dec_result[0] if isinstance(dec_result, tuple) else dec_result
                 )
                 for req, hyp in zip(batch, raw_hyps):
                     text = hyp.text if hasattr(hyp, "text") else str(hyp)
@@ -426,10 +463,10 @@ class Model:
 
     def predict(self, request: dict):
         """HTTP entrypoint. Accepts:
-            audio_url:    URL to fetch and decode
-            audio_base64: base64-encoded audio bytes (any soundfile/ffmpeg-readable)
-            timestamps:   bool — if true, returns word-level timestamps
-                          (uses serial path; not batched).
+        audio_url:    URL to fetch and decode
+        audio_base64: base64-encoded audio bytes (any soundfile/ffmpeg-readable)
+        timestamps:   bool — if true, returns word-level timestamps
+                      (uses serial path; not batched).
         """
         audio_url = request.get("audio_url")
         audio_b64 = request.get("audio_base64")
@@ -465,7 +502,8 @@ class Model:
         with self._transcribe_lock:
             with torch.inference_mode():
                 results = self.model.transcribe(
-                    [audio_array], timestamps=is_timestamps,
+                    [audio_array],
+                    timestamps=is_timestamps,
                 )
         hyp = results[0]
         if isinstance(hyp, (list, tuple)):
@@ -475,9 +513,11 @@ class Model:
             text = hyp.text if hasattr(hyp, "text") else str(hyp)
             return {"transcript": text}
         return {
-            "transcript": json_serialize_recursive({
-                "text": hyp.text,
-                "score": hyp.score,
-                "timestep": hyp.timestep,
-            })
+            "transcript": json_serialize_recursive(
+                {
+                    "text": hyp.text,
+                    "score": hyp.score,
+                    "timestep": hyp.timestep,
+                }
+            )
         }
