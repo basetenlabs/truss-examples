@@ -1,0 +1,47 @@
+model_name: Parakeet TDT 0.6B V3 (Batching)
+description: >
+  NVIDIA Parakeet TDT 0.6B V3 English ASR with server-side dynamic batching
+  for high-throughput HTTP transcription.
+python_version: py312
+model_metadata:
+  repo_id: nvidia/parakeet-tdt-0.6b-v3
+  avatar_url: https://cdn-avatars.huggingface.co/v1/production/uploads/1613114437487-60262a8e0703121c822a80b6.png
+  example_model_input:
+    {
+      "audio_url": "https://dldata-public.s3.us-east-2.amazonaws.com/2086-149220-0033.wav",
+      "timestamps": false,
+    }
+system_packages:
+  - ffmpeg
+resources:
+  accelerator: L4
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+secrets:
+  hf_access_token: null
+model_cache:
+  - repo_id: nvidia/parakeet-tdt-0.6b-v3
+    revision: main
+    use_volume: true
+    volume_folder: parakeet-tdt-0.6b-v3
+    kind: hf
+requirements:
+  - nemo_toolkit[asr]
+  - torch>=2.6.0,<2.8.0
+  - torchaudio>=2.6.0,<2.8.0
+  - requests
+  - soundfile
+  - numpy
+  - numpy<=2.3
+  - pyarrow==20.0.0
+  - cuda-python
+environment_variables:
+  BATCH_INFERENCE: "true"
+  MAX_BATCH_SIZE: "64"
+  # Adaptive collect window: only waits when 2+ items already drained,
+  # so single-arrival tail latency is unchanged. 20ms picks up
+  # stragglers under concurrent load to grow batches above 1.
+  BATCH_COLLECT_MS: "20"
+  CUDA_GRAPHS: "true"
+  TORCH_COMPILE: "false"
