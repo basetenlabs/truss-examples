@@ -1,0 +1,56 @@
+model_name: "model:diffusiongemma-26B-A4B-it preset:latency"
+base_image:
+  image: vllm/vllm-openai:nightly-2c9c07c85e56c799afffd5a671a8a0bace377a39
+model_metadata:
+  repo_id: RedHatAI/diffusiongemma-26B-A4B-it-FP8-dynamic
+  example_model_input:
+    model: google/diffusiongemma-26B-A4B-it
+    messages:
+      - role: user
+        content: Explain how diffusion language models differ from autoregressive ones.
+    stream: true
+    max_tokens: 512
+  tags:
+    - openai-compatible
+weights:
+  - source: "hf://RedHatAI/diffusiongemma-26B-A4B-it-FP8-dynamic@main"
+    mount_location: "/app/checkpoint/diffusiongemma"
+    auth_secret_name: "hf_access_token"
+build_commands:
+  - apt-get update && apt-get install -y --no-install-recommends git ca-certificates && git clone --filter=blob:none https://github.com/vllm-project/vllm.git /opt/vllm-dgemma && cd /opt/vllm-dgemma && git checkout d25326b1fcfbcdfdc4133e7263b0d95ec31c9b87
+  - cd /opt/vllm-dgemma && VLLM_USE_PRECOMPILED=1 VLLM_PRECOMPILED_WHEEL_LOCATION='https://wheels.vllm.ai/3d300aecb1e6639872b698bd74ed38fb81d9603e/vllm-0.22.1rc1.dev373%2Bg3d300aecb-cp38-abi3-manylinux_2_28_x86_64.whl' pip install --no-deps --force-reinstall .
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /app/checkpoint/diffusiongemma
+    --served-model-name google/diffusiongemma-26B-A4B-it
+    --tensor-parallel-size 1
+    --attention-backend TRITON_ATTN
+    --generation-config vllm
+    --hf-overrides.diffusion_sampler entropy_bound
+    --hf-overrides.diffusion_entropy_bound 0.1
+    --diffusion-config.canvas_length 256
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --max-model-len 8192
+    --max-num-seqs 8
+    --gpu-memory-utilization 0.85
+    --trust-remote-code"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_USE_V2_MODEL_RUNNER: "1"
+  VLLM_LOGGING_LEVEL: INFO
+  PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+resources:
+  accelerator: H100
+  use_gpu: true
+secrets:
+  hf_access_token: null
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 300
+    restart_threshold_seconds: 300
+    stop_traffic_threshold_seconds: 120
+  predict_concurrency: 8
