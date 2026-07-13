@@ -17,46 +17,18 @@ on a single L4 GPU.
 
 ## 1. Set up SSH
 
-Set up SSH once per machine, using the
-[Truss CLI](https://docs.baseten.co/reference/cli/truss/overview) or the
-[Baseten CLI](https://docs.baseten.co/reference/cli/baseten/overview). Install
-whichever you prefer by following its docs, then run its setup below. For background
+Set up SSH once per machine with the
+[Baseten CLI](https://docs.baseten.co/reference/cli/baseten/overview). For background
 on SSH access, see the [SSH docs](https://docs.baseten.co/inference/ssh).
-
-**Using the Truss CLI**
-
-```sh
-truss login
-truss ssh setup
-```
-
-When `truss login` prompts for an authentication method, choose the API key option.
-SSH signing needs the API key stored locally, so browser login alone will not work
-for `truss ssh`.
-
-**Using the Baseten CLI**
 
 ```sh
 baseten auth login
 baseten ssh setup
 ```
 
-> **Note:** Baseten CLI SSH is not released yet, so the Baseten CLI must be
-> [built from source](https://github.com/basetenlabs/baseten-cli#building) and put on
-> PATH to use it.
-
 ## 2. Deploy
 
-Push with the Truss CLI or the Baseten CLI. Both accept `--wait` to block until the
-deployment is `ACTIVE`.
-
-**Using the Truss CLI**
-
-```sh
-truss push inference-ssh/tune-vllm-args --wait
-```
-
-**Using the Baseten CLI**
+Push with the Baseten CLI. Pass `--wait` to block until the deployment is `ACTIVE`.
 
 ```sh
 baseten model push --dir inference-ssh/tune-vllm-args --wait
@@ -85,7 +57,7 @@ export MY_MODEL_ID=<model_id>
 
 **Using curl**
 
-Set your Baseten API key too.
+Using curl needs an API key:
 
 ```sh
 export MY_API_KEY=<your-api-key>
