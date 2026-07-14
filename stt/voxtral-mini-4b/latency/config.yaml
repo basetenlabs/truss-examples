@@ -8,31 +8,37 @@ weights:
     mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 environment_variables:
-  VLLM_DISABLE_COMPILE_CACHE: "1"
+  VLLM_CACHE_ROOT: /cache/org/vllm
+  TORCHINDUCTOR_CACHE_DIR: /cache/org/inductor
+  TRITON_CACHE_DIR: /cache/org/triton
 base_image:
-  image: vllm/vllm-openai:v0.22.0-cu129
+  image: "baseten/vllm-openai:0.22.0-voxtral-realtime-fixes"
 docker_server:
   start_command: >-
-    sh -c "VLLM_DISABLE_COMPILE_CACHE=1 vllm serve /app/checkpoint/model
+    sh -c "vllm serve /app/checkpoint/model
     --tensor-parallel-size 1
+    --api-server-count 8
+    --enable-realtime-unbounded 
+    --no-enable-prefix-caching
+    --realtime-reanchor-margin-tokens 1024
+    --hf-overrides '{\"text_config\": {\"sliding_window\": 4096}}'
     --served-model-name mistralai/Voxtral-Mini-4B-Realtime-2602
-    --host 0.0.0.0
+    --host 0.0.0.0 
     --port 8000
-    --compilation-config '{\"cudagraph_mode\": \"PIECEWISE\"}'"
+    --max-num-seqs 48
+    --max-model-len 10240
+    --compilation-config '{\"cudagraph_mode\": \"PIECEWISE\", \"cudagraph_capture_sizes\": [1, 2, 4, 8, 16, 24, 32, 48], \"max_cudagraph_capture_size\": 48}'"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/realtime
   server_port: 8000
 resources:
-  accelerator: H100_40GB:1
-  cpu: "1"
-  memory: 10Gi
+  accelerator: H100
+  cpu: "8"
+  memory: 32Gi
   use_gpu: true
 requirements:
-  - vllm[audio]
   - librosa
-  - torch
-  - torchaudio
   - pynvml
   - ffmpeg-python
   - websockets
@@ -42,6 +48,7 @@ system_packages:
   - openmpi-bin
   - libopenmpi-dev
 runtime:
+  predict_concurrency: 48
   is_websocket_endpoint: true
   transport:
     kind: websocket
