@@ -1,0 +1,50 @@
+model_name: tune-vllm-args
+
+# Serve an OpenAI-compatible API straight from the official vLLM image.
+base_image:
+  image: vllm/vllm-openai:v0.12.0
+
+# entr is not in the vLLM image, so install it at build time. We use it to
+# relaunch vLLM whenever the tunable args file changes. vim and nano give us an
+# editor for tweaking those files over SSH.
+build_commands:
+  - "apt-get update && apt-get install -y --no-install-recommends entr vim nano"
+
+docker_server:
+  # entr watches the editable files in /app/data and restarts vLLM when any of
+  # them changes. entr itself stays running as the server process, so editing a
+  # file over SSH restarts the engine without recreating the container. Every
+  # vLLM flag lives in vllm_args.txt, including the chat template that sets the
+  # assistant persona.
+  start_command: >-
+    sh -c "find /app/data -maxdepth 1 -type f |
+    entr -nr sh -c 'vllm serve Qwen/Qwen2.5-0.5B-Instruct $(cat /app/data/vllm_args.txt)'"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+# Smallest, cheapest GPU that runs the stock vLLM image cleanly.
+resources:
+  instance_type: "L4:4x16"
+
+runtime:
+  # Turn on SSH access to the running container.
+  remote_ssh:
+    enabled: true
+  # Give a restart plenty of time before the container is considered unhealthy,
+  # so tweaking args and relaunching vLLM does not trip a pod restart.
+  health_checks:
+    restart_threshold_seconds: 300
+    stop_traffic_threshold_seconds: 120
+
+model_metadata:
+  example_model_input:
+    model: Qwen/Qwen2.5-0.5B-Instruct
+    messages:
+      - role: user
+        content: "What is the meaning of life?"
+    max_tokens: 512
+    temperature: 0.6
+  tags:
+    - openai-compatible

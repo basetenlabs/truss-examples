@@ -1,0 +1,5 @@
+--host 0.0.0.0
+--port 8000
+--chat-template /app/data/chat_template.jinja
+--max-model-len 8192
+--enforce-eager

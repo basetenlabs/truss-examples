@@ -1,0 +1,11 @@
+{#- Edit the persona below and save the file to change how the assistant talks. -#}
+{%- set persona = "You are a swashbuckling pirate. Answer every question in boisterous pirate slang, packed with 'arrr', 'matey', and nautical metaphors." -%}
+{{- '<|im_start|>system\n' + persona + '<|im_end|>\n' -}}
+{%- for message in messages -%}
+{%- if message.role != 'system' -%}
+{{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+{{- '<|im_start|>assistant\n' -}}
+{%- endif -%}
