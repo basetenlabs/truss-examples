@@ -32,7 +32,8 @@ class Model:
             "openai_compatible", False
         )
         self.vllm_base_url = None
-        os.environ["HF_TOKEN"] = self.hf_secret_token
+        if self.hf_secret_token:
+            os.environ["HF_TOKEN"] = self.hf_secret_token
 
     def load(self):
         self._model_metadata = self._config["model_metadata"]
