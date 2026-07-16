@@ -17,35 +17,13 @@ model_metadata:
     stream: true
     max_tokens: 2048
     temperature: 0.5
-
-secrets:
-  hf_access_token: null
-
-weights:
-  - source: "hf://baseten-admin/glm-4.7-fp4@main"
-    mount_location: "/app/model_cache/glm47"
-    auth_secret_name: "hf_access_token"
-    allow_patterns:
-      - "*.safetensors"
-      - "*.json"
-      - "*.model"
-      - "*.jinja"
-      - "*.py"
-    ignore_patterns:
-      - "original/*"
-      - "*.pth"
-      - "*.bin"
-
-runtime:
-  predict_concurrency: 64
-
 trt_llm:
   build:
     checkpoint_repository:
-      # repo: baseten-admin/glm-4.7-fp4
-      repo: michaelfeil/empty-model
+      repo: baseten-admin/glm-4.7-fp4
       revision: main
       source: HF
+      # runtime_secret_name: "hf_access_token_custom"
   inference_stack: v2
   runtime:
     enable_chunked_prefill: true
@@ -70,6 +48,5 @@ trt_llm:
         decoding_type: MTP
         num_nextn_predict_layers: 3
       autotuner_enabled: false
-      model_path: /app/model_cache/glm47
       reasoning_parser: glm47
       tool_call_parser: glm47
