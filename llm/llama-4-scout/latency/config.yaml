@@ -2,7 +2,7 @@ model_name: "model:llama-4-scout preset:latency"
 model_metadata:
   description: >-
     Llama 4 Scout 17B multimodal instruct (RedHat FP8-dynamic), long-context with TP=4 FP8 KV,
-    OpenAI-compatible chat via vLLM.
+    OpenAI-compatible chat using vLLM.
   repo_id: RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic
   example_model_input:
     model: llama

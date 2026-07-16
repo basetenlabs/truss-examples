@@ -3,7 +3,7 @@ model_metadata:
   description: >-
     Holo-3.1-35B-A3B (FP8), H Company's computer-use / GUI-agent vision-language
     model built on the Qwen3.6-35B-A3B MoE base. OpenAI-compatible multimodal chat
-    with image input and native function calling, served via vLLM.
+    with image input and native function calling, served using vLLM.
   repo_id: Hcompany/Holo-3.1-35B-A3B-FP8
   example_model_input:
     model: Hcompany/Holo-3.1-35B-A3B-FP8

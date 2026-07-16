@@ -1,7 +1,7 @@
 model_name: "model:qwen3.5-9b preset:latency"
 model_metadata:
   description: >-
-    Qwen 3.5 9B instruct (dense), OpenAI-compatible chat via vLLM with Qwen tooling parsers.
+    Qwen 3.5 9B instruct (dense), OpenAI-compatible chat using vLLM with Qwen tooling parsers.
   repo_id: Qwen/Qwen3.5-9B
   example_model_input:
     model: "Qwen/Qwen3.5-9B"
