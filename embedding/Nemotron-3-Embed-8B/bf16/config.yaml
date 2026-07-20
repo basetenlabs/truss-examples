@@ -8,6 +8,9 @@ model_metadata:
       - "query: What is the capital of France?"
       - "passage: Paris is the capital of France."
     encoding_format: float
+    dimensions: 4096
+    truncate_prompt_tokens: 32768
+    truncation_side: right
   repo_id: nvidia/Nemotron-3-Embed-8B-BF16
   tags:
     - openai-compatible
@@ -15,24 +18,27 @@ model_metadata:
     - vllm
 
 base_image:
-  image: vllm/vllm-openai:v0.24.0
+  image: vllm/vllm-openai:v0.25.0
+
 docker_server:
   start_command: >-
     vllm serve /models/nemotron-8b
     --host 0.0.0.0
     --port 8000
     --served-model-name nvidia/Nemotron-3-Embed-8B-BF16
+    --runner pooling
+    --hf-overrides.is_matryoshka true
     --max-model-len 32768
-    --hf-overrides '{"is_matryoshka":true,"matryoshka_dimensions":[512,1024,2048,4096]}'
-    --enable-prompt-embeds
+    --max-num-batched-tokens 65536
+    --max-num-seqs 32
+    --enable-chunked-prefill
+    --gpu-memory-utilization 0.95
+
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
   server_port: 8000
 
-# Weights are mirrored to the BDN at deploy time and pre-mounted at mount_location
-# before the container starts, so vLLM loads from local disk and never calls HF at
-# runtime (no cold-start 429s). @<sha> pins the exact commit for reproducible pulls.
 weights:
   - source: "hf://nvidia/Nemotron-3-Embed-8B-BF16@c663c3bd4f1f7792928dfd91db0b136d57631fca"
     mount_location: "/models/nemotron-8b"
