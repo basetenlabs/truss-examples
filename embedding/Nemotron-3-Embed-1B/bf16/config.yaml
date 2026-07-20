@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+
 model_name: model:Nemotron-3-Embed-1B preset:bf16
 
 model_metadata:
@@ -8,6 +9,9 @@ model_metadata:
       - "query: What is the capital of France?"
       - "passage: Paris is the capital of France."
     encoding_format: float
+    dimensions: 2048
+    truncate_prompt_tokens: 32768
+    truncation_side: right
   repo_id: nvidia/Nemotron-3-Embed-1B-BF16
   tags:
     - openai-compatible
@@ -15,24 +19,27 @@ model_metadata:
     - vllm
 
 base_image:
-  image: vllm/vllm-openai:v0.24.0
+  image: vllm/vllm-openai:v0.25.0
+
 docker_server:
   start_command: >-
     vllm serve /models/nemotron-1b
     --host 0.0.0.0
     --port 8000
     --served-model-name nvidia/Nemotron-3-Embed-1B-BF16
+    --runner pooling
+    --hf-overrides.is_matryoshka true
     --max-model-len 32768
-    --hf-overrides '{"is_matryoshka":true,"matryoshka_dimensions":[512,1024,2048]}'
-    --enable-prompt-embeds
+    --max-num-batched-tokens 131072
+    --max-num-seqs 64
+    --enable-chunked-prefill
+    --gpu-memory-utilization 0.95
+
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/embeddings
   server_port: 8000
 
-# Weights are mirrored to the BDN at deploy time and pre-mounted at mount_location
-# before the container starts, so vLLM loads from local disk and never calls HF at
-# runtime (no cold-start 429s). @<sha> pins the exact commit for reproducible pulls.
 weights:
   - source: "hf://nvidia/Nemotron-3-Embed-1B-BF16@c5e9806ae078a32aedc0829038410c7e94f5a748"
     mount_location: "/models/nemotron-1b"
