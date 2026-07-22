@@ -4,18 +4,13 @@ NVIDIA Cosmos 3 is a world foundation model (WFM) that unifies understanding and
 
 This deployment is the **Nano (8B-param)** variant. Supports text2image, text2video, image2video, plus action-conditioned modalities (forward dynamics, inverse dynamics, policy). ~32 GB VRAM, single H100.
 
-- **Upstream:** <https://github.com/nvidia-cosmos/cosmos3>
+- **Upstream:** <https://github.com/NVIDIA/cosmos-framework>
 - **Weights:** `nvidia/Cosmos3-Nano` (public, OpenMDW-1.1 license — commercial + non-commercial use)
 - **Linear:** [LABS-95](https://linear.app/baseten/issue/LABS-95/nvidia-cosmos-3)
 
-## Base image
+## Image
 
-`baseten/cosmos3-nano:v1` is a private Docker Hub image built from `nvidia-cosmos/cosmos3-ea-external/Dockerfile` at upstream SHA `61fb84f`. It bakes in:
-
-- Python 3.13 + uv-installed `cu130` group (torch 2.10+cu130, flash-attn-3-nv, natten 0.21.6.dev6 with libnatten, ...)
-- The gated `cosmos3` Python package source (NDA-licensed; image must stay private until the 2026-05-31 GA)
-
-After GA, rebuild the image off the public `nvidia-cosmos/cosmos3` repo and flip it public.
+Fully public and self-contained — no private base image, no Docker Hub credentials. Starts from `python:3.13-slim` and, via `build_commands`, reconstructs NVIDIA's GA environment: cosmos-framework's locked `cu130` dependency set (torch 2.10+cu130, flash-attn-3-nv, natten 0.21.6.dev6, cudnn 9, the full nvidia-cu13 runtime) installed from NVIDIA's public wheel indexes, plus the `cosmos_framework` package itself (pinned to a GA commit). A handful of `cosmos_framework` inference imports pull optional packages declared only under its `train`/`guardrail` extras (`qwen-vl-utils`, `boto3`, `fvcore`, `iopath`, `nltk`, ...); these are installed explicitly. The built-in guardrail runners are disabled (`OmniSetupOverrides(guardrails=False)`) so the model does not download the Llama-Guard / SigLIP / Cosmos-Guardrail models.
 
 ## Modalities
 

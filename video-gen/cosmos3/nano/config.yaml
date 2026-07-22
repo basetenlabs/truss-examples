@@ -1,15 +1,26 @@
 model_name: "model:cosmos3 preset:nano"
 
-# Private base image built from NVIDIA's upstream Dockerfile (cosmos3-ea-external
-# at upstream SHA 61fb84f / mirror SHA 1e4841b). Bakes Python 3.13, the
-# uv-installed cu130 dep group (torch 2.10+cu130, flash-attn-3-nv, natten
-# 0.21.6.dev6 with libnatten, ...), and the gated cosmos3 package source
-# itself into /workspace. Must stay private (contains NVIDIA EA-licensed
-# source). Baseten pulls using a base64 secret named
-# DOCKER_REGISTRY_https://index.docker.io/v1/ on the FDE-internal team.
+# Public, self-contained image built on Baseten's builder from NVIDIA's GA
+# cosmos-framework (post-2026-05-31 GA of Cosmos 3). Starts from a public
+# python:3.13-slim base and installs cosmos-framework's locked cu130 dependency
+# set (torch 2.10+cu130, flash-attn-3-nv, natten 0.21.6.dev6, cudnn 9, the full
+# nvidia-cu13 runtime, ...) plus cosmos_framework itself into the system python,
+# all from NVIDIA's public wheel indexes. No private base image and no Docker
+# Hub credentials required.
 base_image:
-  image: baseten/cosmos3-nano:v1
-  python_executable_path: /workspace/.venv/bin/python
+  image: python:3.13-slim-bookworm
+  python_executable_path: /usr/local/bin/python3
+
+build_commands:
+  - apt-get update && apt-get install -y --no-install-recommends git ffmpeg build-essential libsndfile1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+  - curl -LsSf https://astral.sh/uv/0.11.28/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+  - git clone https://github.com/NVIDIA/cosmos-framework.git /opt/cosmos-framework && git -C /opt/cosmos-framework checkout 058c8c046877f087e07b3472a76cac214f3ad39c
+  - cd /opt/cosmos-framework && /usr/local/bin/uv export --locked --no-dev --group cu130 --no-emit-project --format requirements-txt -o /tmp/cosmos-reqs.txt
+  - cd /opt/cosmos-framework && /usr/local/bin/uv pip install --system --break-system-packages --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl --extra-index-url https://nvidia-cosmos.github.io/cosmos-dependencies/v1.5.0 --extra-index-url https://whl.natten.org -r /tmp/cosmos-reqs.txt
+  - /usr/local/bin/uv pip install --system --break-system-packages --no-deps -e /opt/cosmos-framework
+  - /usr/local/bin/uv pip install --system --break-system-packages --no-deps qwen-vl-utils==0.0.14
+  - /usr/local/bin/uv pip install --system --break-system-packages boto3==1.40.61 fvcore==0.1.5.post20221221 iopath==0.1.10
+  - /usr/local/bin/uv pip install --system --break-system-packages nltk==3.9.3 ftfy==6.3.1 mediapy==1.2.6 matplotlib==3.10.8 pycocotools==2.0.11 opencv-python-headless==4.13.0.92 soundfile==0.13.1 kornia==0.8.2
 
 model_metadata:
   repo_id: nvidia/Cosmos3-Nano
@@ -29,32 +40,21 @@ model_metadata:
     - physical-ai
 
 weights:
-  # Main Cosmos3-Nano DCP checkpoint. Loaded directly from this local mount
-  # via OmniSetupOverrides(checkpoint_path=...) — the broken `uvx hf` path is
-  # never invoked for this one.
+  # Main Cosmos3-Nano checkpoint (public diffusers-style safetensors layout).
+  # Loaded directly from this local mount via
+  # OmniSetupOverrides(checkpoint_path=...); the GA cosmos_framework loader
+  # detects the diffusers layout and reads transformer/ + vision_encoder/.
   - source: "hf://nvidia/Cosmos3-Nano@411f42a8fdfb8c5b2583cb8786e0938f49796eaa"
     mount_location: "/app/model_cache/cosmos3-nano"
     auth_secret_name: "hf_access_token"
 
-  # Wan2.2 VAE (video tokenizer). cosmos3 looks up a single file from this
-  # repo (`cosmos3/common/checkpoints.py` registers it as `CheckpointFileHf`,
-  # filename="Wan2.2_VAE.pth"). Mounting at the HF Hub cache path makes
-  # snapshot_download return a cache hit; no network at load time.
+  # Wan2.2 VAE (video tokenizer). cosmos_framework looks up a single file from
+  # this repo (registered as Wan2.2/vae -> Wan2.2_VAE.pth). Mounting at the HF
+  # Hub cache path makes snapshot_download return a cache hit; no network.
   - source: "hf://Wan-AI/Wan2.2-TI2V-5B@921dbaf3f1674a56f47e83fb80a34bac8a8f203e"
     mount_location: "/app/.hf-cache/hub/models--Wan-AI--Wan2.2-TI2V-5B/snapshots/921dbaf3f1674a56f47e83fb80a34bac8a8f203e"
     allow_patterns:
       - "Wan2.2_VAE.pth"
-
-  # Qwen3-VL-8B-Instruct tokenizer / processor configs only — cosmos3's
-  # `register_checkpoints` filters to `*.json` and `*.txt` at inference (it
-  # only needs the processor, not the model weights, since the Reasoner
-  # tower's weights live inside the Cosmos3-Nano DCP). ~10 MB total.
-  - source: "hf://Qwen/Qwen3-VL-8B-Instruct@0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
-    mount_location: "/app/.hf-cache/hub/models--Qwen--Qwen3-VL-8B-Instruct/snapshots/0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
-    allow_patterns:
-      - "*.json"
-      - "*.txt"
-      - "*.model"
 
 resources:
   accelerator: H100
@@ -62,15 +62,11 @@ resources:
 
 secrets:
   hf_access_token: null
-  # Docker Hub pull credential for the private baseten/cosmos3-deps image.
-  # Value is `echo -n 'fredbaseten:<docker-hub-pat>' | base64`, stored on the
-  # Baseten FDE-internal team.
-  DOCKER_REGISTRY_https://index.docker.io/v1/: null
 
 environment_variables:
   HF_HOME: "/app/.hf-cache"
-  COSMOS_EARLY_ACCESS: "1"
   COSMOS3_CHECKPOINT_PATH: "/app/model_cache/cosmos3-nano"
+  COSMOS_TRAINING: "false"
   PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
 
 runtime:

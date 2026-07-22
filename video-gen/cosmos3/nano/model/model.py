@@ -48,6 +48,16 @@ class Model:
         self._inference_root = Path(tempfile.mkdtemp(prefix="cosmos3-out-"))
 
     def load(self) -> None:
+        import traceback
+        try:
+            self._load_impl()
+        except BaseException:
+            tb = traceback.format_exc()
+            logger.error("COSMOS3 LOAD FAILED:\n%s", tb)
+            print("COSMOS3 LOAD FAILED:\n" + tb, flush=True)
+            raise
+
+    def _load_impl(self) -> None:
         token = self._secrets.get("hf_access_token")
         if token:
             os.environ.setdefault("HF_TOKEN", token)
@@ -67,7 +77,7 @@ class Model:
         # as a dep so the uvx-isolated env always fails. Replace _hf_download
         # with a direct huggingface_hub Python-API call (the same hf
         # package is already installed in the base image's venv).
-        from cosmos3._src.imaginaire.utils import checkpoint_db as _ckpt
+        from cosmos_framework.utils import checkpoint_db as _ckpt
         from huggingface_hub import hf_hub_download, snapshot_download
 
         def _hf_download_python(cmd_args: list[str]) -> str:
@@ -114,8 +124,8 @@ class Model:
 
         _ckpt._hf_download = _hf_download_python
 
-        from cosmos3.args import OmniSampleOverrides, OmniSetupOverrides
-        from cosmos3.inference import OmniInference, get_sample_data
+        from cosmos_framework.inference.args import OmniSampleOverrides, OmniSetupOverrides
+        from cosmos_framework.inference.inference import OmniInference, get_sample_data
 
         self._OmniSampleOverrides = OmniSampleOverrides
         self._get_sample_data = get_sample_data
@@ -123,6 +133,7 @@ class Model:
         setup_args = OmniSetupOverrides(
             checkpoint_path=CHECKPOINT_PATH,
             output_dir=self._inference_root,
+            guardrails=False,
         ).build_setup()
         self._pipe = OmniInference.create(setup_args)
         logger.info("Cosmos3 loaded from %s", CHECKPOINT_PATH)
