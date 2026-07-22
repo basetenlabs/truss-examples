@@ -5,7 +5,7 @@ NVIDIA Cosmos 3 is a world foundation model (WFM) that unifies understanding and
 This deployment is the **Nano (8B-param)** variant. Supports text2image, text2video, image2video, plus action-conditioned modalities (forward dynamics, inverse dynamics, policy). ~32 GB VRAM, single H100.
 
 - **Upstream:** <https://github.com/nvidia-cosmos/cosmos3>
-- **Weights:** `nvidia-cosmos-ea/Cosmos3-Nano` (gated NDA, NVIDIA Software and Model Evaluation License until GA on 2026-05-31)
+- **Weights:** `nvidia/Cosmos3-Nano` (public, OpenMDW-1.1 license — commercial + non-commercial use)
 - **Linear:** [LABS-95](https://linear.app/baseten/issue/LABS-95/nvidia-cosmos-3)
 
 ## Base image

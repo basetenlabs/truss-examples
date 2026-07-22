@@ -12,7 +12,7 @@ base_image:
   python_executable_path: /workspace/.venv/bin/python
 
 model_metadata:
-  repo_id: nvidia-cosmos-ea/Cosmos3-Nano
+  repo_id: nvidia/Cosmos3-Nano
   example_model_input:
     prompt: "A bustling city street at night, neon signs reflecting on wet pavement, light rain falling."
     model_mode: text2video
@@ -32,7 +32,7 @@ weights:
   # Main Cosmos3-Nano DCP checkpoint. Loaded directly from this local mount
   # via OmniSetupOverrides(checkpoint_path=...) — the broken `uvx hf` path is
   # never invoked for this one.
-  - source: "hf://nvidia-cosmos-ea/Cosmos3-Nano@ebbe03fe665661d0eab87130a341184efecca365"
+  - source: "hf://nvidia/Cosmos3-Nano@411f42a8fdfb8c5b2583cb8786e0938f49796eaa"
     mount_location: "/app/model_cache/cosmos3-nano"
     auth_secret_name: "hf_access_token"
 
