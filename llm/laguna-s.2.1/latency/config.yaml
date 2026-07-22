@@ -27,8 +27,6 @@ environment_variables: {}
 
 resources:
   accelerator: H100:8
-  cpu: "1"
-  memory: 2Gi
   use_gpu: true
 
 bis_llm:
