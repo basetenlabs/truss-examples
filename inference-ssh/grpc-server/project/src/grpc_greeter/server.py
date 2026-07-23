@@ -5,7 +5,6 @@ which relaunches it whenever a file in the package changes. Edit ``GREETING``
 over SSH and save to see the next call return the new greeting.
 """
 
-import time
 from concurrent import futures
 
 import grpc

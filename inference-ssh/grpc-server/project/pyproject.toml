@@ -2,7 +2,7 @@
 name = "grpc-greeter"
 version = "0.1.0"
 description = "gRPC greeter server and client for the Baseten inference-SSH example."
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "grpcio",
     "grpcio-health-checking",
