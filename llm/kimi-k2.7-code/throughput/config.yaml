@@ -1,0 +1,83 @@
+model_name: "model:kimi-k2.7-code preset:throughput"
+environment_variables: {}
+python_version: py313
+resources:
+  accelerator: B200:8
+  cpu: "1"
+  memory: 2Gi
+  use_gpu: true
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        BAD_TOKEN_ID_SEQ_CHECK_ENABLED: '1'
+        PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+        TRTLLM_ENABLE_PDL: '1'
+    arguments_as_json: true
+    b10_autoscaling_config:
+      additional_autoscaling_config:
+        metrics:
+        - name: in_flight_tokens
+          target: 300000
+      scaling_window_seconds: 300
+    b10_routing_config:
+      rate_limit_enabled: false
+    backend: pytorch
+    checkpoint_name: baseten/kimi-k2.7-nvfp4-deepseek-20260612
+    cuda_graph_config:
+      enable_padding: true
+    default_sampling_params:
+      frequency_penalty: 0
+      max_tokens: 2048
+      presence_penalty: 0
+      temperature: 0.6
+      top_k: 50
+      top_p: 0.95
+    default_sampling_params_thinking:
+      frequency_penalty: 0
+      max_tokens: 8192
+      presence_penalty: 0
+      temperature: 1
+      top_k: 50
+      top_p: 0.95
+    default_thinking_enabled: false
+    download_eagle_weights: false
+    enable_chunked_prefill: true
+    enable_iter_perf_stats: true
+    enable_iter_req_stats: true
+    enable_structural_tool_choice: true
+    gpuTRTImage: baseten/dynamo-cache-aware-routing:trtllm-3e514b2dec-68dec805e-e5ff1844c9
+    guided_decoding_backend: xgrammar
+    kv_cache_config:
+      dtype: fp8
+      enable_block_reuse: true
+      enable_partial_reuse: false
+      enable_tp_mla_replicated_host_offload: true
+      event_buffer_max_size: 16384
+      free_gpu_memory_fraction: 0.94
+      host_cache_size: 400000000000
+    max_batch_size: 64
+    max_beam_width: 1
+    max_input_len: 122880
+    max_num_tokens: 32768
+    max_seq_len: 131072
+    model_level_stop_words:
+    - <|im_end|>
+    model_name: moonshotai/Kimi-K2.7-Code
+    model_path: /models/kimi-k2.7-nvfp4-deepseek-20260612
+    moe_config:
+      backend: TRTLLM
+      use_low_precision_moe_combine: true
+    moe_expert_parallel_size: 1
+    org_salt_cache: false
+    reasoning_parser: kimi25
+    sampler_type: auto
+    tensor_parallel_size: 8
+    tokenizer_limit_length: 131072
+    tokenizer_max_new_tokens_limit: 65536
+    tool_call_parser: kimi25
+    trust_remote_code: true
+weights:
+- auth_secret_name: hf_access_token
+  mount_location: /models/kimi-k2.7-nvfp4-deepseek-20260612
+  source: hf://baseten/kimi-k2.7-nvfp4-deepseek-20260612@main
