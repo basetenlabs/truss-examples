@@ -1,0 +1,24 @@
+[project]
+name = "grpc-greeter"
+version = "0.1.0"
+description = "gRPC greeter server and client for the Baseten inference-SSH example."
+requires-python = ">=3.9"
+dependencies = [
+    "grpcio",
+    "grpcio-health-checking",
+    "protobuf",
+]
+
+[project.scripts]
+grpc-greeter-client = "grpc_greeter.client:main"
+grpc-greeter-codegen = "grpc_greeter.codegen:main"
+
+# grpcio-tools is only needed to regenerate the committed stubs, not to run the
+# server or client, so it is kept out of the runtime dependencies. The dev group
+# is installed by default on `uv run`, so no --group flag is needed for codegen.
+[dependency-groups]
+dev = ["grpcio-tools"]
+
+[build-system]
+requires = ["uv_build>=0.10,<0.11"]
+build-backend = "uv_build"
