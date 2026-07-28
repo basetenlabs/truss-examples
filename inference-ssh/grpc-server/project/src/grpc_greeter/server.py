@@ -21,7 +21,9 @@ PORT = 50051
 
 
 class GreeterServicer(greeter_pb2_grpc.GreeterServicer):
-    def SayHello(self, request, context):
+    def SayHello(
+        self, request: greeter_pb2.HelloRequest, context: grpc.ServicerContext
+    ) -> greeter_pb2.HelloReply:
         return greeter_pb2.HelloReply(message=f"{GREETING}, {request.name}!")
 
 
