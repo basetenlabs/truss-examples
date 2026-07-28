@@ -1,0 +1,48 @@
+model_name: grpc-server
+
+# Baseten runs this as an opaque gRPC server: base image, build steps, start
+# command. A stock image plus build steps avoids the slow build and push of a
+# prebuilt image on every change.
+base_image:
+  image: python:3.12-slim
+
+# Copies the project into /packages (.venv and friends are excluded by the
+# archiver's default ignores).
+external_package_dirs:
+  - project/
+
+build_commands:
+  # entr drives the SSH dev loop; vim/nano to edit over SSH.
+  - "apt-get update && apt-get install -y --no-install-recommends entr vim nano"
+  # Sync the locked runtime deps into /packages/.venv, installing the project
+  # editable so the source stays live for in-place restarts. uv ships in the Truss
+  # build image; --no-dev drops grpcio-tools (codegen only).
+  - "cd /packages && uv sync --frozen --no-dev"
+
+docker_server:
+  # entr watches the package and restarts the server in place on any edit, so an
+  # SSH edit restarts the server without recreating the container.
+  start_command: >-
+    sh -c "cd /packages && find src/grpc_greeter -type f -name '*.py' |
+    entr -nr .venv/bin/python -m grpc_greeter.server"
+  # 50051 is the server port Baseten's gRPC transport uses.
+  server_port: 50051
+  # Ignored for gRPC, but required.
+  predict_endpoint: /
+  readiness_endpoint: /
+  liveness_endpoint: /
+
+# CPU only; a greeter needs no GPU.
+resources:
+  cpu: "1"
+  memory: 2Gi
+
+runtime:
+  transport:
+    kind: grpc
+  remote_ssh:
+    enabled: true
+  # Keep a restart during editing from tripping a pod restart.
+  health_checks:
+    restart_threshold_seconds: 300
+    stop_traffic_threshold_seconds: 120

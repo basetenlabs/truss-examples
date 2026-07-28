@@ -5,3 +5,5 @@ connect to a running model deployment and work inside the container.
 
 - [tune-vllm-args](tune-vllm-args) — SSH into a running vLLM server, edit its launch
   args and chat template, and restart the engine in place.
+- [grpc-server](grpc-server) — SSH into a running Python gRPC server, edit its code,
+  and restart it in place.
