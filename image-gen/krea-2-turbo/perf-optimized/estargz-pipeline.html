@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>How Baseten builds and streams an optimized image (eStargz)</title>
+<style>
+  :root { color-scheme: light dark; }
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --surface-2: #f1f0ee;
+    --border: #d8d6d2;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --s1: #2a78d6; /* image pull / prioritized (blue) */
+    --s2: #008300; /* weights (green) */
+    --s3: #e87ba4; /* import+init (magenta) */
+    --s4: #eda100; /* model load (yellow) */
+    --s5: #1baf7a; /* warmup (aqua) */
+    --lazy: #b7b5b0; /* lazy region: deliberately recessive gray */
+    --accent-bad: #e34948;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19; --surface-2: #242422; --border: #3a3936;
+      --text-primary: #ffffff; --text-secondary: #c3c2b7;
+      --s1: #3987e5; --s2: #008300; --s3: #d55181; --s4: #c98500; --s5: #199e70;
+      --lazy: #55534e; --accent-bad: #e66767;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1: #1a1a19; --surface-2: #242422; --border: #3a3936;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7;
+    --s1: #3987e5; --s2: #008300; --s3: #d55181; --s4: #c98500; --s5: #199e70;
+    --lazy: #55534e; --accent-bad: #e66767;
+  }
+  body { margin: 0; }
+  .viz-root {
+    font-family: -apple-system, system-ui, sans-serif;
+    background: var(--surface-1); color: var(--text-primary);
+    padding: 2rem; max-width: 1200px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; margin: 0 0 .3rem; }
+  h2 { font-size: 1.05rem; margin: 2.4rem 0 .3rem; }
+  .sub { color: var(--text-secondary); font-size: .85rem; margin-bottom: 1rem; }
+  code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+  pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: .8rem 1rem; font-size: .8rem; overflow-x: auto; }
+
+  /* ---- pipeline flow ---- */
+  .flow { display: flex; align-items: stretch; gap: 0; overflow-x: auto; padding: .5rem 0; }
+  .stage {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: .7rem .9rem; min-width: 165px; max-width: 210px; flex: 1;
+  }
+  .stage b { font-size: .85rem; display: block; margin-bottom: .3rem; }
+  .stage p { font-size: .75rem; color: var(--text-secondary); margin: 0; line-height: 1.45; }
+  .stage .tag { font-family: ui-monospace, monospace; font-size: .7rem; color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+  .arrow { display: flex; align-items: center; padding: 0 6px; color: var(--text-secondary); flex: 0 0 auto; }
+  .arrow svg { display: block; }
+  .arrow .lbl { font-size: .68rem; color: var(--text-secondary); text-align: center; max-width: 90px; }
+  .arrow.async .lbl { color: var(--accent-bad); font-weight: 600; }
+
+  /* ---- layer anatomy ---- */
+  .layerbar { display: flex; height: 64px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .seg { display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; color: #fff; position: relative; }
+  .seg + .seg { border-left: 2px solid var(--surface-1); } /* 2px surface gap */
+  .anno { display: flex; margin-top: .45rem; gap: 1rem; }
+  .anno div { font-size: .75rem; color: var(--text-secondary); line-height: 1.5; }
+  .anno b { color: var(--text-primary); }
+
+  /* ---- timelines ---- */
+  .tl { margin: .9rem 0 0; }
+  .tl .rowlabel { font-size: .8rem; font-weight: 600; margin: 1rem 0 .25rem; }
+  .tl .rowlabel .total { color: var(--text-secondary); font-weight: 400; }
+  .bar { display: flex; height: 30px; border-radius: 4px 6px 6px 4px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--border); }
+  .bar .ph { min-width: 3px; }
+  .bar .ph + .ph { border-left: 2px solid var(--surface-1); }
+  .phlbl { font-size: .7rem; color: var(--text-secondary); margin-top: .25rem; display: flex; }
+  .legend { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: 1rem; font-size: .75rem; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .callout { font-size: .72rem; color: var(--text-secondary); margin-top: .2rem; }
+  .callout b { color: var(--accent-bad); }
+  table.data { border-collapse: collapse; font-size: .78rem; margin-top: 1rem; }
+  table.data th, table.data td { border: 1px solid var(--border); padding: 4px 10px; text-align: right; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data th { background: var(--surface-2); }
+  .note { background: var(--surface-2); border-radius: 8px; padding: .7rem 1rem; font-size: .8rem; margin-top: 1rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <h1>How a streamable, optimized image variant gets built (and why cold starts dropped)</h1>
+  <div class="sub">Krea-2-Turbo on Baseten, evidence from the cold-start branch (configs/cold-start/RESULTS.md). Three views: the build pipeline, the anatomy of a streamable layer, and what each stage does to wake-from-zero time.</div>
+
+  <h2>1. The pipeline: from <code>truss push</code> to a streamed pull</h2>
+  <div class="flow">
+    <div class="stage"><b>truss push</b><p>Deployment config + code go to Baseten's builder.</p></div>
+    <div class="arrow"><svg width="26" height="12"><path d="M0 6 H18 M13 1 L19 6 L13 11" stroke="currentColor" stroke-width="1.6" fill="none"/></svg></div>
+    <div class="stage"><b>BuildKit build</b><p>Emits the deployment image as <b>gzip eStargz</b> (<code>compression=estargz, force-compression=true</code>) so every layer, including inherited base layers, is seekable.</p></div>
+    <div class="arrow"><svg width="26" height="12"><path d="M0 6 H18 M13 1 L19 6 L13 11" stroke="currentColor" stroke-width="1.6" fill="none"/></svg></div>
+    <div class="stage"><b><span class="tag">:…-estargz</span></b><p>Streamable <i>format</i>, naive <i>layout</i>: nothing useful sits before the landmark, so a wake still behaves like a full 19 GB pull (~4 min).</p></div>
+    <div class="arrow async"><div><svg width="60" height="12"><path d="M0 6 H52 M47 1 L53 6 L47 11" stroke="currentColor" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/></svg><div class="lbl">async, ~20-25 min later</div></div></div>
+    <div class="stage"><b>Optimizer</b><p>Runs the container, traces which files boot actually touches, reorders them to the front, inserts <code>.prefetch.landmark</code>, re-pushes. Ours also shrank 19.05 &rarr; 17.08 GB.</p></div>
+    <div class="arrow"><svg width="26" height="12"><path d="M0 6 H18 M13 1 L19 6 L13 11" stroke="currentColor" stroke-width="1.6" fill="none"/></svg></div>
+    <div class="stage"><b><span class="tag">:…-estargz-optimized</span></b><p>Deployment switches to this tag automatically. Wakes now stream: <b>5.1s</b> measured pull.</p></div>
+    <div class="arrow"><svg width="26" height="12"><path d="M0 6 H18 M13 1 L19 6 L13 11" stroke="currentColor" stroke-width="1.6" fill="none"/></svg></div>
+    <div class="stage"><b>Node runtime</b><p>Forked <code>stargz-snapshotter</code> FUSE-mounts layers: prefetches the prioritized region in one GET (120s budget), lazy-faults the rest in 64 MiB chunks via the node-local registry proxy. Untouched files are never downloaded.</p></div>
+  </div>
+
+  <h2>2. Anatomy of one eStargz layer</h2>
+  <div class="sub">The landmark file splits the layer. On-disk order inside the prioritized region is what the optimizer controls.</div>
+  <div class="layerbar" aria-label="eStargz layer anatomy">
+    <div class="seg" style="flex:0 0 7%; background:var(--s5);" title="Table of contents: makes the layer seekable">TOC</div>
+    <div class="seg" style="flex:0 0 34%; background:var(--s1);" title="Prioritized region: startup files in access order; fetched eagerly in one GET before the container starts">prioritized region</div>
+    <div class="seg" style="flex:0 0 2.4%; background:var(--accent-bad); font-size:0;" title=".prefetch.landmark"></div>
+    <div class="seg" style="flex:1; background:var(--lazy); color:var(--text-primary);" title="Lazy region: fetched on first access only, 64MiB chunks; never background-fetched">lazy region (never fetched unless touched)</div>
+  </div>
+  <div class="anno">
+    <div style="flex:0 0 40%"><b>Before the landmark:</b> python bytecode + the exact .so files boot loads, in access order. Fetched eagerly as one HTTP GET; must complete inside the 120s prefetch budget (~8.4 GB at observed ~70 MB/s).</div>
+    <div><b><span class="swatch" style="background:var(--accent-bad)"></span> .prefetch.landmark</b> marks the split.</div>
+    <div><b>After the landmark:</b> everything else. On-demand, 64 MiB chunks, up to 16-wide. Dead weight here costs zero at startup, which is why image slimming and layout beat raw size.</div>
+  </div>
+
+  <h2>3. What each stage does to wake-from-zero</h2>
+  <div class="sub">Horizontal scale is linear in seconds (max 380s). Phase colors are consistent across rows; every phase is also labeled in the table below, so nothing depends on color alone.</div>
+
+  <div class="tl">
+    <div class="rowlabel">Un-optimized <code>-estargz</code> tag (every wake in the ~25 min post-deploy window) <span class="total">&mdash; total ~6m00s</span></div>
+    <div class="bar">
+      <div class="ph" style="flex:0 0 67.6%; background:var(--s1);" title="Image pull: 4m17s, full 19GB pull"></div>
+      <div class="ph" style="flex:0 0 0.6%; background:var(--s2);" title="Weights (BDN): ~2s, node-cached"></div>
+      <div class="ph" style="flex:0 0 10.3%; background:var(--s3);" title="Python import + init: ~39s"></div>
+      <div class="ph" style="flex:0 0 12.9%; background:var(--s4);" title="Model load: 49s"></div>
+      <div class="ph" style="flex:0 0 2.5%; background:var(--s5);" title="Warmup + JIT: ~9.5s"></div>
+    </div>
+    <div class="callout">Image pull dominates: <b>~72%</b> of the wake. This is what "streamable format, naive layout" looks like.</div>
+
+    <div class="rowlabel">Optimized <code>-estargz-optimized</code> tag (steady state today) <span class="total">&mdash; total ~2m40s</span></div>
+    <div class="bar" style="width:44.7%">
+      <div class="ph" style="flex:0 0 3.2%; background:var(--s1);" title="Image pull: 5.1s, streamed prefetch only"></div>
+      <div class="ph" style="flex:0 0 1.2%; background:var(--s2);" title="Weights (BDN): ~2s node-cached (~13s truly cold, 36GB after ignore_patterns fix)"></div>
+      <div class="ph" style="flex:0 0 48.8%; background:var(--s3);" title="Python import: 78s — slower than on a full-pulled image because .so reads lazy-fault over the network (landmark coverage gap)"></div>
+      <div class="ph" style="flex:0 0 28.1%; background:var(--s4);" title="Model load: 45s (text_encoder 22-27s via slow native path)"></div>
+      <div class="ph" style="flex:0 0 6.3%; background:var(--s5);" title="Warmup + JIT: ~10s"></div>
+    </div>
+    <div class="callout">Pull collapses to 5.1s; <b>python import (78s) becomes the long pole</b>, and it is <i>slower</i> than on a full-pulled image (26s) because the optimizer's trace missed part of the boot set, so those .so reads fault over the network. Fixing landmark coverage is worth ~30-50s.</div>
+
+    <div class="rowlabel">Identified headroom (not yet shipped) <span class="total">&mdash; est. ~1m30s-1m50s</span></div>
+    <div class="bar" style="width:29%; opacity:.55">
+      <div class="ph" style="flex:0 0 4.8%; background:var(--s1);" title="Image pull: ~5s"></div>
+      <div class="ph" style="flex:0 0 1.9%; background:var(--s2);" title="Weights: ~2s"></div>
+      <div class="ph" style="flex:0 0 38%; background:var(--s3);" title="Import with landmark coverage fixed: ~30-40s"></div>
+      <div class="ph" style="flex:0 0 45%; background:var(--s4);" title="Model load with faster text_encoder loader: ~30-35s"></div>
+      <div class="ph" style="flex:0 0 10%; background:var(--s5);" title="Warmup: ~10s"></div>
+    </div>
+    <div class="callout">Estimate assumes landmark coverage (+30-50s), the fork-side text encoder loader (+10-15s). Dashed-future, not measured.</div>
+
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--s1)"></span> image pull</span>
+      <span><span class="swatch" style="background:var(--s2)"></span> weights (BDN)</span>
+      <span><span class="swatch" style="background:var(--s3)"></span> python import + init</span>
+      <span><span class="swatch" style="background:var(--s4)"></span> model load</span>
+      <span><span class="swatch" style="background:var(--s5)"></span> warmup + JIT</span>
+    </div>
+
+    <table class="data">
+      <thead><tr><th>Scenario</th><th>image pull</th><th>weights</th><th>import + init</th><th>model load</th><th>warmup</th><th>total</th></tr></thead>
+      <tbody>
+        <tr><td>Un-optimized tag (first wakes per deploy)</td><td>4m17s</td><td>~2s</td><td>~39s</td><td>49s</td><td>~9.5s</td><td>~6m00s</td></tr>
+        <tr><td>Optimized tag (steady state, measured)</td><td>5.1s</td><td>~2s</td><td>78s</td><td>45s</td><td>~10s</td><td>~2m40s</td></tr>
+        <tr><td>With identified fixes (estimate)</td><td>~5s</td><td>~2s</td><td>~30-40s</td><td>~30-35s</td><td>~10s</td><td>~1m30s-1m50s</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>4. Reproducing it by hand (for base images or beating the async lag)</h2>
+  <pre># 1. Streamable FORMAT — buildx, force-compression re-encodes base layers too
+docker buildx build --push --platform=linux/amd64 \
+  --output type=registry,compression=estargz,oci-mediatypes=true,force-compression=true ...
+
+# 2. Optimized LAYOUT — run + trace + reorder + landmark (stargz-snapshotter tooling)
+ctr-remote image optimize --oci <src-ref> <dst-ref>   # workload should exercise real boot/warmup
+
+# 3. Verify — there is no per-deployment streaming metric; infer from pull-time vs size,
+#    and check container start latency on a fresh node.</pre>
+
+  <div class="note">
+    <b>Qualifiers that travel with the numbers.</b>
+    (1) The optimized variant appears ~20-25 min after each deploy; wakes inside that window full-pull (~4-6 min).
+    (2) Timings start at "compute acquired": GPU capacity acquisition on a tight cluster is additive and unmeasured here.
+    (3) Weights times assume BDN has the 36 GB warm on-node (~13s truly cold).
+    (4) Only gzip eStargz streams on Baseten (no zstdchunked); the default docker client silently produces plain gzip, which never streams.
+  </div>
+</div>
+</body>
+</html>

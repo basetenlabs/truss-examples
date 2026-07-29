@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Krea-2-Turbo Quality Review: perf presets vs baseline</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 2rem; max-width: 1900px; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.1rem; margin-top: 2.5rem; border-top: 1px solid #8884; padding-top: 1rem; }
+  .meta { color: #888; font-size: 0.85rem; margin-bottom: .6rem; }
+  .row { display: flex; gap: 10px; overflow-x: auto; }
+  figure { margin: 0; flex: 0 0 300px; }
+  figure img { width: 300px; height: 300px; object-fit: contain; border: 1px solid #8886; border-radius: 4px; cursor: zoom-in; }
+  figcaption { font-size: 0.8rem; padding-top: 4px; }
+  .grade { font-weight: 600; }
+  .g-ref { color: #6a6; } .g-neg { color: #2a7; } .g-vis { color: #c80; } .g-bad { color: #c33; }
+  .note { background: #8881; border-radius: 6px; padding: .7rem 1rem; font-size: .85rem; margin: 1rem 0; }
+  /* click-to-zoom */
+  #zoom { display: none; position: fixed; inset: 0; background: #000d; z-index: 10; cursor: zoom-out; }
+  #zoom img { position: absolute; inset: 0; margin: auto; max-width: 96vw; max-height: 96vh; }
+</style>
+</head>
+<body>
+<h1>Krea-2-Turbo quality review: perf presets vs bf16 baseline</h1>
+<div class="note">
+  Same prompt + same seed per column set; every image generated at 1024x1024 on the deployment named in the caption group.
+  Grades shown are the branch agents' assessments; this page is for your independent review.
+  Click any image to zoom. Latency context (median @1024): baseline 1.542s, cache-dit 1.225s, cache-dit rdt=0.35 ~1.05-1.08s, fp8 1.194s, torch-compile 1.544s, <b>combined fp8+cache-dit 0.941s</b>.
+  Set-level note for cache-dit rdt=0.35: agent graded the set 2 negligible / 3 visible / 1 unacceptable (faceted skies, mushy line art) and recommends against defaulting it.
+  <br><br><b>q6&ndash;q8 added 2026-07-19</b> at the request of Krea's research team (Sangwu) as text-rendering stress tests (dense hierarchical text, right-aligned prices, schedule/grid layouts). Generated for baseline, cache-dit (rdt 0.24), fp8, and combined only; torch-compile and cache-dit rdt=0.35 were not regenerated (rejected configs) and render dimmed. Grades on these three describe difference-from-baseline; absolute text-fidelity findings (including baseline's own instruction-following misses) are in configs/quality-v2-RESULTS.md.
+</div>
+
+<div class="note" id="legend">
+  <b>Grading key</b> (each grade describes the image's difference from the bf16 baseline at the same prompt and seed):
+  <ul style="margin:.5rem 0 .2rem; padding-left:1.2rem; line-height:1.5">
+    <li><span class="grade g-ref">reference</span> &mdash; the bf16 baseline output itself; the ground truth the other columns are compared against.</li>
+    <li><span class="grade g-neg">negligible</span> &mdash; pixel-level differences exist (hashes differ) but you need side-by-side inspection to find them. Composition, subject, style, text legibility, and anatomy all preserved. Safe to treat as "same quality".</li>
+    <li><span class="grade g-neg">near-lossless</span> &mdash; same bar as negligible, used for configs whose only change is numerical kernel drift (e.g. torch.compile): same-seed output differs only in fine low-signal detail.</li>
+    <li><span class="grade g-vis">visible</span> &mdash; a difference you can spot at a glance: a color shift, softened fine detail in dense scenes, or a <i>composition divergence</i> (same seed produces a different but equally good layout; the denoise trajectory shifted, quality did not drop). The image stays coherent and artifact-free. These are exactly the cases your judgment is needed on.</li>
+    <li><span class="grade g-bad">unacceptable</span> &mdash; genuine degradation: artifacts, faceted gradients, mushy line art, damaged text or anatomy. Disqualifies the configuration as a default.</li>
+    <li><span class="grade" style="opacity:.5">not yet generated</span> &mdash; that variant's panel has not been produced; the column renders dimmed.</li>
+  </ul>
+</div>
+
+<h2>Performance summary</h2>
+<div class="meta">Median server-side inference_time_s, fixed prompt + seed, 1x H100 80GB, shared harness. Multipliers are vs the bf16 baseline; not everything is an improvement, and the negatives are shown deliberately.</div>
+<table class="perf">
+  <thead>
+    <tr><th>Configuration</th><th>What it is</th><th>Baseten-specific?</th><th>1024&times;1024</th><th>1536&times;1536</th><th>2048&times;2048</th><th>Peak mem @1024</th><th>Quality panel</th><th>Verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Baseline bf16 (prod)<div class="ids">krea-2-turbo &middot; model 31d1dyj3 / deploy q0p97v1</div></td><td>The production lossless preset: full-precision bf16 weights on the SGLang diffusion stack (image v1.3), 8-step distilled Turbo schedule, no acceleration features enabled.</td><td class="flat">Mostly upstream: the serving engine and Krea-2 support are upstream SGLang code. Baseten adds the packaging (fork launcher/image) and BDN weights delivery. The latency itself is replicable on upstream SGLang.</td><td>1.542s</td><td>3.693s</td><td>7.308s</td><td>37.7 GB</td><td>reference</td><td>current lossless preset</td></tr>
+    <tr><td>Cache-DiT (rdt 0.24)<div class="ids">krea2-exp-cachedit &middot; model qjd6m7gq / deploy qrpx8p9</div></td><td>Config-only flag flip (<code>enable_cache_dit</code>). DBCache residual caching: when consecutive denoise steps produce sufficiently similar block residuals, the DiT skips recomputing most transformer blocks and reuses cached residuals (~4 of 8 steps cacheable after warmup). Stock defaults, tuned upstream for few-step distilled models.</td><td class="flat">No: upstream SGLang capability (cache-dit integration and its Krea-2 support are upstream code). The fork only adds the one-line truss config knob.</td><td>1.225s <span class="up">(1.26x)</span></td><td>2.851s <span class="up">(1.30x)</span></td><td>5.635s <span class="up">(1.30x)</span></td><td>~37.7 GB</td><td>5/6 negligible, 1/6 visible</td><td class="up">ship</td></tr>
+    <tr><td>Cache-DiT aggressive (rdt 0.35)<div class="ids">krea2-exp-cachedit &middot; model qjd6m7gq / deploy qz4d8p8</div></td><td>Same mechanism with the residual-difference threshold raised 0.24 &rarr; 0.35 (via <code>SGLANG_CACHE_DIT_RDT</code>), so it caches more steps more aggressively. A one-knob probe to find the quality cliff.</td><td class="flat">No: upstream tunable.</td><td>~1.05&ndash;1.08s <span class="up">(1.43&ndash;1.50x)</span></td><td>&mdash;</td><td>&mdash;</td><td>~37.7 GB</td><td class="down">1/6 unacceptable</td><td class="down">opt-in at most; quality cliff</td></tr>
+    <tr><td>FP8 blockwise<div class="ids">krea2-exp-fp8 &middot; model w7p2k7dw / deploy 324eo51</div></td><td>New code in the sglang fork (branch fde/krea2-fp8, draft PR #64): the 196 attention and SwiGLU projection weight matrices across the 28 transformer blocks are quantized to FP8 with blockwise scaling at load time; activations quantize dynamically (no calibration). Sensitive layers stay bf16 (sigmoid gate, text fusion, embedders, norms, final projection). Runs on experimental image v1.4-fp8krea-exp.</td><td class="up">Yes: Baseten fork innovation. The FP8-blockwise path (b10 fused Triton kernels, quantize-on-load from the stock bf16 checkpoint) exists only in basetenlabs/sglang; upstream's FP8 route requires a pre-quantized model artifact instead.</td><td>1.194s <span class="up">(1.29x)</span></td><td>2.856s <span class="up">(1.29x)</span></td><td>5.821s <span class="up">(1.26x)</span></td><td>27.1 GB <span class="up">(-28%)</span></td><td>5/6 negligible, 1/6 visible</td><td class="up">ship as fast preset (full H100; MIG tested and rejected, see below)</td></tr>
+    <tr><td>torch.compile (max-autotune)<div class="ids">krea2-exp-compile &middot; model 31d7kr93 / deploy 31l9mlg</div></td><td>Config-only launcher override adding <code>--enable-torch-compile</code>: PyTorch inductor compiles the whole DiT (mode max-autotune-no-cudagraphs) during startup warmup, attempting kernel fusion/selection gains. Measured outcome: inductor re-selected the same cuBLAS kernels eager uses, so nothing improved.</td><td class="flat">No: upstream SGLang flag, stock PyTorch machinery.</td><td>1.544s <span class="flat">(1.00x)</span></td><td>3.642s <span class="flat">(1.01x)</span></td><td>7.25s <span class="flat">(1.01x)</span></td><td>n/a</td><td>near-lossless</td><td class="down">rejected: no gain, +~4 min per cold start, 47s first-request stall</td></tr>
+    <tr><td><b>Combined FP8 + Cache-DiT</b><div class="ids">krea2-exp-combined &middot; model q95g6o9w / deploy wdld67n</div></td><td>The two shipping levers together on the FP8 image: FP8 kernels cut per-block GEMM cost while Cache-DiT skips recomputing blocks entirely on cacheable steps. Independent mechanisms, so the speedups compose nearly multiplicatively (~1.29x &times; ~1.28x &asymp; 1.64x).</td><td class="up">Partially, and the part that matters: the sub-second number as configured requires the Baseten fork (the FP8 half); the cache-dit half is upstream. Nobody running stock upstream SGLang can reproduce 0.941s from the public checkpoint alone.</td><td><b>0.941s</b> <span class="up">(1.64x)</span></td><td><b>2.218s</b> <span class="up">(1.66x)</span></td><td><b>4.471s</b> <span class="up">(1.63x)</span></td><td>27.2 GB <span class="up">(-28%)</span></td><td>5/6 negligible, 1/6 visible</td><td class="up"><b>the shippable preset</b></td></tr>
+    <tr><td>Combined on H100 MIG 40GB (half GPU)<div class="ids">krea2-exp-combined-mig &middot; model qelmmrr3</div></td><td>The combined preset on a 3g.40gb MIG slice (3/7 of an H100), probing the smaller-GPU cost story. Required a one-line fork fix first (PR #65: sglang-diffusion could not boot on ANY MIG slice; NVML permission error unhandled).</td><td class="up">The boot fix is a fork contribution; the MIG result itself is generic hardware economics.</td><td>3.478s <span class="down">(0.44x &mdash; 3.7x slower than combined on full H100)</span></td><td class="down">~8s, intermittent HTTP 500 (libtorch allocator NVML bug on MIG, not OOM)</td><td class="down">HTTP 500 every time</td><td>27.2 GB</td><td>equal tier; same-seed composition differs from full H100 (SM partition perturbs the lossy trajectory)</td><td class="down">rejected: slice costs 0.58x but runs 3.7x slower, so ~2.1x MORE expensive per image; 1024-only reliability; failures are clean 500s (no pod crash)</td></tr>
+  </tbody>
+</table>
+
+<h2>Cold start (scale from zero to serving)</h2>
+<div class="meta">Measured from pod logs on the experiment deployment, cru/aws H100 nodes. The image-streaming behavior dominates the story.</div>
+<table class="perf">
+  <thead>
+    <tr><th>Scenario</th><th>Baseten-specific?</th><th>Image pull</th><th>Weights (BDN)</th><th>Import + load + warmup</th><th>Total</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Before program (first measurement, un-optimized image)<div class="ids">krea2-exp-coldstart &middot; model q414k6kq / deploy wozdjzk</div></td><td class="flat">Generic behavior: a plain full registry pull, what any platform without lazy image streaming does.</td><td class="down">4m17s&ndash;4m32s (19 GB full pull)</td><td>23s (62 GB)</td><td>~80&ndash;98s</td><td class="down">~6m0s&ndash;6m20s</td><td>every wake inside the ~20&ndash;25 min post-deploy window still behaves like this</td></tr>
+    <tr><td><b>Steady state today (optimized/streamed image + weights fix)</b><div class="ids">krea2-exp-coldstart &middot; model q414k6kq / deploy wozdjzk</div></td><td class="up">Yes, twice over: the 5.1s pull is Baseten's eStargz lazy image streaming (forked stargz-snapshotter + automatic image optimization pipeline), and the weights delivery is BDN. Neither exists on a stock K8s + registry setup.</td><td class="up"><b>5.1s</b> (17 GB, streamed)</td><td class="up">~2s cached / ~13s cold (36 GB after dropping redundant turbo.safetensors)</td><td>import 78s + load 45s + warmup ~10s</td><td class="up"><b>~2m40s</b></td><td>python import is now the long pole (on-demand .so faulting; landmark coverage gap worth ~30&ndash;50s)</td></tr>
+    <tr><td>torch.compile variant (rejected)</td><td class="flat">No: upstream flag.</td><td>&mdash;</td><td>&mdash;</td><td class="down">+~3m47s compile, re-paid every wake</td><td class="down">~+4 min vs same config without compile</td><td>part of why compile was rejected</td></tr>
+  </tbody>
+</table>
+<div class="note">
+  Remaining identified cold-start headroom (not yet shipped): landmark coverage for the streamed image (~30&ndash;50s), a faster text_encoder load path (~10&ndash;15s, fork change), and pre-warming the post-deploy image optimization so the first wake per deploy stops paying the ~4-minute full pull (runtime-team request).
+</div>
+<style>
+  table.perf { border-collapse: collapse; font-size: .85rem; margin: .5rem 0 1rem; }
+  table.perf th, table.perf td { border: 1px solid #8885; padding: 6px 10px; text-align: left; vertical-align: top; }
+  table.perf th { background: #8882; }
+  .up { color: #2a7; font-weight: 600; }
+  .down { color: #c33; font-weight: 600; }
+  .flat { color: #888; font-weight: 600; }
+  .ids { font-family: ui-monospace, monospace; font-size: .68rem; color: var(--text-secondary, #888); font-weight: 400; margin-top: 3px; white-space: nowrap; }
+</style>
+
+<div id="sections"></div>
+
+<div id="zoom" onclick="this.style.display='none'"><img id="zoomimg"></div>
+
+<script>
+const PROMPTS = [
+  ["A serene mountain lake at dawn, photorealistic", 42],
+  ["A neon storefront sign at night that reads BASETEN in bold glowing letters, rain-slicked street, cinematic", 42],
+  ["Watercolor illustration of a fox reading a book under a tree, soft autumn light", 7],
+  ["Studio portrait of an elderly craftsman with weathered hands holding a pocket watch, dramatic side lighting", 1234],
+  ["Isometric cutaway of a cozy two-story cottage, detailed interior, warm palette", 99],
+  ["Macro photograph of a dew-covered spider web at sunrise, bokeh background", 2718],
+  ["Museum exhibition placard: 'ANCIENT CIVILIZATIONS' title, 'Egyptian Dynasty Collection' subtitle, 2x2 artifact grid with dates/locations, pyramid icons on 2 items only, footer hours (text-rendering stress; Sangwu's prompt, verbatim)", 42],
+  ["Rustic chalkboard cafe menu 'HARVEST KITCHEN': STARTERS/MAINS/DESSERTS with right-aligned prices, wheat sprig, footer lines (text-rendering stress)", 42],
+  ["Minimalist conference poster 'FUTURE OF COMPUTE 2026': subtitle, 3-row schedule with times, two-color footer row, clean grid (text-rendering stress)", 42],
+];
+// [label, dir, filenameLabel, per-pair grade array (index by prompt) or set-level note]
+const VARIANTS = [
+  ["baseline bf16", "images/cache-dit", "baseline",
+    ["reference","reference","reference","reference","reference","reference","reference","reference","reference"], "g-ref"],
+  ["cache-dit (rdt 0.24) - SHIP", "images/cache-dit", "cache-dit",
+    ["negligible","negligible","negligible","negligible","visible","negligible","negligible","visible (bullets added)","visible (footer softened)"], null],
+  ["cache-dit rdt 0.35 (opt-in only)", "images/cache-dit", "cache-dit-rdt035",
+    ["set: 2 neg / 3 vis / 1 unacceptable","","","","","","not yet generated","not yet generated","not yet generated"], "g-vis"],
+  ["fp8 blockwise - SHIP candidate", "images/fp8", "fp8",
+    ["negligible","negligible","negligible","negligible","visible (composition divergence)","negligible","negligible","visible (bullets added)","visible (footer garbled)"], null],
+  ["torch-compile (not shipping)", "images/torch-compile", "torch-compile",
+    ["near-lossless","near-lossless","near-lossless","near-lossless","near-lossless","near-lossless","not yet generated","not yet generated","not yet generated"], "g-neg"],
+  ["combined fp8 + cache-dit", "images/combined", "combined",
+    ["negligible","negligible","negligible","negligible","visible","negligible","negligible","visible (bullets added)","visible (footer softened)"], null],
+];
+function gradeClass(g) {
+  if (!g) return "";
+  if (g.startsWith("reference")) return "g-ref";
+  if (g.startsWith("negligible") || g.startsWith("near-lossless")) return "g-neg";
+  if (g.startsWith("visible") || g.startsWith("set:")) return "g-vis";
+  if (g.includes("unacceptable")) return "g-bad";
+  return "";
+}
+const root = document.getElementById("sections");
+PROMPTS.forEach(([prompt, seed], i) => {
+  const h = document.createElement("h2");
+  h.textContent = `q${i}: ${prompt}`;
+  const m = document.createElement("div");
+  m.className = "meta";
+  m.textContent = `seed ${seed}, 1024x1024`;
+  const row = document.createElement("div");
+  row.className = "row";
+  VARIANTS.forEach(([label, dir, fname, grades, forceClass]) => {
+    const fig = document.createElement("figure");
+    const img = document.createElement("img");
+    img.src = `${dir}/q${i}_${fname}.jpg`;
+    img.loading = "lazy";
+    img.onerror = () => { fig.style.opacity = 0.35; cap.innerHTML = `<b>${label}</b><br><span class="grade">not yet generated</span>`; img.style.cursor = "default"; img.onclick = null; };
+    img.onclick = () => { document.getElementById("zoomimg").src = img.src; document.getElementById("zoom").style.display = "block"; };
+    const cap = document.createElement("figcaption");
+    const g = grades[i] || grades[0];
+    cap.innerHTML = `<b>${label}</b><br><span class="grade ${forceClass || gradeClass(g)}">${g}</span>`;
+    fig.appendChild(img); fig.appendChild(cap); row.appendChild(fig);
+  });
+  root.appendChild(h); root.appendChild(m); root.appendChild(row);
+});
+</script>
+</body>
+</html>
