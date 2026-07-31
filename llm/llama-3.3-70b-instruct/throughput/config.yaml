@@ -1,0 +1,88 @@
+########################################################
+# Throughput preset — Llama 3.3 70B Instruct (FP8), H100:4, vLLM.
+#
+# Tuned for high total token throughput on long-context workloads.
+# Key throughput levers (vs the latency preset): gpu-memory-utilization 0.95
+# and max-num-seqs 256 (more KV headroom / larger batches), plus prefix
+# caching for shared prefixes. FP8 (ModelOpt) weights and fp8 KV cache are
+# auto-detected from the checkpoint.
+#
+# Validated on fde-internal against a 50k-input / 500-output workload with a
+# 20k shared prefix (b10-bench perf.aiperf concurrency sweep): peak ~13.2k
+# output TPM / ~1.34M total TPM (~+23% over the latency config), 0 errors.
+# Raising max-num-batched-tokens beyond 16384 gave no additional throughput.
+########################################################
+
+model_name: "model:llama-3.3-70b-instruct preset:throughput"
+
+model_metadata:
+  repo_id: nvidia/Llama-3.3-70B-Instruct-FP8
+  tags:
+    - openai-compatible
+    - vllm
+  example_model_input:
+    stream: true
+    model: nvidia/Llama-3.3-70B-Instruct-FP8
+    messages:
+      - role: user
+        content: Tell me everything you know about optimized inference.
+    max_tokens: 512
+    temperature: 0.5
+
+base_image:
+  image: vllm/vllm-openai:v0.26.0
+
+docker_server:
+  start_command: >-
+    vllm serve /app/model_cache/llama-3-3-70b-instruct
+    --served-model-name nvidia/Llama-3.3-70B-Instruct-FP8
+    --host 0.0.0.0
+    --port 8000
+    --tensor-parallel-size 4
+    --distributed-executor-backend mp
+    --max-model-len 131072
+    --max-num-seqs 256
+    --max-num-batched-tokens 16384
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --gpu-memory-utilization 0.95
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+weights:
+  - source: hf://nvidia/Llama-3.3-70B-Instruct-FP8@main
+    allow_patterns:
+      - "*.safetensors"
+      - "*.json"
+      - "*.model"
+      - tokenizer.model
+      - "*.tiktoken"
+      - "*.jinja"
+    mount_location: /app/model_cache/llama-3-3-70b-instruct
+    ignore_patterns:
+      - original/*
+      - "*.pth"
+    auth_secret_name: hf_access_token
+
+secrets:
+  hf_access_token: null
+
+resources:
+  cpu: "4"
+  memory: 40Gi
+  use_gpu: true
+  accelerator: H100:4
+
+runtime:
+  predict_concurrency: 256
+  streaming_read_timeout: 60
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
