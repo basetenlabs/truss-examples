@@ -1,0 +1,21 @@
+model_name: custom-download-cmd
+python_version: py311
+requirements: []
+resources:
+  accelerator: A100
+  cpu: "1"
+  memory: 24Gi
+  use_gpu: true
+system_packages: []
+trt_llm:
+  build:
+    base_model: qwen
+    checkpoint_repository:
+      download_cmd: "pip install huggingface-cli && huggingface-cli download Qwen/Qwen2.5-0.5B-Instruct --local-dir /tmp/my_model_path"
+      repo: "/tmp/my_model_path"
+      source: DOWNLOAD_CMD
+    max_batch_size: 32
+    quantization_type: fp8
+    max_beam_width: 1
+    max_seq_len: 4096
+    num_builder_gpus: 1
