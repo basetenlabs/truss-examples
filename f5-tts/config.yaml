@@ -1,0 +1,19 @@
+model_name: F5-TTS
+python_version: py310
+build_commands:
+  - "pip install f5-tts"
+requirements:
+  - torch>=2.0.0
+  - torchaudio
+  - numpy
+  - scipy
+  - huggingface_hub
+  - soundfile
+system_packages:
+  - ffmpeg
+resources:
+  accelerator: A100
+  cpu: '4'
+  memory: 24Gi
+  use_gpu: true
+secrets: {}

@@ -1,12 +1,12 @@
 model_name: Chatterbox TTS
-base_image:
-  image: jojobaseten/truss-numpy-1.26.0-gpu:0.4
-  python_executable_path: /usr/bin/python3
-python_version: py312
-requirements:
-  - chatterbox-tts
+python_version: py311
+requirements: []
+build_commands:
+  - "pip install --upgrade pip setuptools wheel"
+  - "pip install numpy"
+  - "pip install chatterbox-tts"
 resources:
-  accelerator: H100
+  accelerator: A100
   cpu: '1'
   memory: 40Gi
   use_gpu: true
