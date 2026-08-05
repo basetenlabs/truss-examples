@@ -1,0 +1,32 @@
+# Metadata
+model_name: DBRX-Instruct
+model_description: A language model designed for effective and safe instruction-following, leveraging constitutional AI principles.
+model_avatar:
+model_cover_image:
+example_model_input: What are the key principles of constitutional AI used to train models like DBRX-Instruct?
+tags:
+  - text-generation
+  - instruction-following
+
+# Runtime Config
+python_version: py311
+system_packages: []
+python_packages:
+  - torch
+  - transformers
+  - accelerate
+  - sentencepiece
+
+# Resources
+resources:
+  cpu: 2
+  gpu: 1
+  mem: 32Gi
+  accelerator: A100
+
+hf_access_token: {{HF_ACCESS_TOKEN}}
+
+# Environment Variables
+env_variables: {}
+
+external_package_dirs: []
