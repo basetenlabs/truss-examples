@@ -111,6 +111,11 @@ bis_llm:
     tool_call_parser: laguna
 
 weights:
-  - source: hf://poolside/Laguna-S-2.1-FP8
+  # Pinned to the SpinQuant-rotated FP8 checkpoint the gpuTRTImage was built
+  # for. Later upstream revisions (17cacdc6 "spinquantless FP8", 9e0b8ba6
+  # "RC2 1M release config") changed the quantization format and crash this
+  # engine at weight load (MoE w3_w1 shape mismatch), looping until the
+  # deploy times out.
+  - source: hf://poolside/Laguna-S-2.1-FP8@610e62523e5ae1261d6b4d3ae7974479041d6027
     mount_location: /models/laguna
     auth_secret_name: hf_access_token
