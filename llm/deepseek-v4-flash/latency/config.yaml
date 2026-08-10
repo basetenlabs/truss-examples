@@ -30,7 +30,7 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --served-model-name deepseek-ai/DeepSeek-V4-Flash
     --trust-remote-code
     --enable-chunked-prefill
@@ -51,8 +51,8 @@ docker_server:
     --enable-auto-tool-choice
     --reasoning-parser deepseek_v4
     --speculative-config.method mtp
-    --speculative-config.num-speculative-tokens 3
-    --load-format runai_streamer"
+    --speculative-config.num_speculative_tokens 3
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
