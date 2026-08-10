@@ -31,7 +31,7 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && SAFETENSORS_FAST_GPU=1 vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && SAFETENSORS_FAST_GPU=1 vllm serve /app/checkpoint/model
     --host 0.0.0.0
     --port 8000
     --served-model-name MiniMaxAI/MiniMax-M2.5
@@ -45,7 +45,7 @@ docker_server:
     --tool-call-parser minimax_m2
     --reasoning-parser minimax_m2_append_think
     --enable-auto-tool-choice
-    --enable-prefix-caching"
+    --enable-prefix-caching'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

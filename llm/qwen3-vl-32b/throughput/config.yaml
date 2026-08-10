@@ -29,7 +29,7 @@ secrets:
   hf_access_token: null
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --tensor-parallel-size $GPU_COUNT
     --served-model-name Qwen/Qwen3-VL-32B-Instruct
     --max-num-seqs 16
@@ -40,7 +40,7 @@ docker_server:
     --trust-remote-code
     --enable-auto-tool-choice
     --tool-call-parser hermes
-    --load-format runai_streamer"
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

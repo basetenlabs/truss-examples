@@ -28,7 +28,7 @@ environment_variables:
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --tensor-parallel-size $GPU_COUNT
     --gpu-memory-utilization 0.8
     --tool-call-parser glm47
@@ -39,7 +39,7 @@ docker_server:
     --trust-remote-code
     --max-model-len auto
     --enable-prefix-caching
-    --load-format runai_streamer"
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

@@ -37,7 +37,7 @@ secrets:
 
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --served-model-name Qwen/Qwen3.6-27B
     --host 0.0.0.0
     --port 8000
@@ -49,7 +49,7 @@ docker_server:
     --enable-auto-tool-choice
     --tool-call-parser qwen3_coder
     --speculative_config.method mtp
-    --speculative_config.num_speculative_tokens 2"
+    --speculative_config.num_speculative_tokens 2'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

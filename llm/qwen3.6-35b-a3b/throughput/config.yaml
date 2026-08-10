@@ -27,7 +27,7 @@ environment_variables:
   VLLM_USE_FLASHINFER_MOE_FP8: 1
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --tensor-parallel-size $GPU_COUNT
     --served-model-name RedHatAI/Qwen3.6-35B-A3B-NVFP4
     --host 0.0.0.0
@@ -43,8 +43,8 @@ docker_server:
     --enable-auto-tool-choice
     --tool-call-parser qwen3_coder
     --moe_backend flashinfer_cutlass
-    --speculative-config '{\"method\":\"qwen3_5_mtp\",\"num_speculative_tokens\":3}'
-    --trust-remote-code"
+    --speculative-config '\''{"method":"qwen3_5_mtp","num_speculative_tokens":3}'\''
+    --trust-remote-code'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

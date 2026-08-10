@@ -23,7 +23,7 @@ secrets:
   hf_access_token: null
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --served-model-name Qwen/Qwen3.5-35B-A3B-FP8
     --host 0.0.0.0
     --port 8000
@@ -36,7 +36,7 @@ docker_server:
     --tool-call-parser qwen3_coder
     --trust-remote-code
     --enable-prefix-caching
-    --load-format runai_streamer"
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions

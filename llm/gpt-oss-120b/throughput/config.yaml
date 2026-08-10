@@ -34,7 +34,7 @@ environment_variables:
   VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
 docker_server:
   start_command: >-
-    sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
+    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --host 0.0.0.0
     --port 8000
     --served-model-name gpt-oss-120b
@@ -49,7 +49,7 @@ docker_server:
     --enable-prefix-caching
     --async-scheduling
     --trust-remote-code
-    --load-format runai_streamer"
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
