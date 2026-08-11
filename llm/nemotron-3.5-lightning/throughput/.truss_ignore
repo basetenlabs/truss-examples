@@ -1,0 +1,25 @@
+# Weights are mounted through BDN and must never be included in the archive.
+models/
+*.safetensors
+*.safetensors.part
+
+# Local tooling and generated files.
+tests/
+__pycache__/
+*.py[cod]
+*.so
+.cache
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.env
+.venv
+venv/
+env/
+ENV/
+.git
+.DS_Store
+*.tmp
+*.swp
+
