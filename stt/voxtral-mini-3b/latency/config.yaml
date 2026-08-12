@@ -1,0 +1,61 @@
+model_name: "model:voxtral-mini-3b preset:latency"
+model_metadata:
+  repo_id: mistralai/Voxtral-Mini-3B-2507
+  tags:
+    - openai-compatible
+    - audio
+    - asr
+secrets:
+  hf_access_token: null
+weights:
+  - source: "hf://mistralai/Voxtral-Mini-3B-2507@3060fe34b35ba5d44202ce9ff3c097642914f8f3"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+    # The HF repo ships the weights twice: mistral-format
+    # consolidated.safetensors (what --load-format mistral reads) and an
+    # HF-format shard pair + model.safetensors.index.json. Skip the unused
+    # HF shards so the mount doesn't stream ~9GB of duplicate weights.
+    ignore_patterns:
+      - "model-*.safetensors"
+      - "model.safetensors.index.json"
+base_image:
+  image: vllm/vllm-openai:v0.22.0-cu129
+docker_server:
+  # Voxtral ships mistral-format artifacts only (params.json + tekken.json,
+  # no HF tokenizer files), so vLLM needs the mistral tokenizer/config/load
+  # trio per the upstream serving recipe.
+  start_command: >-
+    sh -c "vllm serve /app/checkpoint/model
+    --tokenizer-mode mistral
+    --config-format mistral
+    --load-format mistral
+    --tensor-parallel-size 1
+    --served-model-name mistralai/Voxtral-Mini-3B-2507
+    --max-model-len 32768
+    --gpu-memory-utilization 0.8
+    --host 0.0.0.0
+    --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/audio/transcriptions
+  server_port: 8000
+resources:
+  accelerator: H100_40GB:1
+  cpu: "1"
+  memory: 10Gi
+  use_gpu: true
+requirements:
+  - vllm[audio]
+  - mistral-common[audio]
+  - librosa
+  - torch
+  - torchaudio
+  - pynvml
+  - ffmpeg-python
+system_packages:
+  - python3.10-venv
+  - ffmpeg
+  - openmpi-bin
+  - libopenmpi-dev
+runtime:
+  predict_concurrency: 256
