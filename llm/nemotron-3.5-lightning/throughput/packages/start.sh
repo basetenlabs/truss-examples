@@ -43,6 +43,9 @@ exec vllm serve "${MODEL_DIR}" \
     --host 0.0.0.0 \
     --port 8000 \
     --trust-remote-code \
+    --reasoning-parser nemotron_v3 \
+    --enable-auto-tool-choice \
+    --tool-call-parser qwen3_coder \
     --max-num-seqs 512 \
     --max-model-len 1048576 \
     --max-num-batched-tokens 32768 \

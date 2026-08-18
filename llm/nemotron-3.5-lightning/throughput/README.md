@@ -32,7 +32,8 @@ gated.
 
 The deployment exposes OpenAI-compatible chat completions at
 `/v1/chat/completions`, with served model name
-`nvidia/nemotron-3.5-lightning-nvfp4`.
+`nvidia/nemotron-3.5-lightning-nvfp4`. Tool-bearing requests are enabled with
+vLLM's `nemotron_v3` reasoning parser and `qwen3_coder` tool-call parser.
 
 ## Verification
 

@@ -24,6 +24,7 @@ model_metadata:
     - nvfp4
     - h100
     - throughput
+    - tool-calling
     - 1m-context
     - public-huggingface
 
