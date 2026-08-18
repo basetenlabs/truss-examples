@@ -1,6 +1,9 @@
 model_name: moss-transcribe-diarize
 model_metadata:
   repo_id: OpenMOSS-Team/MOSS-Transcribe-Diarize
+  # No example_model_input on purpose: /v1/audio/transcriptions only accepts
+  # multipart/form-data (file upload), and the CI predict smoke POSTs
+  # example_model_input as JSON, which the server rejects with 422.
   tags:
     - openai-compatible
     - audio
@@ -9,7 +12,7 @@ model_metadata:
 secrets:
   hf_access_token: null
 weights:
-  - source: "hf://OpenMOSS-Team/MOSS-Transcribe-Diarize@main"
+  - source: "hf://OpenMOSS-Team/MOSS-Transcribe-Diarize@e8681d68e7042738ffca8ac8212bc8fcb1131ab8"
     mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 environment_variables:
@@ -17,17 +20,18 @@ environment_variables:
   TORCHINDUCTOR_CACHE_DIR: /app/models/inductor
   TRITON_CACHE_DIR: /app/models/triton
 base_image:
-  # CUDA 13 image recommended by the SGLang Omni installation guide.
+  # Runtime prerequisites image recommended by the v0.1.2 installation guide,
+  # pinned by digest because upstream publishes it under the mutable `dev` tag.
   image: "lmsysorg/sglang-omni:dev@sha256:46235435997d1fa93fc81fb1c2d5b7fd8470d77395a5c348c0176094ffddf95e"
 build_commands:
-  # Pin the source because the upstream container only provides prerequisites.
-  - git clone https://github.com/sgl-project/sglang-omni.git /opt/sglang-omni
-  - cd /opt/sglang-omni && git checkout f7f81c265a088329c853935336930a0205d4cf89
-  - uv venv /opt/sglang-omni/.venv --python 3.12
-  - cd /opt/sglang-omni && uv pip install --python /opt/sglang-omni/.venv/bin/python -v .
+  # Install the exact v0.1.2 release package; its flash-attn-4 dependency is a beta.
+  - uv venv /opt/sglang-omni-v0.1.2 --python 3.12
+  # Pin the resolved flash-attn-4 beta so rebuilds stay reproducible; its 4.x line
+  # publishes only pre-releases, so --prerelease=allow is still required to install it.
+  - uv pip install --prerelease=allow --python /opt/sglang-omni-v0.1.2/bin/python "sglang-omni==0.1.2" "flash-attn-4==4.0.0b19"
 docker_server:
   start_command: >-
-    /opt/sglang-omni/.venv/bin/sgl-omni serve
+    /opt/sglang-omni-v0.1.2/bin/sgl-omni serve
     --model-path /app/checkpoint/model
     --port 8000
     --max-running-requests 16
