@@ -1,0 +1,86 @@
+model_name: "model:nemotron-3-nano preset:latency"
+model_metadata:
+  description: >-
+    NVIDIA Nemotron 3 Nano 30B A3B (text-only) reasoning model served via vLLM on a single
+    H100. A Mamba2-Transformer hybrid MoE — 23 Mamba-2 layers, 23 MoE layers and 6 GQA
+    attention layers, 128 routed experts plus 1 shared expert, 6 active per token, 3.5B
+    active of 30B total parameters. FP8 checkpoint (weights and KV cache), with tool
+    calling and a toggleable reasoning trace.
+  repo_id: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8
+  example_model_input:
+    model: nvidia/nemotron-3-nano
+    messages:
+      - role: user
+        content: "What is the capital of France?"
+    stream: true
+    max_tokens: 512
+    temperature: 0.2
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: false
+  tags:
+    - openai-compatible
+base_image:
+  # Matches the sibling NVIDIA vLLM entries. Needs --reasoning-parser-plugin,
+  # present since v0.20.0.
+  image: vllm/vllm-openai:v0.22.0-cu129
+weights:
+  # Public, ungated upstream repo — not a baseten-admin mirror. The Xet 403 that
+  # this repo is known for is specific to the model_cache: path; weights: pulls it
+  # fine (33 GB in 34s on first deploy).
+  - source: "hf://nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8@f8dc1c0afee92f44417695b4f5ddca9afc95ea58"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+docker_server:
+  # The reasoning parser is nano_v3, shipped inside the HF repo and loaded as a
+  # plugin — NOT the built-in nemotron_v3 that the omni entry and the NIM use.
+  # weights: mounts the whole repo, so the plugin is already on disk.
+  #
+  # --kv-cache-dtype fp8: the checkpoint quantized the KV cache to FP8 with the
+  #   weights (attention and the Mamba layers feeding it stay BF16).
+  # --mamba-ssm-cache-dtype float32: keeps the hybrid Mamba SSM state cache in
+  #   fp32 to avoid accuracy drift. Beyond the model card; matches omni.
+  # --max-model-len 32768 / --max-num-seqs 8: latency preset, sized for the
+  #   cascaded voice pipeline. A throughput preset would raise both.
+  # --tensor-parallel-size 1: single-GPU preset, so it needs no `sh -c` wrapper
+  #   at all. The multi-GPU entries derive TP from nvidia-smi and must use
+  #   SINGLE quotes (see #283) to defer expansion into the container; invoking
+  #   vllm directly avoids that whole class of quoting bug. Keep it that way.
+  start_command: >-
+    vllm serve /app/checkpoint/model
+    --tensor-parallel-size 1
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name nvidia/nemotron-3-nano
+    --trust-remote-code
+    --max-model-len 32768
+    --max-num-seqs 8
+    --gpu-memory-utilization 0.9
+    --kv-cache-dtype fp8
+    --mamba-ssm-cache-dtype float32
+    --reasoning-parser-plugin /app/checkpoint/model/nano_v3_reasoning_parser.py
+    --reasoning-parser nano_v3
+    --enable-auto-tool-choice
+    --tool-call-parser qwen3_coder
+    --enable-prefix-caching
+    --load-format runai_streamer
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+  # Model card: FlashInfer FP8 MoE kernels for this checkpoint.
+  VLLM_USE_FLASHINFER_MOE_FP8: "1"
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency: 8
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
