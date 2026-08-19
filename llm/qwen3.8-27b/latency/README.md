@@ -29,7 +29,8 @@ The `qwen38` vLLM image is required for this initial configuration because the
 gated-delta-network speculative-decoding fixes used by Qwen3.8 are not yet present in a
 released vLLM tag. The image is pinned to its multi-architecture digest for reproducibility.
 The recipe UI's generic Simple-offload preset reserves 220 GiB of host memory per rank;
-this Truss uses 64 GiB so it fits Baseten's single-H100 instance with 118 GiB of host RAM.
+this Truss uses 64 GiB so it fits inside the allocatable host memory of the harmonized
+`H100` SKU, which `resources.instance_type` pins explicitly.
 
 ## Usage
 

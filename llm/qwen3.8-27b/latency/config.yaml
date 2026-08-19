@@ -67,10 +67,9 @@ docker_server:
   server_port: 8000
 
 resources:
+  instance_type: H100
   accelerator: H100:1
   node_count: 1
-  cpu: "16"
-  memory: 118Gi
   use_gpu: true
 
 runtime:
