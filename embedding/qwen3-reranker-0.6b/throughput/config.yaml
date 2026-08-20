@@ -10,10 +10,7 @@ model_metadata:
 model_name: "model:qwen3-reranker-0.6b preset:throughput"
 python_version: py39
 resources:
-  accelerator: L4
-  cpu: '1'
-  memory: 10Gi
-  use_gpu: true
+  instance_type: L4:4x16
 trt_llm:
   build:
     base_model: encoder

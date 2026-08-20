@@ -7,10 +7,7 @@ model_metadata:
 model_name: "model:qwen3-embedding-8b preset:throughput"
 python_version: py39
 resources:
-  accelerator: H100
-  cpu: '1'
-  memory: 10Gi
-  use_gpu: true
+  instance_type: H100
 trt_llm:
   build:
     base_model: encoder
