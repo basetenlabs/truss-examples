@@ -1,0 +1,58 @@
+model_name: "model:qwen3.5-397b preset:throughput"
+model_metadata:
+  description: Qwen 3.5 397B A17B quantized version (NVFP4) on vllm.
+  repo_id: Qwen/Qwen3.5-397B-A17B-NVFP4
+  tags:
+    - openai-compatible
+  example_model_input:
+    model: Qwen/Qwen3.5-397B-A17B
+    messages:
+      - role: user
+        content: Why is the sky blue?
+    stream: true
+    max_tokens: 3000
+    temperature: 0.7
+base_image:
+  image: "vllm/vllm-openai:v0.22.0-cu129"
+weights:
+  - source: "hf://nvidia/Qwen3.5-397B-A17B-NVFP4@main"
+    mount_location: /app/checkpoint/model
+    auth_secret_name: hf_access_token
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+secrets:
+  hf_access_token: null
+docker_server:
+  start_command: >-
+    sh -c "vllm serve /app/checkpoint/model
+    --served-model-name Qwen/Qwen3.5-397B-A17B
+    --host 0.0.0.0
+    --port 8000
+    --tensor-parallel-size $(nvidia-smi --list-gpus | wc -l)
+    --max-num-seqs 128
+    --max-num-batched-tokens 65536
+    --max-model-len 131072
+    --kv-cache-dtype auto
+    --gpu-memory-utilization 0.9
+    --trust-remote-code
+    --enable-prefix-caching
+    --enable-chunked-prefill
+    --reasoning-parser qwen3
+    --tool-call-parser qwen3_coder
+    --enable-auto-tool-choice
+    --language-model-only
+    --load-format auto"
+  server_port: 8000
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+runtime:
+  predict_concurrency: 128
+  health_checks:
+    startup_threshold_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
+resources:
+  accelerator: "B200:4"
+  use_gpu: true
