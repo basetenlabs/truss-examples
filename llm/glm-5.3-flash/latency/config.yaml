@@ -1,0 +1,76 @@
+model_name: "model:glm-5.3-flash preset:latency"
+
+model_metadata:
+  description: >-
+    Z.ai GLM-5.3-Flash is a 321B-parameter, 18B-active multimodal MoE served from
+    its native FP8 checkpoint with vLLM on eight H100 GPUs. It provides
+    OpenAI-compatible chat completions, reasoning, tool calling, image and video
+    inputs, MTP speculative decoding, and a 1M-token context window.
+  repo_id: zai-org/GLM-5.3-Flash
+  tags:
+    - openai-compatible
+    - multimodal
+    - moe
+    - reasoning
+    - tool-use
+    - fp8
+  example_model_input:
+    model: zai-org/GLM-5.3-Flash
+    messages:
+      - role: user
+        content: "Explain sparse attention in three concise sentences."
+    stream: true
+    max_tokens: 512
+    temperature: 1.0
+    top_p: 0.95
+
+base_image:
+  # Dedicated image required until GLM-5.3-Flash support reaches a stable vLLM release.
+  image: "vllm/vllm-openai:glm53-flash@sha256:2c6da6c6f16ed15c91e412d896dba13701f25fe1861eaec9ddaa4db34d1d21c4"
+
+weights:
+  - source: "hf://zai-org/GLM-5.3-Flash@3f1971b7b5f7a528c9c4ef6212c8785298a8c24a"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+
+secrets:
+  hf_access_token: null
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+
+docker_server:
+  start_command: >-
+    vllm serve /app/checkpoint/model
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name zai-org/GLM-5.3-Flash
+    --tensor-parallel-size 8
+    --max-model-len 1048576
+    --gpu-memory-utilization 0.90
+    --max-num-seqs 16
+    --enable-prefix-caching
+    --limit-mm-per-prompt.image 1
+    --limit-mm-per-prompt.video 1
+    --tool-call-parser glm47
+    --reasoning-parser glm45
+    --enable-auto-tool-choice
+    --speculative-config.method mtp
+    --speculative-config.num_speculative_tokens 5
+    --no-enable-flashinfer-autotune
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+resources:
+  accelerator: H100:8
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 16
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
