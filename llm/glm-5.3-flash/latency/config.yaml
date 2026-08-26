@@ -55,6 +55,7 @@ docker_server:
     --limit-mm-per-prompt.video 1
     --tool-call-parser glm47
     --reasoning-parser glm45
+    --default-chat-template-kwargs.reasoning_effort high
     --enable-auto-tool-choice
     --speculative-config.method mtp
     --speculative-config.num_speculative_tokens 5

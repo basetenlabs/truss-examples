@@ -1,4 +1,4 @@
-# GLM-5.3 Flash FP8
+# GLM-5.3 Flash
 
 This Truss serves Z.ai's official native-FP8
 [GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash) checkpoint through
@@ -23,6 +23,7 @@ supports text, image, and video input; reasoning; tool calling; and a native
 | Speculative decoding | Built-in MTP head, 5 speculative tokens |
 | Tool parser | `glm47` with automatic tool choice |
 | Reasoning parser | `glm45` |
+| Default reasoning effort | `high` (request-level `reasoning_effort` overrides it) |
 | Multimodal limits | One image and one video per prompt |
 
 The dedicated vLLM image is required because GLM-5.3-Flash support has not yet
@@ -53,6 +54,10 @@ response = client.chat.completions.create(
 
 print(response.choices[0].message.content)
 ```
+
+Requests that omit `reasoning_effort` use `high`. Clients can override the
+server default per request with any effort supported by the checkpoint, such as
+`low`, `high`, or `max`.
 
 ## Sources and validation
 
