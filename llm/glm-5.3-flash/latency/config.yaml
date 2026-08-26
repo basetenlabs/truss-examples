@@ -66,8 +66,7 @@ docker_server:
   server_port: 8000
 
 resources:
-  accelerator: H100:8
-  use_gpu: true
+  instance_type: H100:8
 
 runtime:
   predict_concurrency: 16
