@@ -20,7 +20,7 @@ weights:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 docker_server:
-  start_command: sh -c "vllm serve /app/checkpoint/model --tensor-parallel-size 1 --served-model-name Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000 --load-format runai_streamer"
+  start_command: sh -c "vllm serve $BASETEN_MODEL_PATH --tensor-parallel-size 1 --served-model-name Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000 --load-format runai_streamer"
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -37,6 +37,8 @@ requirements:
   - torchaudio
   - pynvml
   - ffmpeg-python
+environment_variables:
+  BASETEN_MODEL_PATH: "/app/checkpoint/model"
 system_packages:
   - python3.10-venv
   - ffmpeg

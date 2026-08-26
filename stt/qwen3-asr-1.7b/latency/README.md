@@ -2,6 +2,10 @@
 
 This example shows how to call a Baseten deployment using the OpenAI Python SDK to run **Qwen/Qwen3-ASR-1.7B** on an audio URL.
 
+The Truss loads weights from `BASETEN_MODEL_PATH`, which defaults to the BDN mount at
+`/app/checkpoint/model`. Baseten Training deployments can override that variable with the
+materialized path of a compatible full checkpoint.
+
 ## Prerequisites
 
 - Python 3.9+
