@@ -25,9 +25,6 @@ secrets:
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-  # Cap Run:ai streamer CPU buffering (10 GiB per TP worker); unbounded
-  # buffering across 4 workers exceeds the pod memory limit (OOMKilled).
-  RUNAI_STREAMER_MEMORY_LIMIT: "10737418240"
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
@@ -42,8 +39,7 @@ docker_server:
     --kv-cache-dtype fp8
     --limit-mm-per-prompt.image 10
     --override-generation-config.attn_temperature_tuning true
-    --enable-prefix-caching
-    --load-format runai_streamer'
+    --enable-prefix-caching'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
