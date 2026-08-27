@@ -205,7 +205,9 @@ aws iam put-role-policy \
 # ──────────────────────────────────
 ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ROLE_NAME}"
 echo ""
-echo "Setup complete. IAM role ARN:"
-echo "  ${ROLE_ARN}"
+echo "Setup complete. Set these values in standard-truss/config.yaml:"
+echo "  AWS_ROLE_ARN: \"${ROLE_ARN}\""
+echo "  AWS_REGION: ${AWS_REGION}"
+echo "  S3_BUCKET: ${S3_BUCKET}"
+echo "  S3_KEY: ${S3_KEY}"
 echo ""
-echo "Use this role ARN for your runtime integration."

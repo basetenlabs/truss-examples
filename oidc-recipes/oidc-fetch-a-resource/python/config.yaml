@@ -1,8 +1,0 @@
-model_name: oidc-fetch-a-resource
-python_version: py313
-runtime:
-  oidc:
-    enabled: true
-requirements:
-  - boto3
-  - botocore

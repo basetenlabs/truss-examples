@@ -3,6 +3,22 @@ _Application: Fetching text from an object in an S3 bucket_
 
 This recipe demonstrates a basic and flexible pattern: fetch a resource from a remote host _without_ storing any long-term credentials. Instead, configure trust in the B10 IdP and establish a session by sending the OIDC token.
 
+## Setup
+
+1. Run `truss whoami --show-oidc` to get your Baseten organization and team IDs.
+2. Fill in the values at the top of [`setup.sh`](setup.sh).
+3. Run `./setup.sh`.
+4. Copy the printed role, region, bucket, and key into [`standard-truss/config.yaml`](standard-truss/config.yaml).
+5. Deploy with `truss push ./standard-truss`.
+
+At runtime, `Model.load()` maps `B10_OIDC_TOKEN_PATH` to boto3's web-identity token variable. boto3 exchanges the token for short-lived AWS credentials. Each prediction reads the configured S3 object and returns its text:
+
+```json
+{"text": "Contents of the S3 object"}
+```
+
+## Other uses
+
 The resource contents can support many use cases. The snippets below assume `read_text()` and `write_text()` access the authenticated remote resource:
 
 - use extra context in an inference request (e.g. company report documents)

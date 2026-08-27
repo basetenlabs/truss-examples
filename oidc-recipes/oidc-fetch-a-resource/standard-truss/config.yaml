@@ -1,0 +1,12 @@
+model_name: oidc-fetch-a-resource
+python_version: py313
+runtime:
+  oidc:
+    enabled: true
+requirements:
+  - boto3
+environment_variables:
+  AWS_ROLE_ARN: "" # e.g. arn:aws:iam::123456789012:role/BasetenOIDCRole
+  AWS_REGION: "" # e.g. us-west-2
+  S3_BUCKET: "" # e.g. mybucket
+  S3_KEY: "" # e.g. inputs/review.txt
