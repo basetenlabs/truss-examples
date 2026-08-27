@@ -47,7 +47,7 @@ environment_variables:
 # Docker server — vLLM OpenAI-compatible endpoint
 # ---------------------------------------------------------------------------
 docker_server:
-  start_command: >
+  start_command: >-
     vllm serve /models/laguna-m1
     --served-model-name poolside/laguna-m.1
     --host 0.0.0.0

@@ -18,7 +18,7 @@ base_image:
   image: vllm/vllm-openai:v0.22.0
 
 docker_server:
-  start_command: >
+  start_command: >-
     sh -c "VLLM_DEEP_GEMM_WARMUP=relax python3 -m vllm.entrypoints.openai.api_server
     --model /models/GLM-5-FP8
     --chat-template /models/GLM-5-FP8/chat_template.jinja
