@@ -1,0 +1,103 @@
+model_name: "model:kimi-k2.6 preset:latency"
+model_metadata:
+  repo_id: moonshotai/Kimi-K2.6
+environment_variables: {}
+resources:
+  instance_type: B200:8
+bis_llm:
+  version: 0.0.1-20260415192506-5d63e8c1
+  config:
+    model_name: moonshotai/Kimi-K2.6
+    model_path: /models/kimik26-final-nvfp4-v6
+    checkpoint_name: baseten-admin/kimik26-final-nvfp4-v6
+    gpuTRTImage: baseten/dynamo-cache-aware-routing:trtllm-gpu-32b7ebb4d1-d104200bf-9c1e94adce
+    alias_served_model_names:
+      - moonshotai/Kimi-K2.5
+    additional_environment_variables:
+      Frontend:
+        DYN_TCP_MAX_MESSAGE_SIZE: "268435456"
+      Worker:
+        BAD_TOKEN_ID: "0"
+        BAD_TOKEN_ID_SEQ_CHECK_ENABLED: "1"
+        BAD_TOKEN_ID_SEQ_LEN: "10"
+        DYN_TCP_MAX_MESSAGE_SIZE: "268435456"
+        PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+        TRTLLM_ENABLE_PDL: "1"
+    arguments_as_json: false
+    b10_autoscaling_config:
+      additional_autoscaling_config:
+        metrics:
+          - name: in_flight_tokens
+            target: 150000
+      scaling_window_seconds: 300
+    b10_routing_config:
+      algo_selector: B10
+      rate_limit_batch_multiplier: 1.5
+      rate_limit_enabled: true
+      router_cache_miss_weight: 0.05
+      router_decode_token_discount: 0.5
+      router_overlap_score_weight: 5.0
+      router_prefill_token_discount: 0.25
+      router_queue_policy: wspt
+    b10_vision_config:
+      enabled: false
+    backend: pytorch
+    cuda_graph_config:
+      enable_padding: true
+    default_sampling_params:
+      frequency_penalty: 0
+      max_tokens: 32768
+      presence_penalty: 0
+      temperature: 0.6
+      top_k: 50
+      top_p: 0.95
+    default_sampling_params_thinking:
+      frequency_penalty: 0
+      max_tokens: 32768
+      presence_penalty: 0
+      temperature: 1
+      top_k: 50
+      top_p: 0.95
+    default_thinking_enabled: true
+    download_eagle_weights: false
+    enable_attention_dp: true
+    enable_chunked_prefill: true
+    enable_iter_perf_stats: true
+    enable_structural_tool_choice: true
+    guided_decoding_backend: xgrammar
+    kv_cache_config:
+      dtype: fp8
+      enable_block_reuse: true
+      enable_partial_reuse: false
+      event_buffer_max_size: 16384
+      free_gpu_memory_fraction: 0.9
+      host_cache_size: 50000000000
+    max_batch_size: 16
+    max_beam_width: 1
+    max_input_len: 262144
+    max_num_tokens: 16384
+    max_seq_len: 262144
+    model_level_stop_words:
+      - <|im_end|>
+    moe_config:
+      backend: TRTLLM
+    moe_expert_parallel_size: 1
+    reasoning_parser: kimi25
+    speculative_config:
+      allow_advanced_sampling: true
+      allow_separate_draft_kv_cache: false
+      decoding_type: Eagle
+      max_draft_len: 2
+      speculative_model_dir: /models/kimi-25-mla-eagle-v0.4
+    tensor_parallel_size: 8
+    tokenizer_limit_length: 262144
+    tokenizer_max_new_tokens_limit: 65536
+    tool_call_parser: kimi25
+    trust_remote_code: true
+weights:
+  - source: hf://baseten-admin/kimik26-final-nvfp4-v6@630f83400372cc967ef8e5f833870617b6bf5498
+    mount_location: /models/kimik26-final-nvfp4-v6
+    auth_secret_name: hf_access_token
+  - source: hf://baseten-admin/kimi-25-mla-eagle-v0.4@a2f7244fd9d3bf31d098f378fb530f79e0ba8a01
+    mount_location: /models/kimi-25-mla-eagle-v0.4
+    auth_secret_name: hf_access_token

@@ -23,8 +23,7 @@ weights:
 secrets:
   hf_access_token: null
 resources:
-  accelerator: B200:8
-  use_gpu: true
+  instance_type: B200:8
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
@@ -51,7 +50,7 @@ docker_server:
     --enable-auto-tool-choice
     --reasoning-parser deepseek_v4
     --speculative-config.method mtp
-    --speculative-config.num-speculative-tokens 3
+    --speculative-config.num_speculative_tokens 3
     --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
