@@ -78,6 +78,4 @@ class Model:
 
     def predict(self, model_input):
         value = float(model_input["value"])
-        return {
-            "value": value * self._weights["scale"] + self._weights["bias"]
-        }
+        return {"value": value * self._weights["scale"] + self._weights["bias"]}
