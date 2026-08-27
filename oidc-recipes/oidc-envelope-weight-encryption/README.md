@@ -1,4 +1,4 @@
-# OIDC: Envelope Encryption
+# OIDC: Envelope Weight Encryption
 _Load encrypted weights from S3 and decrypt them by authenticating to AWS KMS with OIDC._
 
 This recipe demonstrates how to keep model weights encrypted until a Baseten model replica starts. The encrypted artifacts are stored in a customer-owned S3 bucket and mirrored through Baseten Data Network (BDN). The running model uses its Baseten OIDC token to obtain short-lived AWS credentials, asks KMS to decrypt the envelope data key, and decrypts the weights locally during `load()`.
@@ -6,6 +6,10 @@ This recipe demonstrates how to keep model weights encrypted until a Baseten mod
 No long-lived AWS access key is stored in the Truss or injected into the model container.
 
 ## Why envelope encryption?
+
+Envelope encryption protects proprietary model weights from exfiltration and misuse in two ways:
+- **Customer-controlled access and key lifecycle.** The customer owns the KMS key and its access policy, and can revoke access at any time. Without permission to decrypt the data-encryption key (DEK), a copy of the encrypted weights is unusable. AWS CloudTrail also provides an independent audit trail of every KMS `Decrypt` request used to recover the DEK.
+- **Minimal plaintext exposure.** Storage, transfer, and mirroring systems handle only encrypted artifacts. The weights are decrypted only inside the authorized model pod, significantly reducing the systems and identities that can access the plaintext weights.
 
 AWS KMS is designed to protect encryption keys, not to encrypt large model files directly. KMS `Encrypt` and `Decrypt` operations have small payload limits, while model weights may be many gigabytes.
 
@@ -16,7 +20,7 @@ Envelope encryption separates the work:
 - The encrypted payload and encrypted data key can be stored together safely.
 - A workload must be authorized by KMS before it can recover the plaintext data key.
 
-This gives you centralized access control and audit logs in KMS without sending the full weights through KMS.
+This provides those access controls and audit logs without sending the full weights through KMS.
 
 ## Flow
 

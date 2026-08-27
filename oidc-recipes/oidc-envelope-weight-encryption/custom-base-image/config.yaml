@@ -1,6 +1,6 @@
 base_image:
   image: vllm/vllm-openai:v0.8.5
-model_name: OIDC envelope decryption - vLLM image
+model_name: oidc-envelope-weight-encryption-vllm
 docker_server:
   start_command: >-
     sh -c "python3 /packages/decrypt.py &&

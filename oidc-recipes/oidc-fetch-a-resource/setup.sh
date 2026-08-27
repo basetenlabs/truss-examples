@@ -4,14 +4,14 @@ set -euo pipefail
 # ──────────────────────────────────────────────
 # FILL ME: replace these with your values
 # ──────────────────────────────────────────────
-AWS_ACCOUNT_ID=""             # Your AWS account ID (must exist prior to this script)
-AWS_REGION=""                 # AWS region for the S3 bucket (e.g. us-west-2)
-S3_BUCKET=""                  # S3 bucket name (to be created)
-S3_KEY=""                     # S3 object key (like a file path)
-BUCKET_TEXT=""                # Text to store in the S3 object
-ROLE_NAME=""                  # IAM role name (to be created)
-BASETEN_ORG_ID=""             # From `truss whoami --show-oidc`
-BASETEN_TEAM_ID=""            # From `truss whoami --show-oidc`
+AWS_ACCOUNT_ID=""  # Your AWS account ID (must exist prior to this script)
+AWS_REGION=""      # AWS region for the S3 bucket (e.g. us-west-2)
+S3_BUCKET=""       # S3 bucket name (to be created)
+S3_KEY=""          # S3 object key (like a file path)
+BUCKET_TEXT=""     # Text to store in the S3 object
+ROLE_NAME=""       # IAM role name (to be created)
+BASETEN_ORG_ID=""  # From `truss whoami --show-oidc`
+BASETEN_TEAM_ID="" # From `truss whoami --show-oidc`
 
 # ──────────────────────────────────────────────
 # Helpers

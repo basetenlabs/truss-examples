@@ -1,4 +1,4 @@
-model_name: oidc-envelope-encryption
+model_name: oidc-envelope-weight-encryption
 python_version: py313
 runtime:
   oidc:

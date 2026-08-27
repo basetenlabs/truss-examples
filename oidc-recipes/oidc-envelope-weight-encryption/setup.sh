@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# FILL ME
-AWS_ACCOUNT_ID="863478709086" # Existing AWS account ID
-AWS_REGION="us-west-2"     # e.g. us-west-2
-S3_BUCKET="863478709086-envelope-test"      # Globally unique bucket name to create
-S3_PREFIX="models/custom-weights"
-KMS_ALIAS="alias/baseten-oidc-envelope"
-ROLE_NAME="BasetenOIDCEnvelopeRole"
-BASETEN_ORG_ID="qWGxoxq"  # From `truss whoami --show-oidc`
-BASETEN_TEAM_ID="wlpny2q" # From `truss whoami --show-oidc`
+# ──────────────────────────────────────────────
+# FILL ME: replace these with your values
+# ──────────────────────────────────────────────
+AWS_ACCOUNT_ID=""  # Existing AWS account ID
+AWS_REGION=""      # AWS region for S3 and KMS (e.g. us-west-2)
+S3_BUCKET=""       # Globally unique S3 bucket name (created or reused)
+S3_PREFIX=""       # S3 key prefix for the encrypted bundle (e.g. models/custom-weights)
+KMS_ALIAS=""       # KMS alias to create or reuse (must start with alias/)
+ROLE_NAME=""       # IAM role name to create or update
+BASETEN_ORG_ID=""  # From `truss whoami --show-oidc`
+BASETEN_TEAM_ID="" # From `truss whoami --show-oidc`
 
 # ──────────────────────────────────────────────
 # Helpers and configuration validation
@@ -131,7 +133,7 @@ cat >"${work_dir}/weights.json" <<'EOF'
 {
   "scale": 2.5,
   "bias": 1.0,
-  "description": "Fictional linear-model weights for the OIDC envelope-encryption recipe"
+  "description": "Fictional linear-model weights for the OIDC envelope-weight-encryption recipe"
 }
 EOF
 
