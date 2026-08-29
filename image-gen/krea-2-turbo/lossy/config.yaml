@@ -7,6 +7,7 @@ weights:
   - source: hf://krea/Krea-2-Turbo
     mount_location: /app/model_cache/krea-2-turbo
     auth_secret_name: hf_access_token
+    ignore_patterns: ["**/turbo.safetensors"]
 
 docker_server:
   start_command: /app/start_sglang.sh
@@ -24,9 +25,9 @@ model_metadata:
 
   visual_gen:
     extra_sglang_args:
-      enable_fp8: "0"
+      enable_fp8: "1"
       enable_fp4_dit: "0"
-      enable_cache_dit: "0"
+      enable_cache_dit: "1"
       dit_cpu_offload: "false"
       text_encoder_cpu_offload: "false"
       image_encoder_cpu_offload: "false"
