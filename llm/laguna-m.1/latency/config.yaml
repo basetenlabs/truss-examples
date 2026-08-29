@@ -36,8 +36,15 @@ base_image:
 # quantization_config — no extra vLLM flags needed.
 # ---------------------------------------------------------------------------
 weights:
-  - source: "hf://poolside/Laguna-M.1-FP8"
+  - source: "hf://poolside/Laguna-M.1-FP8@3732a656e6f0bf09f90250518d8de9c8e5c54f12"
     mount_location: "/models/laguna-m1"
+    auth_secret_name: "hf_access_token"
+
+secrets:
+  hf_access_token: null
+
+requirements:
+  - runai-model-streamer==0.16.1
 
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
@@ -61,6 +68,7 @@ docker_server:
     --max-num-seqs 64
     --gpu-memory-utilization 0.95
     --trust-remote-code
+    --load-format runai_streamer
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
