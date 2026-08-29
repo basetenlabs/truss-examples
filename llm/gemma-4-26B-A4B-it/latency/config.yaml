@@ -24,6 +24,8 @@ weights:
   - source: "hf://RedHatAI/gemma-4-26B-A4B-it-FP8-Dynamic@main"
     mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
+  - source: "hf://RedHatAI/gemma-4-26B-A4B-it-speculator.eagle3@226b2692d48029aae52adc1d0021a9d58709d33c"
+    mount_location: "/app/checkpoint/speculator"
 secrets:
   hf_access_token: null
 docker_server:
@@ -36,7 +38,7 @@ docker_server:
     --limit-mm-per-prompt.image 1
     --gpu-memory-utilization 0.9
     --enable-prefix-caching
-    --speculative-config.model RedHatAI/gemma-4-26B-A4B-it-speculator.eagle3
+    --speculative-config.model /app/checkpoint/speculator
     --speculative-config.num_speculative_tokens 3
     --speculative-config.method eagle3
     --trust-remote-code
