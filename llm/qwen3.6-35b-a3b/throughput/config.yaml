@@ -14,7 +14,7 @@ model_metadata:
     - nvfp4
     - b200
 base_image:
-  image: vllm/vllm-openai:nightly
+  image: "vllm/vllm-openai:nightly@sha256:38cf880a732998a3664174a7d07be38026aeb9a9b8cddfa96cadd5f8613f92fb"
 weights:
   - source: "hf://RedHatAI/Qwen3.6-35B-A3B-NVFP4@main"
     mount_location: "/app/checkpoint/model"
@@ -43,7 +43,8 @@ docker_server:
     --enable-auto-tool-choice
     --tool-call-parser qwen3_coder
     --moe_backend flashinfer_cutlass
-    --speculative-config '\''{"method":"qwen3_5_mtp","num_speculative_tokens":3}'\''
+    --speculative-config.method qwen3_5_mtp
+    --speculative-config.num_speculative_tokens 3
     --trust-remote-code'
   readiness_endpoint: /health
   liveness_endpoint: /health

@@ -50,7 +50,7 @@ docker_server:
     --dtype bfloat16
     --gpu-memory-utilization 0.9
     --enable-chunked-prefill
-    --compilation-config '{"cudagraph_mode":"FULL_AND_PIECEWISE"}'
+    --compilation-config.cudagraph_mode FULL_AND_PIECEWISE
     --enable-prefix-caching
     --tensor-parallel-size 2
     --enable-auto-tool-choice
