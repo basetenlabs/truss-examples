@@ -16,7 +16,7 @@ model_metadata:
     max_tokens: 4096
     temperature: 0.5
 base_image:
-  image: vllm/vllm-openai:v0.22.0-cu129
+  image: vllm/vllm-openai:v0.28.0-cu129
 build_commands:
   - mkdir -p /opt/tiktoken
   - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken -o /opt/tiktoken/o200k_base.tiktoken

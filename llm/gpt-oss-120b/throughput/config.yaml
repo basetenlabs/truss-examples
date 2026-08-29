@@ -14,7 +14,7 @@ model_metadata:
     max_tokens: 4096
     temperature: 0.5
 base_image:
-  image: vllm/vllm-openai:v0.22.0
+  image: vllm/vllm-openai:v0.28.0
 build_commands:
   - mkdir -p /opt/tiktoken
   - curl -fsSL https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken -o /opt/tiktoken/o200k_base.tiktoken
@@ -31,19 +31,18 @@ environment_variables:
   TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-  VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8: "1"
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
     --host 0.0.0.0
     --port 8000
-    --served-model-name gpt-oss-120b
+    --served-model-name openai/gpt-oss-120b
     --tensor-parallel-size $GPU_COUNT
     --gpu-memory-utilization 0.95
     --max-model-len 8192
     --max-num-batched-tokens 8192
     --max-num-seqs 256
-    --cuda-graph-capture-size 2048
+    --max-cudagraph-capture-size 2048
     --stream-interval 20
     --kv-cache-dtype fp8
     --enable-prefix-caching
