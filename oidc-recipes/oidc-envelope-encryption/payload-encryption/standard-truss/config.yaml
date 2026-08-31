@@ -1,0 +1,11 @@
+model_name: oidc-envelope-payload-encryption
+python_version: py313
+runtime:
+  oidc:
+    enabled: true
+requirements:
+  - boto3
+  - cryptography
+environment_variables:
+  AWS_ROLE_ARN: "" # e.g. arn:aws:iam::123456789012:role/BasetenOIDCPayloadRole
+  AWS_REGION: "" # e.g. us-west-2

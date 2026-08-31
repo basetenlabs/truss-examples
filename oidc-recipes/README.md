@@ -14,15 +14,15 @@ The recipes use AWS, but the same pattern is available from other OIDC-compatibl
 ## Recipes
 
 - [`oidc-fetch-a-resource`](oidc-fetch-a-resource): Fetch an object from S3 at request time.
-- [`oidc-envelope-weight-encryption`](oidc-envelope-weight-encryption): Mount encrypted weights from S3 and decrypt them with AWS KMS during startup.
+- [`oidc-envelope-encryption`](oidc-envelope-encryption): Protect model weights and inference payloads with customer-owned AWS KMS keys.
 
 ## Folder structure
 
-Each recipe contains:
+Recipes contain:
 
 - `README.md`: What the recipe does and how to run it.
 - `setup.sh`: Creates the example AWS resources and OIDC trust.
 - `standard-truss/`: A regular Truss with `config.yaml` and `model/model.py`.
-- `custom-base-image/`: An optional custom-server Truss. This is currently used by the envelope-weight-encryption recipe.
+- `custom-base-image/`: An optional custom-server Truss.
 
-Fill in values marked `FILL ME` or left empty in `setup.sh` and `config.yaml`. Run the setup script first, copy its output into the Truss config, and then run `truss push` on the relevant Truss directory.
+The envelope-encryption recipe has separate `weight-encryption/` and `payload-encryption/` flows. Fill in values marked `FILL ME` or left empty in `setup.sh` and `config.yaml`. Run the setup script first, copy its output into the Truss config, and then run `truss push` on the relevant Truss directory.

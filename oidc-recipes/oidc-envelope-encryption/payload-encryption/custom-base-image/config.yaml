@@ -1,0 +1,24 @@
+base_image:
+  image: vllm/vllm-openai:v0.8.5
+model_name: oidc-envelope-payload-encryption-vllm
+docker_server:
+  start_command: >-
+    sh -c "vllm serve Qwen/Qwen2.5-0.5B-Instruct --port 8001 &
+    exec python3 -m uvicorn proxy:app --app-dir /packages
+    --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/completions
+  server_port: 8000
+runtime:
+  oidc:
+    enabled: true
+requirements:
+  - boto3
+  - cryptography
+  - fastapi
+  - httpx
+  - uvicorn
+environment_variables:
+  AWS_ROLE_ARN: "" # e.g. arn:aws:iam::123456789012:role/BasetenOIDCPayloadRole
+  AWS_REGION: "" # e.g. us-west-2
