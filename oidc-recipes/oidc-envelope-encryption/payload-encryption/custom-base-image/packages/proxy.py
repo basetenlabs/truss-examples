@@ -9,12 +9,18 @@ import httpx
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 
 ENVELOPE_VERSION = 1
 ENVELOPE_ALGORITHM = "AES-256-CBC-HMAC-SHA256"
 VLLM_URL = "http://127.0.0.1:8001"
 
 app = FastAPI()
+
+
+@app.get("/live")
+async def live():
+    return {"status": "ok"}
 
 
 def get_kms_client():
@@ -91,6 +97,20 @@ async def health():
     except httpx.HTTPError as error:
         raise HTTPException(status_code=503, detail="vLLM is not ready.") from error
     return {"status": "ok"}
+
+
+@app.get("/metrics")
+async def metrics():
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{VLLM_URL}/metrics")
+            response.raise_for_status()
+    except httpx.HTTPError:
+        return Response(
+            content="payload_proxy_vllm_ready 0\n",
+            media_type="text/plain; version=0.0.4",
+        )
+    return Response(content=response.content, media_type="text/plain")
 
 
 @app.post("/v1/completions")

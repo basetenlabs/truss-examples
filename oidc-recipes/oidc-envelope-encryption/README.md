@@ -209,10 +209,13 @@ Copy the role ARN and region printed by the setup script into [`payload-encrypti
 truss push ./payload-encryption/custom-base-image
 ```
 
-Set the deployed model's predict URL and an OpenAI-compatible request before running the same client. Baseten forwards the request to the proxy's `/v1/completions` endpoint.
+Set `MODEL_URL` to the deployment URL ending in `/predict`. Do not use the OpenAI-compatible `/sync/v1` endpoint: the client sends an encrypted envelope, not a raw OpenAI request. The proxy decrypts the envelope and forwards its contents to vLLM's internal `/v1/completions` endpoint.
 
 ```bash
-export MODEL_URL=https://model-example.api.baseten.co/production/predict
+export AWS_REGION=us-west-2
+export KMS_KEY_ARN=arn:aws:kms:us-west-2:123456789012:key/example
+export BASETEN_API_KEY=YOUR_API_KEY
+export MODEL_URL=https://model-example.api.baseten.co/deployment/example/predict
 export PAYLOAD_JSON='{"model":"Qwen/Qwen2.5-0.5B-Instruct","prompt":"Hello","max_tokens":16}'
 python ./payload-encryption/client.py
 ```
