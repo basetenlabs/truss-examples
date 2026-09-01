@@ -54,7 +54,8 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
 - Hardware: `T4x4x16` (Turing, sm_75, 16 GiB VRAM) — pinned explicitly so the scheduler does not
   resolve resource constraints to the more expensive T4x8x32 shape. T4 has fp16 tensor cores but
   no bf16 or FP8, so transcription runs under fp16 autocast while model weights remain in their
-  checkpoint dtype.
+  checkpoint dtype. Startup logs report the installed Torch version and its compiled CUDA and cuDNN
+  versions for deployment verification.
 - Concurrency: downloads and CPU decoding overlap at `predict_concurrency: 8`; one GPU worker owns
   NeMo's mutable decoder state. `MAX_BATCH_SIZE=16` remains available for runtime tuning, but the
   concurrency cap limits a replica to batches of at most eight by default. The 5 ms microbatcher
@@ -65,6 +66,9 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   TDT decoder directly. Representative short-audio shapes are warmed at startup, long-lived startup
   objects are frozen out of Python GC scans, and deployment fails unless NeMo reports its device-side
   conditional decoder in `full_graph` CUDA-graph mode.
+- `NEMO_CHECKPOINT` can override the mounted `.nemo` path without changing the runtime. Startup logs
+  record the selected checkpoint, installed NeMo version, restored model/encoder/decoder classes,
+  and the observed versus required decoder CUDA-graph mode before and after warmup.
 - Duolingo-shaped short-form benchmark (512 deterministic clips, 0.767 s mean, one T4): the selected
   SLA operating point reached 50.14 req/s / 38.47x realtime at concurrency 8 with 264.4 ms p95 and
   357.9 ms p99. The equivalent sustained batch-eight c8 validation reached 48.50 req/s / 37.21x,

@@ -14,6 +14,7 @@ import base64
 import collections
 import gc
 import io
+import logging
 import os
 import queue
 import subprocess
@@ -22,8 +23,12 @@ import time
 
 from prometheus_client import Gauge, Histogram
 
+LOGGER = logging.getLogger(__name__)
+
 MODEL_DIR = os.environ.get("MODEL_DIR", "/models/parakeet-tdt-0.6b-v3")
-NEMO_CHECKPOINT = os.path.join(MODEL_DIR, "parakeet-tdt-0.6b-v3.nemo")
+NEMO_CHECKPOINT = os.environ.get(
+    "NEMO_CHECKPOINT", os.path.join(MODEL_DIR, "parakeet-tdt-0.6b-v3.nemo")
+)
 AUDIO_SAMPLE_RATE_HZ = 16_000
 FFMPEG_ERROR_CONTEXT_CHARS = 2_000
 MAX_BATCH_SIZE = int(os.environ.get("MAX_BATCH_SIZE", "1"))
@@ -139,13 +144,24 @@ class Model:
 
     def load(self):
         import httpx
+        import nemo
         import nemo.collections.asr as nemo_asr
         import torch
 
+        LOGGER.info(f"Restoring NeMo checkpoint: {NEMO_CHECKPOINT}")
         self._model = nemo_asr.models.ASRModel.restore_from(
             NEMO_CHECKPOINT, map_location=torch.device("cuda")
         )
         self._model.eval()
+        LOGGER.info(
+            f"NeMo checkpoint restore succeeded: checkpoint={NEMO_CHECKPOINT}, "
+            f"nemo_version={getattr(nemo, '__version__', 'unknown')}, "
+            f"torch_version={torch.__version__}, torch_cuda={torch.version.cuda}, "
+            f"cudnn_version={torch.backends.cudnn.version()}, "
+            f"model_class={type(self._model).__name__}, "
+            f"encoder_class={type(getattr(self._model, 'encoder', None)).__name__}, "
+            f"decoder_class={type(getattr(self._model, 'decoder', None)).__name__}"
+        )
         if DIRECT_FORWARD:
             # Match TranscriptionMixin._transcribe_on_begin() once at startup.
             # The direct path intentionally bypasses that per-call setup.
@@ -158,9 +174,9 @@ class Model:
                     featurizer.pad_to = 0
         self._http = httpx.Client(timeout=60, follow_redirects=False)
 
-        print(
-            "Parakeet runtime config: "
-            f"direct_forward={DIRECT_FORWARD}, max_batch_size={MAX_BATCH_SIZE}, "
+        LOGGER.info(
+            f"Parakeet runtime config: direct_forward={DIRECT_FORWARD}, "
+            f"max_batch_size={MAX_BATCH_SIZE}, "
             f"batch_window_ms={BATCH_WINDOW_SECONDS * 1000:g}, "
             f"batch_buckets_seconds={BATCH_BUCKET_SECONDS or 'disabled'}"
         )
@@ -170,7 +186,7 @@ class Model:
         if FREEZE_GC_AFTER_WARMUP:
             gc.collect()
             gc.freeze()
-            print("Python GC startup state frozen")
+            LOGGER.info("Python GC startup state frozen")
 
         threading.Thread(target=self._batch_worker, daemon=True).start()
 
@@ -179,9 +195,7 @@ class Model:
         try:
             return self._predict_impl(request)
         except Exception:
-            import traceback
-
-            print("PREDICT FAILED:\n" + traceback.format_exc())
+            LOGGER.exception("Parakeet prediction failed")
             raise
 
     def _predict_impl(self, request: dict) -> dict:
@@ -392,9 +406,9 @@ class Model:
                 [waveform for _ in range(WARMUP_BATCH_SIZE)],
                 with_timestamps=False,
             )
-        print(
-            "Parakeet warmup complete: "
-            f"durations={WARMUP_AUDIO_SECONDS}, batch_size={WARMUP_BATCH_SIZE}"
+        LOGGER.info(
+            f"Parakeet warmup complete: durations={WARMUP_AUDIO_SECONDS}, "
+            f"batch_size={WARMUP_BATCH_SIZE}"
         )
 
     def _log_decoder_graph_mode(self, phase: str, *, enforce: bool):
@@ -402,14 +416,21 @@ class Model:
         computer = getattr(decoder, "decoding_computer", None)
         mode = getattr(computer, "cuda_graphs_mode", None)
         mode_value = getattr(mode, "value", mode)
-        print(
-            f"Parakeet TDT decoder CUDA graph mode ({phase}): {mode_value or 'unavailable'}"
-        )
+        observed_mode = mode_value or "unavailable"
+        required_mode = "full_graph" if enforce else "any"
         if enforce and mode_value != "full_graph":
+            LOGGER.error(
+                "Parakeet TDT decoder CUDA graph check failed: "
+                f"phase={phase}, observed={observed_mode}, required={required_mode}"
+            )
             raise RuntimeError(
                 "REQUIRE_FULL_CUDA_GRAPH is enabled, but NeMo selected "
                 f"decoder CUDA graph mode {mode_value!r}"
             )
+        LOGGER.info(
+            "Parakeet TDT decoder CUDA graph check passed: "
+            f"phase={phase}, observed={observed_mode}, required={required_mode}"
+        )
 
     @staticmethod
     def _decode_waveform(audio_bytes: bytes):
