@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+
+model_name: "model:parakeet-tdt-0.6b-v3 preset:t4-latency"
+python_version: py310
+
+model_metadata:
+  repo_id: nvidia/parakeet-tdt-0.6b-v3
+  example_model_input: {"audio_url": "https://dldata-public.s3.us-east-2.amazonaws.com/2086-149220-0033.wav"}
+  tags:
+    - audio-to-text
+    - speech-to-text
+    - multilingual
+    - timestamps
+
+secrets:
+  hf_access_token: null
+
+# These defaults are tuned for short-form traffic on one T4. The direct path
+# removes NeMo's per-call DataLoader setup, while a small duration-aware batch
+# raises utilization without padding short clips to an unrelated long clip.
+environment_variables:
+  MAX_BATCH_SIZE: "16"
+  BATCH_WINDOW_MS: "5"
+  BATCH_BUCKET_SECONDS: "2,4,8"
+  PREDICT_TIMEOUT_SECONDS: "300"
+  PARAKEET_DIRECT_FORWARD: "true"
+  REQUIRE_FULL_CUDA_GRAPH: "true"
+  WARMUP_AUDIO_SECONDS: "0.15,0.4,0.85,1.6,3.2,6"
+  WARMUP_BATCH_SIZE: "2"
+  FREEZE_GC_AFTER_WARMUP: "true"
+
+# Weights are pre-fetched and mounted, so the server never downloads from HF at
+# request time. The .nemo checkpoint in the repo is what model/model.py loads.
+weights:
+  - source: "hf://nvidia/parakeet-tdt-0.6b-v3@541d1f99c6b0c3cd0b11a95167540bb8edefd82b"
+    mount_location: "/models/parakeet-tdt-0.6b-v3"
+    auth_secret_name: "hf_access_token"
+
+requirements:
+  # NeMo 2.7.x requires torch>=2.6.0; pin torch + matching torchaudio so a
+  # future rebuild resolves the same CUDA wheel family (cu124).
+  - torch==2.6.0
+  - torchaudio==2.6.0
+  - nemo_toolkit[asr]==2.7.3
+  - cuda-python>=12.3
+  - httpx==0.28.1
+  - soundfile==0.13.1
+
+resources:
+  # Pin the least expensive T4 shape. Constraint-based scheduling adds platform
+  # overhead and resolves cpu=2/memory=16Gi to T4x8x32 instead.
+  instance_type: T4x4x16
+
+system_packages:
+  - ffmpeg
+  - libsndfile1
+
+runtime:
+  # Cap admitted in-flight work at the validated Duolingo SLA operating point.
+  # MAX_BATCH_SIZE remains 16 for runtime tunability, but one replica can form
+  # batches of at most eight under this concurrency limit. One worker thread
+  # still owns the mutable NeMo decoder state.
+  predict_concurrency: 8
