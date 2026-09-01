@@ -1,0 +1,135 @@
+model_name: "model:phonellm-alpha-1 preset:latency"
+model_metadata:
+  description: >-
+    Pipecat PhoneLLM Alpha 1 (text-only) served via vLLM on a single H100. A full-parameter
+    SFT of NVIDIA Nemotron 3 Nano 30B A3B tuned for voice-agent phone conversation and tool
+    calling — the LLM stage of a cascaded STT -> LLM -> TTS pipeline, not an audio model.
+    Mamba2-Transformer hybrid MoE: 23 Mamba-2, 23 MoE and 6 GQA attention layers, 128 routed
+    experts plus 1 shared, 6 active per token — 3.5B active of 30B total. BF16 checkpoint,
+    with tool calling and a toggleable reasoning trace. One 80 GiB H100 was chosen over the
+    two-card and RTX PRO 6000 alternatives on measured benchmarks; see the README.
+  repo_id: pipecat-ai/phonellm-alpha-1
+  example_model_input:
+    model: pipecat-ai/phonellm-alpha-1
+    messages:
+      - role: system
+        content: "You are a helpful voice assistant answering a phone call. Keep replies short and speakable."
+      - role: user
+        content: "Hi, I'd like to move my appointment to next Tuesday."
+    stream: true
+    max_tokens: 512
+    # Upstream card is explicit: temperature 0 and thinking disabled. The repo's
+    # generation_config.json ships do_sample: true, so the request must say so.
+    temperature: 0
+    extra_body:
+      chat_template_kwargs:
+        enable_thinking: false
+  tags:
+    - openai-compatible
+base_image:
+  # Upstream's recipe floor for this architecture is vLLM 0.11.2 (0.12.0 recommended);
+  # --reasoning-parser-plugin needs >= 0.20.0. v0.22.0-cu129 clears both and is the
+  # most-used tag in this repo. It is also the image every benchmarked hardware arm
+  # ran, which is what makes the comparison in the README a comparison of cards.
+  image: vllm/vllm-openai:v0.22.0-cu129
+weights:
+  # Public, ungated (license bsd-2-clause) — pinned to a commit, never @main.
+  # 13 clean shards, 63.16 GB / 31.58B params, no quantization_config.
+  - source: "hf://pipecat-ai/phonellm-alpha-1@8e76aaa6e8ce4765ac943ba3fb339494d4d48dca"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+docker_server:
+  # ---------------------------------------------------------------------------
+  # ONE 80 GiB H100, no tensor parallelism. This was benchmarked against two
+  # H100s (TP=2) and against a single 96 GiB RTX PRO 6000; both alternatives were
+  # measured and then removed from the registry. The comparison table and the
+  # links to the per-cell benchmark comments live in README.md — read that before
+  # changing the accelerator.
+  #
+  # Memory budget on ONE H100 (80 GiB):
+  #   80 GiB x 0.9 (--gpu-memory-utilization)      = 72.0 GiB vLLM budget
+  #   - 58.82 GiB BF16 weights                     = 13.18 GiB raw headroom
+  #   applying the ~5 GiB CUDA-context + framework reserve this repo's sizing
+  #   tables use                                    = ~8.18 GiB effective
+  # (A bottom-up estimate of that reserve - ~0.5 GiB CUDA context, ~1.5 GiB peak
+  # activation, ~1.0 GiB CUDA-graph capture - comes out nearer 3 GiB, so ~8.18 GiB
+  # is the conservative floor and ~10.18 GiB the optimistic case. Both are used
+  # below; the recommendation holds under either.)
+  #
+  # This checkpoint is unusually cache-cheap, which is what makes one card work.
+  # From config.json @ 8e76aaa, hybrid_override_pattern "MEMEM*EMEMEM*..." is 23 M,
+  # 23 E and 6 '*' of 52 layers - only SIX attention layers, with
+  # num_key_value_heads 2 and head_dim 128:
+  #   KV      2(K,V) x 2 kv_heads x 128 head_dim x 2 B x 6 layers = 6144 B/token
+  #   Mamba-2 length-INDEPENDENT per request, 23 layers x
+  #             (64 mamba_num_heads x 64 mamba_head_dim x 128 ssm_state_size x 4 B
+  #              fp32 per --mamba-ssm-cache-dtype                   = 2.00 MiB)
+  #           + (4096 + 2 x 8 n_groups x 128) x (conv_kernel 4 - 1) x 2 B
+  #                                                                 = 0.035 MiB
+  #           = 46.8 MiB/request
+  #
+  # --max-num-seqs 64 / predict_concurrency 64: tuned per Lei Pan's 2026-08-28
+  # direction ("make it as large as possible until OOM, calculate the max batch
+  # size with the VRAM capacity for each GPU"). Was a flat 8, which would have made
+  # the top four levels of the benchmarking `full` sweep (1,4,8,16,32,64,128 -
+  # benchmarking/llm/README.md:19) measure queueing behind an admission gate
+  # instead of the hardware.
+  #
+  # Sized against the sweep's longest scenarios, (8192,1024) and (1024,8192), both
+  # 9216 tokens/request - NOT against --max-model-len 32768, which is untouched.
+  #   per request @ 9216 tok = 9216 x 6144 B (54.0 MiB KV) + 46.8 MiB Mamba
+  #                          = 100.8 MiB
+  #    64 x 100.8 MiB =  6.30 GiB  -> fits in 8.18 GiB conservative (1.9 GiB spare)
+  #   128 x 100.8 MiB = 12.60 GiB  -> does NOT fit even the 10.18 GiB optimistic
+  #                                   case. 80 GiB simply cannot hold it.
+  # Theoretical ceiling here is ~83 requests (8.18 GiB / 100.8 MiB); 64 is the
+  # largest sweep level below that, with ~30% spare.
+  #
+  # CONSEQUENCE, stated loudly: this configuration is GATED at the sweep's 128
+  # level. Its 128 cell measures the admission gate, not the card, and must be
+  # reported that way. Measured saturation is ~2725 output tok/s at concurrency 64
+  # on D(1024,1024); sustained load approaching that is the signal to move to two
+  # H100s (TP=2, cap 128), not to raise this cap.
+  #
+  # The failure mode to watch, if it comes, is OOM during CUDA-graph capture or
+  # weight streaming rather than at steady state - that is the shape a 30B MoE
+  # fails in. It did not occur in any benchmarked deploy of this config.
+  # ---------------------------------------------------------------------------
+  start_command: >-
+    vllm serve /app/checkpoint/model
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name pipecat-ai/phonellm-alpha-1
+    --trust-remote-code
+    --max-model-len 32768
+    --max-num-seqs 64
+    --gpu-memory-utilization 0.9
+    --mamba-ssm-cache-dtype float32
+    --reasoning-parser-plugin /app/checkpoint/model/nano_v3_reasoning_parser.py
+    --reasoning-parser nano_v3
+    --enable-auto-tool-choice
+    --tool-call-parser qwen3_coder
+    --enable-prefix-caching
+    --load-format runai_streamer
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  # WARNING is what every benchmarked arm ran, so the recorded numbers are all at
+  # this level. INFO would surface the KV-cache and Mamba-state allocation sizes
+  # that WARNING hides — genuinely useful on a card this tight — but it also adds
+  # per-request log lines. Run a one-off INFO deploy if those figures are wanted.
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+resources:
+  accelerator: H100
+  use_gpu: true
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
