@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+model_name: model:zembed-1-embedding-4b preset:throughput
+
+model_metadata:
+  example_model_input:
+    model: zeroentropy/zembed-1-embedding
+    # zembed-1 is instruction-aware (query vs document). vLLM does NOT auto-apply
+    # sentence-transformers prompts on /v1/embeddings, so the client must prepend
+    # the correct instruction. Pull the exact prefix strings from the repo's
+    # config_sentence_transformers.json / model card before using in production.
+    input:
+      - Baseten is a fast inference provider
+      - Embeddings let you do semantic search.
+    encoding_format: float
+    truncate_prompt_tokens: 32768
+    truncation_side: right
+  repo_id: zeroentropy/zembed-1-embedding
+  tags:
+    - openai-compatible
+    - embedding
+    - vllm
+
+base_image:
+  image: vllm/vllm-openai:v0.25.0
+
+docker_server:
+  start_command: >-
+    vllm serve /models/zembed-1
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name zeroentropy/zembed-1-embedding
+    --runner pooling
+    --max-model-len 32768
+    --max-num-batched-tokens 131072
+    --max-num-seqs 64
+    --enable-chunked-prefill
+    --gpu-memory-utilization 0.90
+    --trust-remote-code
+
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/embeddings
+  server_port: 8000
+
+weights:
+  # Apache-2.0 variant. Pin @<commit-sha> instead of @main for reproducible builds.
+  - source: "hf://zeroentropy/zembed-1-embedding@main"
+    mount_location: "/models/zembed-1"
+
+resources:
+  accelerator: H100
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_threshold_seconds: 600
+    stop_traffic_threshold_seconds: 240
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+
+secrets: {}
+system_packages: []
+requirements: []

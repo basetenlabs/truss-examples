@@ -1,0 +1,3 @@
+# vLLM with zeroentropy/zembed-1-embedding
+
+This is a Deployment for vLLM with zeroentropy/zembed-1-embedding. Zembed-1 is ZeroEntropy’s 4B-parameter text-embedding model, built for high-quality semantic search and retrieval across contexts up to 40,960 tokens. It produces native 2,560-dimensional embeddings and supports smaller dimensions through learned projection layers rather than standard Matryoshka truncation—an important serving detail, since naive truncation can meaningfully degrade embedding quality.
