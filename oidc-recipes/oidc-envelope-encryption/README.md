@@ -38,6 +38,11 @@ The HMAC covers `IV || ciphertext` and is verified before decryption.
 
 This flow keeps model weights encrypted in a customer-owned S3 bucket, through Baseten Data Network (BDN), and in the model mount. The model decrypts them during `load()`.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../diagrams/weight-encryption-dark.svg">
+  <img alt="Envelope encryption for weights" src="../diagrams/weight-encryption-dark.svg">
+</picture>
+
 ### Flow
 
 ```text
@@ -132,6 +137,11 @@ This flow adds startup time for STS and KMS calls and for local decryption. Decr
 ## Payload encryption
 
 This flow protects inference data beyond transport encryption. The client encrypts each request before sending it to Baseten. Customer-owned code in the model pod decrypts the request, runs inference, and encrypts the response before returning it.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../diagrams/payload-encryption-dark.svg">
+  <img alt="Envelope encryption for payloads" src="../diagrams/payload-encryption-dark.svg">
+</picture>
 
 ### Flow
 
