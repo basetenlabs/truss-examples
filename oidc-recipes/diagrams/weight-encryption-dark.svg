@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1286 992" width="1286" height="992" role="img" aria-label="Weight encryption on Baseten, shown as two phases. Phase one is setup and is performed once by hand by the operator: create a customer-managed key encryption key in AWS KMS; register Baseten as an OIDC identity provider in AWS IAM and create a role limited to kms:Decrypt whose trust policy matches the OIDC sub claim; call GenerateDataKey and use the returned plaintext data key to encrypt the weights into weights.enc; publish weights.enc, the wrapped data key and envelope.json to Amazon S3 and discard the plaintext data key; then point config.yaml at the bundle and run truss push. Phase two runs on every cold start: Baseten mounts the still-encrypted bundle at /models/custom and makes the pod's OIDC token available, and everything after that is customer-owned code in the Truss, which exchanges the token at AWS STS for temporary credentials, calls KMS Decrypt with the wrapped data key and encryption context to recover the plaintext data key, then verifies the HMAC and AES-256-CBC decrypts the weights. The key encryption key never leaves the customer's AWS account, and the plaintext weights never leave the pod.">
+<title>Weight encryption flow</title>
+<style>text{font-family:-apple-system,"Segoe UI",system-ui,sans-serif}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.bg{fill:#020c07}
+.band-op{fill:#101514;stroke:#6c4e6e;stroke-width:1}
+.band-auto{fill:#03170c;stroke:#09642d;stroke-width:1}
+.card-op{fill:#0f2318;stroke:#6c4e6e;stroke-width:1.25}
+.card-auto{fill:#0f2318;stroke:#09642d;stroke-width:1.25;rx:12}
+.card-bt{fill:#14301f;stroke:#2c543a;stroke-width:1.25;rx:12}
+.chip{fill:#14301f;stroke:#2c543a;stroke-width:1;rx:3}
+.chip-dash{fill:#052814;stroke:#09642d;stroke-width:1.25;stroke-dasharray:4 3;rx:10}
+.zone{fill:none;stroke:#4f5953;stroke-width:1.25;stroke-dasharray:5 4}
+.badge-op{fill:#ffa9fd}
+.badge-auto{fill:#19e76e}
+.badge-bt{fill:#0f2318;stroke:#2c543a;stroke-width:1.25}
+.bp0{fill:#020c07}
+.bp1{fill:#101514}
+.bp2{fill:#03170c}
+.eye{font-size:9.5px;letter-spacing:1.1px;fill:#93a899}
+.ctit{font-size:14px;font-weight:700;fill:#e8f2ea}
+.cbod{font-size:11.5px;fill:#c3d4c8}
+.bnum-op{font-size:11.5px;font-weight:700;fill:#2a0a28}
+.bnum-auto{font-size:11.5px;font-weight:700;fill:#06180d}
+.bnum-bt{font-size:11.5px;font-weight:700;fill:#93a899}
+.ztit{font-size:11.5px;font-weight:700;fill:#e8f2ea}
+.zbod{font-size:11px;fill:#93a899}
+.albl-op{font-size:10.5px;fill:#ffa9fd}
+.albl-auto{font-size:10.5px;fill:#19e76e}
+.albl-mut{font-size:10.5px;fill:#93a899}
+.zlbl{font-size:10px;letter-spacing:1.4px;fill:#9ca59e}
+.blbl-op{font-size:12px;font-weight:700;letter-spacing:1.3px;fill:#ffa9fd}
+.blbl-auto{font-size:12px;font-weight:700;letter-spacing:1.3px;fill:#19e76e}
+.tiel{font-size:10px;fill:#9ca59e}
+.ln-op{stroke:#ffa9fd;stroke-width:1.4;fill:none}
+.ln-auto{stroke:#19e76e;stroke-width:1.4;fill:none}
+.dash-op{stroke:#ffa9fd;stroke-width:1.4;fill:none;stroke-dasharray:6 4}
+.dash-auto{stroke:#19e76e;stroke-width:1.4;fill:none;stroke-dasharray:6 4}
+.chev-op{stroke:#ffa9fd;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.chev-auto{stroke:#19e76e;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tie{fill:none;stroke:#9ca59e;stroke-width:1;stroke-dasharray:2 4}</style>
+<defs><marker id="aop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffa9fd"/></marker><marker id="aauto" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#19e76e"/></marker></defs>
+<rect class="bg" x="0" y="0" width="1286" height="992"/>
+<rect class="band-op" x="22" y="46" width="1242" height="439"/>
+<rect class="badge-op" x="22" y="23" width="12" height="12"/>
+<rect class="zone" x="30" y="294" width="980.4" height="169"/>
+<rect class="card-op" x="42" y="80" width="219.6" height="142"/>
+<rect class="badge-op" x="58" y="112" width="32" height="32"/>
+<path class="chev-op" d="M269.6,145 L279.6,151 L269.6,157"/>
+<rect class="card-op" x="287.6" y="80" width="219.6" height="142"/>
+<rect class="badge-op" x="303.6" y="112" width="32" height="32"/>
+<path class="chev-op" d="M515.2,145 L525.2,151 L515.2,157"/>
+<rect class="card-op" x="533.2" y="80" width="219.6" height="142"/>
+<rect class="badge-op" x="549.2" y="112" width="32" height="32"/>
+<path class="chev-op" d="M760.8,145 L770.8,151 L760.8,157"/>
+<rect class="card-op" x="778.8" y="80" width="219.6" height="142"/>
+<rect class="badge-op" x="794.8" y="112" width="34" height="32"/>
+<path class="chev-op" d="M1006.4,145 L1016.4,151 L1006.4,157"/>
+<rect class="card-op" x="1024.4" y="80" width="219.6" height="142"/>
+<rect class="badge-op" x="1040.4" y="112" width="35" height="32"/>
+<rect class="chip" x="42" y="328" width="219.6" height="85"/>
+<rect class="chip" x="287.6" y="328" width="219.6" height="85"/>
+<rect class="chip" x="533.2" y="328" width="219.6" height="85"/>
+<rect class="chip" x="778.8" y="328" width="219.6" height="85"/>
+<line class="ln-op" x1="151.8" y1="222" x2="151.8" y2="323" marker-end="url(#aop)"/>
+<line class="ln-op" x1="397.4" y1="222" x2="397.4" y2="323" marker-end="url(#aop)"/>
+<line class="ln-op" x1="643" y1="222" x2="643" y2="323" marker-end="url(#aop)"/>
+<line class="ln-op" x1="888.6" y1="222" x2="888.6" y2="323" marker-end="url(#aop)"/>
+<polyline class="tie" points="151.8,413 151.8,429 643,429 643,413"/>
+<line class="dash-op" x1="1134.2" y1="222" x2="1134.2" y2="526" marker-end="url(#aop)"/>
+<rect class="band-auto" x="22" y="531" width="1242" height="439" rx="16"/>
+<circle class="badge-auto" cx="28" cy="514" r="6"/>
+<rect class="zone" x="30" y="779" width="919" height="169"/>
+<rect class="card-bt" x="42" y="565" width="281" height="142"/>
+<circle class="badge-bt" cx="74" cy="613.0" r="16.0"/>
+<path class="chev-auto" d="M331,630 L341,636 L331,642"/>
+<rect class="card-auto" x="349" y="565" width="281" height="142"/>
+<circle class="badge-auto" cx="381" cy="613.0" r="16.0"/>
+<path class="chev-auto" d="M638,630 L648,636 L638,642"/>
+<rect class="card-auto" x="656" y="565" width="281" height="142"/>
+<circle class="badge-auto" cx="688" cy="613.0" r="16.0"/>
+<path class="chev-auto" d="M945,630 L955,636 L945,642"/>
+<rect class="card-auto" x="963" y="565" width="281" height="142"/>
+<circle class="badge-auto" cx="995" cy="613.0" r="16.0"/>
+<rect class="chip" x="42" y="813" width="281" height="85"/>
+<rect class="chip" x="349" y="813" width="281" height="85"/>
+<rect class="chip" x="656" y="813" width="281" height="85"/>
+<rect class="chip-dash" x="963" y="813" width="281" height="85"/>
+<line class="ln-auto" x1="182.5" y1="813" x2="182.5" y2="715" marker-end="url(#aauto)"/>
+<line class="ln-auto" x1="459.5" y1="707" x2="459.5" y2="808" marker-end="url(#aauto)"/>
+<line class="ln-auto" x1="519.5" y1="813" x2="519.5" y2="715" marker-end="url(#aauto)"/>
+<line class="ln-auto" x1="766.5" y1="707" x2="766.5" y2="808" marker-end="url(#aauto)"/>
+<line class="ln-auto" x1="826.5" y1="813" x2="826.5" y2="715" marker-end="url(#aauto)"/>
+<line class="ln-auto" x1="1103.5" y1="707" x2="1103.5" y2="808" marker-end="url(#aauto)"/>
+<rect class="bp0" x="38" y="21" width="383.1" height="18"/>
+<text class="blbl-op mono" x="42" y="34">PHASE 1 — SETUP · you run this once, by hand</text>
+<rect class="bp1" x="829.6" y="439" width="170.8" height="15"/>
+<text class="zlbl mono" x="996.4" y="450" text-anchor="end">CUSTOMER AWS ACCOUNT</text>
+<text class="eye mono" x="58" y="102">OPERATOR</text>
+<text class="bnum-op mono" x="74" y="132" text-anchor="middle">1</text>
+<text class="ctit" x="102" y="131">Create the KEK</text>
+<text class="cbod" x="58" y="164">Customer-managed key</text>
+<text class="cbod" x="58" y="184">in AWS KMS. Material</text>
+<text class="cbod" x="58" y="204">never leaves KMS.</text>
+<text class="eye mono" x="303.6" y="102">OPERATOR</text>
+<text class="bnum-op mono" x="319.6" y="132" text-anchor="middle">2</text>
+<text class="ctit" x="347.6" y="131">Trust Baseten</text>
+<text class="cbod" x="303.6" y="164">IAM OIDC provider +</text>
+<text class="cbod" x="303.6" y="184">a kms:Decrypt role that</text>
+<text class="cbod" x="303.6" y="204">matches the sub claim.</text>
+<text class="eye mono" x="549.2" y="102">OPERATOR</text>
+<text class="bnum-op mono" x="565.2" y="132" text-anchor="middle">3</text>
+<text class="ctit" x="593.2" y="131">Wrap &amp; encrypt</text>
+<text class="cbod" x="549.2" y="164">GenerateDataKey → DEK.</text>
+<text class="cbod" x="549.2" y="184">DEK encrypts weights</text>
+<text class="cbod" x="549.2" y="204">→ weights.enc</text>
+<text class="eye mono" x="794.8" y="102">OPERATOR</text>
+<text class="bnum-op mono" x="811.8" y="132" text-anchor="middle">4a</text>
+<text class="ctit" x="840.8" y="131">Publish bundle</text>
+<text class="cbod" x="794.8" y="164">weights.enc, wrapped</text>
+<text class="cbod" x="794.8" y="184">DEK, envelope.json → S3.</text>
+<text class="cbod" x="794.8" y="204">Discard plaintext DEK.</text>
+<text class="eye mono" x="1040.4" y="102">OPERATOR</text>
+<text class="bnum-op mono" x="1057.9" y="132" text-anchor="middle">4b</text>
+<text class="ctit" x="1087.4" y="131">Point Truss at it</text>
+<text class="cbod" x="1040.4" y="164">S3 source, role ARN and</text>
+<text class="cbod" x="1040.4" y="184">region into config.yaml,</text>
+<text class="cbod" x="1040.4" y="204">then truss push.</text>
+<text class="ztit mono" x="58" y="356">AWS KMS</text>
+<text class="zbod" x="58" y="378">KEK created here.</text>
+<text class="zbod" x="58" y="397">Key material stays.</text>
+<text class="ztit mono" x="303.6" y="356">AWS IAM</text>
+<text class="zbod" x="303.6" y="378">oidc.baseten.co provider</text>
+<text class="zbod" x="303.6" y="397">+ KMS-Decrypt role</text>
+<text class="ztit mono" x="549.2" y="356">AWS KMS</text>
+<text class="zbod" x="549.2" y="378">Same KEK wraps the</text>
+<text class="zbod" x="549.2" y="397">64-byte DEK.</text>
+<text class="ztit mono" x="794.8" y="356">Amazon S3</text>
+<text class="zbod" x="794.8" y="378">weights.enc · envelope.json</text>
+<text class="zbod" x="794.8" y="397">encrypted-data-key</text>
+<rect class="bp1" x="119.3" y="248" width="64.9" height="16"/>
+<text class="albl-op mono" x="151.8" y="260" text-anchor="middle">CreateKey</text>
+<rect class="bp1" x="317.5" y="248" width="159.7" height="16"/>
+<text class="albl-op mono" x="397.4" y="260" text-anchor="middle">register provider + role</text>
+<rect class="bp1" x="591.6" y="248" width="102.8" height="16"/>
+<text class="albl-op mono" x="643" y="260" text-anchor="middle">GenerateDataKey</text>
+<rect class="bp1" x="853.0" y="248" width="71.2" height="16"/>
+<text class="albl-op mono" x="888.6" y="260" text-anchor="middle">PUT bundle</text>
+<rect class="bp1" x="282.0" y="434" width="230.8" height="15"/>
+<text class="tiel mono" x="397.4" y="445" text-anchor="middle">one and the same customer-managed KEK</text>
+<rect class="bp1" x="1098.6" y="302" width="71.2" height="16"/>
+<text class="albl-op mono" x="1134.2" y="314" text-anchor="middle">truss push</text>
+<rect class="bp1" x="1076.5" y="319" width="115.5" height="16"/>
+<text class="albl-mut mono" x="1134.2" y="331" text-anchor="middle">deploys the model</text>
+<rect class="bp0" x="38" y="506" width="434.2" height="18"/>
+<text class="blbl-auto mono" x="42" y="519">PHASE 2 — RUNTIME · your code, on every cold start</text>
+<rect class="bp2" x="768.2" y="924" width="170.8" height="15"/>
+<text class="zlbl mono" x="935" y="935" text-anchor="end">CUSTOMER AWS ACCOUNT</text>
+<text class="eye mono" x="58" y="587">BASETEN · BDN</text>
+<text class="bnum-bt mono" x="74" y="617" text-anchor="middle">5</text>
+<text class="ctit" x="102" y="616">Baseten mounts it</text>
+<text class="cbod" x="58" y="649">Sealed bundle to /models/custom,</text>
+<text class="cbod" x="58" y="669">plus the OIDC token in the pod.</text>
+<text class="cbod" x="58" y="689">Baseten's whole runtime role.</text>
+<text class="eye mono" x="365" y="587">YOUR CODE · IN YOUR TRUSS</text>
+<text class="bnum-auto mono" x="381" y="617" text-anchor="middle">6</text>
+<text class="ctit" x="409" y="616">Token → credentials</text>
+<text class="cbod" x="365" y="649">Pod reads its Baseten OIDC</text>
+<text class="cbod" x="365" y="669">token and calls STS</text>
+<text class="cbod" x="365" y="689">AssumeRoleWithWebIdentity.</text>
+<text class="eye mono" x="672" y="587">YOUR CODE · IN YOUR TRUSS</text>
+<text class="bnum-auto mono" x="688" y="617" text-anchor="middle">7</text>
+<text class="ctit" x="716" y="616">Unwrap the DEK</text>
+<text class="cbod" x="672" y="649">boto3 kms.decrypt(wrapped</text>
+<text class="cbod" x="672" y="669">DEK, encryption context).</text>
+<text class="cbod" x="672" y="689">Ciphertext never goes to KMS.</text>
+<text class="eye mono" x="979" y="587">YOUR CODE · IN YOUR TRUSS</text>
+<text class="bnum-auto mono" x="995" y="617" text-anchor="middle">8</text>
+<text class="ctit" x="1023" y="616">Verify &amp; decrypt</text>
+<text class="cbod" x="979" y="649">Verify HMAC over IV‖ciphertext,</text>
+<text class="cbod" x="979" y="669">then AES-256-CBC decrypt. You</text>
+<text class="cbod" x="979" y="689">choose where the plaintext goes.</text>
+<text class="ztit mono" x="58" y="841">Amazon S3</text>
+<text class="zbod" x="58" y="863">Encrypted weight bundle</text>
+<text class="zbod" x="58" y="882">+ envelope metadata</text>
+<text class="ztit mono" x="365" y="841">AWS STS</text>
+<text class="zbod" x="365" y="863">AssumeRoleWithWebIdentity</text>
+<text class="zbod" x="365" y="882">→ short-lived credentials</text>
+<text class="ztit mono" x="672" y="841">AWS KMS</text>
+<text class="zbod" x="672" y="863">Decrypt(wrapped DEK, ctx)</text>
+<text class="zbod" x="672" y="882">under the same KEK</text>
+<text class="ztit mono" x="979" y="841">Pod filesystem · this example</text>
+<text class="zbod" x="979" y="863">/tmp/decrypted-weights/weights.json</text>
+<text class="zbod" x="979" y="882">Ephemeral · dies with the pod</text>
+<rect class="bp2" x="127.9" y="733" width="109.2" height="16"/>
+<text class="albl-auto mono" x="182.5" y="745" text-anchor="middle">encrypted bundle</text>
+<rect class="bp2" x="423.9" y="733" width="71.2" height="16"/>
+<text class="albl-auto mono" x="459.5" y="745" text-anchor="middle">OIDC token</text>
+<rect class="bp2" x="483.9" y="751" width="71.2" height="16"/>
+<text class="albl-auto mono" x="519.5" y="763" text-anchor="middle">temp creds</text>
+<rect class="bp2" x="708.8" y="733" width="115.5" height="16"/>
+<text class="albl-auto mono" x="766.5" y="745" text-anchor="middle">wrapped DEK + ctx</text>
+<rect class="bp2" x="781.1" y="751" width="90.9" height="16"/>
+<text class="albl-auto mono" x="826.5" y="763" text-anchor="middle">plaintext DEK</text>
+<rect class="bp2" x="1045.8" y="733" width="115.5" height="16"/>
+<text class="albl-auto mono" x="1103.5" y="745" text-anchor="middle">decrypted weights</text>
+</svg>

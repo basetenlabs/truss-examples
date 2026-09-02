@@ -1,0 +1,21 @@
+model_name: oidc-envelope-weight-encryption
+python_version: py313
+runtime:
+  oidc:
+    enabled: true
+requirements:
+  - boto3
+  - cryptography
+
+# FILL ME
+weights:
+  - source: ""
+    mount_location: ""
+    auth:
+      auth_method: AWS_OIDC
+      aws_oidc_role_arn: ""
+      aws_oidc_region: ""
+environment_variables:
+  AWS_ROLE_ARN: ""
+  AWS_REGION: ""
+  DECRYPTED_WEIGHTS_PATH: ""

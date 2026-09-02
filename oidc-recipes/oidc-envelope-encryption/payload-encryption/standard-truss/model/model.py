@@ -1,0 +1,87 @@
+import base64
+import hashlib
+import hmac
+import json
+import os
+
+import boto3
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+ENVELOPE_VERSION = 1
+ENVELOPE_ALGORITHM = "AES-256-CBC-HMAC-SHA256"
+
+
+def get_kms_client():
+    os.environ["AWS_WEB_IDENTITY_TOKEN_FILE"] = os.environ["B10_OIDC_TOKEN_PATH"]
+    os.environ["AWS_ROLE_SESSION_NAME"] = "baseten-payload-decryption"
+    return boto3.client("kms", region_name=os.environ["AWS_REGION"])
+
+
+def decode_field(envelope: dict, field: str) -> bytes:
+    try:
+        return base64.b64decode(envelope[field], validate=True)
+    except (KeyError, ValueError) as error:
+        raise ValueError(f"Invalid envelope field: {field}.") from error
+
+
+def decrypt_request(envelope: dict) -> tuple[dict, bytes]:
+    if envelope.get("version") != ENVELOPE_VERSION:
+        raise ValueError("Unsupported payload envelope version.")
+    if envelope.get("algorithm") != ENVELOPE_ALGORITHM:
+        raise ValueError("Unsupported payload envelope algorithm.")
+
+    response = get_kms_client().decrypt(
+        CiphertextBlob=decode_field(envelope, "encrypted_data_key"),
+        EncryptionContext=envelope["encryption_context"],
+    )
+    data_key = response["Plaintext"]
+    if len(data_key) != 64:
+        raise ValueError("Expected a 64-byte envelope data key from KMS.")
+
+    encryption_key = data_key[:32]
+    mac_key = data_key[32:]
+    iv = decode_field(envelope, "iv")
+    ciphertext = decode_field(envelope, "ciphertext")
+    expected_mac = decode_field(envelope, "hmac")
+
+    actual_mac = hmac.new(mac_key, iv + ciphertext, hashlib.sha256).digest()
+    if not hmac.compare_digest(actual_mac, expected_mac):
+        raise ValueError("Encrypted request failed integrity verification.")
+
+    decryptor = Cipher(algorithms.AES(encryption_key), modes.CBC(iv)).decryptor()
+    padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+    unpadder = padding.PKCS7(algorithms.AES.block_size).unpadder()
+    plaintext = unpadder.update(padded_plaintext) + unpadder.finalize()
+    return json.loads(plaintext), data_key
+
+
+def encrypt_response(payload: dict, data_key: bytes) -> dict:
+    encryption_key = data_key[:32]
+    mac_key = data_key[32:]
+    iv = os.urandom(16)
+    plaintext = json.dumps(payload, separators=(",", ":")).encode()
+
+    padder = padding.PKCS7(algorithms.AES.block_size).padder()
+    padded_plaintext = padder.update(plaintext) + padder.finalize()
+    encryptor = Cipher(algorithms.AES(encryption_key), modes.CBC(iv)).encryptor()
+    ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
+    payload_hmac = hmac.new(mac_key, iv + ciphertext, hashlib.sha256).digest()
+
+    return {
+        "version": ENVELOPE_VERSION,
+        "algorithm": ENVELOPE_ALGORITHM,
+        "iv": base64.b64encode(iv).decode(),
+        "hmac": base64.b64encode(payload_hmac).decode(),
+        "ciphertext": base64.b64encode(ciphertext).decode(),
+    }
+
+
+class Model:
+    def predict(self, model_input):
+        request, data_key = decrypt_request(model_input)
+        try:
+            value = float(request["value"])
+            return encrypt_response({"value": value * 2 + 1}, data_key)
+        finally:
+            del data_key

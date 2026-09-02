@@ -1,0 +1,30 @@
+base_image:
+  image: vllm/vllm-openai:v0.8.5
+model_name: oidc-envelope-weight-encryption-vllm
+docker_server:
+  start_command: >-
+    sh -c "python3 /packages/decrypt.py &&
+    exec vllm serve /tmp/decrypted-weights --port 8000"
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/completions
+  server_port: 8000
+runtime:
+  oidc:
+    enabled: true
+requirements:
+  - boto3
+  - cryptography
+
+# FILL ME
+weights:
+  - source: ""
+    mount_location: ""
+    auth:
+      auth_method: AWS_OIDC
+      aws_oidc_role_arn: ""
+      aws_oidc_region: ""
+environment_variables:
+  AWS_ROLE_ARN: ""
+  AWS_REGION: ""
+  DECRYPTED_WEIGHTS_PATH: ""
