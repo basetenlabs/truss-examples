@@ -1,0 +1,20 @@
+base_image:
+  image: docker.io/basetentuhin/vllm-8-12:latest
+  python_executable_path: /usr/bin/python
+description: null
+environment_variables: {}
+live_reload: false
+model_name: Graph/Mythologic
+requirements:
+- ray
+resources:
+  cpu: "3"
+  memory: 14Gi
+  use_gpu: true
+  accelerator: A100:1
+secrets:
+  hf_token: null
+spec_version: '2.0'
+system_packages: []
+runtime:
+  predict_concurrency: 128
