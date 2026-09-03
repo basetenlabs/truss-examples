@@ -1,0 +1,76 @@
+model_name: "model:deepseek-v4-flash-vision-exp preset:latency"
+model_metadata:
+  description: >-
+    DeepSeek V4 Flash Vision (experimental), a multimodal MoE reasoning model with
+    vision served with vLLM (B200 TP/EP), OpenAI-compatible chat with tooling and
+    DSpark speculative decoding.
+  repo_id: deepseek-ai/DeepSeek-V4-Flash-Vision-Exp
+  example_model_input:
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "Describe this image in one sentence."
+          - type: image_url
+            image_url:
+              url: "https://picsum.photos/id/237/200/300"
+    stream: true
+    model: deepseek-ai/DeepSeek-V4-Flash-Vision-Exp
+    max_tokens: 32768
+    temperature: 1.0
+    top_p: 0.95
+  tags:
+    - openai-compatible
+base_image:
+  # DeepSeek-V4-Flash-Vision-Exp support (vllm-project/vllm#54566, merge
+  # 1356635d) landed after the last vLLM release. Pin the first immutable
+  # nightly commit that includes it; replace with the first stable vLLM
+  # release containing that support once one is available.
+  image: "vllm/vllm-openai:nightly-27a94d1ce4e3fc100c4732439ccec10f8246a804@sha256:7d5128a92db05e6d70661a18f10e40c17cd2d8fcaad9226e170a0d69f822b795"
+weights:
+  - source: "hf://deepseek-ai/DeepSeek-V4-Flash-Vision-Exp@e46e16bf6035c6f317eb2ac7458eb0362926d402"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+resources:
+  instance_type: B200:4
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+docker_server:
+  start_command: >-
+    vllm serve /app/checkpoint/model
+    --served-model-name deepseek-ai/DeepSeek-V4-Flash-Vision-Exp
+    --trust-remote-code
+    --enable-chunked-prefill
+    --enable-prefix-caching
+    --kv-cache-dtype fp8
+    --block-size 256
+    --max-num-seqs 32
+    --max-model-len auto
+    --moe-backend deep_gemm_mega_moe
+    --attention_config.indexer_kv_dtype mxfp4
+    --enable-expert-parallel
+    --tensor-parallel-size 4
+    --max-num-batched-tokens 8192
+    --gpu-memory-utilization 0.95
+    --tokenizer-mode deepseek_v4
+    --tool-call-parser deepseek_v4
+    --enable-auto-tool-choice
+    --reasoning-parser deepseek_v4
+    --limit-mm-per-prompt.image 2
+    --speculative-config.method dspark
+    --speculative-config.num_speculative_tokens 3
+    --load-format runai_streamer
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
