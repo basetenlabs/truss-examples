@@ -49,8 +49,7 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 resources:
-  accelerator: RTX_PRO_6000
-  use_gpu: true
+  instance_type: RTX-PRO-6000
 runtime:
   health_checks:
     restart_check_delay_seconds: 1800

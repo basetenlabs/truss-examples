@@ -21,8 +21,7 @@ weights:
     mount_location: "/models/FLUX.1-dev"
     auth_secret_name: "hf_access_token"
 resources:
-  accelerator: H100_40GB
-  use_gpu: true
+  instance_type: H100MIG
 secrets:
   hf_access_token: null
 system_packages:
