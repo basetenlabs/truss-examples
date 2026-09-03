@@ -51,10 +51,10 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   registry's vLLM `docker_server` pattern does not apply. Weights load from the pinned `.nemo`
   checkpoint mounted from Hugging Face; no download happens at request time. Common audio formats
   decode in memory, with an ffmpeg pipe fallback for other codecs.
-- Hardware: `T4x4x16` (Turing, sm_75, 16 GiB VRAM) — pinned explicitly so the scheduler does not
-  resolve resource constraints to the more expensive T4x8x32 shape. T4 has fp16 tensor cores but
-  no bf16 or FP8, so transcription runs under fp16 autocast while model weights remain in their
-  checkpoint dtype. Startup logs report the installed Torch version and its compiled CUDA and cuDNN
+- Hardware: the NeMo serving implementation is CUDA GPU-agnostic. `T4x4x16` is the validated,
+  cost-efficient default, and transcription uses broadly supported fp16 autocast while model weights
+  remain in their checkpoint dtype. Retune concurrency, batch size, and warmup shapes when selecting
+  another GPU. Startup logs report the installed Torch version and its compiled CUDA and cuDNN
   versions for deployment verification.
 - Concurrency: downloads and CPU decoding overlap at `predict_concurrency: 8`; one GPU worker owns
   NeMo's mutable decoder state. `MAX_BATCH_SIZE=16` remains available for runtime tuning, but the

@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
 
-model_name: "model:parakeet-tdt-0.6b-v3 preset:t4-latency"
+model_name: "model:parakeet-tdt-0.6b-v3 preset:latency"
 python_version: py310
 
 model_metadata:
@@ -15,7 +15,7 @@ model_metadata:
 secrets:
   hf_access_token: null
 
-# These defaults are tuned for short-form traffic on one T4. The direct path
+# These defaults are tuned for short-form traffic on one GPU. The direct path
 # removes NeMo's per-call DataLoader setup, while a small duration-aware batch
 # raises utilization without padding short clips to an unrelated long clip.
 environment_variables:
@@ -47,8 +47,8 @@ requirements:
   - soundfile==0.13.1
 
 resources:
-  # Pin the least expensive T4 shape. Constraint-based scheduling adds platform
-  # overhead and resolves cpu=2/memory=16Gi to T4x8x32 instead.
+  # T4x4x16 is the validated, cost-efficient default. The serving implementation
+  # is GPU-agnostic; retune concurrency and batching when selecting another GPU.
   instance_type: T4x4x16
 
 system_packages:
