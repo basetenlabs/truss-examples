@@ -1,0 +1,166 @@
+model_name: "model:vibevoice-asr-streaming-7b preset:latency"
+python_version: py310
+
+model_metadata:
+  repo_id: microsoft/VibeVoice-ASR-Streaming-7B
+  tags:
+    - openai-compatible
+    - audio
+    - asr
+    - speech-to-text
+    - streaming
+    - speaker-attributed
+  example_model_input:
+    model: vibevoice
+    messages:
+      - role: user
+        content:
+          - type: audio_url
+            audio_url:
+              url: https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav
+          - type: text
+            text: Transcribe this audio.
+    max_tokens: 256
+    temperature: 0.0
+
+base_image:
+  image: vllm/vllm-openai:v0.14.1
+  python_executable_path: /usr/bin/python3
+
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  TRANSFORMERS_CACHE: /cache/org
+  # The streaming launcher imposes no ffmpeg limit of its own (unlike the
+  # non-streaming one), so an unset value really is uncapped. Upstream's
+  # docker run commands set 64.
+  VIBEVOICE_FFMPEG_MAX_CONCURRENCY: "64"
+  PYTORCH_ALLOC_CONF: "expandable_segments:True"
+
+requirements:
+  - transformers==4.57.6
+  - accelerate>=0.30.0
+  - safetensors
+  - huggingface-hub>=0.23.0
+  - librosa>=0.10.0
+  - soundfile
+  - scipy
+  - pydub
+  - diffusers
+  # Pinned, not @main: the boot patch below asserts on anchor strings inside
+  # this commit's vllm_plugin/model.py, and the streaming server's tokenizer
+  # and chunk-geometry contracts were read at this commit.
+  - git+https://github.com/microsoft/VibeVoice.git@1541f590c7099820f10ea012f48d2399282df69f
+
+# RTX PRO 6000 is the shipped accelerator, and it was chosen on measured
+# cost. An H100 arm of this exact package was benched against it and then
+# removed: it landed at $0.80-$0.98 per concurrent-stream-hour across three
+# repeats, against $0.5229 here, with throughput indistinguishable (7.65x
+# aggregate realtime at c=16 on this card sits inside the H100's 6.64-8.09x
+# three-repeat noise band) and quality indistinguishable too. See README.
+#
+# The SKU is named outright rather than requested as `accelerator` plus
+# cpu/memory — what all four other RTX-PRO-6000 trusses in this repo do
+# (stt/qwen3-asr-1.7b-streaming/latency, stt/voxtral-mini-4b/latency,
+# llm/qwen3-vl-32b/throughput, llm/holo-3.1-35b-a3b/throughput) — because it
+# pins the host side rather than leaving it to a scheduler. `RTX-PRO-6000` is
+# 16 vCPU / 116 GiB / 96 GiB VRAM at $0.06667/min; the `H100` SKU the removed
+# arm landed on was 16 vCPU / 118 GiB / 80 GiB VRAM at $0.10833/min, i.e.
+# 1.625x dearer per hour for the same vCPU count and 2 GiB more host RAM.
+# `cpu`, `memory` and `accelerator` are ignored when instance_type is set;
+# 116 GiB still covers the 64Gi that arm asked for, so the host-side headroom
+# --mm-processor-cache-gb 16 needs is unchanged.
+resources:
+  instance_type: RTX-PRO-6000
+
+runtime:
+  # The socket is the routed endpoint. Baseten's WebSocket transport proxies
+  # the gateway's fixed /websocket route to docker_server.predict_endpoint
+  # (/v1/realtime, the translator below) — same shape as
+  # stt/voxtral-mini-4b/latency, which is docker_server + vLLM + this
+  # transport and benches green on a realtime protocol. The long ping timeout
+  # matches the streaming trusses: a session can run ~25 minutes.
+  is_websocket_endpoint: true
+  transport:
+    kind: websocket
+    ping_timeout_seconds: 86400
+  # 16, and it is the smoke profile's top rung rather than a tuning result.
+  # On the socket a "request" is a whole session — one connection held open
+  # for the audio's duration — so this caps concurrent SESSIONS, not
+  # whole-clip requests. The STT smoke profile sweeps c in {1, 4, 16}
+  # (run-b10-bench/modalities/stt/profiles/smoke.json), so at 16 the cap does
+  # not bind the top cell and that cell measures the card. Anything lower
+  # would make the top cell an admission-queue measurement; anything higher is
+  # unreachable from CI and buys nothing but long-session risk. The 48-128 the
+  # RTX-PRO-6000 peers use is a production autoscaling ceiling for much
+  # smaller checkpoints (1.7B, 4B, Whisper), not a bench setting.
+  #
+  # 96 GiB of VRAM is not a reason to raise it. 17.35 GB of bf16 weights fit
+  # with room to spare, and the c=16 cell is limited by neither VRAM nor the
+  # multimodal cache: every session completes with 0.00% request errors, but
+  # at only 0.48x the pace the bench feeds it (against 0.93x at c=1), so the
+  # binding term is compute and memory bandwidth. Read sustained capacity off
+  # that cell, not the cap: 7.65x aggregate realtime, i.e. roughly 7-8
+  # concurrent real-time streams per replica. The removed H100 arm measured
+  # 6.64-8.09x on the same cell across three repeats, so the two cards were
+  # indistinguishable on throughput; that band is also the ~22% noise floor
+  # any future comparison has to clear.
+  #
+  # The long-session ceiling is unmeasured, and it is the cache rather than
+  # this number: --mm-processor-cache-gb is 16 GB, upstream is explicit that
+  # it "must hold every in-flight session's audio windows" and should be
+  # raised before concurrency is, a session's windows stay resident for its
+  # whole life, and an eviction is upstream's "Cache miss" error rather than a
+  # slowdown. Bench clips are seconds long, so no smoke run probes it. See
+  # README.
+  predict_concurrency: 16
+
+secrets:
+  hf_access_token: null
+
+system_packages:
+  - ffmpeg
+  - git
+
+# Weights are pre-baked at build time and mounted, so cold starts skip the
+# 17.35 GB HF download. Pinned to a commit, not @main.
+weights:
+  - source: "hf://microsoft/VibeVoice-ASR-Streaming-7B@60d858b518b4e19d404af3737f848fc185b30177"
+    mount_location: "/models/vibevoice-asr-streaming-7b"
+    auth_secret_name: "hf_access_token"
+
+# Pass-through mode: no model.py. Note this is NOT `vllm serve` — a streaming
+# checkpoint transcribes one chunk off a growing sequence, so a request is a
+# session and stock `vllm serve` has nowhere to keep it. Upstream's launcher
+# runs vllm_plugin.asr_streaming_server, which holds the same vLLM AsyncLLM
+# in-process and adds the WebSocket. We do not invoke that module directly:
+# data/serve.py imports it, calls its own create_app, and mounts one extra
+# WebSocket route before handing off to its main() — arg parsing, ServerConfig
+# and uvicorn all stay upstream's. Either way we skip
+# start_streaming_server.py, whose first two steps apt-install and pip-install
+# at boot (handled by system_packages/requirements here).
+#
+# predict_endpoint is that extra route, /v1/realtime: pass-through routes
+# exactly one container path, and upstream's own socket (/v1/stream) speaks a
+# dialect no b10-bench STT protocol does — binary float32 PCM at 24 kHz and a
+# literal "end" frame. /v1/realtime translates the qwen_realtime dialect
+# (base64 PCM16 @16kHz in JSON, input_audio_buffer.append/commit) onto
+# upstream's own StreamingSession, so the bench can drive the streaming route.
+# Upstream's /v1/stream, /v1/chat/completions, /v1/transcribe and /v1/config
+# are still served inside the container; only the routed one changes.
+#
+# Tokenizer generation is deliberately skipped: this checkpoint already ships
+# <|text_chunk_end|> at id 151665, which is exactly what upstream's launcher
+# checks before deciding to regenerate. The server re-verifies at startup and
+# raises rather than serving empty chunks.
+docker_server:
+  server_port: 8000
+  predict_endpoint: /v1/realtime
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  start_command: >-
+    sh -c "python3 /app/data/patch.py && exec python3 /app/data/serve.py
+    --model /models/vibevoice-asr-streaming-7b
+    --served-model-name vibevoice --host 0.0.0.0 --port 8000 --dtype bfloat16
+    --tensor-parallel-size 1 --max-model-len 32768 --max-audio-windows 512
+    --mm-processor-cache-gb 16 --gpu-memory-utilization 0.85"
