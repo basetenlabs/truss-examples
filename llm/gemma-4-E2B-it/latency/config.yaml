@@ -53,7 +53,7 @@ resources:
   use_gpu: true
 runtime:
   health_checks:
-    restart_check_delay_seconds: 1800
+    startup_threshold_seconds: 1800
     restart_threshold_seconds: 1200
     stop_traffic_threshold_seconds: 120
   predict_concurrency: 16
