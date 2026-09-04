@@ -1,0 +1,64 @@
+model_name: "model:mimo-v2.5 preset:latency"
+model_metadata:
+  description: >-
+    Xiaomi MiMo-V2.5, a 310B-total / 15B-active omnimodal mixture-of-experts model
+    with a 1,048,576-token context window, served with vLLM on four B200 GPUs with
+    tensor parallelism. OpenAI-compatible chat with MiMo tool-calling and reasoning
+    parsers and MTP speculative decoding. Thinking mode is on by default; pass
+    chat_template_kwargs.enable_thinking=false to disable.
+  repo_id: XiaomiMiMo/MiMo-V2.5
+  example_model_input:
+    model: XiaomiMiMo/MiMo-V2.5
+    messages:
+      - role: user
+        content: "What is 84 * 3 / 2?"
+    max_tokens: 512
+    temperature: 1.0
+  tags:
+    - openai-compatible
+base_image:
+  # Stable vLLM does not support the mimo_v2 architecture yet; the vLLM team's
+  # pre-built MiMo-V2.5 image is pinned instead. Replace with the first stable
+  # vllm/vllm-openai release containing mimo_v2 support once one is available.
+  image: vllm/vllm-openai:mimov25-cu129
+weights:
+  - source: "hf://XiaomiMiMo/MiMo-V2.5@63651580ca774f8504f676040460aed3e1244ac1"
+    mount_location: "/app/checkpoint/model"
+    auth_secret_name: "hf_access_token"
+secrets:
+  hf_access_token: null
+resources:
+  instance_type: B200:4
+environment_variables:
+  VLLM_LOGGING_LEVEL: WARNING
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+docker_server:
+  # TP is pinned to 4: TP=8 hits an attention-projection shape mismatch with this
+  # FP8 checkpoint (per the upstream vLLM recipe), so do not scale it to GPU count.
+  start_command: >-
+    vllm serve /app/checkpoint/model
+    --served-model-name XiaomiMiMo/MiMo-V2.5
+    --tensor-parallel-size 4
+    --trust-remote-code
+    --generation-config vllm
+    --enable-prefix-caching
+    --max-model-len auto
+    --gpu-memory-utilization 0.95
+    --limit-mm-per-prompt.image 1
+    --tool-call-parser mimo
+    --enable-auto-tool-choice
+    --reasoning-parser mimo
+    --speculative-config.method mtp
+    --speculative-config.num_speculative_tokens 1
+    --load-format runai_streamer
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    restart_check_delay_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
