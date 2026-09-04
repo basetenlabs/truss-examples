@@ -1,0 +1,52 @@
+model_name: "model:qwen-image preset:lossy"
+
+base_image:
+  image: baseten/qwen-image-2512-h100:v1.2
+
+weights:
+  - source: hf://Qwen/Qwen-Image-2512
+    mount_location: /app/model_cache/qwen-image-2512
+    auth_secret_name: hf_access_token
+
+docker_server:
+  start_command: bash /app/data/start_sglang_server.sh
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/images/generations
+  server_port: 8000
+
+environment_variables:
+  SGLANG_WARMUP_SIZE_ON_INIT: "1024x1024"
+  SGLANG_CACHE_DIT_ENABLED: true
+  SGLANG_CACHE_DIT_WARMUP: 2
+  SGLANG_CACHE_DIT_TAYLORSEER: true
+  SGLANG_CACHE_DIT_FN: 2
+  SGLANG_CACHE_DIT_BN: 0
+
+model_metadata:
+  output_media:
+    - json_path: "data[*].b64_json"
+      media_type: "image/png"
+      encoding: "base64"
+      label: "Generated Image"
+
+  example_model_input:
+    prompt: "A cat holding up a sign that reads 'Hello, world!'"
+    size: "1024x1024"
+    guidance_scale: 1.0
+    num_inference_steps: 25
+    response_format: "b64_json"
+
+resources:
+  accelerator: H100 # B200 also supported
+  use_gpu: true
+
+secrets:
+  hf_access_token: null
+
+runtime:
+  health_checks:
+    # Reduced delays since model weights are now cached
+    startup_threshold_seconds: 600   # 10 minutes (was 20)
+    restart_threshold_seconds: 300      # 5 minutes
+    stop_traffic_threshold_seconds: 300 # 5 minutes
