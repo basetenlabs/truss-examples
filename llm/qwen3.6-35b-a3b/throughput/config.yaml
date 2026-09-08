@@ -14,7 +14,7 @@ model_metadata:
     - nvfp4
     - b200
 base_image:
-  image: "vllm/vllm-openai:nightly@sha256:38cf880a732998a3664174a7d07be38026aeb9a9b8cddfa96cadd5f8613f92fb"
+  image: "vllm/vllm-openai:v0.28.0"
 weights:
   - source: "hf://RedHatAI/Qwen3.6-35B-A3B-NVFP4@main"
     mount_location: "/app/checkpoint/model"
@@ -45,7 +45,8 @@ docker_server:
     --moe_backend flashinfer_cutlass
     --speculative-config.method qwen3_5_mtp
     --speculative-config.num_speculative_tokens 3
-    --trust-remote-code'
+    --trust-remote-code
+    --load-format runai_streamer'
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
@@ -57,7 +58,6 @@ runtime:
     restart_threshold_seconds: 1500
     stop_traffic_threshold_seconds: 120
 resources:
-  accelerator: B200
-  use_gpu: true
+  instance_type: B200
 secrets:
   hf_access_token: null
