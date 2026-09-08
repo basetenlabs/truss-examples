@@ -50,6 +50,7 @@ docker_server:
     --tool-call-parser qwen3_coder
     --speculative_config.method mtp
     --speculative_config.num_speculative_tokens 2'
+    --load-format runai_streamer
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
