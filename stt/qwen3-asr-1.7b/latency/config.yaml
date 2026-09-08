@@ -37,7 +37,11 @@ requirements:
 environment_variables:
   BASETEN_MODEL_PATH: "/app/checkpoint/model"
 system_packages:
-  - python3.10-venv
+  # No python3.10-venv here: nothing in this truss builds a venv (vLLM is started
+  # via docker_server), and pinning a Python minor version in apt ties the build to
+  # whatever the base image happens to ship. That pin already broke the community-1
+  # diarizer when its base moved to Debian trixie:
+  #   E: Unable to locate package python3.10-venv
   - ffmpeg
   - openmpi-bin
   - libopenmpi-dev
