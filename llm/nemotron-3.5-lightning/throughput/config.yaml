@@ -72,7 +72,6 @@ runtime:
   streaming_read_timeout: 3600
   health_checks:
     startup_threshold_seconds: 1800
-    restart_check_delay_seconds: 300
     restart_threshold_seconds: 900
     stop_traffic_threshold_seconds: 120
 
