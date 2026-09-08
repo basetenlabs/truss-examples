@@ -31,6 +31,7 @@ docker_server:
     --enable-chunked-prefill
     --enable-prefix-caching
     --gpu-memory-utilization 0.90
+    --load-format runai_streamer
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/chat/completions
