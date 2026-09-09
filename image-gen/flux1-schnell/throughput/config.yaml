@@ -17,8 +17,10 @@ requirements:
   - sentencepiece
   - protobuf
   - b10-transfer
+environment_variables:
+  B10FS_CACHE_DIR: "/cache/model/compile_cache/flux1-schnell-fc6a91e3-regional-v1"
 weights:
-  - source: "hf://black-forest-labs/FLUX.1-schnell@main"
+  - source: "hf://black-forest-labs/FLUX.1-schnell@741f7c3ce8b383c54771c7003378a50191e9efe9"
     mount_location: "/models/FLUX.1-schnell"
     auth_secret_name: "hf_access_token"
 resources:

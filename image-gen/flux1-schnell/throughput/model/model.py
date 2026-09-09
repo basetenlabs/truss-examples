@@ -24,10 +24,16 @@ class Model:
         self.pipe = None
 
     def compile(self):
-        logging.info("Compiling the model for performance optimization")
-        self.pipe.transformer = torch.compile(
-            self.pipe.transformer, mode="max-autotune-no-cudagraphs", dynamic=False
-        )
+        logging.info("Regionally compiling repeated transformer blocks")
+        compile_options = {
+            "mode": "max-autotune-no-cudagraphs",
+            "fullgraph": True,
+            "dynamic": False,
+        }
+        for block in self.pipe.transformer.transformer_blocks:
+            block.compile(**compile_options)
+        for block in self.pipe.transformer.single_transformer_blocks:
+            block.compile(**compile_options)
 
         self.pipe.vae.decode = torch.compile(
             self.pipe.vae.decode, mode="max-autotune-no-cudagraphs", dynamic=False
@@ -78,11 +84,10 @@ class Model:
 
         if cache_loaded == OperationStatus.ERROR:
             logging.info("Run in eager mode, skipping torch compile")
-        else:  # OperationStatus.(SUCCESS|SKIPPED|DOES_NOT_EXIST)
+        else:
             self.compile()
 
         if cache_loaded == OperationStatus.DOES_NOT_EXIST:
-            # Save compile cache for future runs
             save_compile_cache()
 
         try:
