@@ -1,0 +1,37 @@
+# BEI requires the sequence-classification conversion; see README for prompt and score handling.
+model_name: model:zerank-1-small-reranker preset:throughput
+model_metadata:
+  repo_id: zeroentropy/zerank-1-small-reranker
+  example_model_input:
+    inputs:
+    - '<|im_start|>system
+
+      What is 2+2?<|im_end|>
+
+      <|im_start|>user
+
+      4<|im_end|>
+
+      <|im_start|>assistant
+
+      '
+    raw_scores: true
+    truncate: false
+python_version: py39
+resources:
+  instance_type: L4:4x16
+secrets:
+  hf_access_token: null
+trt_llm:
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: fred-baseten/zerank-1-small-seq
+      revision: 65292825034a60e01fb33bf3c437ababc5ca5c26
+      source: HF
+    max_seq_len: 32768
+    max_num_tokens: 32768
+    num_builder_gpus: 1
+    quantization_type: fp8
+  runtime:
+    webserver_default_route: /predict
