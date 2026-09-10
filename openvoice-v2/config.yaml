@@ -1,0 +1,38 @@
+model_name: OpenVoice V2
+python_version: py39
+build_commands:
+  - "pip install numpy==1.22.0 librosa==0.9.1 scipy torch torchaudio"
+  - "apt-get update && apt-get install -y ffmpeg wget"
+  - "wget -q https://github.com/conda-forge/miniforge/releases/download/23.11.0-0/Mambaforge-23.11.0-0-Linux-x86_64.sh -O mambaforge.sh"
+  - "bash mambaforge.sh -b -p /opt/conda"
+  - "rm mambaforge.sh"
+  - "/opt/conda/bin/mamba install -y -c conda-forge av=10.0.0"
+  - "pip install faster-whisper==0.9.0 wavmark silero"
+  - "pip install cn2an pypinyin inflect==7.0.0 unidic-lite jieba langid"
+  - "pip install whisper-timestamped==1.14.2 gradio==3.48.0"
+  - "pip install git+https://github.com/myshell-ai/OpenVoice.git --no-deps"
+  - "pip install git+https://github.com/myshell-ai/MeloTTS.git"
+  - "python3 -m unidic download"
+  - "mkdir -p /app/checkpoints_v2"
+  - "curl -L https://myshell-public-repo-host.s3.amazonaws.com/openvoice/checkpoints_v2_0417.zip -o /app/checkpoints_v2.zip"
+  - "unzip /app/checkpoints_v2.zip -d /app/"
+  - "rm /app/checkpoints_v2.zip"
+requirements: []
+system_packages:
+  - ffmpeg
+  - unzip
+  - curl
+  - pkg-config
+  - libavformat-dev
+  - libavcodec-dev
+  - libavdevice-dev
+  - libavutil-dev
+  - libswscale-dev
+  - libswresample-dev
+  - libavfilter-dev
+resources:
+  accelerator: A100
+  cpu: '4'
+  memory: 24Gi
+  use_gpu: true
+secrets: {}
