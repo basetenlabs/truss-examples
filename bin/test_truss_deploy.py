@@ -71,8 +71,8 @@ remote_url = https://app.staging.baseten.co"""
         raise Exception(
             f"Failed to push model:\n\nSTDOUT: {result.stdout.decode()}\nSTDERR: {result.stderr.decode()}"
         )
-    model_id = match.group(1)
-    deployment_id = match.group(2)
+    model_id = str(match.group(1))  # Ensure model_id is a string
+    deployment_id = str(match.group(2))  # Ensure deployment_id is a string
     print(
         f"Model pushed successfully. model-id: {model_id}. deployment-id: {deployment_id}"
     )
