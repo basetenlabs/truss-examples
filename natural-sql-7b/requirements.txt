@@ -1,0 +1,3 @@
+transformers==4.35.2
+accelerate>=0.25.0
+sqlparse>=0.4.2
