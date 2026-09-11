@@ -23,11 +23,8 @@ base_image:
 weights:
   - source: "hf://RedHatAI/gemma-4-26B-A4B-it-FP8-Dynamic@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
   - source: "hf://RedHatAI/gemma-4-26B-A4B-it-speculator.eagle3@226b2692d48029aae52adc1d0021a9d58709d33c"
     mount_location: "/app/checkpoint/speculator"
-secrets:
-  hf_access_token: null
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
@@ -35,7 +32,6 @@ docker_server:
     --served-model-name google/gemma-4-26B-A4B-it
     --max-num-seqs 16
     --max-model-len auto
-    --limit-mm-per-prompt.image 1
     --gpu-memory-utilization 0.9
     --enable-prefix-caching
     --speculative-config.model /app/checkpoint/speculator
@@ -54,8 +50,7 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 resources:
-  accelerator: H100:2
-  use_gpu: true
+  instance_type: H100:2
 runtime:
   health_checks:
     startup_threshold_seconds: 1800
