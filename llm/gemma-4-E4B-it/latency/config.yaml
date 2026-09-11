@@ -23,9 +23,6 @@ base_image:
 weights:
   - source: "hf://google/gemma-4-E4B-it@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
@@ -33,7 +30,6 @@ docker_server:
     --served-model-name google/gemma-4-E4B-it
     --max-num-seqs 16
     --max-model-len auto
-    --limit-mm-per-prompt.image 1
     --gpu-memory-utilization 0.9
     --async-scheduling
     --trust-remote-code
@@ -50,8 +46,7 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 resources:
-  accelerator: H100
-  use_gpu: true
+  instance_type: H100
 runtime:
   health_checks:
     startup_threshold_seconds: 1800
