@@ -5,12 +5,9 @@ model_metadata:
     - openai-compatible
     - audio
     - asr
-secrets:
-  hf_access_token: null
 weights:
   - source: "hf://mistralai/Voxtral-Mini-3B-2507@3060fe34b35ba5d44202ce9ff3c097642914f8f3"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
     # The HF repo ships the weights twice: mistral-format
     # consolidated.safetensors (what --load-format mistral reads) and an
     # HF-format shard pair + model.safetensors.index.json. Skip the unused

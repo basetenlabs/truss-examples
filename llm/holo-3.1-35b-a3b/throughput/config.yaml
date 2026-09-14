@@ -30,7 +30,6 @@ base_image:
 weights:
   - source: "hf://Hcompany/Holo-3.1-35B-A3B-FP8@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 build_commands: []
 environment_variables:
   PYTORCH_ALLOC_CONF: "expandable_segments:True"
@@ -68,5 +67,3 @@ runtime:
     stop_traffic_threshold_seconds: 120
 resources:
   instance_type: RTX-PRO-6000
-secrets:
-  hf_access_token: null

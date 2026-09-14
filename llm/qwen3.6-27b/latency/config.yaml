@@ -19,7 +19,6 @@ base_image:
 weights:
   - source: "hf://Qwen/Qwen3.6-27B@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 
 resources:
   accelerator: H100:4
@@ -32,8 +31,6 @@ environment_variables:
   HF_HUB_ENABLE_HF_TRANSFER: "1"
   VLLM_LOGGING_LEVEL: WARNING
 
-secrets:
-  hf_access_token: null
 
 docker_server:
   start_command: >-

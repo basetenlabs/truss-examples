@@ -37,9 +37,6 @@ weights:
   # 13 clean shards, 63.16 GB / 31.58B params, no quantization_config.
   - source: "hf://pipecat-ai/phonellm-alpha-1@8e76aaa6e8ce4765ac943ba3fb339494d4d48dca"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 docker_server:
   # ---------------------------------------------------------------------------
   # ONE 80 GiB H100, no tensor parallelism. This was benchmarked against two

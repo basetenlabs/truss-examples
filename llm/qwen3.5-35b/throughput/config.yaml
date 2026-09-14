@@ -21,9 +21,6 @@ base_image:
 weights:
   - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"

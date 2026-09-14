@@ -21,7 +21,6 @@ base_image:
 weights:
   - source: "hf://JetBrains/Mellum2-12B-A2.5B-Instruct@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 
 resources:
   accelerator: H100
@@ -39,8 +38,6 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 
-secrets:
-  hf_access_token: null
 
 docker_server:
   # No --reasoning-parser: Instruct answers directly without <think> blocks.

@@ -115,8 +115,6 @@ runtime:
   # README.
   predict_concurrency: 16
 
-secrets:
-  hf_access_token: null
 
 system_packages:
   - ffmpeg
@@ -127,7 +125,6 @@ system_packages:
 weights:
   - source: "hf://microsoft/VibeVoice-ASR-Streaming-7B@60d858b518b4e19d404af3737f848fc185b30177"
     mount_location: "/models/vibevoice-asr-streaming-7b"
-    auth_secret_name: "hf_access_token"
 
 # Pass-through mode: no model.py. Note this is NOT `vllm serve` — a streaming
 # checkpoint transcribes one chunk off a growing sequence, so a request is a

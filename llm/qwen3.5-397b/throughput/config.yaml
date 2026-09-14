@@ -1,7 +1,7 @@
 model_name: "model:qwen3.5-397b preset:throughput"
 model_metadata:
   description: Qwen 3.5 397B A17B quantized version (NVFP4) on vllm.
-  repo_id: Qwen/Qwen3.5-397B-A17B-NVFP4
+  repo_id: nvidia/Qwen3.5-397B-A17B-NVFP4
   tags:
     - openai-compatible
   example_model_input:
@@ -17,12 +17,9 @@ base_image:
 weights:
   - source: "hf://nvidia/Qwen3.5-397B-A17B-NVFP4@main"
     mount_location: /app/checkpoint/model
-    auth_secret_name: hf_access_token
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-secrets:
-  hf_access_token: null
 docker_server:
   start_command: >-
     sh -c "vllm serve /app/checkpoint/model

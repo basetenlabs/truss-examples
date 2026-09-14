@@ -20,8 +20,6 @@ model_metadata:
 python_version: py39
 resources:
   instance_type: L4:4x16
-secrets:
-  hf_access_token: null
 trt_llm:
   build:
     base_model: encoder

@@ -19,9 +19,6 @@ base_image:
 weights:
   - source: "hf://deepseek-ai/DeepSeek-V4-Pro@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 resources:
   instance_type: B200:8
 environment_variables:

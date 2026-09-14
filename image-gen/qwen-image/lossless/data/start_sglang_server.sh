@@ -12,7 +12,7 @@ log "=========================================="
 
 export PATH="$HOME/.local/bin:$PATH"
 export PYTHONPATH="/workspace/flash-attention:$PYTHONPATH"
-export HF_TOKEN=$(cat /secrets/hf_access_token)
+if [ -f /secrets/hf_access_token ]; then export HF_TOKEN=$(cat /secrets/hf_access_token); fi
 export SGLANG_ENABLE_FP8_QUANTIZATION=0
 export SGLANG_DIFFUSION_USE_CUTE_DSL_FLASH_ATTN=1
 export SGLANG_DIFFUSION_ENABLE_CUDA_GRAPH_CAPTURE=0

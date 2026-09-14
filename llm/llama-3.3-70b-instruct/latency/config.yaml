@@ -37,8 +37,6 @@ docker_server:
   predict_endpoint: /v1/chat/completions
   server_port: 8000
 
-secrets:
-  hf_access_token: null
 
 weights:
   - source: hf://nvidia/Llama-3.3-70B-Instruct-FP8@main
@@ -53,7 +51,6 @@ weights:
     ignore_patterns:
       - original/*
       - "*.pth"
-    auth_secret_name: hf_access_token
 
 resources:
   cpu: "4"

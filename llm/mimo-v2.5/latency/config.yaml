@@ -24,9 +24,6 @@ base_image:
 weights:
   - source: "hf://XiaomiMiMo/MiMo-V2.5@63651580ca774f8504f676040460aed3e1244ac1"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 resources:
   instance_type: B200:4
 environment_variables:

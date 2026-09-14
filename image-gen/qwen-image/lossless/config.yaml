@@ -6,7 +6,6 @@ base_image:
 weights:
   - source: hf://Qwen/Qwen-Image-2512
     mount_location: /app/model_cache/qwen-image-2512
-    auth_secret_name: hf_access_token
 
 docker_server:
   start_command: bash /app/data/start_sglang_server.sh
@@ -36,8 +35,6 @@ resources:
   accelerator: H100 # B200 also supported
   use_gpu: true
 
-secrets:
-  hf_access_token: null
 
 runtime:
   health_checks:

@@ -32,6 +32,7 @@ docker_server:
     --served-model-name google/gemma-4-31B-it
     --max-num-seqs 16
     --max-model-len auto
+    --limit-mm-per-prompt.image 1
     --gpu-memory-utilization 0.9
     --enable-prefix-caching
     --speculative-config.model /app/checkpoint/speculator
@@ -50,7 +51,8 @@ environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
   VLLM_ENGINE_READY_TIMEOUT_S: "3600"
 resources:
-  instance_type: H100:2
+  accelerator: H100:2
+  use_gpu: true
 runtime:
   health_checks:
     startup_threshold_seconds: 1800

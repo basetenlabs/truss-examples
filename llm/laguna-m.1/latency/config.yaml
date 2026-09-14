@@ -38,10 +38,7 @@ base_image:
 weights:
   - source: "hf://poolside/Laguna-M.1-FP8@3732a656e6f0bf09f90250518d8de9c8e5c54f12"
     mount_location: "/models/laguna-m1"
-    auth_secret_name: "hf_access_token"
 
-secrets:
-  hf_access_token: null
 
 requirements:
   - runai-model-streamer==0.16.1

@@ -9,12 +9,9 @@ model_metadata:
     - audio
     - asr
     - diarization
-secrets:
-  hf_access_token: null
 weights:
   - source: "hf://OpenMOSS-Team/MOSS-Transcribe-Diarize@e8681d68e7042738ffca8ac8212bc8fcb1131ab8"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 environment_variables:
   HF_HOME: /app/models/huggingface
   TORCHINDUCTOR_CACHE_DIR: /app/models/inductor

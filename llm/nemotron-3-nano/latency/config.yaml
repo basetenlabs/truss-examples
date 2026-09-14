@@ -30,9 +30,6 @@ weights:
   # fine (33 GB in 34s on first deploy).
   - source: "hf://nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8@f8dc1c0afee92f44417695b4f5ddca9afc95ea58"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 docker_server:
   # The reasoning parser is nano_v3, shipped inside the HF repo and loaded as a
   # plugin — NOT the built-in nemotron_v3 that the omni entry and the NIM use.

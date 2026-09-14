@@ -34,7 +34,6 @@ base_image:
 weights:
   - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4@0dcd680e5585c791728c83342b311d0a0026dbeb"
     mount_location: /models/nemotron-3.5-lightning-nvfp4
-    auth_secret_name: hf_access_token
     allow_patterns:
       - "*.safetensors"
       - "*.json"
@@ -44,14 +43,11 @@ weights:
       - "*.md"
   - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4-DFlash@7fc1f1ff4b82b917efbd0710df0872c2bb89caa5"
     mount_location: /models/nemotron-3.5-lightning-nvfp4-dflash
-    auth_secret_name: hf_access_token
     allow_patterns:
       - "*.safetensors"
       - "*.json"
       - "*.md"
 
-secrets:
-  hf_access_token: null
 
 docker_server:
   # The extra argument is inert to start.sh (bash ignores unused script args),

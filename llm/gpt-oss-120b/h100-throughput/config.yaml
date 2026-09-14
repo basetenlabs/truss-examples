@@ -24,10 +24,7 @@ build_commands:
 weights:
   - source: "hf://openai/gpt-oss-120b@b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
     ignore_patterns: ["original/*", "metal/model.bin"]
-secrets:
-  hf_access_token: null
 environment_variables:
   TIKTOKEN_ENCODINGS_BASE: "/opt/tiktoken"
   TIKTOKEN_RS_CACHE_DIR: "/opt/tiktoken"

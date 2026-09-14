@@ -1,12 +1,9 @@
 model_name: "model:voxtral-mini-4b preset:latency"
 model_metadata:
   repo_id: mistralai/Voxtral-Mini-4B-Realtime-2602
-secrets:
-  hf_access_token: null
 weights:
   - source: "hf://mistralai/Voxtral-Mini-4B-Realtime-2602@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 environment_variables:
   VLLM_CACHE_ROOT: /cache/org/vllm
   TORCHINDUCTOR_CACHE_DIR: /cache/org/inductor
