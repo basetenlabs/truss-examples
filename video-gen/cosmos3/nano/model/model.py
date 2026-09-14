@@ -58,7 +58,10 @@ class Model:
             raise
 
     def _load_impl(self) -> None:
-        token = self._secrets.get("hf_access_token")
+        try:
+            token = self._secrets.get("hf_access_token")
+        except Exception:
+            token = None
         if token:
             os.environ.setdefault("HF_TOKEN", token)
             os.environ.setdefault("HUGGING_FACE_HUB_TOKEN", token)

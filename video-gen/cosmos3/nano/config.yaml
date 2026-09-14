@@ -46,7 +46,6 @@ weights:
   # detects the diffusers layout and reads transformer/ + vision_encoder/.
   - source: "hf://nvidia/Cosmos3-Nano@411f42a8fdfb8c5b2583cb8786e0938f49796eaa"
     mount_location: "/app/model_cache/cosmos3-nano"
-    auth_secret_name: "hf_access_token"
 
   # Wan2.2 VAE (video tokenizer). cosmos_framework looks up a single file from
   # this repo (registered as Wan2.2/vae -> Wan2.2_VAE.pth). Mounting at the HF
@@ -60,8 +59,6 @@ resources:
   accelerator: H100
   use_gpu: true
 
-secrets:
-  hf_access_token: null
 
 environment_variables:
   HF_HOME: "/app/.hf-cache"

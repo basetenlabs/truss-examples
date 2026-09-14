@@ -11,12 +11,9 @@ model_metadata:
               url: https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-ASR-Repo/asr_en.wav
   tags:
     - openai-compatible
-secrets:
-  hf_access_token: null
 weights:
   - source: "hf://Qwen/Qwen3-ASR-1.7B@main"
     mount_location: "/app/checkpoint/model"
-    auth_secret_name: "hf_access_token"
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 docker_server:

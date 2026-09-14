@@ -12,8 +12,6 @@ model_metadata:
     - multilingual
     - timestamps
 
-secrets:
-  hf_access_token: null
 
 # These defaults are tuned for short-form traffic on one GPU. The direct path
 # removes NeMo's per-call DataLoader setup, while a small duration-aware batch
@@ -34,7 +32,6 @@ environment_variables:
 weights:
   - source: "hf://nvidia/parakeet-tdt-0.6b-v3@541d1f99c6b0c3cd0b11a95167540bb8edefd82b"
     mount_location: "/models/parakeet-tdt-0.6b-v3"
-    auth_secret_name: "hf_access_token"
 
 requirements:
   # NeMo 2.7.x requires torch>=2.6.0; pin torch + matching torchaudio so a
