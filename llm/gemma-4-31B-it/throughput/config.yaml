@@ -23,9 +23,6 @@ base_image:
 weights:
   - source: "hf://nvidia/Gemma-4-31B-IT-NVFP4@main"
     mount_location: "/app/checkpoint/gemma"
-    auth_secret_name: "hf_access_token"
-secrets:
-  hf_access_token: null
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/gemma
@@ -35,7 +32,6 @@ docker_server:
     --max-model-len 131072
     --kv-cache-dtype fp8
     --enable-chunked-prefill
-    --limit-mm-per-prompt.image 1
     --enable-prefix-caching
     --trust-remote-code
     --enable-auto-tool-choice
