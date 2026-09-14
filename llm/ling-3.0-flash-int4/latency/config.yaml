@@ -23,9 +23,9 @@ model_metadata:
       enable_thinking: true
 
 base_image:
-  # Ling 3 support (model, tool parser, and reasoning parser) landed after
-  # vLLM v0.27.1. Pin the first available immutable nightly commit that includes it.
-  image: "vllm/vllm-openai:nightly-5a4c8d99242e9e069b604d0e9b969e77f7dd501d@sha256:8bd082c274fae025b7079498fe1da65182ba1d4c2188c0f5a68c1042c38c3695"
+  # vLLM v0.28.0 is the first stable release with Ling 3.0 Flash support
+  # (BailingMoeV3 model loading, MTP, and the ling3 tool/reasoning parsers).
+  image: "vllm/vllm-openai:v0.28.0"
 
 weights:
   - source: "hf://inclusionAI/Ling-3.0-flash-int4@959d3a48cf05d2daf5fe7bdbbd3a6bb119e359f2"
