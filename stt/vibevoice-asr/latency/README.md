@@ -14,7 +14,7 @@
 truss push --remote <your-baseten-remote> --publish
 ```
 
-A Hugging Face access token is required as a Baseten secret named `hf_access_token` to pull the model weights.
+The model weights are public and are downloaded without a Hugging Face access token.
 
 ## API
 
