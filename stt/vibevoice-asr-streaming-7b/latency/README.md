@@ -583,7 +583,7 @@ the `python3 /app/data/patch.py` step from `start_command`.
 ## Deployment
 
 ```bash
-truss push --remote <your-baseten-remote> --publish
+baseten model push
 ```
 
 A Hugging Face token as the Baseten secret `hf_access_token` is declared for

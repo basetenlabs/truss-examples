@@ -11,7 +11,7 @@
 ## Deployment
 
 ```bash
-truss push --remote <your-baseten-remote> --publish
+baseten model push
 ```
 
 The model weights are public and are downloaded without a Hugging Face access token.

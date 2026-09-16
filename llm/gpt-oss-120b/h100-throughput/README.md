@@ -52,16 +52,16 @@ cd model-registry/llm/gpt-oss-120b/throughput
 Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
+2. Install the latest version of the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 3. Set up your `hf_access_token` secret in [Baseten settings](https://app.baseten.co/settings/secrets).
 
 Deploy with:
 
 ```sh
-truss push --trusted --publish
+baseten model push
 ```
 
-Paste your Baseten API key if prompted.
+Run `baseten auth login` first if the CLI is not authenticated.
 
 ---
 

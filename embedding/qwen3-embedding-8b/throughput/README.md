@@ -20,7 +20,7 @@ This model is quantized to FP8 for deployment, which is supported by Nvidia's ne
 Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
+2. Install the latest version of the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 
 
 First, clone this repository:
@@ -29,13 +29,14 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd 11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-8b-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-8b-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-8b-fp8` as your working directory, you can deploy the model with the following command. Run `baseten auth login` first if the CLI is not authenticated.
 
 ```sh
-truss push --publish
+baseten model push
 # prints:
 # ✨ Model BEI-qwen-qwen3-embedding-8b-fp8-truss-example was successfully pushed ✨
-# 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
+# 🪵 View logs:
+#   deployment:   baseten model deployment logs --model-id yyyyyy --deployment-id xxxxxx
 ```
 
 ## Call your model

@@ -100,5 +100,5 @@ assert len(resp.data[0].embedding) == 512
 ## Deploy
 
 ```bash
-truss push
+baseten model push
 ```

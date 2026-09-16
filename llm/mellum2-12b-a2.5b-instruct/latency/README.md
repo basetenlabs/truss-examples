@@ -40,12 +40,12 @@ Before deploying:
 
 1. Create a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
 2. Add your Hugging Face token as a secret named `hf_access_token` in Baseten.
-3. Install the latest Truss: `pip install --upgrade truss`
+3. Install the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 
 Deploy:
 
 ```sh
-truss push --trusted --publish
+baseten model push
 ```
 
 ---

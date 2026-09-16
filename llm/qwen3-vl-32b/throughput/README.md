@@ -13,5 +13,5 @@ Qwen3-VL-32B-Instruct (NVFP4) is a multimodal vision-language model served with 
 ```sh
 git clone https://github.com/basetenlabs/model-registry.git
 cd model-registry/llm/qwen3-vl-32b/throughput
-truss push --trusted --publish
+baseten model push
 ```

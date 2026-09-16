@@ -28,7 +28,7 @@ This model is quantized to FP8 for deployment, which is supported by Nvidia's ne
 Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
+2. Install the latest version of the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 Note: [This is a gated/private model] Retrieve your Hugging Face token from the [settings](https://huggingface.co/settings/tokens). Set your Hugging Face token as a Baseten secret [here](https://app.baseten.co/settings/secrets) with the key `hf_access_token`. Do not set the actual value of key in the config.yaml. `hf_access_token: null` is fine - the true value will be fetched from the secret store.
 
 First, clone this repository:
@@ -37,13 +37,14 @@ git clone https://github.com/basetenlabs/truss-examples.git
 cd 11-embeddings-reranker-classification-tensorrt/BISV2-meta-llama-llama-3.2-3b-instruct-fp8
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BISV2-meta-llama-llama-3.2-3b-instruct-fp8` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BISV2-meta-llama-llama-3.2-3b-instruct-fp8` as your working directory, you can deploy the model with the following command. Run `baseten auth login` first if the CLI is not authenticated.
 
 ```sh
-truss push --publish
+baseten model push
 # prints:
 # ✨ Model BISV2-meta-llama-llama-3.2-3b-instruct-fp8-truss-example was successfully pushed ✨
-# 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
+# 🪵 View logs:
+#   deployment:   baseten model deployment logs --model-id yyyyyy --deployment-id xxxxxx
 ```
 
 ## Call your model

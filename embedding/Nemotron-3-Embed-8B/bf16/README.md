@@ -81,5 +81,5 @@ The generic caveats from the 1B truss also apply:
 ## Deploy
 
 ```bash
-truss push
+baseten model push
 ```

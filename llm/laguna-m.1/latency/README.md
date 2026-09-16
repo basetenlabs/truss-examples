@@ -42,12 +42,12 @@ cd model-registry/llm/laguna-m.1/latency
 Before deploying:
 
 1. Create a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest Truss: `pip install --upgrade truss`
+2. Install the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 
 Deploy:
 
 ```sh
-truss push --trusted --publish
+baseten model push
 ```
 
 ---

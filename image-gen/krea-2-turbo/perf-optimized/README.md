@@ -11,7 +11,7 @@ Prepared 2026-07-28 by FDE (Zak Keener) for the public-docs update on Krea-2-Tur
 
 ## The two configs
 
-Both deployable as-is with `truss push`:
+Both deployable as-is with `baseten model push`:
 
 - `configs/baseline-bf16.yaml` — the production lossless preset, identical to what is published in the model registry today (bf16, no acceleration, H100). Reference numbers: 1.542s @1024, 3.693s @1536, 7.308s @2048 server-side.
 - `configs/optimized-fp8-cachedit.yaml` — the optimized preset (FP8 blockwise quantization + Cache-DiT step caching): 0.941s @1024, 2.218s @1536, 4.471s @2048, 27 GB peak memory. Quality: 6/9 prompts indistinguishable from baseline, 3/9 visibly different but equal quality, 0 unacceptable (the extended panel includes the text-rendering stress prompts Krea's research team suggested on 2026-07-19). Note in the config header: as measured it points at an experimental image tag built from an unmerged fork branch; the shipping tag will be cut after the fork PR merges. Do not document the experimental tag as the recommended image.

@@ -56,15 +56,15 @@ cd openai/gpt-oss-20b
 Before deployment:
 
 1. Make sure you have a [Baseten account](https://app.baseten.co/signup) and [API key](https://app.baseten.co/settings/account/api_keys).
-2. Install the latest version of Truss: `pip install --upgrade truss`
+2. Install the latest version of the Baseten CLI: `brew tap basetenlabs/baseten && brew install baseten`
 
 With `openai/gpt-oss-20b` as your working directory, you can deploy the model with:
 
 ```sh
-truss push --trusted
+baseten model push
 ```
 
-Paste your Baseten API key if prompted. Also ensure the `hf_access_token` secret is properly setup in your Baseten Account to access this model.
+Run `baseten auth login` first if the CLI is not authenticated. Also ensure the `hf_access_token` secret is properly setup in your Baseten Account to access this model.
 
 **Note**: TensorRT-LLM with PyTorch Backend will only work under a Baseten production deployment
 
