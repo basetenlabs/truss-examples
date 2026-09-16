@@ -1,4 +1,26 @@
 model_name: "model:llama-3.1-8b-instruct preset:throughput"
+build_commands:
+  # The overlap scheduler uses two sequence-slot pools, but this runtime sizes
+  # CapturableGuidedDecoder to one pool. Match its buffers to the sampler's
+  # doubled slot capacity (NVIDIA/TensorRT-LLM#16279).
+  - >-
+    python3 -c 'from pathlib import Path;
+    p=next(Path("/usr/local/lib").glob("python*/dist-packages/tensorrt_llm/_torch/pyexecutor/py_executor_creator.py"));
+    s=p.read_text();
+    old="                    \"max_num_sequences\": max_batch_size,";
+    new="                    \"max_num_sequences\": max_batch_size * (1 if llm_args.disable_overlap_scheduler else 2),";
+    assert s.count(old)==1; p.write_text(s.replace(old,new,1))'
+
+# Truss synthesizes this contract for inference_stack v2 during image builds.
+# Keep it explicit so slim-image metadata makes the operator probe Dynamo on
+# port 8000 instead of expecting the legacy nginx proxy on port 8080.
+docker_server:
+  start_command: /workspace/trtllm/standalone/launch.sh
+  server_port: 8000
+  predict_endpoint: /v1/chat/completions
+  readiness_endpoint: /health_file
+  liveness_endpoint: /health_file
+
 model_metadata:
   example_model_input:
     messages:
@@ -20,13 +42,9 @@ resources:
 weights:
   - source: "hf://nvidia/Llama-3.1-8B-Instruct-FP8@main"
     mount_location: "/app/model_cache/trt_model"
-    auth_secret_name: "hf_access_token"
   - source: "hf://yuhuili/EAGLE3-LLaMA3.1-Instruct-8B@main"
     mount_location: "/app/model_cache/eagle3_draft"
-    auth_secret_name: "hf_access_token"
 
-secrets:
-  hf_access_token: null
 
 trt_llm:
   build:
@@ -63,7 +81,9 @@ trt_llm:
         speculative_model_dir: /app/model_cache/eagle3_draft
         eagle3_one_model: true
   version_overrides:
-    v2_llm_version: null
+    # Pin a schema-compatible runtime whose Dynamo frontend exposes the
+    # /health_file endpoint expected by Truss readiness checks.
+    v2_llm_version: trtllm-gpu-f83d539b2a-00b032f66-c62638826d
 
 runtime:
   predict_concurrency: 512
