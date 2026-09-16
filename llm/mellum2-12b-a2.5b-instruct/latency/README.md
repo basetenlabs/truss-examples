@@ -19,7 +19,7 @@ Mellum2-12B-A2.5B-Instruct is JetBrains' open MoE code model with a 131k-token c
 | Parameter | Value | Why it matters |
 | --- | --- | --- |
 | `base_image` | `vllm/vllm-openai:v0.23.0` | Pinned stable release with MellumForCausalLM support |
-| `accelerator` | `H100` | Single H100 (80 GB) fits the model comfortably |
+| `instance_type` | `H100` | Single H100 (80 GB) fits the model comfortably |
 | `max-model-len` | `auto` | Automatically set the maximum context window |
 | `tensor-parallel-size` | `$GPU_COUNT` | Dynamic GPU count from `nvidia-smi` |
 | `enable-prefix-caching` | — | Reuse cached KV blocks for repeated prompts |

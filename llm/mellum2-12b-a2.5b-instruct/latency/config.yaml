@@ -23,7 +23,7 @@ weights:
     mount_location: "/app/checkpoint/model"
 
 resources:
-  accelerator: H100
+  instance_type: H100
   use_gpu: true
 
 runtime:
