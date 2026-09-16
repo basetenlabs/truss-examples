@@ -1,0 +1,52 @@
+# Registry copy of the config serving the ZeroEntropy lab listing zeroentropy/zerank-2-reranker.
+# Values below are the deployed ones; only model_name (repo convention) and the pinned
+# checkpoint revision (main == ac4b5f3c at the time of writing) differ in form, not effect.
+model_name: model:zerank-2-reranker preset:throughput
+model_metadata:
+  repo_id: zeroentropy/zerank-2-reranker
+  example_model_input:
+    inputs:
+    - - Baseten is a fast inference provider
+    - - Classify this separately.
+    raw_scores: true
+    truncate: true
+    truncation_direction: Right
+python_version: py39
+resources:
+  instance_type: H100
+  cpu: '1'
+  memory: 10Gi
+runtime:
+  predict_concurrency: 1
+  streaming_read_timeout: 60
+trt_llm:
+  inference_stack: v1
+  build:
+    base_model: encoder
+    checkpoint_repository:
+      repo: baseten-admin/zerank-2-reranker-seq
+      revision: ac4b5f3c452cf22a917aa6b93b0a92c750db284a
+      source: HF
+    max_batch_size: 256
+    max_beam_width: 1
+    max_num_tokens: 40960
+    num_builder_gpus: 1
+    tensor_parallel_count: 1
+    pipeline_parallel_count: 1
+    sequence_parallel_count: 1
+    strongly_typed: false
+    quantization_type: fp8
+    quantization_config:
+      calib_size: 1024
+      calib_dataset: abisee/cnn_dailymail
+      calib_max_seq_length: 1536
+    plugin_configuration:
+      paged_kv_cache: false
+      use_fp8_context_fmha: false
+      use_paged_context_fmha: false
+  runtime:
+    webserver_default_route: /predict
+    total_token_limit: 500000
+    batch_scheduler_policy: guaranteed_no_evict
+    enable_chunked_context: true
+    kv_cache_free_gpu_mem_fraction: 0.9
