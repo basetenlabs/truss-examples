@@ -72,7 +72,7 @@ The config's playground example sends two untemplated strings, as the deployed l
 
 ## Relationship to the ZeroEntropy lab listing
 
-ZeroEntropy publishes its own lab listing, `zeroentropy/zerank-2-reranker`, from the same converted checkpoint on H100 with FP8. This preset is the Baseten-maintained equivalent, published as `baseten/zerank-2-reranker-throughput`, in the same way `zerank-1-small-reranker-throughput` and `zembed-1-embedding-4b-throughput` sit beside their lab listings.
+This preset is the registry copy of the config that serves the ZeroEntropy lab listing `zeroentropy/zerank-2-reranker`. It is deploy-only and does not publish a listing of its own: the README declares no `library_id`, so registry CI does not create a separate `baseten/zerank-2-reranker-throughput` listing beside the lab-owned one.
 
 ## Validation
 
