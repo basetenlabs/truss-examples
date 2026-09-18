@@ -146,7 +146,7 @@ model_metadata:
   tags:
   - openai-compatible
 model_name: BISV2-meta-llama-llama-3.2-3b-instruct-fp8-truss-example
-python_version: py39
+python_version: py311
 resources:
   accelerator: H100_40GB
   cpu: '1'

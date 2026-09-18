@@ -17,7 +17,7 @@ model_metadata:
       '
     raw_scores: true
     truncate: false
-python_version: py39
+python_version: py311
 resources:
   instance_type: L4:4x16
 trt_llm:

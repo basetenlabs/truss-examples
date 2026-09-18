@@ -145,7 +145,7 @@ model_metadata:
     truncate: true
     truncation_direction: Right
 model_name: BEI-qwen-qwen3-reranker-0.6b-fp8-truss-example
-python_version: py39
+python_version: py311
 resources:
   accelerator: L4
   cpu: '1'

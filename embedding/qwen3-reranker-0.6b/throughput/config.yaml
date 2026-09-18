@@ -8,7 +8,7 @@ model_metadata:
     truncate: true
     truncation_direction: Right
 model_name: "model:qwen3-reranker-0.6b preset:throughput"
-python_version: py39
+python_version: py311
 resources:
   instance_type: L4:4x16
 trt_llm:

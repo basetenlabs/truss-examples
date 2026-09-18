@@ -9,7 +9,7 @@ model_metadata:
   tags:
     - openai-compatible
 model_name: "model:llama-3.2-3b-instruct preset:latency"
-python_version: py39
+python_version: py311
 resources:
   accelerator: H100_40GB
   cpu: "1"

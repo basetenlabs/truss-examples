@@ -11,7 +11,7 @@ model_metadata:
     raw_scores: true
     truncate: true
     truncation_direction: Right
-python_version: py39
+python_version: py311
 resources:
   instance_type: H100
   cpu: '1'
