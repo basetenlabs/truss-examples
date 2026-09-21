@@ -1,40 +1,54 @@
+model_name: Qwen3-ASR-1.7B
 model_metadata:
-  example_model_input:
-    stream: false
-    messages:
-      - role: user
-        content:
-          - type: audio_url
-            audio_url:
-              url: https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen3-ASR-Repo/asr_en.wav
+  repo_id: Qwen/Qwen3-ASR-1.7B
+  # No example_model_input: the transcriptions route takes a multipart file
+  # upload, which cannot be expressed as a JSON example.
   tags:
     - openai-compatible
-model_name: Qwen3-ASR-1.7B
-secrets:
-  hf_access_token: null
+weights:
+  - source: "hf://Qwen/Qwen3-ASR-1.7B@7278e1e70fe206f11671096ffdd38061171dd6e5"
+    mount_location: "/app/checkpoint/model"
 base_image:
-  image:  vllm/vllm-openai:nightly-070c811d6f74c55302557878f5982411a3346b4d
+  image: vllm/vllm-openai:v0.29.0-cu129
 docker_server:
-  start_command: sh -c "HF_TOKEN=$(cat /secrets/hf_access_token) vllm serve Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000"
+  # --api-server-count 4: the route decodes and chunks each upload on the CPU in
+  # the API-server process, which caps throughput at one process; four lifts the
+  # ceiling ~60% at high concurrency on this 16 vCPU instance.
+  # --override-generation-config: default output cap per generated chunk when the
+  # caller sets none. Non-speech audio with a forced language otherwise decodes
+  # until the context limit (minutes); 4096 tokens is far above any 30 s chunk's
+  # transcript and callers can still pass their own max_completion_tokens.
+  start_command: >-
+    sh -c "vllm serve $BASETEN_MODEL_PATH --tensor-parallel-size 1 --served-model-name Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000 --load-format runai_streamer --api-server-count 4
+    --override-generation-config.max_new_tokens 4096"
   readiness_endpoint: /health
   liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
+  predict_endpoint: /v1/audio/transcriptions
   server_port: 8000
 resources:
-  accelerator: H100_40GB:1
-  cpu: "1"
-  memory: 10Gi
-  use_gpu: true
+  instance_type: RTX-PRO-6000
 requirements:
-  - --pre --extra-index-url https://wheels.vllm.ai/nightly
   - vllm[audio]
   - librosa
   - torch
   - torchaudio
   - pynvml
   - ffmpeg-python
+environment_variables:
+  BASETEN_MODEL_PATH: "/app/checkpoint/model"
+  # /v1/audio/transcriptions decodes the whole upload before chunking it into
+  # 30 s pieces. vLLM caps that decode at 600 s and the upload at 25 MB by
+  # default, which rejects 30 min and 1 hr files with HTTP 400 before the model
+  # runs. These are the server's own bounds on the decode stage: 65 min of audio
+  # and a 120 MiB file (a 1 hr 16 kHz 16-bit mono WAV is ~110 MiB).
+  VLLM_MAX_AUDIO_DECODE_DURATION_S: "3900"
+  VLLM_MAX_AUDIO_CLIP_FILESIZE_MB: "120"
 system_packages:
-  - python3.10-venv
+  # No python3.10-venv here: nothing in this truss builds a venv (vLLM is started
+  # via docker_server), and pinning a Python minor version in apt ties the build to
+  # whatever the base image happens to ship. That pin already broke the community-1
+  # diarizer when its base moved to Debian trixie:
+  #   E: Unable to locate package python3.10-venv
   - ffmpeg
   - openmpi-bin
   - libopenmpi-dev
