@@ -1,0 +1,205 @@
+model_name: "Nemotron 3 Diarized Transcription (streaming)"
+# Live speaker-attributed transcription: NVIDIA Nemotron 3 Diarization (OpenMDW 1.1) drives
+# per-speaker activity; multitalker-parakeet-streaming-0.6b-v1 (NVIDIA Open Model License)
+# runs one ASR pass per active speaker on the same audio. Both checkpoints are fetched from
+# Hugging Face at deploy time (weights: below).
+model_metadata:
+  repo_id: nvidia/multitalker-parakeet-streaming-0.6b-v1
+  tags:
+    - audio
+    - speaker-attributed-asr
+    - multitalker
+    - speaker-diarization
+    - streaming
+    - websocket
+    - nemo
+base_image:
+  # Same recipe as ../batch: NeMo-FW container for torch/CUDA + system deps; the ASR
+  # collection is installed and NeMo overlaid with a pinned main commit in build_commands.
+  image: nvcr.io/nvidia/nemo:26.08
+  python_executable_path: /usr/bin/python3
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  MT_ASR_PATH: /models/multitalker/multitalker-parakeet-streaming-0.6b-v1.nemo
+  MT_DIAR_PATH: /models/nemotron-diar/Nemotron-3-Diarization.nemo
+  # Upper bound on per-speaker ASR instances (the model card's 8). A connection's handshake
+  # may lower it with "max_speakers".
+  MT_MAX_SPEAKERS: "8"
+  # Threads for session construction, finals and control ops. On the stepper path a live session
+  # parks no thread (it awaits an asyncio future the stepper resolves) and the partial is built on
+  # the event loop, so this no longer scales with predict_concurrency.
+  MT_WORKERS: "32"
+  # RNNT decoder graph mode (mt_fast). Empty = NeMo's "full_graph", which faults intermittently on its
+  # first replay after the encoder graph capture (the truss wrapper's load retry recovers it; see
+  # README "Robustness"). "no_while_loops" is the robust alternative (identical output; same speed on
+  # the batch preset) -- set it for a long-lived deployment and re-check the tick p50.
+  MT_DEC_GRAPHS_MODE: ""
+  # One torch CPU thread: the stepper's CPU tensor work is a window stack + H2D copy per tick; OpenMP
+  # workers would otherwise spin between ticks and steal CPU from the event loop.
+  OMP_NUM_THREADS: "1"
+  MT_TORCH_THREADS: "1"
+  # Defensive per-session reclaim. In the shipped config GPU memory is stable under sustained call
+  # churn: it plateaus at ~12.7 GB allocated / ~19.6 GB reserved once the diarizer's per-length and
+  # the RNNT decoder's CUDA graphs are all captured (~6 full sessions), then stays flat — verified
+  # over 136 sessions including 50 abrupt mid-session disconnects (rsi-bench smoke_td.py; Δalloc
+  # +0.00 GB). A finished session's SpeakerTaggedASR / instance-manager / caches sit in reference
+  # cycles, so the handler nulls them and runs gc.collect()+empty_cache() every MT_GC_EVERY ended
+  # sessions to return blocks to the allocator promptly. (The OOM seen while auditing was the
+  # MT_PROFILE=1 measurement build only — do not enable MT_PROFILE in production. Do NOT set
+  # PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True: it makes the RNNT decoder's CUDA-graph capture
+  # at warm hit cudaErrorIllegalAddress on this torch build.)
+  MT_GC_EVERY: "4"
+  # --- output shape (packages/mt_turns.py); formatting only, the step is untouched ---
+  # Turn-level segments: a speaker's segment closes after its own pause > MT_TURN_PAUSE_S, at its
+  # sentence-final punctuation, and on a hand-over (below); each carries word timings
+  # (MT_TURN_WORDS). 0 = NeMo's per-speaker running sentences (one block per speaker, broken only
+  # by that speaker's own 30 s silence). Same words per speaker either way (3-file cpWER identical).
+  MT_TURN_SEGMENTS: "1"
+  # "partial": the still-open tail per speaker (grey-italics material for a live viewer); every
+  # chunk, replaced when it closes into a segment. Needs MT_TURN_SEGMENTS.
+  MT_PARTIALS: "1"
+  MT_TURN_WORDS: "1"
+  MT_TURN_PAUSE_S: "1.2"
+  # Overlap-aware turns: one open tail PER speaker, so simultaneous speech comes out as parallel
+  # segments (marked overlap / overlaps_with) instead of one/two-word alternation. A tail is handed
+  # over (closed) once other speakers have talked >= MT_TURN_HANDOVER_S or >= MT_TURN_HANDOVER_WORDS
+  # words since its last word; a shorter backchannel becomes its own segment overlapping the turn.
+  # 0 = one open tail in total (any other speaker's word closes it). Handshake "overlap" overrides.
+  MT_TURN_OVERLAP: "1"
+  MT_TURN_HANDOVER_S: "1.0"
+  MT_TURN_HANDOVER_WORDS: "3"
+  # MT_TURNS_VERIFY=1 logs, at every final, whether our per-speaker word sequence equals NeMo's
+  # seglst words (diagnostic; off here).
+  # --- cross-session batching (packages/mt_xsession.py) ---
+  # One stepper thread runs every ready session's step in one encoder + one decoder call per
+  # tick instead of one locked step per session; batches form only when arrivals outpace the
+  # tick. 300 s k6 runs: 160 real-time streams at lag p95 0.2 s (the lock path holds 60-64, 80
+  # collapses). Hour-long ladder: XSESSION.md / SWEEP_XSESSION.md. 0 = the per-session lock path.
+  MT_XSESSION: "1"
+  # Sessions per tick (max) and ASR speaker-row buckets: SigmaS active rows are padded to the
+  # smallest listed bucket (one encoder graph each, captured at load); more rows run as slabs.
+  # 64 is NOT offered: the first 64-row ASR call hits cudaErrorIllegalAddress at load on this
+  # NeMo build (every load on the registry layout; 32 never has) -- see XSESSION.md.
+  MT_XSESSION_B: "16"
+  MT_XSESSION_ROWS: "32"
+  MT_XSESSION_ROW_BUCKETS: "8,16,32"
+  # Coalescing window after the first ready session (ms); 0 = take what is queued when the
+  # previous tick ends.
+  MT_XSESSION_WAIT_MS: "0"
+  # Diarizer per tick. 0 = the committed per-row sync-mode graph path (bit-identical: 3-file
+  # cpWER 23.57/28.38/18.45 reproduced; 3.8 ms x B per tick). 1 = one CUDA-graph replay per tick
+  # over preallocated per-slot state tables in NeMo's async layout (gather by slot -> encoder ->
+  # head -> async cache/FIFO update -> gate -> write-back; nothing allocated per tick, ~1.1 MB per
+  # slot) -- NeMo's async numerics (eval-30 macro -0.21 vs mode 0, not output-preserving per
+  # file; eval-30 29.27 vs 29.48, per-file |d| mean 1.4 / max 11.3, the same draws as the audit's pass).
+  # Default 1: stepper busy 0.94 -> 0.55-0.79 at 160 streams with flat 10-min windows. MT_XDIAR_ROWS
+  # pins its batch size (0 = dynamic); MT_XSLOTS = live sessions the tables hold (a 321st connection
+  # is refused with an error frame).
+  MT_XDIAR: "1"
+  MT_XDIAR_ROWS: "0"
+  MT_XSLOTS: "320"
+  # Log-mel in the stepper: connections hand it the raw window of their next chunk and rows of one
+  # geometry share ONE preprocessor call per tick (instead of one GPU mel call per session-chunk on
+  # a connection/mel thread). MT_XMEL_VERIFY=1 compares every row with the per-row mel (diagnostic).
+  MT_XMEL: "1"
+  MT_XMEL_VERIFY: "0"
+  # --- performance build (packages/mt_fast.py); defaults = the validated combination ---
+  # Log-mel once per 112-frame step from a bounded ring instead of ~11 preprocessor calls per
+  # step on a growing whole-session buffer. Same features (whole STFT frames, 3-frame recomputed
+  # left margin, per-chunk normalisation) -> identical transcripts; removes the N>1 GIL/stream
+  # interference that inflated the locked step 53 -> 76 ms at 15 streams.
+  MT_MEL_PER_STEP: "1"
+  # Run the per-step GPU mel on ONE dedicated thread instead of on each connection's pool thread.
+  # Numerically identical (same MelChunker.next_chunk, same per-session order), but only that thread
+  # touches cuFFT/cuDNN, so N connections no longer each cache a preprocessor plan/workspace — the
+  # per-thread CUDA-context growth that let a high-MT_WORKERS replica OOM at ~160 concurrent streams.
+  # Recommended ON for high-concurrency deployments (lets MT_WORKERS scale with predict_concurrency
+  # without GPU memory growing with it); default 0 pending hour-long re-validation of the 160 ceiling.
+  MT_MEL_THREAD: "0"
+  MT_MEL_THREADS: "1"
+  # ASR encoder + speaker-kernel weight dtype. bf16 = the ~900 autocast weight casts per step are
+  # gone and the encoder graph replays in 5 ms (cpWER -0.34 vs the eager build, inside the
+  # +-0.8 shape-draw band). fp32 = closest numerics to the eager build (-0.09) at 20 ms/step.
+  # "autocast" = the original fp32-weights-under-bf16-autocast path (no encoder graphs possible).
+  MT_ASR_DTYPE: "bf16"
+  # NeMo's CudaGraphsStreamingEncoderStep for the cache-aware FastConformer step: the pre-encoder
+  # runs inside the graph, speaker targets come from a static buffer. enc 21.5 -> 5.0 ms.
+  MT_ENC_CUDA_GRAPHS: "1"
+  # Sync-mode diarizer with the eager core (pre-encode, cache+FIFO concat, 31-layer encoder,
+  # head) captured in one CUDA graph per distinct sequence length (~150 graphs, a few MB each,
+  # all captured at load) and replayed: bit-identical to NeMo's sync path. diar 21.7 -> 3.8 ms.
+  MT_DIAR_GRAPHS: "1"
+  # Pad every ASR step to a constant 8 speaker rows. cuBLAS bf16 GEMM rounding depends on the
+  # M-dimension, so a changing active-speaker count re-rolls every speaker's numerics; constant
+  # rows make the transcript deterministic (two runs byte-identical), leave one encoder graph and
+  # a fixed decoder state (no mid-call recapture). Costs ~+1 ms/step. 0 = off.
+  MT_PAD_ROWS: "8"
+  # Shallow-copy hypotheses in get_active_speakers_info: the RNNT decoder returns a freshly
+  # cloned state every call, so the per-step deepcopy protected nothing. gather 0.9 -> 0.26 ms.
+  MT_NO_DEEPCOPY: "1"
+  # Detokenise only the new tail of each speaker's hypothesis (committed prefix cached on the
+  # hypothesis, cut at word starts where SentencePiece decoding is compositional). NeMo re-decodes
+  # the whole session per speaker per step, which grew the step 11 -> 14 ms over 20 min (~19 ms at
+  # 1 h); with this the step is flat over an hour. Text byte-identical (MT_INC_DETOK_VERIFY=1 checks
+  # every step against NeMo's full decode; diagnostics only). 0 = NeMo's full decode.
+  MT_INC_DETOK: "1"
+  # Warm-session length (s). The sync diarizer walks ~150 sequence lengths (FIFO residue shifts
+  # 2 frames per pop) and each new length costs a ~50 ms graph capture; 180 s covers them all
+  # at load instead of inside the first live session. The ASR path is warmed separately at
+  # k=8..1 with injected speaker targets (white noise never activates a speaker).
+  MT_WARMUP_SECS: "180"
+  # Rejected levers, kept for A/B only: async (fixed-shape) diarizer state and torch.compile of
+  # its core give a 2.5x faster diarizer but are NOT output-preserving (bf16 rounding of the
+  # padded/fused kernels flips speaker gates: cpWER +1.1 / +5.0 macro). Leave off.
+  MT_DIAR_ASYNC: "0"
+  MT_DIAR_COMPILE: "0"
+  # TF32 for the encoder's fp32 GEMMs (only with MT_ASR_DTYPE=fp32): a third rounding draw
+  # (cpWER -0.82), no faster than bf16. Leave off.
+  MT_TF32: "0"
+requirements:
+  - soundfile
+  - librosa>=0.10.0
+build_commands:
+  - pip install --no-build-isolation Cython packaging
+  - pip install --no-build-isolation -e "/opt/NeMo[asr]"
+  - pip uninstall -y nemo_toolkit
+  - pip install --no-build-isolation --no-deps "nemo_toolkit @ git+https://github.com/NVIDIA/NeMo.git@3c2d62ae7eb4"
+resources:
+  accelerator: RTX_PRO_6000
+  use_gpu: true
+runtime:
+  is_websocket_endpoint: true
+  transport:
+    kind: websocket
+    # Live sessions can run for hours; the platform's default ping timeout would cut them.
+    ping_timeout_seconds: 86400
+  # Per-replica WS session cap = the measured hour-long ceiling. k6 in-cluster, hour-long real-time
+  # streams on one RTX-PRO-6000 (BENCHMARK.md, 2026-09-17 build): 190 hold the full hour -- emit lag
+  # p50 0.34 / p95 0.51 / p99 0.61 s, every 10-min window p95 0.39-0.56 s, window medians 0.24 -> 0.35 s
+  # (the replace-style partial's wire-size staircase, same on the idle control), 0 server errors, 41
+  # gateway socket resets counted separately. A 20-min screen at 220 with a 1-VU idle control on a
+  # second replica also holds (window p95 0.40 -> 0.50 s vs control 0.38 -> 0.46 s). Autoscale with
+  # concurrency_target ~190 and let this cap absorb bursts rather than reject them.
+  predict_concurrency: 220
+  health_checks:
+    # Two checkpoints (2.5 GB ASR + diarizer), the ASR warm at k=8..1 (encoder graph capture,
+    # decoder state) and the 180 s diarizer warm session (~150 graph captures): model.load()
+    # measured ~50 s on RTX-PRO-6000 with the weights mounted. 300 = 6x headroom.
+    startup_threshold_seconds: 300
+system_packages:
+  - ffmpeg
+secrets:
+  # Hugging Face token, only needed if the checkpoint repo is gated for your account.
+  hf_access_token: null
+weights:
+  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+    mount_location: "/models/nemotron-diar"
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
+  - source: "hf://nvidia/multitalker-parakeet-streaming-0.6b-v1@main"
+    mount_location: "/models/multitalker"
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token

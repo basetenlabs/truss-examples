@@ -1,0 +1,102 @@
+model_name: "Nemotron 3 Diarization (streaming)"
+# NVIDIA Nemotron 3 Diarization, served over a WebSocket for live audio: 100 ms PCM frames in,
+# a live speaker-turn list on every chunk, latency profile chosen per connection. OpenMDW 1.1.
+# The .nemo checkpoint is fetched from Hugging Face at deploy time (weights: below).
+model_metadata:
+  repo_id: nvidia/Nemotron-3-Diarization
+  tags:
+    - audio
+    - speaker-diarization
+    - streaming-sortformer
+    - websocket
+    - nemo
+base_image:
+  # Same recipe as the batch preset: NeMo-FW container for torch/CUDA + system deps;
+  # ASR collection installed and NeMo overlaid with main (supports this checkpoint).
+  image: nvcr.io/nvidia/nemo:26.08
+  python_executable_path: /usr/bin/python3
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  NEMO_DIAR_MODEL_PATH: /models/nemotron-diar/Nemotron-3-Diarization.nemo
+  # Profiles pre-loaded as separate model instances so a connection's latency choice
+  # never mutates another's (the streaming knobs live on shared module state).
+  NEMO_DIAR_PROFILES: "offline,low,ultralow"
+  # Cross-session batched stepper (packages/xsession.py): one thread per profile batches every
+  # connection's ready chunk into one tick. `fused` tick: per-session state in slot tables and ONE
+  # CUDA graph per batch size for the whole step (mel -> gather -> core -> NeMo async update with
+  # sync-free compression -> write-back), pinned H2D/D2H, ticks pipelined one deep. `legacy`: the
+  # previous build's per-session tensors + core-only graph + NeMo's update (A/B, host sync per tick).
+  NEMO_DIAR_XSESSION: "1"
+  NEMO_DIAR_XSESSION_TICK: "fused"    # fused | legacy
+  NEMO_DIAR_CORE: "graphs"            # graphs | eager (A/B)
+  NEMO_DIAR_XSESSION_B: "16"          # rows per tick, max (one CUDA graph per size at load); per-row GPU cost bottoms at 16
+  NEMO_DIAR_XSESSION_B_OFFLINE: "8"   # offline profile's rows per tick (30 s chunks, ~5x the row cost)
+  NEMO_DIAR_XSESSION_WAIT_MS: "40"    # coalescing window cap per tick (<= this much added lag)
+  NEMO_DIAR_XSESSION_B_TARGET: "16"   # stop coalescing at min(this, live sessions) rows (per-row GPU cost bottoms at B~16)
+  NEMO_DIAR_XSESSION_B_MIN: "2"       # never replay the 1-row compiled graph (Inductor's bs=1 specialisation carries a
+                                      # one-sided miss bias, +0.65-0.8 DER): pad with idle scratch slots (bf16 A/B: 8)
+  NEMO_DIAR_XSESSION_SLOTS: "640"     # state-table rows per profile (>= predict_concurrency + margin)
+  # Per-profile admission (predict_concurrency is a global WS cap and cannot see the mix): live sessions
+  # are weighted in `low`-row-equivalents against MAX_LIVE_LOW; `ultralow` weighs MAX_LIVE_LOW/MAX_LIVE_ULTRALOW
+  # (2.8: 560 low vs 200 ultralow hold on one RTX-PRO-6000), `offline` 0.2. Over budget -> error frame + close.
+  NEMO_DIAR_MAX_LIVE_LOW: "560"
+  NEMO_DIAR_MAX_LIVE_ULTRALOW: "200"
+  NEMO_DIAR_TF32: "0"                 # A/B: TF32 matmuls (numerics change; off)
+  NEMO_DIAR_CORE_DTYPE: "fp32"        # fp32 | bf16 core (encoder + head weights cast once; state/update fp32)
+  NEMO_DIAR_REDUCED_PRECISION_REDUCTION: "0"  # cuBLAS bf16/fp16 split-K accumulation (container default on); off
+  NEMO_DIAR_ATTN: "flex"              # flex | sdpa: encoder self-attention kernel (same math; A/B, batch preset's knob)
+  NEMO_DIAR_FUSED_COMPILE: "1"        # torch.compile'd encoder inside the fused graph: 1.26 -> 0.96 ms/row at B=16;
+                                      # NOTSOFAR-129 DER 18.18/12.41 vs 18.09/12.31 eager-legacy (0 = eager kernels)
+  # A/B levers, all off. NEMO_DIAR_XSESSION=0 restores the per-connection paths: with
+  # NEMO_DIAR_SYNC_GRAPHS=1 the sync-mode state with the eager core captured per sequence length
+  # (bit-identical to NeMo's sync path, no batching); otherwise the previous build's torch.compile'd
+  # encoder (NEMO_DIAR_COMPILE=1, NEMO_DIAR_ASYNC_STATE=1; verylow cannot be compiled by Inductor —
+  # list it in NEMO_DIAR_PROFILES to opt in; NEMO_DIAR_COMPILE_SHARE shares one compiled encoder).
+  NEMO_DIAR_SYNC_GRAPHS: "0"
+  NEMO_DIAR_COMPILE: "1"
+  NEMO_DIAR_ASYNC_STATE: "1"
+  NEMO_DIAR_COMPILE_SHARE: "0"
+  MAX_CACHE_SIZE_MB: "1024"
+  OMP_NUM_THREADS: "1"                # CPU-side torch ops are tiny; OpenMP workers spinning between ticks starve the event loop
+  # Diagnostics: per-step records ({b, wait, step_wall}) and 1 Hz GPU samples carried in every
+  # frame (timers only, no profiler); NEMO_DIAR_PROF_SYNC adds a GPU sync after the legacy core so its
+  # phase timer is GPU time; load-time step-cost bench + fused-vs-legacy self-check on every profile.
+  NEMO_DIAR_PROF: "0"
+  NEMO_DIAR_PROF_SYNC: "0"
+  NEMO_DIAR_BENCH: "0"
+requirements:
+  - b10-transfer
+  - soundfile
+  - librosa>=0.10.0
+build_commands:
+  - pip install --no-build-isolation Cython packaging
+  - pip install --no-build-isolation -e "/opt/NeMo[asr]"
+  - pip uninstall -y nemo_toolkit
+  - pip install --no-build-isolation --no-deps "nemo_toolkit @ git+https://github.com/NVIDIA/NeMo.git@3c2d62ae7eb4"
+resources:
+  accelerator: RTX_PRO_6000
+  use_gpu: true
+runtime:
+  is_websocket_endpoint: true
+  transport:
+    kind: websocket
+    ping_timeout_seconds: 86400
+  # Per-replica WS session ceiling = the measured hour-long hold on one RTX-PRO-6000 at `low`
+  # (BENCHMARK.md §3: 560 holds at the idle control's latency, GPU 75 %; 640 collapses GPU-bound);
+  # excess connections are rejected rather than dragging every stream down. Autoscale at
+  # concurrency_target 400. `ultralow` is 3x the density: a mostly-`ultralow` deployment ~200.
+  predict_concurrency: 560
+  health_checks:
+    # 3 profile instances x warm session + 16 core graphs each at load; 3x headroom.
+    startup_threshold_seconds: 600
+system_packages:
+  - ffmpeg
+secrets:
+  hf_access_token: null
+weights:
+  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+    mount_location: "/models/nemotron-diar"
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token

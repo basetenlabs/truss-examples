@@ -1,0 +1,120 @@
+model_name: "Nemotron 3 Diarization (batch)"
+# NVIDIA Nemotron 3 Diarization, served as an HTTP endpoint for recorded audio: a file URL or
+# base64 in, speaker turns out, latency profile chosen per request. OpenMDW 1.1 license.
+# The .nemo checkpoint is fetched from Hugging Face at deploy time (weights: below).
+model_metadata:
+  repo_id: nvidia/Nemotron-3-Diarization
+  tags:
+    - audio
+    - speaker-diarization
+    - streaming-sortformer
+    - nemo
+  # url or audio_b64 both accepted; latency profile optional (default offline).
+  example_model_input: {"diarization_input": {"audio": {"url": "https://test-audios-public.s3.us-west-2.amazonaws.com/10-sec-01-podcast.m4a"}}}
+base_image:
+  # NeMo Framework container: used for its matching torch/CUDA + system deps. Its
+  # ASR collection is NOT installed and its NeMo is too old for this checkpoint, so
+  # build_commands install the ASR deps and overlay NeMo main (see below).
+  image: nvcr.io/nvidia/nemo:26.08
+  # truss runs the system python (/usr/bin/python3 == /opt/venv/bin/python here).
+  python_executable_path: /usr/bin/python3
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  NEMO_DIAR_MODEL_PATH: /models/nemotron-diar/Nemotron-3-Diarization.nemo
+  # Latency profiles pre-loaded as separate instances; the first is the default when a
+  # request omits diarization_input.latency. offline (30.4 s buffer) gives the best DER.
+  # verylow is not offered by default (Inductor cannot compile its chunk shape).
+  NEMO_DIAR_PROFILES: "offline,low,ultralow"
+  # Engine (see BENCHMARK.md -> "vs NVIDIA's script"): `graphs` runs NVIDIA's whole-file
+  # streaming loop with every step (Inductor-compiled encoder + head, NeMo's speaker-cache/FIFO
+  # update) replayed from a CUDA graph captured per state shape; `nemo` is the reference-script
+  # path (torch.compile on the encoder, growing state) kept for A/B.
+  NEMO_DIAR_ENGINE: "graphs"
+  # Core precision: bf16 everywhere (tensor cores; NVIDIA's card numbers are bf16; set-level DER
+  # within the vendor's own compiled-bf16 drift on NOTSOFAR-129). fp32 (TF32 matmuls, NeMo's default
+  # float32 matmul precision) is the strict, eager-quality knob: ultralow +0.05 set-level / worst file
+  # 1.4 (full gate pass) at 0.46x the speed, offline +0.01 at 0.52x, low mean per-file 0.32 at 0.61x.
+  # Any knob takes a _<PROFILE> suffix (e.g. NEMO_DIAR_DTYPE_ULTRALOW=fp32).
+  NEMO_DIAR_DTYPE: "bf16"
+  # torch.compile of the encoder inside the captured step (Inductor's fused kernels; graphs alone
+  # replay eager kernels and are slower than compile at bs >= 8). "1" also for the nemo engine.
+  NEMO_DIAR_COMPILE: "1"
+  # Attention kernel. "" = NeMo's FlexAttention everywhere. hybrid = flash SDPA on every step where all
+  # active rows have a full chunk (exact: in NeMo's sync state every row shares the cache/FIFO fill),
+  # masked FlexAttention only on a row's final partial chunk: -4..-12% step time on the bf16 `low`
+  # core with Flex-class drift (12.44 vs stored 12.52); on the TF32 profiles it costs per-file
+  # stability (ultralow 0.30 vs 0.19 mean |dDER|, offline 0.31 vs 0.11) for an unmeasured gain, so
+  # they keep Flex. sdpa = dense SDPA with the padding mask (+20%); fp32 = FlexAttention in fp32
+  # inside a low-precision core (-17% speed, no drift gain); direct = the kernel in the core dtype
+  # with autocast off (needed for fp16). POST_FP32 keeps pre-encode, head, state and the speaker-cache
+  # update in fp32 with only the encoder in the core dtype.
+  NEMO_DIAR_ATTN_MODE: ""
+  NEMO_DIAR_ATTN_MODE_LOW: "hybrid"
+  NEMO_DIAR_POST_FP32: "0"
+  # Batch sizes captured at load (a batch of n runs at the next size up, rows duplicated, so a
+  # size every 4 rows caps the padding at 3). No size 1: dynamo's batch-1 specialisation of the
+  # compiled encoder carries a one-sided missed-speech bias (+0.73 pt DER at bs=1 in bf16 and TF32,
+  # 0 when the same file runs as identical rows in a larger graph); bf16 keeps a confusion residual
+  # at 2 rows, so a single request runs as 4 rows (same latency in the launch-bound regime).
+  # _<PROFILE> overrides; warm-up audio must walk every cache/FIFO shape (low: ~85 s).
+  NEMO_DIAR_GRAPH_SIZES: "4,8,12,16,20,24,28,32"
+  # low is the throughput profile: a graph every 2 rows from 8 up turns padding into throughput
+  # (per-row cost is flat from 16 rows; +~2 min capture at load).
+  NEMO_DIAR_GRAPH_SIZES_LOW: "4,8,10,12,14,16,18,20,22,24,26,28,30,32"
+  # With NEMO_DIAR_DTYPE_<PROFILE>=fp32 the TF32 core has no residual at 2 rows (ultralow K=1: +0.05 set,
+  # worst-file 1.4, gate pass): NEMO_DIAR_GRAPH_SIZES_<PROFILE>="2,4,8,12,16,20,24,28,32".
+  NEMO_DIAR_WARM_S: "100"
+  # nemo engine only: fixed-shape (async) state, +35% compute; sharing one compiled encoder;
+  # b10cache compile-artifact archive cap (1 GB hard cap; per deployment, speeds up scale-ups).
+  NEMO_DIAR_ASYNC_STATE: "0"
+  NEMO_DIAR_COMPILE_SHARE: "0"
+  MAX_CACHE_SIZE_MB: "1024"
+  # Micro-batching: same-profile requests coalesce into one batched call. A request enqueues on
+  # receipt and decodes (ffmpeg -> pinned PCM, DECODE_WORKERS subprocesses) while the window
+  # runs; the window re-arms on each arrival and closes after WINDOW_MS of silence (FILL_MS while
+  # the count is below a captured batch size: a batch of 5 runs at the size-8 graph and costs the
+  # same, so a straggler is worth waiting for), MAX_WAIT_MS in total, or CAP requests; longest first.
+  NEMO_DIAR_MB_WINDOW_MS: "100"
+  NEMO_DIAR_MB_FILL_MS: "400"
+  NEMO_DIAR_MB_MAX_WAIT_MS: "1500"
+  NEMO_DIAR_MB_CAP: "32"
+  NEMO_DIAR_DECODE_WORKERS: "8"
+requirements:
+  - b10-transfer
+  - soundfile
+  - librosa>=0.10.0
+build_commands:
+  # This NeMo-FW container ships NeMo at /opt/NeMo but (a) does not install the ASR
+  # collection/deps and (b) its NeMo (26.4) predates this checkpoint (the
+  # ckpt config passes `use_learnable_sil_emb` to SortformerModules, added upstream
+  # later). So: install the [asr] deps from the container source, then overlay the
+  # NeMo *code* with upstream main (which supports the checkpoint), keeping deps.
+  # --no-build-isolation reuses the container's torch instead of rebuilding it.
+  - pip install --no-build-isolation Cython packaging
+  - pip install --no-build-isolation -e "/opt/NeMo[asr]"
+  - pip uninstall -y nemo_toolkit
+  - pip install --no-build-isolation --no-deps "nemo_toolkit @ git+https://github.com/NVIDIA/NeMo.git@3c2d62ae7eb4"
+resources:
+  accelerator: RTX_PRO_6000
+  use_gpu: true
+runtime:
+  # Different profiles run concurrently (separate instances); same-profile requests coalesce
+  # into batches (see NEMO_DIAR_MB_*). Requests beyond this wait in the truss server before the
+  # batcher sees them; keep it well above MB_CAP per busy profile.
+  predict_concurrency: 256
+  health_checks:
+    # 3 profile instances x (compile + capture of every state shape at 8-14 batch sizes: ~2-3 min
+    # each on RTX-PRO-6000, ~7 min total); ~2x headroom.
+    startup_threshold_seconds: 1200
+system_packages:
+  - ffmpeg
+secrets:
+  # Hugging Face token, only needed if the checkpoint repo is gated for your account.
+  hf_access_token: null
+weights:
+  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+    mount_location: "/models/nemotron-diar"
+    auth:
+      auth_method: CUSTOM_SECRET
+      auth_secret_name: hf_access_token
