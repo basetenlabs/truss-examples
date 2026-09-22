@@ -167,6 +167,5 @@ One `{"type": "error", "error": "…"}` frame, then the socket closes:
 ## Clients
 
 - [`client.py`](client.py) — `python client.py meeting.wav [--max-speakers N] [--no-words]`. Resamples any WAV to 16 kHz mono, streams at real-time pace, prints closed turns as they land and each speaker's live partial.
-- [`client.js`](client.js) — `node client.js meeting.wav` (needs `npm i ws`; expects 16 kHz mono PCM16 WAV).
 
 Both read `BASETEN_API_KEY` and `MODEL_ID` from the environment.

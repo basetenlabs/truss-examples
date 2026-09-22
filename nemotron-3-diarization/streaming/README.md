@@ -86,6 +86,5 @@ The server sends one `{"type": "error", "error": "…"}` frame and closes the so
 ## Clients
 
 - [`client.py`](client.py) — `python client.py meeting.wav --latency low`. Resamples any WAV to 16 kHz mono, streams it at real-time pace, prints the turn list as it grows.
-- [`client.js`](client.js) — `node client.js meeting.wav` (needs `npm i ws`; expects 16 kHz mono PCM16 WAV).
 
 Both read `BASETEN_API_KEY` and `MODEL_ID` from the environment.

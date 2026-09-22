@@ -70,7 +70,7 @@ your Baseten workspace if the repository is gated for your account. Every preset
 ## Calling the endpoints
 
 Each preset directory documents its full request and response contract and ships runnable
-clients (`client.py`, `client.js`, `curl.sh`). All of them read two environment variables:
+clients (`client.py`, and `curl.sh` for batch). All of them read two environment variables:
 
 ```bash
 export BASETEN_API_KEY=...   # https://app.baseten.co/settings/account/api_keys
