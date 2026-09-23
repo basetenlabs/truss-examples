@@ -1,0 +1,111 @@
+model_name: "model:nemotron-3-diarized-transcription preset:batch"
+# NVIDIA Nemotron 3 Diarized Transcription, batch HTTP preset. Coupled overlap-aware
+# speaker-attributed transcription: Nemotron 3 Diarization (General Access checkpoint;
+# OpenMDW-1.1 (https://openmdw.ai/license/1-1/): commercial use permitted) drives per-speaker
+# activity; multitalker-parakeet-streaming-0.6b-v1 (NVIDIA Open Model License) runs one
+# ASR instance per speaker on the same mixed audio. English-only. Both checkpoints are
+# pulled at deploy and never committed.
+model_metadata:
+  repo_id: nvidia/multitalker-parakeet-streaming-0.6b-v1
+  tags:
+    - audio
+    - speaker-attributed-asr
+    - multitalker
+    - speaker-diarization
+    - nemo
+  example_model_input: {"transcription_input": {"audio": {"url": "https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav"}}}
+base_image:
+  # NeMo-FW container for torch/CUDA + system deps; the ASR collection is installed and
+  # NeMo overlaid with main in build_commands (the container's NeMo predates both models).
+  image: nvcr.io/nvidia/nemo:26.08
+  python_executable_path: /usr/bin/python3
+environment_variables:
+  HF_HOME: /cache/org
+  HF_HUB_CACHE: /cache/org
+  MT_ASR_PATH: /models/multitalker/multitalker-parakeet-streaming-0.6b-v1.nemo
+  MT_DIAR_PATH: /models/nemotron-diar/Nemotron-3-Diarization.nemo
+  # Upper bound on per-speaker ASR instances (the model card's 8). Requests may lower it.
+  MT_MAX_SPEAKERS: "8"
+  # Request micro-batching: requests arriving within the window (ms) run as ONE coupled
+  # session with up to MT_MB_CAP files on the batch dimension, rows zero-padded to the longest
+  # file. Same `max_speakers` only (it binds per session). MT_MB_PAD_WASTE splits a window
+  # into more sessions when padding would waste more than this fraction of rows (>=1 = never).
+  MT_MB_WINDOW_MS: "100"
+  MT_MB_CAP: "16"
+  MT_MB_PAD_WASTE: "0.3"
+  # Batch sizes warmed at load ("cap" = MT_MB_CAP). Shapes are pinned, so B=1 warms all.
+  MT_MB_WARMUP_SIZES: "1"
+  # Shape pinning (packages/multitalker_batch_fix.py): bf16 GEMM rounding depends on the batch shape.
+  # The diarizer runs as slabs of MT_DIAR_ROWS sessions (a short batch is padded up, a 16-session
+  # batch runs 2 x 8), so every diarizer call sees the 8-row shapes -- 16-row calls are a different
+  # draw (+0.56 cpWER). The ASR rows are pinned by mt_fast (MT_PAD_ROWS, below); MT_ASR_ROWS only
+  # applies to the eager MT_FAST=0 path. B=1..cap give the same bytes per file (30/30 at cap 16).
+  MT_ASR_ROWS: "128"
+  MT_DIAR_ROWS: "8"
+  # Diarizer step in fp32 (no autocast) instead of bf16 (row-position invariant; ~4x diarizer cost).
+  MT_DIAR_FP32: "0"
+  # --- step-time levers (packages/mt_fast.py, the streaming preset's performance build) ---
+  # MT_FAST=1 dispatches the same NeMo step with CUDA graphs instead of ~3,000 launches: the sync-mode
+  # diarizer core replayed from one graph per sequence length (bit-identical to eager), NeMo's
+  # CudaGraphsStreamingEncoderStep at the pinned MT_ASR_ROWS, shallow hypothesis copies, incremental
+  # detokenisation. 0 = the eager e98c7e8 step (kept for A/B; then MT_ASR_FP32=1 gives the fp32 ASR).
+  MT_FAST: "1"
+  # ASR encoder weight dtype under MT_FAST. bf16 (pinned at MT_PAD_ROWS): eval-30 31.90 at load,
+  # per-file vs fp32 mean |d| 0.38 / max 1.77, deterministic per file, and the 16-session step runs in
+  # 14.5 s instead of 20.5 s (61 vs 42 sessions/min closed-loop at K=30). fp32 (no autocast) is the
+  # shape-invariant option (M=8 == M=32 byte-identical); bf16 is not (0/30 files identical between
+  # M=8 and M=32, mean |d| 0.26 / max 1.76 -- with or without cuBLAS's reduced-precision split-K
+  # reductions, which change nothing at M=32), so its rows stay pinned. Fixed per deployment.
+  MT_ASR_DTYPE: "bf16"
+  # Speaker rows per ASR call under MT_FAST (one encoder graph at this shape); a step's SigmaS active
+  # rows above it run as slabs. 32, not MT_ASR_ROWS: the first graphed 64-row call faults
+  # (cudaErrorIllegalAddress, fp32 and bf16 alike; 8/16/32 never). fp32 is shape-invariant, so
+  # 2 x 32 == 1 x 64 numerically.
+  MT_PAD_ROWS: "32"
+  # RNNT label-looping decoder graphs: NeMo's "full_graph" (conditional nodes) faults intermittently on
+  # its first replay after the encoder graph is captured (every load at 64 rows, some pods at 32);
+  # "no_while_loops" replays the same kernels under a host loop -- identical output, same speed.
+  MT_DEC_GRAPHS_MODE: "no_while_loops"
+  # Output segments rebuilt from token ids + RNNT emission frames (packages/mt_turns.py, the streaming
+  # preset's turn builder): a speaker's segment closes after its own pause > MT_TURN_PAUSE_S, at
+  # sentence-final punctuation, and on a hand-over. NeMo's seglst path (0) re-appends a speaker's
+  # whole transcript whenever a punctuation piece breaks its prefix check: +870 inserted words on
+  # eval-30 (cpWER 31.90 vs 29.5 for the same audio through the streaming preset).
+  MT_TURN_SEGMENTS: "1"
+  MT_TURN_OVERLAP: "1"
+  MT_TURN_PAUSE_S: "2.5"
+  MT_TURN_HANDOVER_S: "2.0"
+  MT_TURN_HANDOVER_WORDS: "6"
+  MT_TURN_SENTENCE_BREAK: "0"
+  MT_ENC_CUDA_GRAPHS: "1"
+  MT_DIAR_GRAPHS: "1"
+  MT_NO_DEEPCOPY: "1"
+  MT_INC_DETOK: "1"
+  # Warm session length (s): walks every diarizer sequence length at load (~150 graph captures).
+  MT_WARMUP_SECS: "180"
+requirements:
+  - soundfile
+  - librosa>=0.10.0
+build_commands:
+  - pip install --no-build-isolation Cython packaging
+  - pip install --no-build-isolation -e "/opt/NeMo[asr]"
+  - pip uninstall -y nemo_toolkit
+  - pip install --no-build-isolation --no-deps "nemo_toolkit @ git+https://github.com/NVIDIA/NeMo.git@3c2d62ae7eb4"
+resources:
+  accelerator: RTX_PRO_6000
+  use_gpu: true
+runtime:
+  # Must exceed MT_MB_CAP so a full batch can actually form: requests wait in the
+  # micro-batcher (one consumer thread serialises the non-reentrant coupled session), and the
+  # headroom lets audio decode/upload overlap the GPU work.
+  predict_concurrency: 48
+  health_checks:
+    # Two checkpoints load (2.5 GB ASR + diarizer) plus a warmup pass.
+    startup_threshold_seconds: 1500
+system_packages:
+  - ffmpeg
+weights:
+  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+    mount_location: "/models/nemotron-diar"
+  - source: "hf://nvidia/multitalker-parakeet-streaming-0.6b-v1@main"
+    mount_location: "/models/multitalker"
