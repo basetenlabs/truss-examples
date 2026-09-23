@@ -40,12 +40,22 @@ async def transcribe(pcm16: bytes, max_speakers: int, words: bool) -> dict:
     url = f"wss://model-{os.environ['MODEL_ID']}.api.baseten.co/environments/production/websocket"
     headers = {"Authorization": f"Api-Key {os.environ['BASETEN_API_KEY']}"}
     async with websockets.connect(url, additional_headers=headers, max_size=None) as ws:
-        await ws.send(json.dumps({"session_id": f"demo-{int(time.time())}", "max_speakers": max_speakers, "words": int(words)}))
+        await ws.send(
+            json.dumps(
+                {
+                    "session_id": f"demo-{int(time.time())}",
+                    "max_speakers": max_speakers,
+                    "words": int(words),
+                }
+            )
+        )
 
         async def send_audio():
             for i in range(0, len(pcm16), FRAME_BYTES):
                 frame = base64.b64encode(pcm16[i : i + FRAME_BYTES]).decode()
-                await ws.send(json.dumps({"type": "input_audio_buffer.append", "audio": frame}))
+                await ws.send(
+                    json.dumps({"type": "input_audio_buffer.append", "audio": frame})
+                )
                 await asyncio.sleep(FRAME_MS / 1000)
             await ws.send(json.dumps({"type": "input_audio_buffer.commit"}))
 
@@ -57,9 +67,13 @@ async def transcribe(pcm16: bytes, max_speakers: int, words: bool) -> dict:
             if frame.get("type") == "error":
                 raise SystemExit(f"server error: {frame['error']}")
             last = frame
-            for seg in frame["segments"][printed:]:  # closed turns are stable: print each once
+            for seg in frame["segments"][
+                printed:
+            ]:  # closed turns are stable: print each once
                 flag = " (overlap)" if seg.get("overlap") else ""
-                print(f"[{seg['speaker']} {seg['start']:6.2f}-{seg['end']:6.2f}]{flag} {seg['text']}")
+                print(
+                    f"[{seg['speaker']} {seg['start']:6.2f}-{seg['end']:6.2f}]{flag} {seg['text']}"
+                )
             printed = len(frame["segments"])
             for p in frame.get("partial", []):
                 print(f"    … {p['speaker']}: {p['text']}")
@@ -73,11 +87,17 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("wav")
     ap.add_argument("--max-speakers", type=int, default=8)
-    ap.add_argument("--no-words", action="store_true", help="omit per-word timings (smaller frames)")
+    ap.add_argument(
+        "--no-words", action="store_true", help="omit per-word timings (smaller frames)"
+    )
     args = ap.parse_args()
-    final = asyncio.run(transcribe(load_pcm16(args.wav), args.max_speakers, not args.no_words))
-    print(f"\nfinal: {final['num_speakers']} speaker(s), {len(final['segments'])} turns, "
-          f"{final['processed_s']:.1f} s processed")
+    final = asyncio.run(
+        transcribe(load_pcm16(args.wav), args.max_speakers, not args.no_words)
+    )
+    print(
+        f"\nfinal: {final['num_speakers']} speaker(s), {len(final['segments'])} turns, "
+        f"{final['processed_s']:.1f} s processed"
+    )
 
 
 if __name__ == "__main__":

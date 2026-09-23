@@ -31,8 +31,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--url", help="public or presigned URL of the audio file")
-    src.add_argument("--file", help="local audio file, sent as base64 (any ffmpeg-decodable format)")
-    ap.add_argument("--latency", default="offline", choices=["offline", "low", "ultralow"])
+    src.add_argument(
+        "--file", help="local audio file, sent as base64 (any ffmpeg-decodable format)"
+    )
+    ap.add_argument(
+        "--latency", default="offline", choices=["offline", "low", "ultralow"]
+    )
     args = ap.parse_args()
 
     if args.url:

@@ -30,7 +30,9 @@ def load_pcm16(path: str) -> bytes:
     if width != 2:
         raise SystemExit("expected 16-bit PCM WAV")
     x = np.frombuffer(raw, dtype=np.int16).reshape(-1, n_ch).mean(axis=1)
-    if rate != RATE:  # linear resample; good enough for a demo, use soxr/ffmpeg in production
+    if (
+        rate != RATE
+    ):  # linear resample; good enough for a demo, use soxr/ffmpeg in production
         t_new = np.arange(0, len(x), rate / RATE)
         x = np.interp(t_new, np.arange(len(x)), x)
     return x.astype(np.int16).tobytes()
@@ -45,7 +47,9 @@ async def stream(pcm16: bytes, latency: str) -> dict:
         async def send_audio():
             for i in range(0, len(pcm16), FRAME_BYTES):
                 frame = base64.b64encode(pcm16[i : i + FRAME_BYTES]).decode()
-                await ws.send(json.dumps({"type": "input_audio_buffer.append", "audio": frame}))
+                await ws.send(
+                    json.dumps({"type": "input_audio_buffer.append", "audio": frame})
+                )
                 await asyncio.sleep(FRAME_MS / 1000)  # real-time pacing
             await ws.send(json.dumps({"type": "input_audio_buffer.commit"}))
 
@@ -59,7 +63,9 @@ async def stream(pcm16: bytes, latency: str) -> dict:
             tail = frame["turns"][-2:]
             print(
                 f"t={frame['processed_s']:6.1f}s  speakers={frame['num_speakers']}  "
-                + "  ".join(f"{t['speaker']}[{t['start']:.1f}-{t['end']:.1f}]" for t in tail)
+                + "  ".join(
+                    f"{t['speaker']}[{t['start']:.1f}-{t['end']:.1f}]" for t in tail
+                )
             )
             if frame.get("is_final"):
                 break
