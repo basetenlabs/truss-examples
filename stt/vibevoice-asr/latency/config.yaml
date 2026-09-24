@@ -63,7 +63,7 @@ system_packages:
 # Weights are pre-downloaded at build time and mounted at /models/vibevoice-asr,
 # so cold starts skip the 9.2 GB HF download entirely.
 weights:
-  - source: "hf://microsoft/VibeVoice-ASR@d0c9efdb8d614685062c04425d91e01b6f37d944"
+  - source: "hf://microsoft/VibeVoice-ASR@main"
     mount_location: "/models/vibevoice-asr"
 
 # Pass-through mode: no model.py, Truss just runs vllm serve and proxies
