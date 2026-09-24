@@ -17,7 +17,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic@main"
+  - source: "hf://RedHatAI/Llama-4-Scout-17B-16E-Instruct-FP8-dynamic@fc1b4f4cea92cfc13570f504a209eb4d4ca81534"
     mount_location: "/app/checkpoint/model"
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
