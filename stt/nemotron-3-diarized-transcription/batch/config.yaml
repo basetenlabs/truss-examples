@@ -105,7 +105,7 @@ runtime:
 system_packages:
   - ffmpeg
 weights:
-  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+  - source: "hf://nvidia/Nemotron-3-Diarization@723e19c601d99b7e58fba6a14e32153e0afe48d9"
     mount_location: "/models/nemotron-diar"
-  - source: "hf://nvidia/multitalker-parakeet-streaming-0.6b-v1@main"
+  - source: "hf://nvidia/multitalker-parakeet-streaming-0.6b-v1@8749fc71fd6e2d88ef230159bbf2aea69b524ee1"
     mount_location: "/models/multitalker"
