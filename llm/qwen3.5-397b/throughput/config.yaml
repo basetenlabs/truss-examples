@@ -15,7 +15,7 @@ model_metadata:
 base_image:
   image: "vllm/vllm-openai:v0.22.0-cu129"
 weights:
-  - source: "hf://nvidia/Qwen3.5-397B-A17B-NVFP4@main"
+  - source: "hf://nvidia/Qwen3.5-397B-A17B-NVFP4@12b28061efd8145b11226e4fab2528ee4f39ef09"
     mount_location: /app/checkpoint/model
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
