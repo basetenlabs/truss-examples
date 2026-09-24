@@ -21,7 +21,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://google/gemma-4-E4B-it@main"
+  - source: "hf://google/gemma-4-E4B-it@ee0ef6023621cff504d758262d4e04895a5af4a2"
     mount_location: "/app/checkpoint/model"
 docker_server:
   start_command: >-
