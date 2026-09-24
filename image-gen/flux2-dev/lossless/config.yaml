@@ -4,7 +4,7 @@ base_image:
   image: baseten/qwen-image-2512-h100:v1.2
 
 weights:
-  - source: hf://black-forest-labs/FLUX.2-dev
+  - source: hf://black-forest-labs/FLUX.2-dev@26afe3a78bb242c0a8bb181dcc8937bb16e5c66c
     mount_location: /app/model_cache/FLUX.2-dev
     auth_secret_name: hf_access_token
     ignore_patterns:
