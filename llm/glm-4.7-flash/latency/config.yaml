@@ -18,7 +18,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://zai-org/GLM-4.7-Flash@main"
+  - source: "hf://zai-org/GLM-4.7-Flash@7dd20894a642a0aa287e9827cb1a1f7f91386b67"
     mount_location: "/app/checkpoint/model"
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
