@@ -40,9 +40,9 @@ resources:
   use_gpu: true
 
 weights:
-  - source: "hf://nvidia/Llama-3.1-8B-Instruct-FP8@main"
+  - source: "hf://nvidia/Llama-3.1-8B-Instruct-FP8@42d9515ebd69eea3a87351d079c671c3c5ff0a31"
     mount_location: "/app/model_cache/trt_model"
-  - source: "hf://yuhuili/EAGLE3-LLaMA3.1-Instruct-8B@main"
+  - source: "hf://yuhuili/EAGLE3-LLaMA3.1-Instruct-8B@ada412b672e293d682423de84a095447bf38a637"
     mount_location: "/app/model_cache/eagle3_draft"
 
 
