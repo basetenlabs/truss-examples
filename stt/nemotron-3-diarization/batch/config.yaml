@@ -110,5 +110,5 @@ runtime:
 system_packages:
   - ffmpeg
 weights:
-  - source: "hf://nvidia/Nemotron-3-Diarization@main"
+  - source: "hf://nvidia/Nemotron-3-Diarization@723e19c601d99b7e58fba6a14e32153e0afe48d9"
     mount_location: "/models/nemotron-diar"
