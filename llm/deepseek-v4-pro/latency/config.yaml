@@ -17,7 +17,7 @@ model_metadata:
 base_image:
   image: baseten/vllm-openai:pr-43447-updated-latest
 weights:
-  - source: "hf://deepseek-ai/DeepSeek-V4-Pro@main"
+  - source: "hf://deepseek-ai/DeepSeek-V4-Pro@b5968e9190ef611bbf34a7229255be88a0e937c1"
     mount_location: "/app/checkpoint/model"
 resources:
   instance_type: B200:8
