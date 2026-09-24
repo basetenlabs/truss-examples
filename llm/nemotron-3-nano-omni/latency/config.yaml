@@ -16,7 +16,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://baseten-admin/nemotron-3-nano-omni-ga@main"
+  - source: "hf://baseten-admin/nemotron-3-nano-omni-ga@bdb862aff8cae1e863caf7fba4896fe0a7b9b880"
     mount_location: "/app/checkpoint/model"
     auth_secret_name: "hf_access_token"
 secrets:
