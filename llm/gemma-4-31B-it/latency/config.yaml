@@ -21,7 +21,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://RedHatAI/gemma-4-31B-it-FP8-block@main"
+  - source: "hf://RedHatAI/gemma-4-31B-it-FP8-block@d7242548c457ab4b45bd3adb8937f2659af4739d"
     mount_location: "/app/checkpoint/model"
   - source: "hf://RedHatAI/gemma-4-31B-it-speculator.eagle3@28a1c8b4bb64dbaee883ba35341841138bdf1fe3"
     mount_location: "/app/checkpoint/speculator"
