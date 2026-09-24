@@ -22,7 +22,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://RedHatAI/Qwen3-VL-32B-Instruct-NVFP4@main"
+  - source: "hf://RedHatAI/Qwen3-VL-32B-Instruct-NVFP4@409d48ed83fde917cab7410bf938d3e3d66f7669"
     mount_location: "/app/checkpoint/model"
 docker_server:
   start_command: >-
