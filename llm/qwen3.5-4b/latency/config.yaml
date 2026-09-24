@@ -16,7 +16,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0-cu129
 weights:
-  - source: "hf://Qwen/Qwen3.5-4B@main"
+  - source: "hf://Qwen/Qwen3.5-4B@851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
     mount_location: "/app/checkpoint/model"
 docker_server:
   start_command: >-
