@@ -19,7 +19,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.22.0
 weights:
-  - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@main"
+  - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@9d1823d2dee688a6b25e77009dc727688c44936e"
     mount_location: "/app/checkpoint/model"
 environment_variables:
   VLLM_LOGGING_LEVEL: WARNING
