@@ -17,7 +17,7 @@ base_image:
   image: vllm/vllm-openai:v0.20.0
 
 weights:
-  - source: "hf://Qwen/Qwen3.6-27B@main"
+  - source: "hf://Qwen/Qwen3.6-27B@6a9e13bd6fc8f0983b9b99948120bc37f49c13e9"
     mount_location: "/app/checkpoint/model"
 
 resources:
