@@ -28,7 +28,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:v0.20.2-cu129
 weights:
-  - source: "hf://Hcompany/Holo-3.1-35B-A3B-FP8@main"
+  - source: "hf://Hcompany/Holo-3.1-35B-A3B-FP8@b4708750141b9f3f3bef42b87fdfe8bbe361c9b3"
     mount_location: "/app/checkpoint/model"
 build_commands: []
 environment_variables:
