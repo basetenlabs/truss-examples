@@ -4,7 +4,7 @@ base_image:
   image: baseten/sglang-diffusion-h100:v1.3
 
 weights:
-  - source: hf://krea/Krea-2-Turbo
+  - source: hf://krea/Krea-2-Turbo@98e0fe118d17c9e3547fbb2e25acdbae2cadf7c7
     mount_location: /app/model_cache/krea-2-turbo
     auth_secret_name: hf_access_token
     ignore_patterns: ["**/turbo.safetensors"]
