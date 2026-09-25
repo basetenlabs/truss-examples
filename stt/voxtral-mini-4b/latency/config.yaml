@@ -2,7 +2,7 @@ model_name: "model:voxtral-mini-4b preset:latency"
 model_metadata:
   repo_id: mistralai/Voxtral-Mini-4B-Realtime-2602
 weights:
-  - source: "hf://mistralai/Voxtral-Mini-4B-Realtime-2602@main"
+  - source: "hf://mistralai/Voxtral-Mini-4B-Realtime-2602@2769294da9567371363522aac9bbcfdd19447add"
     mount_location: "/app/checkpoint/model"
 environment_variables:
   VLLM_CACHE_ROOT: /cache/org/vllm
