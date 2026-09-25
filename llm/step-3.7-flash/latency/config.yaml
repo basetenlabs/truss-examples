@@ -19,7 +19,7 @@ model_metadata:
 base_image:
   image: vllm/vllm-openai:stepfun37
 weights:
-  - source: "hf://stepfun-ai/Step-3.7-Flash-FP8@main"
+  - source: "hf://stepfun-ai/Step-3.7-Flash-FP8@b3d7916fccac844cca050d7520f2aaa513f9a84f"
     mount_location: "/app/checkpoint/model"
 resources:
   accelerator: H100:4
