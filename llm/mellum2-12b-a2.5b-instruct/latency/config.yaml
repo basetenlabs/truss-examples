@@ -19,7 +19,7 @@ base_image:
   image: vllm/vllm-openai:v0.23.0
 
 weights:
-  - source: "hf://JetBrains/Mellum2-12B-A2.5B-Instruct@main"
+  - source: "hf://JetBrains/Mellum2-12B-A2.5B-Instruct@273d9c1c6882ac8e1562e5b7e043857d35a787b6"
     mount_location: "/app/checkpoint/model"
 
 resources:
