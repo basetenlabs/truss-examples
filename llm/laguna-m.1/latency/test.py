@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Test script for Laguna M.1 (FP8) deployed on Baseten.
+Test script for Laguna M.1 (NVFP4) deployed on Baseten.
 
 Usage:
     BASETEN_API_KEY=<key> BASETEN_MODEL_ID=<model_id> python test.py
 
 Tests two scenarios:
   1. Streaming chat completion
-  2. Tool calling (poolside_v1 parser)
+  2. Tool calling (laguna parser)
 """
 
 import json
@@ -92,7 +92,7 @@ else:
 
 print()
 print("=" * 60)
-print("2. Tool calling (poolside_v1 parser)")
+print("2. Tool calling (laguna parser)")
 
 tools = [
     {

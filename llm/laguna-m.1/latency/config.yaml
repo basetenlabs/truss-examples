@@ -2,18 +2,18 @@ model_name: "model:laguna-m.1 preset:latency"
 
 model_metadata:
   description: >-
-    Laguna M.1 FP8 MoE reasoning model from Poolside, served with vLLM (H100 TP=4),
-    OpenAI-compatible chat with tool calling and extended reasoning support.
-    Latency-optimized: low max-num-seqs to minimize head-of-line blocking from long thinking traces.
-  repo_id: poolside/Laguna-M.1-FP8
+    Poolside Laguna M.1 NVFP4 MoE reasoning model served with TensorRT-LLM
+    on four B200 GPUs, with OpenAI-compatible chat, tool calling, reasoning,
+    and a 262K-token context window.
+  repo_id: poolside/Laguna-M.1-NVFP4
   trust_remote_code: true
   tags:
     - openai-compatible
-    - vllm
+    - trt-llm
     - moe
     - reasoning
     - agentic-coding
-    - fp8
+    - nvfp4
   example_model_input:
     model: poolside/laguna-m.1
     messages:
@@ -23,70 +23,104 @@ model_metadata:
     temperature: 1.0
     top_k: 20
 
-# ---------------------------------------------------------------------------
-# Base image — vLLM with Laguna support (requires vLLM >= 0.21.0)
-# ---------------------------------------------------------------------------
-base_image:
-  image: vllm/vllm-openai:v0.21.0
-  python_executable_path: /usr/bin/python3
+environment_variables: {}
 
-# ---------------------------------------------------------------------------
-# Weights — FP8 quantized checkpoint (~225 GB, fits in 4× H100 / 320 GB)
-# Quantization is detected automatically from the checkpoint's
-# quantization_config — no extra vLLM flags needed.
-# ---------------------------------------------------------------------------
-weights:
-  - source: "hf://poolside/Laguna-M.1-FP8@3732a656e6f0bf09f90250518d8de9c8e5c54f12"
-    mount_location: "/models/laguna-m1"
-
-
-requirements:
-  - runai-model-streamer==0.16.1
-
-environment_variables:
-  VLLM_LOGGING_LEVEL: WARNING
-  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-
-# ---------------------------------------------------------------------------
-# Docker server — vLLM OpenAI-compatible endpoint
-# ---------------------------------------------------------------------------
-docker_server:
-  start_command: >-
-    vllm serve /models/laguna-m1
-    --served-model-name poolside/laguna-m.1
-    --host 0.0.0.0
-    --port 8000
-    --tool-call-parser poolside_v1
-    --reasoning-parser poolside_v1
-    --enable-auto-tool-choice
-    --default-chat-template-kwargs '{"enable_thinking": true}'
-    --tensor-parallel-size 4
-    --max-model-len 262144
-    --max-num-seqs 64
-    --gpu-memory-utilization 0.95
-    --trust-remote-code
-    --load-format runai_streamer
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
-
-# ---------------------------------------------------------------------------
-# Resources
-# FP8 ~225 GB → 4× H100 (320 GB total VRAM) with comfortable headroom
-# ---------------------------------------------------------------------------
 resources:
-  accelerator: H100:4
-  cpu: "8"
-  memory: 32Gi
-  use_gpu: true
+  instance_type: B200:4
 
-# ---------------------------------------------------------------------------
-# Runtime
-# ---------------------------------------------------------------------------
-runtime:
-  predict_concurrency: 64
-  health_checks:
-    startup_threshold_seconds: 1800
-    restart_threshold_seconds: 600
-    stop_traffic_threshold_seconds: 180
+bis_llm:
+  version: 0.0.1-20260415192506-5d63e8c1
+  config:
+    model_name: poolside/laguna-m.1
+    model_path: /models/laguna
+    model_path_for_tokenizer: /models/laguna
+    checkpoint_name: poolside/Laguna-M.1-NVFP4
+    gpuTRTImage: baseten/dynamo-cache-aware-routing@sha256:c9328eb9529ab75436ac5dbd4fd4c814bcdfe2eb5cd6c968b7379883fff46686
+    served_model_name: poolside/laguna-m.1
+    served_model_name_response: poolside/laguna-m.1
+    reasoning_parser: laguna
+    tool_call_parser: laguna
+    arguments_as_json: true
+    enable_structural_tool_choice: false
+    tensor_parallel_size: 4
+    tokenizer_limit_length: 262144
+    tokenizer_max_new_tokens_limit: 32768
+    model_level_stop_words:
+      - </assistant>
+    default_thinking_enabled: true
+    default_sampling_params:
+      max_tokens: 8192
+    default_sampling_params_thinking:
+      max_tokens: 8192
+    b10_autoscaling_config:
+      additional_autoscaling_config:
+        metrics:
+          - name: in_flight_tokens
+            target: 130000
+    b10_routing_config:
+      algo_selector: B10
+      router_active_replicas: 2
+      router_cache_miss_min_isl: 15000
+      router_cache_miss_weight: 0.03
+      router_decode_token_discount: 1.5
+      router_disable_snapshots_in_primary: true
+      router_overlap_score_weight: 6.5
+      router_prefill_token_discount: 0.15
+      router_queue_threshold: 3
+      router_replica_sync: true
+      router_snapshot_threshold: 200000
+      router_temperature: 0.015
+    additional_environment_variables:
+      Worker:
+        TRTLLM_ENABLE_PDL: "0"
+        TRTLLM_ENABLE_TRTLLM_GEN_ATTENTION: "1"
+        TRTLLM_GEN_FUSED_MOE_USE_FLASHINFER: "0"
+        TRTLLM_NVFP4_GEMM_BACKEND: cutlass
+        BAD_TOKEN_ID_SEQ_CHECK_ENABLED: "1"
+        PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+      Frontend:
+        DYN_ENABLE_ANTHROPIC_API: "1"
+    engine_config:
+      backend: pytorch
+      trust_remote_code: true
+      dtype: bfloat16
+      attn_backend: TRTLLM
+      max_seq_len: 262144
+      max_input_len: 262144
+      max_batch_size: 128
+      max_beam_width: 1
+      max_num_tokens: 16384
+      enable_chunked_prefill: true
+      disable_overlap_scheduler: false
+      guided_decoding_backend: xgrammar
+      moe_expert_parallel_size: 1
+      moe_config:
+        backend: TRTLLM
+        max_num_tokens: 16384
+      nvfp4_gemm_config:
+        allowed_backends:
+          - cutlass
+      kv_cache_config:
+        dtype: fp8
+        host_cache_size: 322122547200
+        enable_block_reuse: true
+        enable_partial_reuse: false
+        event_buffer_max_size: 16384
+        free_gpu_memory_fraction: 0.9
+      cuda_graph_config:
+        enable_padding: true
+        max_batch_size: 128
+        batch_sizes:
+          - 1
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
+          - 64
+          - 128
+
+weights:
+  # Public, ungated checkpoint; no auth secret.
+  - source: hf://poolside/Laguna-M.1-NVFP4@678dab79d5a8228035b2013152a92d6e05825b2d
+    mount_location: /models/laguna
