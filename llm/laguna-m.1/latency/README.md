@@ -1,12 +1,15 @@
-# Laguna M.1 with TensorRT-LLM — Latency Template
+# Laguna M.1 with vLLM — Latency Template
 
-Laguna M.1 is Poolside's flagship reasoning model, a Mixture-of-Experts (MoE) architecture optimized for agentic coding and extended reasoning tasks. This template serves the NVFP4 checkpoint on 4× B200 GPUs with the Baseten Inference Stack (TensorRT-LLM engine, KV-cache-aware routing), using Poolside's Laguna tool-call and reasoning parsers.
+Laguna M.1 is Poolside's flagship reasoning model, a Mixture-of-Experts (MoE) architecture optimized for agentic coding and extended reasoning tasks. This FP8 checkpoint (~225 GB) runs on 4× H100 GPUs and is served via the official `vllm/vllm-openai` container with Poolside's custom tool-call and reasoning parsers.
+
+This template is latency-optimized: `--max-num-seqs 64` limits concurrent sequences to minimize head-of-line blocking from long thinking traces, making it well-suited for agentic workloads where individual request latency gates overall task time.
 
 ---
 
 ## Requirements
 
-- Baseten account with B200 GPU access
+- `truss >= 0.10.5`
+- Baseten account with H100 GPU access
 
 ---
 
@@ -14,16 +17,16 @@ Laguna M.1 is Poolside's flagship reasoning model, a Mixture-of-Experts (MoE) ar
 
 | Parameter | Value | Why it matters |
 | --- | --- | --- |
-| `checkpoint_name` | `poolside/Laguna-M.1-NVFP4` | NVFP4 weights for Blackwell FP4 kernels |
-| `instance_type` | `B200:4` | Four B200 GPUs |
-| `tensor_parallel_size` | `4` | Shards the model across all 4 GPUs |
-| `max_batch_size` | `128` | Concurrent sequences per replica |
-| `max_num_tokens` | `16384` | Tokens scheduled per engine step, with chunked prefill |
-| `max_seq_len` | `262144` | 256 K context window |
-| `kv_cache_config` | FP8, block reuse, 300 GB host cache | Prefix reuse across turns of agentic sessions |
-| `tool_call_parser` / `reasoning_parser` | `laguna` | Poolside-native tool calls and thinking extraction |
-| `default_thinking_enabled` | `true` | Reasoning traces on by default |
-| `b10_routing_config` | KV-cache-aware routing | Sends requests to the replica holding their prefix |
+| `base_image` | `vllm/vllm-openai:v0.21.0` | Minimum version with Laguna support |
+| `accelerator` | `H100:4` | FP8 ~225 GB fits in 4× H100 (320 GB VRAM) with headroom |
+| `tensor-parallel-size` | `4` | Shards model across all 4 GPUs |
+| `max-num-seqs` | `64` | Caps concurrent sequences to reduce queuing behind long thinking traces |
+| `gpu-memory-utilization` | `0.95` | Maximizes available VRAM for KV cache |
+| `max-model-len` | `262144` | 256 K context window |
+| `tool-call-parser` | `poolside_v1` | Poolside-native tool call format |
+| `reasoning-parser` | `poolside_v1` | Enables extended thinking extraction |
+| `enable_thinking` | `true` | Default chat template activates reasoning traces |
+| `predict_concurrency` | `64` | Matches max-num-seqs at the Truss level |
 
 ---
 
