@@ -191,6 +191,10 @@ resources:
   memory: 2Gi
   use_gpu: true
 runtime:
+  health_checks:
+    restart_threshold_seconds: 30
+    startup_threshold_seconds: 1800
+    stop_traffic_threshold_seconds: 30
   is_websocket_endpoint: false
   predict_concurrency: 32
   transport:
