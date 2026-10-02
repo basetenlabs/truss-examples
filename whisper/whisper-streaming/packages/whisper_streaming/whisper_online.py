@@ -41,7 +41,7 @@ class ASRBase:
 
         self.model = self.load_model(modelsize, cache_dir, model_dir)
 
-    def load_model(self, modelsize, cache_dir):
+    def load_model(self, modelsize=None, cache_dir=None, model_dir=None):
         raise NotImplementedError("must be implemented in the child class")
 
     def transcribe(self, audio, init_prompt=""):
