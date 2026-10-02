@@ -73,8 +73,10 @@ You can find the following deployments in this repository:
  - [papluca/xlm-roberta-base-language-detection-classification-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification)
 
 ## Typed Decision Deployments:
+ - [Cloudflare/clef-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-cloudflare-clef)
  - [michaelfeil/laya-typed-decisions-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-laya-typed-decisions)
  - [michaelfeil/rune-26b-a4b-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-rune-26b-a4b)
+ - [perplexity-ai/pplx-decider-v1-27b-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-perplexity-ai-pplx-decider-v1-27b)
 
 ## Named Entity Recognition (NER) Deployments:
  - [Babelscape/wikineural-multilingual-ner-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-babelscape-wikineural-multilingual-ner)

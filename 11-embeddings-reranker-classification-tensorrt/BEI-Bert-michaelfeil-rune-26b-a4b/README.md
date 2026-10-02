@@ -46,7 +46,7 @@ truss push --publish
 
 ## Call your model
 
-Call the explicit `/v1/systemone` route. Each question is a separate inference sequence; the response contains all answers.
+Call the explicit `/v1/systemone` route. The response contains an answer for each question.
 
 ```bash
 export MODEL_URL="https://model-${MODEL_ID}.api.baseten.co/environments/production/sync"
@@ -114,8 +114,6 @@ trt_llm:
     tensor_parallel_count: 1
   runtime:
     webserver_default_route: null
-  version_overrides:
-    bei_bert_version: 1.8.16
 
 ```
 

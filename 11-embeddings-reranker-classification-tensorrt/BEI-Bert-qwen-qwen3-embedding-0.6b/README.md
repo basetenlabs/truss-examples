@@ -183,8 +183,6 @@ trt_llm:
     tensor_parallel_count: 1
   runtime:
     webserver_default_route: /v1/embeddings
-  version_overrides:
-    bei_bert_version: 1.8.16
 
 ```
 

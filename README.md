@@ -35,7 +35,7 @@ This will prompt you for an API Key -- fetch one from the
 
 ## Embeddings and typed decisions
 
-See the [BEI-Bert examples](11-embeddings-reranker-classification-tensorrt/README.md) for EmbeddingGemma, Laya, Rune 26B, Qwen3 embeddings, and ModernBERT reranking.
+See the [BEI-Bert examples](11-embeddings-reranker-classification-tensorrt/README.md) for EmbeddingGemma, Laya, Rune 26B, Perplexity Decider, Cloudflare Clef, Qwen3 embeddings, and ModernBERT reranking.
 
 ## Invocation
 

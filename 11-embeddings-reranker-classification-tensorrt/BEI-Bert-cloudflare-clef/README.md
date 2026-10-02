@@ -1,6 +1,6 @@
-# BEI-Bert (Baseten-Embeddings-Inference-BERT) with michaelfeil/laya-typed-decisions
+# BEI-Bert (Baseten-Embeddings-Inference-BERT) with Cloudflare/clef
 
-This is a Deployment for BEI-Bert (Baseten-Embeddings-Inference-BERT) with michaelfeil/laya-typed-decisions. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
+This is a Deployment for BEI-Bert (Baseten-Embeddings-Inference-BERT) with Cloudflare/clef. BEI is Baseten's solution for production-grade deployments via TensorRT-LLM for (text) embeddings, reranking models and prediction models.
 With BEI you get the following benefits:
 - *Lowest-latency inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama)<sup>1</sup>
 - *Highest-throughput inference* across any embedding solution (vLLM, SGlang, Infinity, TEI, Ollama) - thanks to XQA kernels, FP8 and dynamic batching.<sup>2</sup>
@@ -9,17 +9,17 @@ With BEI you get the following benefits:
 
 
 # Examples:
-This deployment is specifically designed for the Hugging Face model [michaelfeil/laya-typed-decisions](https://huggingface.co/michaelfeil/laya-typed-decisions).
+This deployment is specifically designed for the Hugging Face model [Cloudflare/clef](https://huggingface.co/Cloudflare/clef).
 Requires a checkpoint with a trained typed-decision head or protocol.
 
-michaelfeil/laya-typed-decisions Answers choice, boolean, and score questions about a shared state.
+Cloudflare/clef Answers choice, boolean, and score questions about a shared state.
 
 
-Laya accepts plain-text state. Serialize structured state to text. BF16 is recommended; each question is formatted and truncated according to checkpoint limits.
+Set `DECISION_PROTOCOL=clef` to load the joint schema head. All questions in a request share one backbone pass. This deployment supports text state and text messages; image and video inputs are rejected. Prompts exceeding the configured token budget return 422 instead of being truncated.
 
 ### Multiple GPUs
 
-For independent replicas in one deployment, change `resources.accelerator` to `L4:2` or `L4:4`. Each GPU holds the whole model; weights are not split between GPUs. Start with one L4, then measure throughput and queueing at your target load before adding replicas. RTX6000 deployments follow the same full-model-per-GPU capacity requirement where that accelerator is available.
+Use `H100:2` for two independent model replicas. Each GPU must fit the complete model; the BF16 27B checkpoint does not fit on an individual L4 or 48 GB RTX6000.
 
 ## Deployment with Truss
 
@@ -32,15 +32,15 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd truss-examples/11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-laya-typed-decisions
+cd truss-examples/11-embeddings-reranker-classification-tensorrt/BEI-Bert-cloudflare-clef
 ```
 
-With `11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-laya-typed-decisions` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
+With `11-embeddings-reranker-classification-tensorrt/BEI-Bert-cloudflare-clef` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
 
 ```sh
 truss push --publish
 # prints:
-# ✨ Model BEI-Bert-michaelfeil-laya-typed-decisions-truss-example was successfully pushed ✨
+# ✨ Model BEI-Bert-cloudflare-clef-truss-example was successfully pushed ✨
 # 🪵  View logs for your deployment at https://app.baseten.co/models/yyyyyy/logs/xxxxxx
 ```
 
@@ -78,7 +78,7 @@ By default, the following configuration is used for this deployment.
 
 ```yaml
 environment_variables:
-  AUTO_TRUNCATE: 'true'
+  DECISION_PROTOCOL: clef
   DTYPE: bfloat16
 model_metadata:
   example_model_input:
@@ -93,19 +93,19 @@ model_metadata:
         instructions: Which team should handle this request?
         type: choice
     state: I was billed twice. Please refund the extra charge.
-model_name: BEI-Bert-michaelfeil-laya-typed-decisions-truss-example
+model_name: BEI-Bert-cloudflare-clef-truss-example
 python_version: py313
 resources:
-  accelerator: L4
+  accelerator: H100
   cpu: '1'
-  memory: 10Gi
+  memory: 80Gi
   use_gpu: true
 trt_llm:
   build:
     base_model: encoder_bert
     checkpoint_repository:
-      repo: michaelfeil/laya-typed-decisions
-      revision: 0b6de4ff4ee8b16c83011c7f107a39ca191008f5
+      repo: Cloudflare/clef
+      revision: 2f3de3dd85f379784083b0814d997ab627200f0c
       source: HF
     max_num_tokens: 8192
     pipeline_parallel_count: 1

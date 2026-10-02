@@ -162,11 +162,6 @@ With BEI you get the following benefits:
                 bei_version=overrides_bei,
             )
 
-        if dp.bei_bert_version is not None:
-            overrides = trt_llm.root.version_overrides.model_dump(exclude_none=True)
-            overrides["bei_bert_version"] = dp.bei_bert_version
-            trt_llm.root.version_overrides = VersionsOverrides(**overrides)
-
         config = TrussConfig(
             environment_variables=dp.environment_variables,
             model_metadata=dp.task.model_metadata,
@@ -455,7 +450,7 @@ class TypedDecisions(Task):
         }
     )
     client_usage: str = """
-Call the explicit `/v1/systemone` route. Each question is a separate inference sequence; the response contains all answers.
+Call the explicit `/v1/systemone` route. The response contains an answer for each question.
 
 ```bash
 export MODEL_URL="https://model-${MODEL_ID}.api.baseten.co/environments/production/sync"
@@ -1122,7 +1117,6 @@ class Deployment:
     max_num_tokens: Optional[int] = None
     memory: str = "10Gi"
     environment_variables: dict[str, str] = field(default_factory=dict)
-    bei_bert_version: Optional[str] = None
     gated: Optional[bool] = None
     notes: str = ""
 
@@ -1654,6 +1648,48 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
 DEPLOYMENTS_BEI_BERT = []
 DEPLOYMENTS_BEI_BERT_NATIVE = [
     Deployment(
+        name="perplexity-ai/pplx-decider-v1-27b",
+        hf_model_id="perplexity-ai/pplx-decider-v1-27b",
+        accelerator=Accelerator.H100,
+        task=TypedDecisions(),
+        solution=BEIBert(),
+        revision="5117a6c7fe73b19308dc1a6b0fb529a40c2ecad4",
+        max_num_tokens=8192,
+        memory="80Gi",
+        environment_variables={"DTYPE": "bfloat16", "DECISION_PROTOCOL": "pplx"},
+        gated=False,
+        notes=(
+            "Set `DECISION_PROTOCOL=pplx` to load the decision readout and apply the checkpoint's calibrated temperature. "
+            "This deployment supports text state and text messages; image and video inputs are rejected. "
+            "Each question becomes a separate inference sequence in the shared batch. "
+            "Prompts exceeding 8192 tokens, or a smaller request `max_len`, return 422 instead of being truncated."
+            "\n\n### Multiple GPUs\n\n"
+            "Use `H100:2` for two independent model replicas. Each GPU must fit the complete model; "
+            "the BF16 27B checkpoint does not fit on an individual L4 or 48 GB RTX6000."
+        ),
+    ),
+    Deployment(
+        name="Cloudflare/clef",
+        hf_model_id="Cloudflare/clef",
+        accelerator=Accelerator.H100,
+        task=TypedDecisions(),
+        solution=BEIBert(),
+        revision="2f3de3dd85f379784083b0814d997ab627200f0c",
+        max_num_tokens=8192,
+        memory="80Gi",
+        environment_variables={"DTYPE": "bfloat16", "DECISION_PROTOCOL": "clef"},
+        gated=False,
+        notes=(
+            "Set `DECISION_PROTOCOL=clef` to load the joint schema head. "
+            "All questions in a request share one backbone pass. "
+            "This deployment supports text state and text messages; image and video inputs are rejected. "
+            "Prompts exceeding the configured token budget return 422 instead of being truncated."
+            "\n\n### Multiple GPUs\n\n"
+            "Use `H100:2` for two independent model replicas. Each GPU must fit the complete model; "
+            "the BF16 27B checkpoint does not fit on an individual L4 or 48 GB RTX6000."
+        ),
+    ),
+    Deployment(
         name="michaelfeil/laya-typed-decisions",
         hf_model_id="michaelfeil/laya-typed-decisions",
         accelerator=Accelerator.L4,
@@ -1663,7 +1699,6 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         max_num_tokens=8192,
         memory="10Gi",
         environment_variables={"DTYPE": "bfloat16", "AUTO_TRUNCATE": "true"},
-        bei_bert_version="1.8.16",
         gated=False,
         notes="Laya accepts plain-text state. Serialize structured state to text. BF16 is recommended; each question is formatted and truncated according to checkpoint limits.\n\n### Multiple GPUs\n\nFor independent replicas in one deployment, change `resources.accelerator` to `L4:2` or `L4:4`. Each GPU holds the whole model; weights are not split between GPUs. Start with one L4, then measure throughput and queueing at your target load before adding replicas. RTX6000 deployments follow the same full-model-per-GPU capacity requirement where that accelerator is available.",
     ),
@@ -1681,7 +1716,6 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
             "AUTO_TRUNCATE": "true",
             "DECISION_PROTOCOL": "rune",
         },
-        bei_bert_version="1.8.16",
         gated=False,
         notes="This is Rune 26B A4B. Set `DECISION_PROTOCOL=rune` for its trained protocol. This example uses text input. Oversized decision prompts are rejected, never truncated.\n\n### Multiple GPUs\n\nUse `H100:2` for two independent model replicas when more throughput is needed. Each GPU must fit the complete model; adding GPUs does not split the weights or lower the memory required per replica. The BF16 26B checkpoint does not fit on an individual L4 or 48 GB RTX6000.",
     ),
@@ -1695,7 +1729,6 @@ DEPLOYMENTS_BEI_BERT_NATIVE = [
         max_num_tokens=16384,
         memory="10Gi",
         environment_variables={"DTYPE": "bfloat16", "AUTO_TRUNCATE": "true"},
-        bei_bert_version="1.8.16",
         gated=False,
         notes="For retrieval, prefix queries with a task instruction, for example `Instruct: Given a web search query, retrieve relevant passages that answer the query\\nQuery: What is the capital of France?`. Embed documents without that query prefix.\n\n### Multiple GPUs\n\nFor independent replicas in one deployment, change `resources.accelerator` to `L4:2` or `L4:4`. Each GPU holds the whole model; weights are not split between GPUs. Start with one L4, then measure throughput and queueing at your target load before adding replicas. RTX6000 deployments follow the same full-model-per-GPU capacity requirement where that accelerator is available.",
     ),
