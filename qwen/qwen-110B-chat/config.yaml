@@ -1,0 +1,16 @@
+external_package_dirs: []
+model_metadata:
+  example_model_input: {"prompt": "How long would it take to reach the sun?"}
+model_name: Qwen1.5-vllm-streaming
+python_version: py310
+requirements:
+- torch==2.2.1
+- transformers==4.40.0
+- vllm==0.4.1
+- asyncio==3.4.3
+- ray
+resources:
+  accelerator: A100:4
+  use_gpu: true
+secrets: {}
+system_packages: []
