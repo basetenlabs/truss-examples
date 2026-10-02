@@ -22,6 +22,7 @@ requirements:
 - transformers==4.35.2
 - diffusers==0.23.1
 - accelerate==0.24.1
+- huggingface_hub==0.25.2
 resources:
   accelerator: T4
   use_gpu: true
