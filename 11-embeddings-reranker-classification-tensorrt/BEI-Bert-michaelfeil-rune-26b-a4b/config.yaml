@@ -1,0 +1,36 @@
+model_name: BEI-Bert-michaelfeil-rune-26b-a4b
+description: Rune 26B A4B typed decisions served with BEI-Bert.
+model_metadata:
+  example_model_input:
+    state: I was billed twice. Please refund the extra charge.
+    questions:
+      team:
+        type: choice
+        instructions: Which team should handle this request?
+        criteria:
+          billing: Billing and refunds
+          technical_support: Technical troubleshooting
+      refund:
+        type: noul
+        instructions: Is the customer asking for a refund?
+resources:
+  accelerator: H100
+  use_gpu: true
+  cpu: '4'
+  memory: 80Gi
+trt_llm:
+  inference_stack: v1
+  version_overrides:
+    bei_bert_version: 1.8.16
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      source: HF
+      repo: michaelfeil/rune-26b-a4b
+      revision: d9507c3d09de24e948f69aaa53c7bcb4a271effb
+    quantization_type: no_quant
+    max_num_tokens: 8192
+environment_variables:
+  DTYPE: bfloat16
+  AUTO_TRUNCATE: 'true'
+  DECISION_PROTOCOL: rune

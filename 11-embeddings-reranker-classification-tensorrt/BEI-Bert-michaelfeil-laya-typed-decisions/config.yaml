@@ -1,0 +1,35 @@
+model_name: BEI-Bert-michaelfeil-laya-typed-decisions
+description: Laya typed decisions served with BEI-Bert.
+model_metadata:
+  example_model_input:
+    state: I was billed twice. Please refund the extra charge.
+    questions:
+      team:
+        type: choice
+        instructions: Which team should handle this request?
+        criteria:
+          billing: Billing and refunds
+          technical_support: Technical troubleshooting
+      refund:
+        type: noul
+        instructions: Is the customer asking for a refund?
+resources:
+  accelerator: L4
+  use_gpu: true
+  cpu: '4'
+  memory: 10Gi
+trt_llm:
+  inference_stack: v1
+  version_overrides:
+    bei_bert_version: 1.8.16
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      source: HF
+      repo: michaelfeil/laya-typed-decisions
+      revision: 0b6de4ff4ee8b16c83011c7f107a39ca191008f5
+    quantization_type: no_quant
+    max_num_tokens: 8192
+environment_variables:
+  DTYPE: bfloat16
+  AUTO_TRUNCATE: 'true'

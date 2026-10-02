@@ -1,0 +1,32 @@
+model_name: BEI-Bert-qwen-qwen3-embedding-0.6b
+description: Qwen3 Embedding 0.6B served with BEI-Bert.
+model_metadata:
+  example_model_input:
+    input:
+    - 'Instruct: Given a web search query, retrieve relevant passages that answer
+      the query
+
+      Query: What is the capital of France?'
+    model: Qwen/Qwen3-Embedding-0.6B
+resources:
+  accelerator: L4
+  use_gpu: true
+  cpu: '4'
+  memory: 10Gi
+trt_llm:
+  inference_stack: v1
+  version_overrides:
+    bei_bert_version: 1.8.16
+  build:
+    base_model: encoder_bert
+    checkpoint_repository:
+      source: HF
+      repo: Qwen/Qwen3-Embedding-0.6B
+      revision: 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3
+    quantization_type: no_quant
+    max_num_tokens: 16384
+  runtime:
+    webserver_default_route: /v1/embeddings
+environment_variables:
+  DTYPE: bfloat16
+  AUTO_TRUNCATE: 'true'
