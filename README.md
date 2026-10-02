@@ -33,6 +33,10 @@ $ truss push 02-llm
 This will prompt you for an API Key -- fetch one from the
 [Baseten API keys page](https://app.baseten.co/settings/account/api_keys).
 
+## Embeddings and typed decisions
+
+See the [BEI-Bert examples](11-embeddings-reranker-classification-tensorrt/README.md) for EmbeddingGemma, Laya, Rune 26B, Perplexity Decider, Cloudflare Clef, Qwen3 embeddings, and ModernBERT reranking.
+
 ## Invocation
 
 Invocation depends on the model's input and output specifications. See individual model READMEs for invocation details.
