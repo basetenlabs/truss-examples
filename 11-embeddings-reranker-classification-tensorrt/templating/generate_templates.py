@@ -3,6 +3,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Optional
 import os
+import argparse
 import requests
 from pydantic import dataclasses
 from transformers import AutoConfig
@@ -89,19 +90,20 @@ With BEI you get the following benefits:
             return ""
 
     def make_truss_config(self, dp: "Deployment") -> TrussConfig:
-        hf_cfg = AutoConfig.from_pretrained(
-            dp.hf_model_id, trust_remote_code=True
-        )  # make sure model is available
-        max_position_embeddings = hf_cfg.max_position_embeddings
-
-        max_num_tokens = max(16384, max_position_embeddings)
+        max_num_tokens = dp.max_num_tokens
+        if max_num_tokens is None:
+            hf_cfg = AutoConfig.from_pretrained(dp.hf_model_id, trust_remote_code=True)
+            text_config = getattr(hf_cfg, "text_config", hf_cfg)
+            max_num_tokens = max(16384, text_config.max_position_embeddings)
 
         num_builder_gpus = 1
         if dp.accelerator in [Accelerator.H100]:
             num_builder_gpus = 2
         elif dp.accelerator in [Accelerator.L4]:
             num_builder_gpus = 4
-        if isinstance(dp.task, Embedder):
+        if isinstance(dp.task, TypedDecisions):
+            endpoint = None  # Invoke /v1/systemone explicitly.
+        elif isinstance(dp.task, Embedder):
             endpoint = "/v1/embeddings"
         elif isinstance(dp.task, Predictor):
             endpoint = "/predict"
@@ -116,12 +118,14 @@ With BEI you get the following benefits:
         try:
             trt_llm = TRTLLMConfiguration(
                 build=TrussTRTLLMBuildConfiguration(
-                    base_model=TrussTRTLLMModel.ENCODER_BERT
-                    if self.use_bei_bert
-                    else TrussTRTLLMModel.ENCODER,
+                    base_model=(
+                        TrussTRTLLMModel.ENCODER_BERT
+                        if self.use_bei_bert
+                        else TrussTRTLLMModel.ENCODER
+                    ),
                     checkpoint_repository=CheckpointRepository(
                         repo=dp.hf_model_id,
-                        revision="main",
+                        revision=dp.revision,
                         source=CheckpointSource.HF,
                     ),
                     max_num_tokens=max_num_tokens,
@@ -158,15 +162,24 @@ With BEI you get the following benefits:
                 bei_version=overrides_bei,
             )
 
-        return TrussConfig(
+        if dp.bei_bert_version is not None:
+            overrides = trt_llm.root.version_overrides.model_dump(exclude_none=True)
+            overrides["bei_bert_version"] = dp.bei_bert_version
+            trt_llm.root.version_overrides = VersionsOverrides(**overrides)
+
+        config = TrussConfig(
+            environment_variables=dp.environment_variables,
             model_metadata=dp.task.model_metadata,
             trt_llm=trt_llm,
             resources=Resources(
                 accelerator=dp.accelerator,
-                memory="10Gi",
+                memory=dp.memory,
             ),
             model_name=dp.model_nickname,
         )
+        if isinstance(dp.task, TypedDecisions):
+            config.trt_llm.root.runtime.webserver_default_route = None
+        return config
 
 
 @dataclasses.dataclass
@@ -412,6 +425,62 @@ Optionally, you can also enable:
             model_name=dp.model_nickname,
             trt_llm=self.trt_config,
         )
+
+
+@dataclasses.dataclass
+class TypedDecisions(Task):
+    purpose: str = "Answers choice, boolean, and score questions about a shared state."
+    model_identification: str = (
+        "Requires a checkpoint with a trained typed-decision head or protocol."
+    )
+    model_metadata: dict = field(
+        default_factory=lambda: {
+            "example_model_input": {
+                "state": "I was billed twice. Please refund the extra charge.",
+                "questions": {
+                    "team": {
+                        "type": "choice",
+                        "instructions": "Which team should handle this request?",
+                        "criteria": {
+                            "billing": "Billing and refunds",
+                            "technical_support": "Technical troubleshooting",
+                        },
+                    },
+                    "refund": {
+                        "type": "noul",
+                        "instructions": "Is the customer asking for a refund?",
+                    },
+                },
+            }
+        }
+    )
+    client_usage: str = """
+Call the explicit `/v1/systemone` route. Each question is a separate inference sequence; the response contains all answers.
+
+```bash
+export MODEL_URL="https://model-${MODEL_ID}.api.baseten.co/environments/production/sync"
+curl --fail-with-body "$MODEL_URL/v1/systemone" \\
+  -H "Authorization: Api-Key $BASETEN_API_KEY" \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+  "state": "I was billed twice. Please refund the extra charge.",
+  "questions": {
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "billing": "Billing and refunds",
+        "technical_support": "Technical troubleshooting"
+      }
+    },
+    "refund": {
+      "type": "noul",
+      "instructions": "Is the customer asking for a refund?"
+    }
+  }
+}'
+```
+"""
 
 
 @dataclasses.dataclass
@@ -1049,6 +1118,13 @@ class Deployment:
     accelerator: Accelerator
     task: Task
     solution: Solution
+    revision: str = "main"
+    max_num_tokens: Optional[int] = None
+    memory: str = "10Gi"
+    environment_variables: dict[str, str] = field(default_factory=dict)
+    bei_bert_version: Optional[str] = None
+    gated: Optional[bool] = None
+    notes: str = ""
 
     @cached_property
     def is_fp8(self):
@@ -1085,6 +1161,8 @@ class Deployment:
 
     @cached_property
     def is_gated(self):
+        if self.gated is not None:
+            return self.gated
         # make sure the model is available via AutoConfig
         assert self.hf_config is not None
 
@@ -1211,6 +1289,8 @@ This deployment is specifically designed for the Hugging Face model [{dp.hf_mode
 {dp.hf_model_id} {dp.task.purpose}
 {quantization_disclaimer}
 
+{dp.notes}
+
 ## Deployment with Truss
 
 Before deployment:
@@ -1222,7 +1302,7 @@ Before deployment:
 First, clone this repository:
 ```sh
 git clone https://github.com/basetenlabs/truss-examples.git
-cd {folder_relative_path.as_posix()}
+cd truss-examples/{folder_relative_path.as_posix()}
 ```
 
 With `{folder_relative_path.as_posix()}` as your working directory, you can deploy the model with the following command. Paste your Baseten API key if prompted.
@@ -1573,6 +1653,52 @@ DEPLOYMENTS_HFTEI = [  # models that don't yet run on BEI
 ]
 DEPLOYMENTS_BEI_BERT = []
 DEPLOYMENTS_BEI_BERT_NATIVE = [
+    Deployment(
+        name="michaelfeil/laya-typed-decisions",
+        hf_model_id="michaelfeil/laya-typed-decisions",
+        accelerator=Accelerator.L4,
+        task=TypedDecisions(),
+        solution=BEIBert(),
+        revision="0b6de4ff4ee8b16c83011c7f107a39ca191008f5",
+        max_num_tokens=8192,
+        memory="10Gi",
+        environment_variables={"DTYPE": "bfloat16", "AUTO_TRUNCATE": "true"},
+        bei_bert_version="1.8.16",
+        gated=False,
+        notes="Laya accepts plain-text state. Serialize structured state to text. BF16 is recommended; each question is formatted and truncated according to checkpoint limits.\n\n### Multiple GPUs\n\nFor independent replicas in one deployment, change `resources.accelerator` to `L4:2` or `L4:4`. Each GPU holds the whole model; weights are not split between GPUs. Start with one L4, then measure throughput and queueing at your target load before adding replicas. RTX6000 deployments follow the same full-model-per-GPU capacity requirement where that accelerator is available.",
+    ),
+    Deployment(
+        name="michaelfeil/rune-26b-a4b",
+        hf_model_id="michaelfeil/rune-26b-a4b",
+        accelerator=Accelerator.H100,
+        task=TypedDecisions(),
+        solution=BEIBert(),
+        revision="d9507c3d09de24e948f69aaa53c7bcb4a271effb",
+        max_num_tokens=8192,
+        memory="80Gi",
+        environment_variables={
+            "DTYPE": "bfloat16",
+            "AUTO_TRUNCATE": "true",
+            "DECISION_PROTOCOL": "rune",
+        },
+        bei_bert_version="1.8.16",
+        gated=False,
+        notes="This is Rune 26B A4B. Set `DECISION_PROTOCOL=rune` for its trained protocol. This example uses text input. Oversized decision prompts are rejected, never truncated.\n\n### Multiple GPUs\n\nUse `H100:2` for two independent model replicas when more throughput is needed. Each GPU must fit the complete model; adding GPUs does not split the weights or lower the memory required per replica. The BF16 26B checkpoint does not fit on an individual L4 or 48 GB RTX6000.",
+    ),
+    Deployment(
+        name="Qwen/Qwen3-Embedding-0.6B",
+        hf_model_id="Qwen/Qwen3-Embedding-0.6B",
+        accelerator=Accelerator.L4,
+        task=Embedder(),
+        solution=BEIBert(),
+        revision="97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+        max_num_tokens=16384,
+        memory="10Gi",
+        environment_variables={"DTYPE": "bfloat16", "AUTO_TRUNCATE": "true"},
+        bei_bert_version="1.8.16",
+        gated=False,
+        notes="For retrieval, prefix queries with a task instruction, for example `Instruct: Given a web search query, retrieve relevant passages that answer the query\\nQuery: What is the capital of France?`. Embed documents without that query prefix.\n\n### Multiple GPUs\n\nFor independent replicas in one deployment, change `resources.accelerator` to `L4:2` or `L4:4`. Each GPU holds the whole model; weights are not split between GPUs. Start with one L4, then measure throughput and queueing at your target load before adding replicas. RTX6000 deployments follow the same full-model-per-GPU capacity requirement where that accelerator is available.",
+    ),
     Deployment(  # qwen 3 bidrectional.
         "voyageai/voyage-4-nano",
         "voyageai/voyage-4-nano",
@@ -2347,8 +2473,20 @@ ALL_DEPLOYMENTS = DEPLOYMENTS_BEI + DEPLOYMENTS_BRITON + DEPLOYMENTS_BEI_BERT
 ALL_DEPLOYMENTS_WITH_TEI = ALL_DEPLOYMENTS + DEPLOYMENTS_HFTEI
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--model",
+        action="append",
+        help="Generate only these example folder names; may be repeated",
+    )
+    args = parser.parse_args()
+    selected = set(args.model or [])
+    known = {dp.folder_name for dp in ALL_DEPLOYMENTS_WITH_TEI}
+    if selected - known:
+        parser.error(f"Unknown examples: {sorted(selected - known)}")
     for dp in ALL_DEPLOYMENTS_WITH_TEI:
-        generate_deployment(dp)
+        if not selected or dp.folder_name in selected:
+            generate_deployment(dp)
 
     def format_filter(dps: list[Deployment], type_):
         sorted_filter = sorted(
@@ -2367,6 +2505,7 @@ if __name__ == "__main__":
     predictors_names_fmt = format_filter(ALL_DEPLOYMENTS, Predictor)
     generation_names_fmt = format_filter(ALL_DEPLOYMENTS, TextGen)
     ner_names_fmt = format_filter(ALL_DEPLOYMENTS, NER)
+    decisions_names_fmt = format_filter(ALL_DEPLOYMENTS, TypedDecisions)
 
     readme = f"""
 # Performance Section
@@ -2395,6 +2534,9 @@ You can find the following deployments in this repository:
 
 ## Text Sequence Classification Deployments:
 {predictors_names_fmt}
+
+## Typed Decision Deployments:
+{decisions_names_fmt}
 
 ## Named Entity Recognition (NER) Deployments:
 {ner_names_fmt}

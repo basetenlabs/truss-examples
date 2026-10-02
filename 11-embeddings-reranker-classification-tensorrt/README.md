@@ -26,6 +26,7 @@ You can find the following deployments in this repository:
  - [BAAI/bge-m3-embedding-dense-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-m3-embedding-dense)
  - [BAAI/bge-multilingual-gemma2-multilingual-embedding-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-baai-bge-multilingual-gemma2-multilingual-embedding)
  - [Qwen/Qwen3-Embedding-0.6B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-0.6b-fp8)
+ - [Qwen/Qwen3-Embedding-0.6B-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-qwen-qwen3-embedding-0.6b)
  - [Qwen/Qwen3-Embedding-4B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-4b-fp8)
  - [Qwen/Qwen3-Embedding-4B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-4b-fp4)
  - [Qwen/Qwen3-Embedding-8B-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-qwen-qwen3-embedding-8b-fp8)
@@ -70,6 +71,10 @@ You can find the following deployments in this repository:
  - [mixedbread-ai/mxbai-rerank-base-v2-reranker-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-rerank-base-v2-reranker-fp8)
  - [mixedbread-ai/mxbai-rerank-large-v2-reranker-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-mixedbread-ai-mxbai-rerank-large-v2-reranker-fp8)
  - [papluca/xlm-roberta-base-language-detection-classification-BEI](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-papluca-xlm-roberta-base-language-detection-classification)
+
+## Typed Decision Deployments:
+ - [michaelfeil/laya-typed-decisions-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-laya-typed-decisions)
+ - [michaelfeil/rune-26b-a4b-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-michaelfeil-rune-26b-a4b)
 
 ## Named Entity Recognition (NER) Deployments:
  - [Babelscape/wikineural-multilingual-ner-BEI-Bert](https://github.com/basetenlabs/truss-examples/tree/main/11-embeddings-reranker-classification-tensorrt/BEI-Bert-babelscape-wikineural-multilingual-ner)
