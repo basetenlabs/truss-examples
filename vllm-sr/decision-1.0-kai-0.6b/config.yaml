@@ -1,0 +1,45 @@
+model_name: Decision 1.0 Kai 0.6B
+description: >-
+  A custom Python Truss for typed decisions with Kai 0.6B. Returns candidate
+  probabilities for Choice, Noul, and Score questions using the upstream FP32 runtime.
+python_version: py311
+requirements:
+  - torch==2.8.0
+  - transformers==4.57.6
+  - safetensors==0.6.2
+resources:
+  instance_type: L4:4x16
+weights:
+  - source: hf://vllm-sr/Decision-1.0-Kai-0.6B@79263ba4c4befac3845e7c1111c2c679d0716623
+    mount_location: /models/kai
+    allow_patterns:
+      - "*.py"
+      - config.json
+      - native/choice_encoder.safetensors
+      - native/decision_config.json
+      - native/decision_heads.safetensors
+      - native/encoder/config.json
+      - native/encoder/model.safetensors
+      - native/score_encoder.safetensors
+      - native/tokenizer/special_tokens_map.json
+      - native/tokenizer/tokenizer.json
+      - native/tokenizer/tokenizer_config.json
+environment_variables:
+  HF_HUB_OFFLINE: "1"
+  TOKENIZERS_PARALLELISM: "false"
+runtime:
+  predict_concurrency: 1
+model_metadata:
+  repo_id: vllm-sr/Decision-1.0-Kai-0.6B
+  example_model_input:
+    state: "The parcel arrived damaged. Please send a replacement today."
+    questions:
+      route:
+        type: choice
+        instructions: "Which team should handle this request?"
+        criteria:
+          delivery: "Damaged or missing parcels"
+          billing: "Payments and invoices"
+      urgent:
+        type: noul
+        instructions: "Does the customer request action today?"

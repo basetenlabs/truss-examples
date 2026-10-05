@@ -37,6 +37,8 @@ This will prompt you for an API Key -- fetch one from the
 
 See the [BEI-Bert examples](11-embeddings-reranker-classification-tensorrt/README.md) for EmbeddingGemma, Laya, Rune 26B, Perplexity Decider, Cloudflare Clef, Qwen3 embeddings, and ModernBERT reranking.
 
+For a standard Python Truss that returns decision probabilities, see [Decision 1.0 Kai 0.6B](vllm-sr/decision-1.0-kai-0.6b/README.md).
+
 ## Invocation
 
 Invocation depends on the model's input and output specifications. See individual model READMEs for invocation details.
