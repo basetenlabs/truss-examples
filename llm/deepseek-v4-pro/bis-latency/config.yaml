@@ -1,0 +1,91 @@
+# Registry copy of the config serving the Baseten library listing
+# baseten/deepseek-v4-pro (BIS-LLM, TRT-LLM PyTorch backend behind Dynamo cache-aware routing). The bis_llm block,
+# environment, and weights values are the deployed values from BIS Config Registry
+# composer `dsv4-pro-golden` (bcr_version 1.0.9) verbatim; model_name
+# follows the repo convention and resources use instance_type.
+model_name: "model:deepseek-v4-pro preset:bis-latency"
+model_metadata:
+  repo_id: deepseek-ai/DeepSeek-V4-Pro
+  tags:
+    - openai-compatible
+  example_model_input:
+    messages:
+      - role: user
+        content: "What is the meaning of life?"
+    stream: true
+    model: deepseek-ai/DeepSeek-V4-Pro
+    max_tokens: 1024
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        BAD_TOKEN_ID_SEQ_CHECK_ENABLED: "1"
+        BAD_TOKEN_ID_SEQ_LEN: "10"
+        TRTLLM_ENABLE_PDL: "1"
+    arguments_as_json: true
+    b10_autoscaling_config:
+      additional_autoscaling_config:
+        metrics:
+          - name: in_flight_tokens
+            target: 130000
+    b10_routing_config:
+      durable_kv_events: false
+      enable_worker_tree: true
+    chat_processor: deepseek_v4
+    checkpoint_name: deepseek-ai/DeepSeek-V4-Pro
+    default_sampling_params:
+      temperature: 1
+      top_p: 1
+    default_thinking_enabled: true
+    engine_config:
+      backend: pytorch
+      enable_chunked_prefill: true
+      enable_iter_perf_stats: true
+      kv_cache_config:
+        dtype: fp8
+        enable_block_reuse: true
+        enable_partial_reuse: false
+        enable_tp_mla_replicated_host_offload: true
+        event_buffer_max_size: 65536
+        free_gpu_memory_fraction: 0.9
+        host_cache_size: 500000000000
+        tokens_per_block: 128
+      max_batch_size: 8
+      max_beam_width: 1
+      max_input_len: 1048576
+      max_num_tokens: 16384
+      max_seq_len: 1048576
+      moe_config:
+        backend: TRTLLM
+        use_low_precision_moe_combine: true
+      moe_expert_parallel_size: 4
+      speculative_config:
+        allow_advanced_sampling: true
+        decoding_type: MTP
+        max_draft_len: 3
+      trust_remote_code: true
+    gpuTRTImage: "baseten/dynamo-cache-aware-routing:trtllm-gpu-f83d539b2a-00b032f66-c62638826d"
+    model_name: deepseek-ai/DeepSeek-V4-Pro
+    model_path: /models/deepseek-v4-pro
+    model_path_for_tokenizer: /models/deepseek-v4-pro/tokenizer
+    reasoning_parser: deepseek_v4
+    served_model_name: deepseek-ai/DeepSeek-V4-Pro
+    served_model_name_response: deepseek-ai/DeepSeek-V4-Pro
+    tensor_parallel_size: 8
+    tokenizer_limit_length: 1048576
+    tokenizer_max_new_tokens_limit: 32768
+    tool_call_parser: deepseek_v4
+  version: 0.0.1-20260601190849-691c46ce
+environment_variables: {}
+# The 865 GB checkpoint and TRT-LLM initialization outlasted the PR deployment
+# startup window; allow the worker to finish before readiness is judged.
+runtime:
+  health_checks:
+    startup_threshold_seconds: 2400
+resources:
+  instance_type: "B200:8"
+weights:
+  # Public, ungated checkpoint; the deployed listing's workspace-specific secret
+  # (hf_access_b10_b10admin) is dropped.
+  - mount_location: /models/deepseek-v4-pro
+    source: "hf://deepseek-ai/DeepSeek-V4-Pro@5607980f3a4b8ea0371b9f11e1848ac41f14979e"
