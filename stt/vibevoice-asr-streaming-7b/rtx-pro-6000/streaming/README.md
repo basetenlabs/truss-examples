@@ -69,14 +69,14 @@ container path is the truss author's choice.*
 Verified from code rather than assumed:
 
 - `_ws_path` in
-  [`modalities/stt/spec.py`](../../../.github/actions/run-b10-bench/modalities/stt/spec.py)
+  [`modalities/stt/spec.py`](../../../../.github/actions/run-b10-bench/modalities/stt/spec.py)
   is what the bench uses to pick a connect path: a `bench.ws_path`
   declaration wins; otherwise `runtime.transport.kind == websocket` resolves
   to `/websocket`; otherwise the realtime protocols' own default
   (`/sync/v1/realtime`, which is for plain-HTTP vLLM trusses). This package
   declares no `ws_path`, so it resolves to `/websocket` on the strength of the
   `transport` block in `config.yaml`.
-- [`stt/voxtral-mini-4b/latency`](../../voxtral-mini-4b/latency) is the live
+- [`stt/voxtral-mini-4b/rtx-pro-6000/streaming`](../../../voxtral-mini-4b/rtx-pro-6000/streaming) is the live
   precedent for this exact shape — `docker_server` + vLLM +
   `is_websocket_endpoint: true` + `transport.kind: websocket` +
   `predict_endpoint: /v1/realtime` — and it benches green on
@@ -93,7 +93,7 @@ Upstream's socket and the bench's dialect are unrelated protocols. Read at the
 pinned plugin commit (`vllm_plugin/asr_streaming_server.py`, the `/v1/stream`
 handler) and, for the bench side, from this repo's own server for that
 contract —
-[`stt/qwen3-asr-1.7b-streaming/latency/model/model.py`](../../qwen3-asr-1.7b-streaming/latency/model/model.py),
+[`stt/qwen3-asr-1.7b-streaming/rtx-pro-6000/streaming/model/model.py`](../../../qwen3-asr-1.7b-streaming/rtx-pro-6000/streaming/model/model.py),
 whose docstring records that "the stt-benchmark `qwen_realtime` client works
 unchanged" against it:
 
@@ -310,7 +310,7 @@ neither card. See
 
 ## Why this is not `vllm serve`
 
-The sibling [`stt/vibevoice-asr/latency`](../../vibevoice-asr/latency) runs
+The sibling [`stt/vibevoice-asr/h100/batch`](../../../vibevoice-asr/h100/batch) runs
 `vllm serve` and proxies chat completions. A streaming checkpoint cannot:
 it transcribes one chunk off a *growing* interleaved sequence, so a request is
 a **session**, and stock `vllm serve` has nowhere to keep one — a client there
@@ -395,7 +395,7 @@ wss://model-{MODEL_ID}.api.baseten.co/environments/production/websocket
 
 Authenticate with `Authorization: Api-Key $BASETEN_API_KEY`. The wire format is
 the same OpenAI-realtime-style dialect the
-[qwen3-asr-1.7b-streaming](../../qwen3-asr-1.7b-streaming/latency) truss
+[qwen3-asr-1.7b-streaming](../../../qwen3-asr-1.7b-streaming/rtx-pro-6000/streaming) truss
 speaks, so a client written for that one works here.
 
 ```python
