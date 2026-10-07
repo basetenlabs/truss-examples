@@ -1,0 +1,80 @@
+model_name: Decision 2.0 Kai 0.6B
+description: >-
+  A SystemOne HTTP server for typed decisions with Kai 0.6B. Returns candidate
+  probabilities for Choice, Noul, and Score questions using the upstream Decision 2.0 runtime.
+python_version: py311
+requirements:
+  - fastapi==0.118.0
+  - uvicorn==0.37.0
+  - prometheus-client==0.21.1
+  - pydantic==2.13.5
+  - torch==2.8.0
+  - transformers==5.17.0
+  - safetensors==0.8.0
+resources:
+  instance_type: L4:4x16
+weights:
+  - source: hf://vllm-sr/Decision-2.0-Kai-0.6B@cd49ea3813fd8ba0928a9a23ef6c9a0f2f0cd764
+    mount_location: /models/kai
+    allow_patterns:
+      - MODEL_MANIFEST.json
+      - LICENSE
+      - README.md
+      - assets/banner.png
+      - assets/index-areas.png
+      - assets/index-pareto.png
+      - assets/jevarena-types.png
+      - assets/jevarena.png
+      - backbone/config.json
+      - backbone/model.safetensors
+      - chat_template.jinja
+      - config.json
+      - configuration_decision2.py
+      - decision2/__init__.py
+      - decision2/_vendor/__init__.py
+      - decision2/_vendor/dev2model/__init__.py
+      - decision2/_vendor/dev2model/calibration.py
+      - decision2/_vendor/dev2model/data.py
+      - decision2/_vendor/dev2model/decision_model.py
+      - decision2/_vendor/dev2model/infer.py
+      - decision2/_vendor/dev2model/lora.py
+      - decision2/_vendor/dev2model/score_bias.py
+      - decision2/_vendor/dev2model/source.py
+      - decision2/api.py
+      - decision2/fast.py
+      - decision2/fast_kernels.py
+      - decision2/qwen.py
+      - decision2/shared_ctx.py
+      - decision_config.json
+      - decision_head.safetensors
+      - modeling_decision2.py
+      - pipeline_decision2.py
+      - score_bias.json
+      - tokenizer.json
+      - tokenizer_config.json
+environment_variables:
+  HF_HUB_OFFLINE: "1"
+  TOKENIZERS_PARALLELISM: "false"
+runtime:
+  predict_concurrency: 1
+model_metadata:
+  repo_id: vllm-sr/Decision-2.0-Kai-0.6B
+  example_model_input:
+    model: Decision-2.0-Kai-0.6B
+    state: "The parcel arrived damaged. Please send a replacement today."
+    questions:
+      route:
+        type: choice
+        instructions: "Which team should handle this request?"
+        criteria:
+          delivery: "Damaged or missing parcels"
+          billing: "Payments and invoices"
+      urgent:
+        type: noul
+        instructions: "Does the customer request action today?"
+docker_server:
+  start_command: python -m uvicorn model.server:app --host 0.0.0.0 --port 8000 --app-dir /app
+  server_port: 8000
+  predict_endpoint: /predict
+  readiness_endpoint: /health
+  liveness_endpoint: /health
