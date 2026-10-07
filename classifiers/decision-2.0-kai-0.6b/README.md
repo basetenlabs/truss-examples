@@ -163,3 +163,6 @@ The prior Decision 1.0 deployment results do not validate this checkpoint.
 
 `/health` becomes available after loading and warm-up. `/metrics` exposes the
 Python process metrics for the custom server.
+
+Registry CI runs the [classifier JevBench profiles](https://github.com/basetenlabs/model-registry/blob/main/benchmarking/classifiers/README.md)
+against `/v1/systemone`, reporting decision accuracy and invalid/missing decisions.
