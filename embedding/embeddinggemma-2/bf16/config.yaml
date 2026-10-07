@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+
+model_name: model:embeddinggemma-2 preset:bf16
+
+model_metadata:
+  example_model_input:
+    model: google/embeddinggemma-2
+    input:
+      - "task: search result | query: What causes the northern lights?"
+      - "title: none | text: Auroras occur when charged particles from the Sun collide with gases in Earth's upper atmosphere."
+    encoding_format: float
+    dimensions: 768
+  repo_id: google/embeddinggemma-2
+  tags:
+    - openai-compatible
+    - embedding
+    - multimodal
+    - vllm
+
+# EmbeddingGemma2Model support (vllm-project/vllm#60254) is not in any published vLLM
+# release or image yet: v0.31.0 predates it. Install the per-commit CUDA 13.0 wheel for
+# vLLM main at a8260cbc over the v0.31.0 image (same torch). That commit also raises
+# vLLM's transformers ceiling to admit 5.19.0, the first release with the
+# embedding_gemma2 module. Swap to the first release image that contains a8260cbc and
+# drop build_commands once one is published.
+base_image:
+  image: vllm/vllm-openai:v0.31.0
+
+build_commands:
+  - uv pip install --system "vllm[audio] @ https://wheels.vllm.ai/a8260cbc5c020d250b3964141cde8fd839152714/vllm-0.31.1rc1.dev48%2Bga8260cbc5-cp38-abi3-manylinux_2_28_x86_64.whl" "transformers==5.19.0"
+
+docker_server:
+  # --dtype bfloat16: the card warns float16 overflows and silently returns NaN vectors.
+  # --hf-overrides: the checkpoint ships no Matryoshka metadata; matryoshka_dimensions
+  # lets the OpenAI `dimensions` parameter select one of the card's MRL sizes. vLLM
+  # checks `dimensions` against embedding_size, which otherwise falls back to the text
+  # hidden size (512) because the 512->768 projection is inside the model, so a
+  # dimensions=768 request returns 400 without it.
+  start_command: >-
+    vllm serve /models/embeddinggemma-2
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name google/embeddinggemma-2
+    --runner pooling
+    --dtype bfloat16
+    --hf-overrides '{"matryoshka_dimensions": [128, 256, 512, 768], "embedding_size": 768}'
+    --max-model-len 8192
+    --max-num-batched-tokens 131072
+    --max-num-seqs 128
+    --gpu-memory-utilization 0.90
+
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/embeddings
+  server_port: 8000
+
+weights:
+  - source: "hf://google/embeddinggemma-2@914f7f89142e33e77833254d9c9b90c3cef7303b"
+    mount_location: "/models/embeddinggemma-2"
+
+resources:
+  instance_type: H100
+
+runtime:
+  predict_concurrency: 128
+  health_checks:
+    restart_threshold_seconds: 600
+    stop_traffic_threshold_seconds: 240
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+
+secrets: {}
+system_packages: []
+requirements: []
