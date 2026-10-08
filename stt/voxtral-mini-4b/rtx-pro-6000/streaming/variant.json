@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+      "revision": "2769294da9567371363522aac9bbcfdd19447add"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "baseten/vllm-openai:0.22.0-voxtral-realtime-fixes"
+  },
+  "limits": []
+}

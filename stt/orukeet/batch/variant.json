@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp32",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "oruk/orukeet",
+      "revision": "555136b50265a132d4cea0d35560c26fc4f657ab"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": []
+}

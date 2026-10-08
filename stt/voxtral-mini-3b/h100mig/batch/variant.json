@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100mig",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "mistralai/Voxtral-Mini-3B-2507",
+      "revision": "3060fe34b35ba5d44202ce9ff3c097642914f8f3"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.22.0-cu129"
+  },
+  "limits": []
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "microsoft/VibeVoice-ASR-Streaming-7B",
+      "revision": "60d858b518b4e19d404af3737f848fc185b30177"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.14.1"
+  },
+  "limits": []
+}

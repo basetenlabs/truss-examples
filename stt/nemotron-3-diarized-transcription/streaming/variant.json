@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp32",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/Nemotron-3-Diarization",
+      "revision": "723e19c601d99b7e58fba6a14e32153e0afe48d9"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "nvcr.io/nvidia/nemo:26.08"
+  },
+  "limits": []
+}

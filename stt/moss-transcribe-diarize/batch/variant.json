@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "OpenMOSS-Team/MOSS-Transcribe-Diarize",
+      "revision": "e8681d68e7042738ffca8ac8212bc8fcb1131ab8"
+    }
+  },
+  "engine": {
+    "kind": "sglang",
+    "backend": "sglang",
+    "version": "lmsysorg/sglang-omni:dev@sha256:46235435997d1fa93fc81fb1c2d5b7fd8470d77395a5c348c0176094ffddf95e",
+    "packages": [
+      "sglang-omni==0.1.2"
+    ]
+  },
+  "limits": []
+}
