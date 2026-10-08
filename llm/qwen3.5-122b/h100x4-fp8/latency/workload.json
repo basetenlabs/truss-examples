@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "status": "inherited",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "grid-short-cold",
+      "kind": "perf.aiperf",
+      "config": {
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          16
+        ],
+        "isl": 2000,
+        "osl": 256,
+        "warmup_request_count": 4,
+        "max_requests_per_run": 64,
+        "max_time_per_run_s": 600,
+        "random_seed": 7,
+        "streaming": true,
+        "api_model_name": "Qwen/Qwen3.5-122B-A10B",
+        "model_tokenizer": "Qwen/Qwen3.5-122B-A10B"
+      }
+    },
+    {
+      "name": "grid-short-warm",
+      "kind": "perf.aiperf",
+      "config": {
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          16
+        ],
+        "isl": 2000,
+        "osl": 256,
+        "shared_system_prompt_length": 1000,
+        "warmup_request_count": 4,
+        "max_requests_per_run": 64,
+        "max_time_per_run_s": 600,
+        "random_seed": 7,
+        "streaming": true,
+        "api_model_name": "Qwen/Qwen3.5-122B-A10B",
+        "model_tokenizer": "Qwen/Qwen3.5-122B-A10B"
+      }
+    },
+    {
+      "name": "grid-long-cold",
+      "kind": "perf.aiperf",
+      "config": {
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4
+        ],
+        "isl": 50000,
+        "osl": 256,
+        "warmup_request_count": 2,
+        "max_requests_per_run": 16,
+        "max_time_per_run_s": 900,
+        "random_seed": 7,
+        "streaming": true,
+        "api_model_name": "Qwen/Qwen3.5-122B-A10B",
+        "model_tokenizer": "Qwen/Qwen3.5-122B-A10B"
+      }
+    },
+    {
+      "name": "grid-long-warm",
+      "kind": "perf.aiperf",
+      "config": {
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4
+        ],
+        "isl": 50000,
+        "osl": 256,
+        "shared_system_prompt_length": 25000,
+        "warmup_request_count": 2,
+        "max_requests_per_run": 16,
+        "max_time_per_run_s": 900,
+        "random_seed": 7,
+        "streaming": true,
+        "api_model_name": "Qwen/Qwen3.5-122B-A10B",
+        "model_tokenizer": "Qwen/Qwen3.5-122B-A10B"
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "path": "llm/qwen3.5-122b/b200x2-fp8/latency/workload.json",
+    "provenance": {
+      "listing": "baseten/qwen3.5-122b-a10b",
+      "live_tag": "1.0.4-2",
+      "model_id": "wx4dr5yq",
+      "deployment_id": "3yvr56l",
+      "run_id": "run-6d92ad38eeb1",
+      "measured_at": "2026-07-30T21:27:20.559481Z",
+      "config_digest": null,
+      "context": null,
+      "run_status": "succeeded",
+      "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+      "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+      "source_run_file": "bench-runs/run-6d92ad38eeb1/run.json"
+    },
+    "reason": "Reuse measured workload shapes for the same model on another variant; this does not transfer its performance baseline."
+  },
+  "baseline_status": "missing"
+}

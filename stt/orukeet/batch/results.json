@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-24T02:58:04.560794Z",
+      "run_id": "run-61c448413691",
+      "config_digest": "2e9f422f7824c19006247f642562d7f467f13781e7870b4c44280a1155847266",
+      "listing": "baseten/orukeet",
+      "deployment_id": "q88ydoy",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 71.90685905516148,
+              "e2e_latency_p90_ms": 82.85246323794127,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 13.621407059062172,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 101.73238534480333,
+              "e2e_latency_p90_ms": 144.0584147349,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 34.48732662973591,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 151.38655994087458,
+              "e2e_latency_p90_ms": 232.45047312229872,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 46.738179497768606,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 216.31337516009808,
+              "e2e_latency_p90_ms": 393.5398403555155,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 59.73002365755456,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 305.79343158751726,
+              "e2e_latency_p90_ms": 503.35204135626554,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 76.65183384311113,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 592.2680562362075,
+              "e2e_latency_p90_ms": 759.9065005779266,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 73.90533080274191,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.024,
+              "accuracy": 0.8893123311444942
+            },
+            {
+              "error_rate": 0.044,
+              "accuracy": 0.9768655418333623
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

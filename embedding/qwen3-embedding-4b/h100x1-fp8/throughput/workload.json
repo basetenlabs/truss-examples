@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "ISL=128",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "qwen3-embedding-4b",
+        "model_tokenizer": "michaelfeil/Qwen3-Embedding-4B-auto",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=512",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "qwen3-embedding-4b",
+        "model_tokenizer": "michaelfeil/Qwen3-Embedding-4B-auto",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 512,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=1024",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "qwen3-embedding-4b",
+        "model_tokenizer": "michaelfeil/Qwen3-Embedding-4B-auto",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=4096",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "qwen3-embedding-4b",
+        "model_tokenizer": "michaelfeil/Qwen3-Embedding-4B-auto",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 4096,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=8192",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "qwen3-embedding-4b",
+        "model_tokenizer": "michaelfeil/Qwen3-Embedding-4B-auto",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3-embedding-4b-throughput",
+    "live_tag": "c59ed706deddc3bb418a145c9c8cfff74a7ec376",
+    "model_id": "q41lk5kq",
+    "deployment_id": "w55olnv",
+    "run_id": "run-dbfc30fc0381",
+    "measured_at": "2026-09-18T18:56:00.489545Z",
+    "config_digest": "f16bd011480ebffad91f5c113f911b0b34e838143c9690b94893eed2980ae161",
+    "context": {
+      "target": {
+        "model_id": "q41lk5kq",
+        "deployment_id": "w55olnv"
+      },
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "trt-llm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": null,
+        "region": null,
+        "platform": null,
+        "plane_type": null
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "none"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-dbfc30fc0381/run.json"
+  },
+  "baseline_status": "candidate"
+}

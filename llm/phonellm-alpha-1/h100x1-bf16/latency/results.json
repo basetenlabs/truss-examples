@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-15T06:33:47.604124Z",
+      "run_id": "run-bdf397f43bcf",
+      "config_digest": null,
+      "listing": "baseten/phonellm-alpha-1",
+      "deployment_id": "qkj47ve",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 147.58533024570158,
+              "ttft_p90_ms": 234.34283514570154,
+              "tpot_p50_ms": 15.206540598811179,
+              "tpot_p90_ms": 20.838791546938396,
+              "e2e_latency_p50_ms": 4036.294323745702,
+              "e2e_latency_p90_ms": 5506.337802945701,
+              "output_throughput_tps": 65.68125157402478,
+              "requests_per_second": 0.25718011434795907,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 10625.580110851351,
+              "ttft_p90_ms": 13364.05536585135,
+              "tpot_p50_ms": 28.848668747058824,
+              "tpot_p90_ms": 32.606213638188976,
+              "e2e_latency_p50_ms": 17967.87233285135,
+              "e2e_latency_p90_ms": 20865.559241551353,
+              "output_throughput_tps": 460.0906633769311,
+              "requests_per_second": 1.8014019325113684,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

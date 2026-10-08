@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "google/gemma-4-E4B-it",
+        "model_tokenizer": "google/gemma-4-E4B-it",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/gemma-4-e4b-it",
+    "live_tag": "e8c961ccf6c08e23d9c942d4139a737d6d730ad3",
+    "model_id": "qzk214kq",
+    "deployment_id": "wool5rk",
+    "run_id": "run-5a17758ccd86",
+    "measured_at": "2026-09-24T20:08:55.283543Z",
+    "config_digest": null,
+    "context": {
+      "target": {
+        "model_id": "qzk214kq",
+        "deployment_id": "wool5rk"
+      },
+      "hardware": {
+        "instance_type": null,
+        "gpu_type": null,
+        "gpu_count": null,
+        "replicas": null
+      },
+      "engine": {
+        "name": null,
+        "version": null
+      },
+      "placement": {
+        "workload_plane": "cru-us-east1-prod-1",
+        "region": null,
+        "platform": null,
+        "plane_type": null,
+        "entry_workload_plane": "us-central1-prod-1",
+        "bounced": true
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "none",
+        "hardware": "none",
+        "placement": "observed"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-5a17758ccd86/run.json"
+  },
+  "baseline_status": "candidate"
+}

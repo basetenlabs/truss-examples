@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-18T20:30:30.302583Z",
+      "run_id": "run-efec29d7c268",
+      "config_digest": "b217704fae08780040477e40d9568ac2ca0bf7511e09af352f9806c50993856e",
+      "listing": "baseten/qwen3-reranker-8b-throughput",
+      "deployment_id": "wgke6oo",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "ISL=512",
+          "kind": "perf.baseten_performance_client",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 85.20332,
+              "e2e_latency_p90_ms": 182.90665,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 8.496357739842294,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 226.563963,
+              "e2e_latency_p90_ms": 306.853716,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 42.901225661230924,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

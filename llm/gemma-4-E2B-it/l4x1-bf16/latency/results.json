@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-24T20:52:21.985776Z",
+      "run_id": "run-11b3b3d5f5ab",
+      "config_digest": "88bc5df6dedebc12d368a21afc25faf241d00785760ad571715bbc5ab9c63c79",
+      "listing": "baseten/gemma-4-e2b-it",
+      "deployment_id": "qrmgoov",
+      "hardware": {
+        "instance_type": "L4:4x16 - 1 L4 GPU, 24 GiB video memory, 4 vCPU, 16 GiB",
+        "gpu_type": "L4",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 213.51610256766503,
+              "ttft_p90_ms": 218.955761667665,
+              "tpot_p50_ms": 20.382382088235296,
+              "tpot_p90_ms": 20.444639581568627,
+              "e2e_latency_p50_ms": 5411.693333067666,
+              "e2e_latency_p90_ms": 5429.902474167665,
+              "output_throughput_tps": 46.827061075979955,
+              "requests_per_second": 0.18290738184379932,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 9844.468215133791,
+              "ttft_p90_ms": 9887.332580033792,
+              "tpot_p50_ms": 33.99847230196078,
+              "tpot_p90_ms": 34.646556433725486,
+              "e2e_latency_p50_ms": 18519.980411133787,
+              "e2e_latency_p90_ms": 18571.09964733379,
+              "output_throughput_tps": 439.10207974566976,
+              "requests_per_second": 1.715410019516241,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

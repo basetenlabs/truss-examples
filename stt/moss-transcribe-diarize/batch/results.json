@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-15T11:04:53.245520Z",
+      "run_id": "run-44043d9f0bee",
+      "config_digest": null,
+      "listing": "baseten/moss-transcribe-diarize",
+      "deployment_id": "w557y9v",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 254.32456377893686,
+              "e2e_latency_p90_ms": 349.7593179345131,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.8284858430737736,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 271.2385570630431,
+              "e2e_latency_p90_ms": 396.1775451898575,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 13.231095021565451,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 307.2539148852229,
+              "e2e_latency_p90_ms": 406.4904870465398,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 23.679415006266016,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 335.4674344882369,
+              "e2e_latency_p90_ms": 587.3998599126935,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 39.41267514723012,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 441.87912717461586,
+              "e2e_latency_p90_ms": 733.1086182966828,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 52.44964664571145,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1096.263812854886,
+              "e2e_latency_p90_ms": 1392.9352154955268,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 43.042512107608864,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.028,
+              "accuracy": 0.8548913043478261
+            },
+            {
+              "error_rate": 0.06,
+              "accuracy": 0.9783802941697679
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

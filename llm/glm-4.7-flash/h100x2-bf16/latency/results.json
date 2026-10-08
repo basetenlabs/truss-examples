@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-25T00:10:03.604810Z",
+      "run_id": "run-c2f27ae5d5da",
+      "config_digest": "d25755739b2b1f7d5dc75d0259163bc8137cf22337fc7720f82d163ff3bbe3bb",
+      "listing": "baseten/glm-4.7-flash-latency",
+      "deployment_id": "qrmgyz5",
+      "hardware": {
+        "instance_type": "H100:2 - 2 H100 GPUs, 160 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 2,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 147.1736685038889,
+              "ttft_p90_ms": 180.79846130388896,
+              "tpot_p50_ms": 4.817462031372549,
+              "tpot_p90_ms": 4.842633829803921,
+              "e2e_latency_p50_ms": 1376.327781503889,
+              "e2e_latency_p90_ms": 1415.8823411038888,
+              "output_throughput_tps": 139.15375789364813,
+              "requests_per_second": 0.5436149167323676,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 351.3819365506329,
+              "ttft_p90_ms": 867.664212850633,
+              "tpot_p50_ms": 16.393827529411762,
+              "tpot_p90_ms": 17.496551143921568,
+              "e2e_latency_p50_ms": 4530.6515055506325,
+              "e2e_latency_p90_ms": 4719.326009950633,
+              "output_throughput_tps": 1625.5615203043596,
+              "requests_per_second": 6.350345809455268,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

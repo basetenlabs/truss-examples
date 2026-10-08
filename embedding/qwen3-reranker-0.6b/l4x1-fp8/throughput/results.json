@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-18T19:49:35.935066Z",
+      "run_id": "run-35159dbc743e",
+      "config_digest": "91f2e743e6089fd1688575f83082d50457a3d1cad61c7048bfcd581308be0cdb",
+      "listing": "baseten/qwen3-reranker-0.6b-throughput",
+      "deployment_id": "wn4r950",
+      "hardware": {
+        "instance_type": "L4:4x16 - 1 L4 GPU, 24 GiB video memory, 4 vCPU, 16 GiB",
+        "gpu_type": "L4",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "ISL=512",
+          "kind": "perf.baseten_performance_client",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 61.708659,
+              "e2e_latency_p90_ms": 64.02584,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 15.736145864196917,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 329.44460300000003,
+              "e2e_latency_p90_ms": 398.15598,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 92.13453360250283,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

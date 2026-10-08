@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-4B",
+        "model_tokenizer": "Qwen/Qwen3.5-4B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-4B",
+        "model_tokenizer": "Qwen/Qwen3.5-4B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-4B",
+        "model_tokenizer": "Qwen/Qwen3.5-4B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-4B",
+        "model_tokenizer": "Qwen/Qwen3.5-4B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-4B",
+        "model_tokenizer": "Qwen/Qwen3.5-4B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3.5-4b-latency",
+    "live_tag": "f96455ee11a12cebf2ff97b0b3a1323e3100ec4b",
+    "model_id": "32pxj72q",
+    "deployment_id": "wdxpzpe",
+    "run_id": "run-5c7b5999d6e4",
+    "measured_at": "2026-09-24T20:08:23.489035Z",
+    "config_digest": "0c73931de76ea23c667e81bb9dc38db93db36b967b3a61efa61ec18df6a1743d",
+    "context": {
+      "target": {
+        "model_id": "32pxj72q",
+        "deployment_id": "wdxpzpe"
+      },
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "vllm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": "stx-ch1-prod-2",
+        "region": null,
+        "platform": null,
+        "plane_type": null,
+        "entry_workload_plane": "us-central1-prod-1",
+        "bounced": true
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "observed"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-5c7b5999d6e4/run.json"
+  },
+  "baseline_status": "candidate"
+}

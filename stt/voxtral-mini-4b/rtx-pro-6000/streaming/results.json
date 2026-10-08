@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-25T17:53:26.689118Z",
+      "run_id": "run-13a5f38ca52d",
+      "config_digest": "d214c7f3c089de4e3a9787f4c0a5440bb7146deb7bb8e436e0703dd9712e6f1f",
+      "listing": "baseten/voxtral-mini-4b-latency",
+      "deployment_id": "q46z0ny",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 1191.747105680406,
+              "ttft_p90_ms": 2537.967400625348,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 899.4597606360912,
+              "e2e_latency_p90_ms": 1142.2111177816987,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.06766159610262609,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt-stream@c4",
+              "ttft_p50_ms": 1184.5485577359796,
+              "ttft_p90_ms": 2517.7774149924517,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 885.9045840799809,
+              "e2e_latency_p90_ms": 1139.6581213921309,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.2739994423109681,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt-stream@c8",
+              "ttft_p50_ms": 1199.4241485372186,
+              "ttft_p90_ms": 2508.6468560621142,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 904.2136482894421,
+              "e2e_latency_p90_ms": 1140.6730879098177,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.49065362219251557,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt-stream@c16",
+              "ttft_p50_ms": 1197.94584158808,
+              "ttft_p90_ms": 2525.907479226589,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 908.1676909700036,
+              "e2e_latency_p90_ms": 1137.3749449849129,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.6804152749954672,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 1197.3347887396812,
+              "ttft_p90_ms": 2514.040266163647,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 908.7097179144621,
+              "e2e_latency_p90_ms": 1142.4386277794838,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.8383951714575526,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt-stream@c64",
+              "ttft_p50_ms": 1203.3027475699782,
+              "ttft_p90_ms": 2521.4511174708605,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 918.6371099203825,
+              "e2e_latency_p90_ms": 1148.2906555756927,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.8492053989476747,
+              "error_rate": 0.015625
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.2733333333333333,
+              "accuracy": 0.5816155460513837
+            },
+            {
+              "error_rate": 0.08666666666666667,
+              "accuracy": 0.9638049655997607
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "status": "inherited",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "model_tokenizer": "nvidia/Llama-3.3-70B-Instruct-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "path": "llm/llama-3.3-70b-instruct/h100x4-fp8/latency/workload.json",
+    "provenance": {
+      "listing": "baseten/llama-3-3-70b-instruct",
+      "live_tag": "b78ffb160770cf0fb3b627ac8d079efbb8117c3a",
+      "model_id": "qrjeyer3",
+      "deployment_id": "3y65oel",
+      "run_id": "run-7e41550961e4",
+      "measured_at": "2026-09-24T20:35:36.806122Z",
+      "config_digest": "04da85a563c3e8c5ada6943d773c4bc06edf6d7d5970e725c33da5e21eedceb0",
+      "context": {
+        "target": {
+          "model_id": "qrjeyer3",
+          "deployment_id": "3y65oel"
+        },
+        "hardware": {
+          "instance_type": "H100:4 - 4 H100 GPUs, 320 GiB VRAM",
+          "gpu_type": "H100",
+          "gpu_count": 4,
+          "replicas": 1
+        },
+        "engine": {
+          "name": "vllm",
+          "version": null
+        },
+        "placement": {
+          "workload_plane": "lat-uc1-prod-1",
+          "region": null,
+          "platform": null,
+          "plane_type": null,
+          "entry_workload_plane": "us-central1-prod-1",
+          "bounced": true
+        },
+        "vantage": "public",
+        "captured": {
+          "config": "control_plane",
+          "hardware": "control_plane",
+          "placement": "observed"
+        }
+      },
+      "run_status": "succeeded",
+      "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+      "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+      "source_run_file": "bench-runs/run-7e41550961e4/run.json"
+    },
+    "reason": "Reuse measured workload shapes for the same model on another variant; this does not transfer its performance baseline."
+  },
+  "baseline_status": "missing"
+}

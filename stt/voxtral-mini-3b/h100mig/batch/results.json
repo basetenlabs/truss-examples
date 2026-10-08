@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-15T11:34:39.086086Z",
+      "run_id": "run-1bba733ceb11",
+      "config_digest": null,
+      "listing": "baseten/voxtral-mini-3b",
+      "deployment_id": "w557yzv",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1364.0333320945501,
+              "e2e_latency_p90_ms": 1690.6332587823272,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.7539153763896882,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1116.6267739608884,
+              "e2e_latency_p90_ms": 1429.2097799479961,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.5971409356896418,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1045.5882530659437,
+              "e2e_latency_p90_ms": 1292.9244758561254,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 7.344941663807029,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 998.9837352186441,
+              "e2e_latency_p90_ms": 1350.820085965097,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 14.499631235827053,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1134.6348570659757,
+              "e2e_latency_p90_ms": 1759.4121312722564,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 19.468145103745826,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1384.8726842552423,
+              "e2e_latency_p90_ms": 1905.1724672317505,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 31.702382878852717,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.028,
+              "accuracy": 0.8847918301752813
+            },
+            {
+              "error_rate": 0.06,
+              "accuracy": 0.9811220889202541
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

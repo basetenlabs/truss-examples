@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(2000,256)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3-VL-32B-Instruct",
+        "model_tokenizer": "Qwen/Qwen3-VL-32B-Instruct",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          32
+        ],
+        "isl": 2000,
+        "osl": 256,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 1000,
+        "additional_request_params": {
+          "min_tokens": 256,
+          "max_completion_tokens": 256,
+          "ignore_eos": true
+        }
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3-vl-32b-throughput",
+    "live_tag": "55d177ef91c6aba9b7c91221fbeda14b369732a2",
+    "model_id": "32px0v9q",
+    "deployment_id": "qkjp0dd",
+    "run_id": "run-ff85611f9d1e",
+    "measured_at": "2026-09-24T22:49:25.386472Z",
+    "config_digest": "22dfd6dcd119297d16adfa0c05265e5254c407b1beb090b11305cfaed0cf6bfc",
+    "context": {
+      "target": {
+        "model_id": "32px0v9q",
+        "deployment_id": "qkjp0dd"
+      },
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "vllm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": "aws-uw2-prod-2",
+        "region": null,
+        "platform": null,
+        "plane_type": null,
+        "entry_workload_plane": "us-central1-prod-1",
+        "bounced": true
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "observed"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-ff85611f9d1e/run.json"
+  },
+  "baseline_status": "candidate"
+}

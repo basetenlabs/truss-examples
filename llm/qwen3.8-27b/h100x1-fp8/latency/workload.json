@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "status": "standard_profile",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.8-27B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.8-27B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "source": {
+    "path": ".github/actions/run-b10-bench/modalities/llm/profiles/full.json"
+  }
+}

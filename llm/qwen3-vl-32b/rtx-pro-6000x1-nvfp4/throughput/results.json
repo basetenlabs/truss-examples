@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-24T22:49:25.386472Z",
+      "run_id": "run-ff85611f9d1e",
+      "config_digest": "22dfd6dcd119297d16adfa0c05265e5254c407b1beb090b11305cfaed0cf6bfc",
+      "listing": "baseten/qwen3-vl-32b-throughput",
+      "deployment_id": "qkjp0dd",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 191.8010585696835,
+              "ttft_p90_ms": 195.1146237696835,
+              "tpot_p50_ms": 17.980888768627448,
+              "tpot_p90_ms": 17.98688422352941,
+              "e2e_latency_p50_ms": 4776.832695569683,
+              "e2e_latency_p90_ms": 4780.602451369683,
+              "output_throughput_tps": 52.99556326092004,
+              "requests_per_second": 0.2070182549936449,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 9132.301173037698,
+              "ttft_p90_ms": 9569.565380737698,
+              "tpot_p50_ms": 26.951254315686274,
+              "tpot_p90_ms": 28.75002804980392,
+              "e2e_latency_p50_ms": 16003.577524537697,
+              "e2e_latency_p90_ms": 16016.075777037699,
+              "output_throughput_tps": 506.8290462974618,
+              "requests_per_second": 1.9798164604121826,
+              "error_rate": 0.002
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

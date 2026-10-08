@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-29T18:01:58.007397Z",
+      "run_id": "run-bb03c6d59f69",
+      "config_digest": null,
+      "listing": "baseten/laguna-m1",
+      "deployment_id": "w7drrn0",
+      "hardware": {
+        "instance_type": null,
+        "gpu_type": null,
+        "gpu_count": null,
+        "replicas": null
+      },
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 205.38725833629792,
+              "ttft_p90_ms": 216.48636343629792,
+              "tpot_p50_ms": 10.31194982352941,
+              "tpot_p90_ms": 10.353406499212598,
+              "e2e_latency_p50_ms": 2834.771264836298,
+              "e2e_latency_p90_ms": 2851.269617336298,
+              "output_throughput_tps": 88.39225209663546,
+              "requests_per_second": 0.345423239767711,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 1491.2584900355805,
+              "ttft_p90_ms": 2312.1124633355807,
+              "tpot_p50_ms": 26.978700786274505,
+              "tpot_p90_ms": 30.761039725490196,
+              "e2e_latency_p50_ms": 8387.746342035582,
+              "e2e_latency_p90_ms": 8475.295551335581,
+              "output_throughput_tps": 960.4059394611202,
+              "requests_per_second": 3.7528757520597713,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

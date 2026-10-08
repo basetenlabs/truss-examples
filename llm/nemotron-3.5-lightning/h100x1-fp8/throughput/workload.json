@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/nemotron-3.5-lightning-nvfp4",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/nemotron-3.5-lightning",
+    "live_tag": "2791fef30d4ad4faf2abf4a9b6974a1c978b0426",
+    "model_id": "w67rgp2q",
+    "deployment_id": "woo184z",
+    "run_id": "run-8baaa7701f68",
+    "measured_at": "2026-09-15T06:14:24.509942Z",
+    "config_digest": null,
+    "context": null,
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-8baaa7701f68/run.json"
+  },
+  "baseline_status": "candidate"
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-15T06:16:16.949120Z",
+      "run_id": "run-e912ffad81b9",
+      "config_digest": null,
+      "listing": "baseten/ornith-1.5-35b-a3b",
+      "deployment_id": "qzr5pzx",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 238.39179484715908,
+              "ttft_p90_ms": 250.83426514715907,
+              "tpot_p50_ms": 5.752680158823529,
+              "tpot_p90_ms": 5.775219042913386,
+              "e2e_latency_p50_ms": 1704.6234363471592,
+              "e2e_latency_p90_ms": 1717.2440249471592,
+              "output_throughput_tps": 145.19284208784902,
+              "requests_per_second": 0.5678005329760902,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 695.1882991217392,
+              "ttft_p90_ms": 985.5969511217392,
+              "tpot_p50_ms": 11.317289598039217,
+              "tpot_p90_ms": 12.396675948893005,
+              "e2e_latency_p50_ms": 3578.4444936217387,
+              "e2e_latency_p90_ms": 3597.2316201217386,
+              "output_throughput_tps": 2223.7183887443507,
+              "requests_per_second": 8.696795344217506,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

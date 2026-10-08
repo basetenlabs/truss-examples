@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-24T22:21:22.608791Z",
+      "run_id": "run-28f604df2d43",
+      "config_digest": "ce80dfe17cb548d97ef448cc39543e1ed6380f0bdcf7e250cfdfdf800f84faa5",
+      "listing": "baseten/nemotron-3-nano-omni",
+      "deployment_id": "qrmge05",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "D(2000,256)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 125.40474655308505,
+              "ttft_p90_ms": 301.0062703530841,
+              "tpot_p50_ms": 3.8660002784313727,
+              "tpot_p90_ms": 3.9501737283464564,
+              "e2e_latency_p50_ms": 1111.011890553085,
+              "e2e_latency_p90_ms": 1244.974779153085,
+              "output_throughput_tps": 130.22906232702596,
+              "requests_per_second": 0.5093929693130868,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 31856.69964703538,
+              "ttft_p90_ms": 34010.74325303538,
+              "tpot_p50_ms": 3.850209356862745,
+              "tpot_p90_ms": 3.980581597637795,
+              "e2e_latency_p50_ms": 32805.87327103538,
+              "e2e_latency_p90_ms": 35437.549634435396,
+              "output_throughput_tps": 237.60014274055322,
+              "requests_per_second": 0.9294338823019949,
+              "error_rate": 0.001
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "model_tokenizer": "Qwen/Qwen3.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3.5-35b-a3b",
+    "live_tag": "a68382e72dacf16fed5599d87310f5b3a093b2e2",
+    "model_id": "qvvdoy9q",
+    "deployment_id": "qj702nj",
+    "run_id": "run-b1253f75463a",
+    "measured_at": "2026-09-24T21:32:29.310058Z",
+    "config_digest": "a5d2558585b5fe72f7d4859061e4e9c664929744f2531a02609e11f3ddc44da0",
+    "context": {
+      "target": {
+        "model_id": "qvvdoy9q",
+        "deployment_id": "qj702nj"
+      },
+      "hardware": {
+        "instance_type": "B200 - 1 B200 GPU, 180 GiB VRAM",
+        "gpu_type": "B200",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "vllm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": "gai-euis1-prod-1",
+        "region": null,
+        "platform": null,
+        "plane_type": null,
+        "entry_workload_plane": "aws-ue2-prod-1",
+        "bounced": true
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "observed"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-b1253f75463a/run.json"
+  },
+  "baseline_status": "candidate"
+}

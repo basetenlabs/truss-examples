@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "ISL=128",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "input_tokens_mean": 128,
+        "num_requests": 500,
+        "warmup_requests": 1000,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "mode": "classify"
+      }
+    },
+    {
+      "name": "ISL=512",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "input_tokens_mean": 512,
+        "num_requests": 500,
+        "warmup_requests": 1000,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "mode": "classify"
+      }
+    },
+    {
+      "name": "ISL=1024",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "input_tokens_mean": 1024,
+        "num_requests": 500,
+        "warmup_requests": 1000,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "mode": "classify"
+      }
+    },
+    {
+      "name": "ISL=4096",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "input_tokens_mean": 4096,
+        "num_requests": 500,
+        "warmup_requests": 1000,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "mode": "classify"
+      }
+    },
+    {
+      "name": "ISL=8192",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-4B-seq",
+        "input_tokens_mean": 8192,
+        "num_requests": 500,
+        "warmup_requests": 1000,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "mode": "classify"
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3-reranker-4b-throughput",
+    "live_tag": "c59ed706deddc3bb418a145c9c8cfff74a7ec376",
+    "model_id": "wl18281q",
+    "deployment_id": "wpgdv68",
+    "run_id": "run-4860f3108da6",
+    "measured_at": "2026-09-18T19:32:45.488742Z",
+    "config_digest": "1b08be93fc142c37ec6060e633bdba003bece8b6a15a97155a7bfa6938bfb52b",
+    "context": {
+      "target": {
+        "model_id": "wl18281q",
+        "deployment_id": "wpgdv68"
+      },
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "trt-llm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": null,
+        "region": null,
+        "platform": null,
+        "plane_type": null
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "none"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-4860f3108da6/run.json"
+  },
+  "baseline_status": "candidate"
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "model_tokenizer": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "model_tokenizer": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "model_tokenizer": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "model_tokenizer": "deepseek-ai/DeepSeek-V4-Flash-0731",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/deepseek-v4-flash",
+    "live_tag": "1ece2c0f374459d9b54a9c486aefb0fa568bdcf1",
+    "model_id": "wozoyen3",
+    "deployment_id": "wpgrm2l",
+    "run_id": "run-d9c876f95ed5",
+    "measured_at": "2026-09-22T01:21:35.349683Z",
+    "config_digest": "9d34fcb1ba3e12705e14d6f029fdd6ccac209450f3136994052b267a8f7f4de5",
+    "context": {
+      "target": {
+        "model_id": "wozoyen3",
+        "deployment_id": "wpgrm2l"
+      },
+      "hardware": {
+        "instance_type": "B200:4 - 4 B200 GPUs, 720 GiB VRAM",
+        "gpu_type": "B200",
+        "gpu_count": 4,
+        "replicas": 1
+      },
+      "engine": {
+        "name": null,
+        "version": null
+      },
+      "placement": {
+        "workload_plane": null,
+        "region": null,
+        "platform": null,
+        "plane_type": null
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "none"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-d9c876f95ed5/run.json"
+  },
+  "baseline_status": "candidate"
+}

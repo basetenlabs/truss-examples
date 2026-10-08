@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-18T21:28:47.083613Z",
+      "run_id": "run-62a9318f230e",
+      "config_digest": "a51edf544301ebe5da55d97120666c9b7ae2f315388cf2a549c377028e726087",
+      "listing": "baseten/zerank-1-small-reranker-throughput",
+      "deployment_id": "qzrpnyk",
+      "hardware": {
+        "instance_type": "L4:4x16 - 1 L4 GPU, 24 GiB video memory, 4 vCPU, 16 GiB",
+        "gpu_type": "L4",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "ISL=512",
+          "kind": "perf.baseten_performance_client",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 760.477046,
+              "e2e_latency_p90_ms": 763.3285960000001,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.314605229790579,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "C(512,1)",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1468.943189,
+              "e2e_latency_p90_ms": 1480.95704,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 20.537128035844898,
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

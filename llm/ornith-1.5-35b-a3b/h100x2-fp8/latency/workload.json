@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(2000,256)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Ornith-1.5-35B-A3B",
+        "model_tokenizer": "ornith-ai/Ornith-1.5-35B-A3B-FP8",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          32
+        ],
+        "isl": 2000,
+        "osl": 256,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 1000,
+        "additional_request_params": {
+          "min_tokens": 256,
+          "max_completion_tokens": 256,
+          "ignore_eos": true
+        }
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/ornith-1.5-35b-a3b",
+    "live_tag": "2791fef30d4ad4faf2abf4a9b6974a1c978b0426",
+    "model_id": "3yder0l3",
+    "deployment_id": "qzr5pzx",
+    "run_id": "run-e912ffad81b9",
+    "measured_at": "2026-09-15T06:16:16.949120Z",
+    "config_digest": null,
+    "context": null,
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-e912ffad81b9/run.json"
+  },
+  "baseline_status": "candidate"
+}

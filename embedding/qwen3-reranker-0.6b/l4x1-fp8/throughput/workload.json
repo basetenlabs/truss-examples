@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "ISL=512",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-0.6B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-0.6B-seq",
+        "input_tokens_mean": 512,
+        "num_requests": 200,
+        "warmup_requests": 400,
+        "concurrency_levels": [
+          1,
+          32
+        ],
+        "mode": "classify"
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3-reranker-0.6b-throughput",
+    "live_tag": "c59ed706deddc3bb418a145c9c8cfff74a7ec376",
+    "model_id": "qrjkzkv3",
+    "deployment_id": "wn4r950",
+    "run_id": "run-35159dbc743e",
+    "measured_at": "2026-09-18T19:49:35.935066Z",
+    "config_digest": "91f2e743e6089fd1688575f83082d50457a3d1cad61c7048bfcd581308be0cdb",
+    "context": {
+      "target": {
+        "model_id": "qrjkzkv3",
+        "deployment_id": "wn4r950"
+      },
+      "hardware": {
+        "instance_type": "L4:4x16 - 1 L4 GPU, 24 GiB video memory, 4 vCPU, 16 GiB",
+        "gpu_type": "L4",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "trt-llm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": null,
+        "region": null,
+        "platform": null,
+        "plane_type": null
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "none"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-35159dbc743e/run.json"
+  },
+  "baseline_status": "candidate"
+}

@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "status": "inherited",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "openai/gpt-oss-120b",
+        "model_tokenizer": "openai/gpt-oss-120b",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "openai/gpt-oss-120b",
+        "model_tokenizer": "openai/gpt-oss-120b",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "openai/gpt-oss-120b",
+        "model_tokenizer": "openai/gpt-oss-120b",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "openai/gpt-oss-120b",
+        "model_tokenizer": "openai/gpt-oss-120b",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "openai/gpt-oss-120b",
+        "model_tokenizer": "openai/gpt-oss-120b",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "source": {
+    "path": "llm/gpt-oss-120b/h100x4-mxfp4/throughput/workload.json",
+    "provenance": {
+      "listing": "baseten/gpt-oss-120b-h100-throughput",
+      "live_tag": "2791fef30d4ad4faf2abf4a9b6974a1c978b0426",
+      "model_id": "q9510jjw",
+      "deployment_id": "q88o60p",
+      "run_id": "run-a0147729c3e4",
+      "measured_at": "2026-09-14T21:58:14.339961Z",
+      "config_digest": null,
+      "context": null,
+      "run_status": "succeeded",
+      "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+      "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+      "source_run_file": "bench-runs/run-a0147729c3e4/run.json"
+    },
+    "reason": "Reuse measured workload shapes for the same model on another variant; this does not transfer its performance baseline."
+  }
+}

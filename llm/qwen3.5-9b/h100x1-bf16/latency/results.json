@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-24T21:26:47.481374Z",
+      "run_id": "run-b354b39d069d",
+      "config_digest": "e435e0a6cc404eb62e6c23cca1882900b402a5d672a510a690c342ab347b4db2",
+      "listing": "baseten/qwen3.5-9b-latency",
+      "deployment_id": "3m4p609",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "D(128,128)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 53.38606867669173,
+              "ttft_p90_ms": 61.92581477669173,
+              "tpot_p50_ms": 7.307997094488188,
+              "tpot_p90_ms": 8.752683614173227,
+              "e2e_latency_p50_ms": 983.5743101766918,
+              "e2e_latency_p90_ms": 1165.0382286766917,
+              "output_throughput_tps": 120.30366675144325,
+              "requests_per_second": 0.9399898952325545,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "conc4",
+              "ttft_p50_ms": 64.21503371895426,
+              "ttft_p90_ms": 73.92437181895424,
+              "tpot_p50_ms": 8.267807976377952,
+              "tpot_p90_ms": 9.42382931496063,
+              "e2e_latency_p50_ms": 1129.0110017189545,
+              "e2e_latency_p90_ms": 1264.8010652189544,
+              "output_throughput_tps": 418.1669030643093,
+              "requests_per_second": 3.2672352334930563,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "conc8",
+              "ttft_p50_ms": 82.46338495054945,
+              "ttft_p90_ms": 96.07499605054946,
+              "tpot_p50_ms": 9.191120602362204,
+              "tpot_p90_ms": 12.353681539370088,
+              "e2e_latency_p50_ms": 1250.5710884505493,
+              "e2e_latency_p90_ms": 2014.0253845505495,
+              "output_throughput_tps": 707.10508119027,
+              "requests_per_second": 5.524431085270399,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "conc16",
+              "ttft_p50_ms": 104.367351,
+              "ttft_p90_ms": 128.58287520000005,
+              "tpot_p50_ms": 9.647116712598423,
+              "tpot_p90_ms": 16.928373497637796,
+              "e2e_latency_p50_ms": 1329.473685,
+              "e2e_latency_p90_ms": 2256.4894933,
+              "output_throughput_tps": 1290.91220820094,
+              "requests_per_second": 10.086985327172952,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 153.2309996296296,
+              "ttft_p90_ms": 177.5284771296296,
+              "tpot_p50_ms": 10.464606248031497,
+              "tpot_p90_ms": 17.529440688188977,
+              "e2e_latency_p50_ms": 1471.4073876296297,
+              "e2e_latency_p90_ms": 2412.0222652296293,
+              "output_throughput_tps": 2364.7578395259834,
+              "requests_per_second": 18.475247972795895,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "conc64",
+              "ttft_p50_ms": 265.98616994444444,
+              "ttft_p90_ms": 1030.3931949444445,
+              "tpot_p50_ms": 12.799096688976377,
+              "tpot_p90_ms": 18.731408337795273,
+              "e2e_latency_p50_ms": 1857.4898089444446,
+              "e2e_latency_p90_ms": 2579.798890744445,
+              "output_throughput_tps": 3653.180162660439,
+              "requests_per_second": 28.544484088859672,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 128,
+              "scenario": "conc128",
+              "ttft_p50_ms": 477.2697279615384,
+              "ttft_p90_ms": 1892.4857036615385,
+              "tpot_p50_ms": 14.977730307086613,
+              "tpot_p90_ms": 16.872740773228347,
+              "e2e_latency_p50_ms": 2363.1098299615383,
+              "e2e_latency_p90_ms": 3480.07811346154,
+              "output_throughput_tps": 5000.2159920337745,
+              "requests_per_second": 39.06296672005386,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "D(1024,1024)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 84.37123352231404,
+              "ttft_p90_ms": 102.49587852231406,
+              "tpot_p50_ms": 7.497979505376344,
+              "tpot_p90_ms": 7.669099905767351,
+              "e2e_latency_p50_ms": 7756.707652522314,
+              "e2e_latency_p90_ms": 7934.034106522314,
+              "output_throughput_tps": 130.35593443887475,
+              "requests_per_second": 0.12731040500993576,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "conc4",
+              "ttft_p50_ms": 143.15307230033005,
+              "ttft_p90_ms": 188.08173610033012,
+              "tpot_p50_ms": 9.857189201368524,
+              "tpot_p90_ms": 10.888226490518083,
+              "e2e_latency_p50_ms": 10229.872143300328,
+              "e2e_latency_p90_ms": 11297.85646730033,
+              "output_throughput_tps": 383.5513246603854,
+              "requests_per_second": 0.37459729418355725,
+              "error_rate": 0.0043859649122807015
+            },
+            {
+              "concurrency": 8,
+              "scenario": "conc8",
+              "ttft_p50_ms": 241.7766997590164,
+              "ttft_p90_ms": 273.3503459590164,
+              "tpot_p50_ms": 12.620485804496578,
+              "tpot_p90_ms": 12.949248083284457,
+              "e2e_latency_p50_ms": 13134.687609759016,
+              "e2e_latency_p90_ms": 13500.603527359015,
+              "output_throughput_tps": 615.1718082328572,
+              "requests_per_second": 0.6012208630829541,
+              "error_rate": 0.005420054200542005
+            },
+            {
+              "concurrency": 16,
+              "scenario": "conc16",
+              "ttft_p50_ms": 455.3945621147404,
+              "ttft_p90_ms": 2157.466626114741,
+              "tpot_p50_ms": 18.133885817204302,
+              "tpot_p90_ms": 18.94081098934506,
+              "e2e_latency_p50_ms": 19020.30486111474,
+              "e2e_latency_p90_ms": 19781.144255614738,
+              "output_throughput_tps": 856.3367192648878,
+              "requests_per_second": 0.8369627065340379,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 737.6214427800829,
+              "ttft_p90_ms": 1026.9177941800829,
+              "tpot_p50_ms": 29.6929755259042,
+              "tpot_p90_ms": 31.441581381915935,
+              "e2e_latency_p50_ms": 31275.51513278008,
+              "e2e_latency_p90_ms": 32878.71240268008,
+              "output_throughput_tps": 1060.8959324250388,
+              "requests_per_second": 1.0360979637603973,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "conc64",
+              "ttft_p50_ms": 29751.093713478538,
+              "ttft_p90_ms": 113874.36480827852,
+              "tpot_p50_ms": 29.226969952101662,
+              "tpot_p90_ms": 37.228630682306935,
+              "e2e_latency_p50_ms": 64576.49450047854,
+              "e2e_latency_p90_ms": 144412.21804427856,
+              "output_throughput_tps": 811.875619398633,
+              "requests_per_second": 0.7929202180340476,
+              "error_rate": 0.002
+            },
+            {
+              "concurrency": 128,
+              "scenario": "conc128",
+              "ttft_p50_ms": 95579.01841975872,
+              "ttft_p90_ms": 128449.17956975874,
+              "tpot_p50_ms": 26.121547236559138,
+              "tpot_p90_ms": 43.51097663773225,
+              "e2e_latency_p50_ms": 135671.15222825872,
+              "e2e_latency_p90_ms": 160182.82021645873,
+              "output_throughput_tps": 620.8556211148185,
+              "requests_per_second": 0.6063461699639278,
+              "error_rate": 0.023017902813299233
+            }
+          ]
+        },
+        {
+          "bench": "D(1024,8192)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 81.76795551913477,
+              "ttft_p90_ms": 93.96196931913477,
+              "tpot_p50_ms": 7.542401196237708,
+              "tpot_p90_ms": 7.626453095972113,
+              "e2e_latency_p50_ms": 40075.00754151913,
+              "e2e_latency_p90_ms": 53820.778557119134,
+              "output_throughput_tps": 131.77119639655072,
+              "requests_per_second": 0.02495068034118407,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "conc4",
+              "ttft_p50_ms": 97.33088944920635,
+              "ttft_p90_ms": 163.03857394920635,
+              "tpot_p50_ms": 9.894437026329797,
+              "tpot_p90_ms": 10.943805530952398,
+              "e2e_latency_p50_ms": 50235.0848389492,
+              "e2e_latency_p90_ms": 78463.77475194921,
+              "output_throughput_tps": 380.06114128000235,
+              "requests_per_second": 0.0730157263389845,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "conc8",
+              "ttft_p50_ms": 103.76301271587302,
+              "ttft_p90_ms": 301.0837171158731,
+              "tpot_p50_ms": 12.7213419299953,
+              "tpot_p90_ms": 12.892589035976824,
+              "e2e_latency_p50_ms": 66829.07413421587,
+              "e2e_latency_p90_ms": 103065.96825271586,
+              "output_throughput_tps": 584.6860947042509,
+              "requests_per_second": 0.10793628513922532,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "conc16",
+              "ttft_p50_ms": 141.30051184285713,
+              "ttft_p90_ms": 590.4469114428571,
+              "tpot_p50_ms": 18.45688846037551,
+              "tpot_p90_ms": 18.940357979522418,
+              "e2e_latency_p50_ms": 96380.50104434285,
+              "e2e_latency_p90_ms": 147372.05380484287,
+              "output_throughput_tps": 795.076350702808,
+              "requests_per_second": 0.14285688644467792,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 223.58258276507937,
+              "ttft_p90_ms": 1189.0077627650792,
+              "tpot_p50_ms": 30.120050746252677,
+              "tpot_p90_ms": 31.43390912932839,
+              "e2e_latency_p50_ms": 159201.08626976507,
+              "e2e_latency_p90_ms": 234805.03609676508,
+              "output_throughput_tps": 883.3461658997461,
+              "requests_per_second": 0.16031690851175065,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "conc64",
+              "ttft_p50_ms": 53419.83567301111,
+              "ttft_p90_ms": 81303.09829951111,
+              "tpot_p50_ms": 28.93351493910519,
+              "tpot_p90_ms": 30.423841911113925,
+              "e2e_latency_p50_ms": 198866.8907375111,
+              "e2e_latency_p90_ms": 288658.3265162112,
+              "output_throughput_tps": 1341.4011408934302,
+              "requests_per_second": 0.24444291682947605,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 128,
+              "scenario": "conc128",
+              "ttft_p50_ms": 85837.9253542111,
+              "ttft_p90_ms": 271177.7651433112,
+              "tpot_p50_ms": 22.780600052315144,
+              "tpot_p90_ms": 25.177887240813014,
+              "e2e_latency_p50_ms": 272276.2373682111,
+              "e2e_latency_p90_ms": 409720.9137095111,
+              "output_throughput_tps": 2048.499339214268,
+              "requests_per_second": 0.3682507106941529,
+              "error_rate": 0.02109704641350211
+            }
+          ]
+        },
+        {
+          "bench": "D(8192,1024)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 336.76446610000005,
+              "ttft_p90_ms": 344.36661360000005,
+              "tpot_p50_ms": 7.337709114369502,
+              "tpot_p90_ms": 7.507997869012708,
+              "e2e_latency_p50_ms": 7843.996784100001,
+              "e2e_latency_p90_ms": 8019.1905126,
+              "output_throughput_tps": 128.70420828814505,
+              "requests_per_second": 0.12569254866808474,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "conc4",
+              "ttft_p50_ms": 719.4088222154605,
+              "ttft_p90_ms": 1032.8476038154606,
+              "tpot_p50_ms": 9.509288944281524,
+              "tpot_p90_ms": 10.171160171244338,
+              "e2e_latency_p50_ms": 10340.40004021546,
+              "e2e_latency_p90_ms": 11307.77781681546,
+              "output_throughput_tps": 381.9016027465488,
+              "requests_per_second": 0.37325105731684,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "conc8",
+              "ttft_p50_ms": 1167.6872566105612,
+              "ttft_p90_ms": 1751.9935371105612,
+              "tpot_p50_ms": 11.7434353856305,
+              "tpot_p90_ms": 12.525556206256109,
+              "e2e_latency_p50_ms": 13237.096071610562,
+              "e2e_latency_p90_ms": 13503.129742110561,
+              "output_throughput_tps": 617.4068494905375,
+              "requests_per_second": 0.6034935207258257,
+              "error_rate": 0.005434782608695652
+            },
+            {
+              "concurrency": 16,
+              "scenario": "conc16",
+              "ttft_p50_ms": 1995.4696410551837,
+              "ttft_p90_ms": 2522.648698955184,
+              "tpot_p50_ms": 16.7099237548785,
+              "tpot_p90_ms": 18.081078053079178,
+              "e2e_latency_p50_ms": 19018.272401555183,
+              "e2e_latency_p90_ms": 19940.013062255184,
+              "output_throughput_tps": 855.229174809164,
+              "requests_per_second": 0.8355339681128089,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 2421.2553417712215,
+              "ttft_p90_ms": 2837.8563691712216,
+              "tpot_p50_ms": 28.014570002443794,
+              "tpot_p90_ms": 30.121921657058646,
+              "e2e_latency_p50_ms": 31203.554084771222,
+              "e2e_latency_p90_ms": 32917.692714671226,
+              "output_throughput_tps": 1055.2526811167925,
+              "requests_per_second": 1.0354588497450656,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "conc64",
+              "ttft_p50_ms": 28288.700764057143,
+              "ttft_p90_ms": 113895.72865825715,
+              "tpot_p50_ms": 32.76536709726295,
+              "tpot_p90_ms": 36.888739833919836,
+              "e2e_latency_p50_ms": 62776.65728655714,
+              "e2e_latency_p90_ms": 149052.84212985713,
+              "output_throughput_tps": 728.881947327453,
+              "requests_per_second": 0.7142835782841653,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 128,
+              "scenario": "conc128",
+              "ttft_p50_ms": 96492.54865788254,
+              "ttft_p90_ms": 289567.69581938256,
+              "tpot_p50_ms": 41.17881948240469,
+              "tpot_p90_ms": 44.67338859286412,
+              "e2e_latency_p50_ms": 142162.06538988254,
+              "e2e_latency_p90_ms": 333626.2956198825,
+              "output_throughput_tps": 546.0804007646398,
+              "requests_per_second": 0.5333296941192239,
+              "error_rate": 0.011764705882352941
+            }
+          ]
+        },
+        {
+          "bench": "D(8192,8192)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "conc1",
+              "ttft_p50_ms": 341.32689548064513,
+              "ttft_p90_ms": 348.93124628064515,
+              "tpot_p50_ms": 7.516616301103225,
+              "tpot_p90_ms": 7.664777032744141,
+              "e2e_latency_p50_ms": 46168.48144398065,
+              "e2e_latency_p90_ms": 61936.79914378064,
+              "output_throughput_tps": 131.04308849003039,
+              "requests_per_second": 0.022561682824330388,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "conc4",
+              "ttft_p50_ms": 340.3654425253968,
+              "ttft_p90_ms": 1114.7750795253962,
+              "tpot_p50_ms": 9.893823367803853,
+              "tpot_p90_ms": 11.026793450589542,
+              "e2e_latency_p50_ms": 55542.6808340254,
+              "e2e_latency_p90_ms": 80649.65016652539,
+              "output_throughput_tps": 365.05792436115854,
+              "requests_per_second": 0.06666651951270576,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "conc8",
+              "ttft_p50_ms": 349.1406390603174,
+              "ttft_p90_ms": 882.5402067603183,
+              "tpot_p50_ms": 12.726537086116965,
+              "tpot_p90_ms": 13.061517516458549,
+              "e2e_latency_p50_ms": 60742.09490506032,
+              "e2e_latency_p90_ms": 104000.74263576031,
+              "output_throughput_tps": 597.0195805916368,
+              "requests_per_second": 0.1174601100272547,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "conc16",
+              "ttft_p50_ms": 388.8455245539683,
+              "ttft_p90_ms": 4607.356473153972,
+              "tpot_p50_ms": 18.563570110121802,
+              "tpot_p90_ms": 19.041696114333096,
+              "e2e_latency_p50_ms": 109803.31671455398,
+              "e2e_latency_p90_ms": 152729.33380455396,
+              "output_throughput_tps": 748.0813061025138,
+              "requests_per_second": 0.12698364815136465,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "conc32",
+              "ttft_p50_ms": 486.31917576507936,
+              "ttft_p90_ms": 7793.779166765081,
+              "tpot_p50_ms": 30.179542959022854,
+              "tpot_p90_ms": 31.885556848141615,
+              "e2e_latency_p50_ms": 162680.61845976507,
+              "e2e_latency_p90_ms": 240972.81057416508,
+              "output_throughput_tps": 858.1594211273078,
+              "requests_per_second": 0.15714240235054525,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "conc64",
+              "ttft_p50_ms": 57187.170814971425,
+              "ttft_p90_ms": 78332.83683857143,
+              "tpot_p50_ms": 28.915951905017703,
+              "tpot_p90_ms": 30.809966442222322,
+              "e2e_latency_p50_ms": 215554.93029697143,
+              "e2e_latency_p90_ms": 304777.50766917143,
+              "output_throughput_tps": 1315.9111890920387,
+              "requests_per_second": 0.2301576332986891,
+              "error_rate": 0.00684931506849315
+            },
+            {
+              "concurrency": 128,
+              "scenario": "conc128",
+              "ttft_p50_ms": 187381.86631447304,
+              "ttft_p90_ms": 237350.43838317302,
+              "tpot_p50_ms": 31.11654839868911,
+              "tpot_p90_ms": 33.90744284974519,
+              "e2e_latency_p50_ms": 352457.741391973,
+              "e2e_latency_p90_ms": 440186.01095567306,
+              "output_throughput_tps": 1257.1569201631241,
+              "requests_per_second": 0.23491822042221616,
+              "error_rate": 0.04516129032258064
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

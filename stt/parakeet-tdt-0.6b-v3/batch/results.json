@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-14T17:57:03.677871Z",
+      "run_id": "run-b5915883b2fd",
+      "config_digest": null,
+      "listing": "baseten/parakeet-tdt-0-6b-v3",
+      "deployment_id": "q05v492",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 423.506454564631,
+              "e2e_latency_p90_ms": 568.3029955253005,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.26050656261621,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 463.59187085181475,
+              "e2e_latency_p90_ms": 774.7053755447268,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 7.707762463594364,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 533.7247019633651,
+              "e2e_latency_p90_ms": 915.1645358651876,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 12.9444559553929,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 860.2341366931796,
+              "e2e_latency_p90_ms": 1238.3535793051124,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 14.662350529680134,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1564.928324893117,
+              "e2e_latency_p90_ms": 1862.5012999400496,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 17.42955794159865,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2064.258267171681,
+              "e2e_latency_p90_ms": 3509.5493299886584,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 16.511975946938744,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.044,
+              "accuracy": 0.8860289389067524
+            },
+            {
+              "error_rate": 0.084,
+              "accuracy": 0.9686310063463281
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

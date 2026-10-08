@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "ISL=512",
+      "kind": "perf.baseten_performance_client",
+      "config": {
+        "api_model_name": "michaelfeil/Qwen3-Reranker-8B-seq",
+        "model_tokenizer": "michaelfeil/Qwen3-Reranker-8B-seq",
+        "input_tokens_mean": 512,
+        "num_requests": 200,
+        "warmup_requests": 400,
+        "concurrency_levels": [
+          1,
+          32
+        ],
+        "mode": "classify"
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/qwen3-reranker-8b-throughput",
+    "live_tag": "c59ed706deddc3bb418a145c9c8cfff74a7ec376",
+    "model_id": "w7pekedw",
+    "deployment_id": "wgke6oo",
+    "run_id": "run-efec29d7c268",
+    "measured_at": "2026-09-18T20:30:30.302583Z",
+    "config_digest": "b217704fae08780040477e40d9568ac2ca0bf7511e09af352f9806c50993856e",
+    "context": {
+      "target": {
+        "model_id": "w7pekedw",
+        "deployment_id": "wgke6oo"
+      },
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "engine": {
+        "name": "trt-llm",
+        "version": null
+      },
+      "placement": {
+        "workload_plane": null,
+        "region": null,
+        "platform": null,
+        "plane_type": null
+      },
+      "vantage": "public",
+      "captured": {
+        "config": "control_plane",
+        "hardware": "control_plane",
+        "placement": "none"
+      }
+    },
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-efec29d7c268/run.json"
+  },
+  "baseline_status": "candidate"
+}

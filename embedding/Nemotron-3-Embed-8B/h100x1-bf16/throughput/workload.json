@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "ISL=128",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "model_tokenizer": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=512",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "model_tokenizer": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 512,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=1024",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "model_tokenizer": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=4096",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "model_tokenizer": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 4096,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    },
+    {
+      "name": "ISL=8192",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "model_tokenizer": "nvidia/Nemotron-3-Embed-8B-BF16",
+        "endpoint_type": "embeddings",
+        "streaming": false,
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "max_time_per_run_s": 1800,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 1000
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "listing": "baseten/nemotron-3-embed-8b",
+    "live_tag": "a79c7479e74316456b766c1ac09507cc4294ce02",
+    "model_id": "wx406nzq",
+    "deployment_id": "qvm0pvg",
+    "run_id": "run-bc494699d7e8",
+    "measured_at": "2026-07-20T16:43:18.251675Z",
+    "config_digest": null,
+    "context": null,
+    "run_status": "succeeded",
+    "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+    "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+    "source_run_file": "bench-runs/run-bc494699d7e8/run.json"
+  },
+  "baseline_status": "candidate"
+}

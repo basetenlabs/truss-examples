@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "imported_candidate",
+      "measured_at": "2026-09-15T11:11:34.797611Z",
+      "run_id": "run-7e1acf9addf5",
+      "config_digest": null,
+      "listing": "baseten/vibevoice-asr-streaming-7b",
+      "deployment_id": "wn4m2g0",
+      "hardware": null,
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 2794.442114420235,
+              "ttft_p90_ms": 3740.2913542464375,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1111.311523243785,
+              "e2e_latency_p90_ms": 1259.3071637675166,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.09491885912512406,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt-stream@c4",
+              "ttft_p50_ms": 2789.2123693600297,
+              "ttft_p90_ms": 3755.1680700853467,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1096.164032816887,
+              "e2e_latency_p90_ms": 1246.8079663813114,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.3674603497757848,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt-stream@c8",
+              "ttft_p50_ms": 2834.243431687355,
+              "ttft_p90_ms": 3763.2106076925993,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1106.4588036388159,
+              "e2e_latency_p90_ms": 1247.1141973510385,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.708114106214399,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt-stream@c16",
+              "ttft_p50_ms": 2987.2024413198233,
+              "ttft_p90_ms": 3836.914244107902,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1097.4115701392293,
+              "e2e_latency_p90_ms": 1250.2843579277396,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.2908054619597886,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 3015.492516569793,
+              "ttft_p90_ms": 3853.166252374649,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1104.6030139550567,
+              "e2e_latency_p90_ms": 1313.0935616791248,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.3386127132525785,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt-stream@c64",
+              "ttft_p50_ms": 3085.1425863802433,
+              "ttft_p90_ms": 3951.582634821534,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1119.3036055192351,
+              "e2e_latency_p90_ms": 1303.1471213325858,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.2945879109544733,
+              "error_rate": 0.140625
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.02,
+              "accuracy": 0.7805133771281795
+            },
+            {
+              "error_rate": 0.08,
+              "accuracy": 0.9613309352517986
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

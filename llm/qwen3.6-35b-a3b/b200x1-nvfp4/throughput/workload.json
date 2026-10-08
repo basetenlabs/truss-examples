@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "status": "inherited",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(128,128)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 128,
+        "osl": 128,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(1024,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 1024,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(8192,8192)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 8192,
+        "osl": 8192,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    },
+    {
+      "name": "D(32768,1024)",
+      "kind": "perf.aiperf",
+      "config": {
+        "api_model_name": "Qwen/Qwen3.6-35B-A3B",
+        "model_tokenizer": "Qwen/Qwen3.6-35B-A3B",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "isl": 32768,
+        "osl": 1024,
+        "max_time_per_run_s": 600,
+        "max_requests_per_run": 500
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "path": "llm/qwen3.6-35b-a3b/h100x4-bf16/latency/workload.json",
+    "provenance": {
+      "listing": "baseten/qwen3.6-35b-a3b",
+      "live_tag": "6c1e8d17cc421090e4b0c528622856a1676fbbf6",
+      "model_id": "wx47z86q",
+      "deployment_id": "woolk2g",
+      "run_id": "run-5c87b47ba09a",
+      "measured_at": "2026-09-24T22:10:32.490561Z",
+      "config_digest": "e1dfb8b09bc67bb853e58cd1c8def49aefb1d529ec87044e38c1c022b0df7a22",
+      "context": {
+        "target": {
+          "model_id": "wx47z86q",
+          "deployment_id": "woolk2g"
+        },
+        "hardware": {
+          "instance_type": "H100:4 - 4 H100 GPUs, 320 GiB VRAM",
+          "gpu_type": "H100",
+          "gpu_count": 4,
+          "replicas": 1
+        },
+        "engine": {
+          "name": "vllm",
+          "version": null
+        },
+        "placement": {
+          "workload_plane": "lat-uc1-prod-1",
+          "region": null,
+          "platform": null,
+          "plane_type": null,
+          "entry_workload_plane": "us-central1-prod-1",
+          "bounced": true
+        },
+        "vantage": "public",
+        "captured": {
+          "config": "control_plane",
+          "hardware": "control_plane",
+          "placement": "observed"
+        }
+      },
+      "run_status": "succeeded",
+      "selection": "fully successful run preferred; widest successful perf sweep; newest tie-break",
+      "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
+      "source_run_file": "bench-runs/run-5c87b47ba09a/run.json"
+    },
+    "reason": "Reuse measured workload shapes for the same model on another variant; this does not transfer its performance baseline."
+  },
+  "baseline_status": "missing"
+}
