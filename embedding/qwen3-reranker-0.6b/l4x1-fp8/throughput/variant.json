@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "l4",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "trt-quantization-type",
+    "checkpoint": {
+      "repository": "michaelfeil/Qwen3-Reranker-0.6B-seq",
+      "revision": "d06a195a38073e974fe50cba48c56e068e1f96c7"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "google/embeddinggemma-2",
+      "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.31.0",
+    "packages": [
+      "vllm[audio] @ https://wheels.vllm.ai/a8260cbc5c020d250b3964141cde8fd839152714/vllm-0.31.1rc1.dev48%2Bga8260cbc5-cp38-abi3-manylinux_2_28_x86_64.whl",
+      "transformers==5.19.0"
+    ]
+  },
+  "limits": []
+}

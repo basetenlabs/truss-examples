@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "zeroentropy/zembed-1-embedding",
+      "revision": "cf13c81f3274394053d166740294f7eea4586f7a"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/huggingface/text-embeddings-inference:cuda-1.9"
+  },
+  "limits": []
+}

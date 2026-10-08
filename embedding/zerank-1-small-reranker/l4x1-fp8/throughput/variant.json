@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "l4",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "trt-quantization-type",
+    "checkpoint": {
+      "repository": "fred-baseten/zerank-1-small-seq",
+      "revision": "65292825034a60e01fb33bf3c437ababc5ca5c26"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}

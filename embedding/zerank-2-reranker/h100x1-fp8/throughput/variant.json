@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "trt-quantization-type",
+    "checkpoint": {
+      "repository": "baseten-admin/zerank-2-reranker-seq",
+      "revision": "ac4b5f3c452cf22a917aa6b93b0a92c750db284a"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}

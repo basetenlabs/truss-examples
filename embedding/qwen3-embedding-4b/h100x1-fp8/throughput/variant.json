@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "trt-quantization-type",
+    "checkpoint": {
+      "repository": "michaelfeil/Qwen3-Embedding-4B-auto",
+      "revision": "ed3d15df16211115197d31f12985660da5108a38"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}
