@@ -9,18 +9,13 @@ weights:
   - source: "hf://Qwen/Qwen3-ASR-1.7B@7278e1e70fe206f11671096ffdd38061171dd6e5"
     mount_location: "/app/checkpoint/model"
 base_image:
+  # data/patch.py edits this exact release's source files in place at start and
+  # asserts every anchor, so bumping the image fails the deploy until the patch
+  # is re-verified against the new source.
   image: vllm/vllm-openai:v0.29.0-cu129
 docker_server:
-  # --api-server-count 4: the route decodes and chunks each upload on the CPU in
-  # the API-server process, which caps throughput at one process; four lifts the
-  # ceiling ~60% at high concurrency on this 16 vCPU instance.
-  # --override-generation-config: default output cap per generated chunk when the
-  # caller sets none. Non-speech audio with a forced language otherwise decodes
-  # until the context limit (minutes); 4096 tokens is far above any 30 s chunk's
-  # transcript and callers can still pass their own max_completion_tokens.
-  start_command: >-
-    sh -c "vllm serve $BASETEN_MODEL_PATH --tensor-parallel-size 1 --served-model-name Qwen/Qwen3-ASR-1.7B --gpu-memory-utilization 0.8 --host 0.0.0.0 --port 8000 --load-format runai_streamer --api-server-count 4
-    --override-generation-config.max_new_tokens 4096"
+  # data/start.sh runs data/patch.py, then the serve command (flags documented there).
+  start_command: bash /app/data/start.sh
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/audio/transcriptions
@@ -43,6 +38,15 @@ environment_variables:
   # and a 120 MiB file (a 1 hr 16 kHz 16-bit mono WAV is ~110 MiB).
   VLLM_MAX_AUDIO_DECODE_DURATION_S: "3900"
   VLLM_MAX_AUDIO_CLIP_FILESIZE_MB: "120"
+  # Compressed uploads over 4 min decode as up to this many parallel torchcodec
+  # ranges spliced on the sample grid (data/b10_decode.py). A single 1 hr m4a
+  # otherwise spends ~3 s of its ~4 s in one decode thread. Neighbouring ranges
+  # are compared bit for bit and any mismatch falls back to a full decode.
+  B10_DECODE_SEGMENTS: "8"
+  # Decode + log-mel threads per API-server process. The vLLM default of 2 per
+  # process leaves the GPU waiting on CPU decode at high concurrency; 4 x 4
+  # processes fills it without the SMT contention 8 x 4 showed on 16 vCPUs.
+  VLLM_MAX_AUDIO_PREPROCESS_WORKERS: "4"
 system_packages:
   # No python3.10-venv here: nothing in this truss builds a venv (vLLM is started
   # via docker_server), and pinning a Python minor version in apt ties the build to

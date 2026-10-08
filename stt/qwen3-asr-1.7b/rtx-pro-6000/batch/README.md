@@ -48,3 +48,11 @@ spelling. Audio longer than 30 s is transcribed in 30 s chunks, so files up to
 about an hour work in one request. The same deployment also serves
 `/v1/chat/completions` with an `audio_url` content part, the request shape of
 the previous version of this preset.
+
+## Hardware and cold start
+
+- **GPU:** RTX PRO 6000 (single)
+- **Cold start:** about 2 minutes.
+
+`data/start.sh` applies `data/patch.py`, in-place edits to the installed vLLM described in
+that file, before starting `vllm serve`.
