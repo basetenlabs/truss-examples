@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "nvfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "RedHatAI/Qwen3-VL-32B-Instruct-NVFP4",
+      "revision": "409d48ed83fde917cab7410bf938d3e3d66f7669"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.22.0-cu129"
+  },
+  "limits": []
+}

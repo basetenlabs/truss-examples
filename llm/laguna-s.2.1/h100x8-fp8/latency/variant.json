@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 8
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "poolside/Laguna-S-2.1-FP8",
+      "revision": "610e62523e5ae1261d6b4d3ae7974479041d6027"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": "trt-llm",
+    "version": "0.0.1-20260601190849-691c46ce"
+  },
+  "limits": []
+}

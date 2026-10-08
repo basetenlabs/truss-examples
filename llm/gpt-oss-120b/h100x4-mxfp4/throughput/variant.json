@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 4
+  },
+  "quantization": {
+    "name": "mxfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "openai/gpt-oss-120b",
+      "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.28.0-cu129"
+  },
+  "limits": []
+}

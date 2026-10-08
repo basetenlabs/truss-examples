@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 4
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "MiniMaxAI/MiniMax-M2.5",
+      "revision": "f710177d938eff80b684d42c5aa84b382612f21f"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.22.0-cu129"
+  },
+  "limits": []
+}

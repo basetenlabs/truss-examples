@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 4
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "weight_formats": [
+      "fp4",
+      "fp8"
+    ],
+    "checkpoint": {
+      "repository": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "revision": "7872f01b1d1fe23eabc4c98b48bffcef5a386062"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": "trt-llm",
+    "version": "0.0.1-20260727180920-c08268b2"
+  },
+  "limits": []
+}

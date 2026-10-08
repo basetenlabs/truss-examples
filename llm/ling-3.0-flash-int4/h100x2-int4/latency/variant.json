@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 2
+  },
+  "quantization": {
+    "name": "int4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "inclusionAI/Ling-3.0-flash-int4",
+      "revision": "959d3a48cf05d2daf5fe7bdbbd3a6bb119e359f2"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.28.0"
+  },
+  "limits": []
+}

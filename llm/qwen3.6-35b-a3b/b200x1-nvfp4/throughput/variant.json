@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 1
+  },
+  "quantization": {
+    "name": "nvfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "RedHatAI/Qwen3.6-35B-A3B-NVFP4",
+      "revision": "e94a930c8e9b8a7d3763e449289c261c9c7d3e5e"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.28.0"
+  },
+  "limits": []
+}

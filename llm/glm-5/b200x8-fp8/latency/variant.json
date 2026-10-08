@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 8
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "zai-org/GLM-5-FP8",
+      "revision": "4f96cc5eec29dcee5d6ded54f7ffe889438f9516"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.22.0"
+  },
+  "limits": []
+}

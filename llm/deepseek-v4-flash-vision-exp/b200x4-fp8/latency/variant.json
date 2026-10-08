@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 4
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "weight_formats": [
+      "fp4",
+      "fp8"
+    ],
+    "checkpoint": {
+      "repository": "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp",
+      "revision": "e46e16bf6035c6f317eb2ac7458eb0362926d402"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:nightly-27a94d1ce4e3fc100c4732439ccec10f8246a804@sha256:7d5128a92db05e6d70661a18f10e40c17cd2d8fcaad9226e170a0d69f822b795"
+  },
+  "limits": []
+}

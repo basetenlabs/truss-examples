@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "Qwen/Qwen3.5-35B-A3B-FP8",
+      "revision": "9d1823d2dee688a6b25e77009dc727688c44936e"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.22.0"
+  },
+  "limits": []
+}

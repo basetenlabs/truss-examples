@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "Hcompany/Holo-3.1-35B-A3B-FP8",
+      "revision": "b4708750141b9f3f3bef42b87fdfe8bbe361c9b3"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.20.2-cu129"
+  },
+  "limits": []
+}

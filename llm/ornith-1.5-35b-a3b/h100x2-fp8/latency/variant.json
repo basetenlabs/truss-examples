@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 2
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "ornith-ai/Ornith-1.5-35B-A3B-FP8",
+      "revision": "0e048080ccd0ccf4296bfea5638036c196dccc0c"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.19.1"
+  },
+  "limits": []
+}

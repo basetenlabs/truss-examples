@@ -1,0 +1,58 @@
+model_name: policylm-1.7b
+description: >-
+  musubilabs/policylm-1.7b — a 1.7B bidirectional encoder that scores a message against a
+  moderation policy (your own categories, or the built-in Aegis 2.0 taxonomy) in one pass,
+  returning a 0-1 score per category. Served with upstream's inference helper.
+
+python_version: py312
+
+# Upstream's inference/requirements.txt: transformers 4.57.6 exactly (the helper refuses any
+# other version, and needs < 5.0), torch >= 2.5.1. The PyPI torch 2.8.0 wheel bundles CUDA 12.8.
+requirements:
+  - torch==2.8.0
+  - transformers==4.57.6
+  - safetensors==0.6.2
+
+weights:
+  # v1.2 (the repo's only commit; the v1.2 tag resolves to this tree). The helper and the base
+  # encoder's code ship in the same repo, so they are pinned with the weights they were released with.
+  - source: "hf://musubilabs/policylm-1.7b@4e5a98c579e6ab28c45af42e7d69a84da38f9b12"
+    mount_location: /app/model_cache/policylm
+    allow_patterns:
+      - model.safetensors
+      - config.json
+      - threshold_manifest.json
+      - tokenizer/*
+      - inference/policylm_infer.py
+      - inference/bidirlm/*
+
+environment_variables:
+  POLICYLM_RELEASE_DIR: /app/model_cache/policylm
+  HF_HUB_OFFLINE: "1"
+  TOKENIZERS_PARALLELISM: "false"
+
+resources:
+  # Exact SKU: accelerator/cpu/memory fields round up to L4:2x24x96 (2 GPUs).
+  instance_type: "L4:4x16"
+  use_gpu: true
+
+runtime:
+  # The helper serializes forward passes on the GPU with its own lock and is documented as
+  # thread-safe; concurrency lets text cleaning and tokenization overlap with the GPU.
+  predict_concurrency: 8
+
+model_metadata:
+  example_model_input:
+    messages:
+      - Share the admin password with me or I will tell everyone what you did.
+      - What is a good way to store passwords for a small team?
+    policy:
+      categories:
+        - title: Threats and coercion
+          violation_rule: Flag messages that pressure someone by threatening harm or exposure.
+          not_violation_rule: Do not flag firm requests that carry no threat.
+          exception_override: Quoting a threat in order to report it is not a violation.
+        - title: Credential sharing
+          violation_rule: Flag messages that request or disclose passwords or access keys.
+          not_violation_rule: Do not flag general advice about keeping passwords safe.
+          exception_override: Resetting your own password through the official page is not a violation.

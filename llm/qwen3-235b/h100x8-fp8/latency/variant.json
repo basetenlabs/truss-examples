@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 8
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "Qwen/Qwen3-235B-A22B-Instruct-2507-FP8",
+      "revision": "e156cb4efae43fbee1a1ab073f946a1377e6b969"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}

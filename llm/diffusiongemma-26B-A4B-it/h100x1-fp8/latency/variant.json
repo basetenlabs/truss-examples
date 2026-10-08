@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "RedHatAI/diffusiongemma-26B-A4B-it-FP8-dynamic",
+      "revision": "3b3dae4697494da5a290e9c0461954449e76c4f5"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.28.0"
+  },
+  "limits": []
+}

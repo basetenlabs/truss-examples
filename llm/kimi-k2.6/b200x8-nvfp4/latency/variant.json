@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 8
+  },
+  "quantization": {
+    "name": "nvfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "baseten-admin/kimik26-final-nvfp4-v6",
+      "revision": "630f83400372cc967ef8e5f833870617b6bf5498"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": "trt-llm",
+    "version": "0.0.1-20260415192506-5d63e8c1"
+  },
+  "limits": []
+}

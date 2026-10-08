@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 4
+  },
+  "quantization": {
+    "name": "mxfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "openai/gpt-oss-120b",
+      "revision": "b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": "trt-llm",
+    "version": "0.0.1-20260804033840-1d68536d"
+  },
+  "limits": []
+}

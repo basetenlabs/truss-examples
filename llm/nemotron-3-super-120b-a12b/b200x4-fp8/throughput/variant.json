@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 4
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "weight_formats": [
+      "nvfp4",
+      "fp8"
+    ],
+    "checkpoint": {
+      "repository": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4",
+      "revision": "ff433f5493e25d631c9f12b5d55c674229923d02"
+    }
+  },
+  "engine": {
+    "kind": "trt-llm",
+    "backend": "trt-llm",
+    "version": null
+  },
+  "limits": []
+}
