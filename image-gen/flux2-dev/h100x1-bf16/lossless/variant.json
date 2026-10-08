@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "black-forest-labs/FLUX.2-dev",
+      "revision": "26afe3a78bb242c0a8bb181dcc8937bb16e5c66c"
+    }
+  },
+  "engine": {
+    "kind": "sglang",
+    "backend": "sglang",
+    "version": "baseten/qwen-image-2512-h100:v1.2"
+  },
+  "limits": []
+}

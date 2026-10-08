@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "runtime-fp8-flag",
+    "checkpoint": {
+      "repository": "krea/Krea-2-Turbo",
+      "revision": "98e0fe118d17c9e3547fbb2e25acdbae2cadf7c7"
+    }
+  },
+  "engine": {
+    "kind": "sglang",
+    "backend": "sglang",
+    "version": "baseten/sglang-diffusion-h100:v1.4-fp8krea-exp"
+  },
+  "limits": []
+}

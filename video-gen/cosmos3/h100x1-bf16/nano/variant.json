@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/Cosmos3-Nano",
+      "revision": "411f42a8fdfb8c5b2583cb8786e0938f49796eaa"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "python:3.13-slim-bookworm"
+  },
+  "limits": []
+}
