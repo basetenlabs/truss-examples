@@ -32,6 +32,7 @@ docker_server:
     --max-concurrent-requests 4096
     --max-client-batch-size 128
     --max-batch-tokens 32768
+    --auto-truncate false
     --payload-limit 8388608
     --huggingface-hub-cache /tmp/hf-cache
     --default-prompt-name document

@@ -1,6 +1,6 @@
 # Zembed 1 on TEI
 
-Serve [ZeroEntropy's zembed-1-embedding](https://huggingface.co/zeroentropy/zembed-1-embedding), an Apache-2.0, multilingual, 4B-parameter Qwen3-based text-embedding model, with Hugging Face Text Embeddings Inference (TEI) 1.9. This config is the registry copy of the one serving the ZeroEntropy lab listing `zeroentropy/zembed-1`: one `H100`, float16, a 32,768-token server batch budget (the published context; TEI truncates inputs to the batch budget when it is lower), up to 128 inputs per request, 4,096 concurrent requests, an 8 MiB payload limit, and `document` as the default prompt. It is deploy-only and publishes no listing of its own; see the last section.
+Serve [ZeroEntropy's zembed-1-embedding](https://huggingface.co/zeroentropy/zembed-1-embedding), an Apache-2.0, multilingual, 4B-parameter Qwen3-based text-embedding model, with Hugging Face Text Embeddings Inference (TEI) 1.9. This config is the registry copy of the one serving the ZeroEntropy lab listing `zeroentropy/zembed-1`: one `H100`, float16, a 32,768-token server batch budget (the published context) with auto-truncation off, so longer inputs are rejected rather than silently shortened, up to 128 inputs per request, 4,096 concurrent requests, an 8 MiB payload limit, and `document` as the default prompt. It is deploy-only and publishes no listing of its own; see the last section.
 
 ## Checkpoint
 
