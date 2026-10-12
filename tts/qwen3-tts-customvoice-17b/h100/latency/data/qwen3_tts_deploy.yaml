@@ -14,6 +14,10 @@ async_chunk: true
 # Pipeline-wide: in-process single-worker executor (single GPU, TP=1).
 distributed_executor_backend: uni
 
+# Precomputed voice profiles (custom_voice_manifest.json + one .safetensors per voice), served as
+# extra voices next to the built-in speakers. See "Precomputed voice profiles" in the README.
+# custom_voice_dir: /app/data/voices
+
 connectors:
   connector_of_shared_memory:
     name: SharedMemoryConnector

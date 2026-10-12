@@ -20,8 +20,10 @@ cd /app/vllm-omni
 echo "Starting shared torch compile cache manager..."
 b10-compile-cache &
 
+# serve_patched.py runs `vllm-omni` with precomputed voice profiles allowed on CustomVoice
+# checkpoints (see that file); it takes the same arguments.
 echo "Starting Qwen3-TTS server: model=${MODEL_PATH} deploy_config=${DEPLOY_CONFIG} port=${PORT}"
-vllm-omni serve "${MODEL_PATH}" \
+python3 /app/data/serve_patched.py serve "${MODEL_PATH}" \
     --deploy-config "${DEPLOY_CONFIG}" \
     --host 0.0.0.0 \
     --port "${PORT}" \

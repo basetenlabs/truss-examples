@@ -176,6 +176,36 @@ speakers. A Base (voice-clone) checkpoint won't work here: vLLM-Omni reads the v
 `tts_model_type` and rejects CustomVoice requests on a Base checkpoint. Use the Qwen3-TTS Base
 presets for those.
 
+## Precomputed voice profiles (in-context cloning)
+
+Besides its built-in speakers, the deployment can serve voices from precomputed profiles: a
+speaker embedding plus, for in-context-learning (ICL) mode, the codec codes and transcript of a
+reference clip. vLLM-Omni runs these through its Base/ICL prompt, prefixed with any
+`instructions`, and streams 24 kHz PCM like any other voice.
+
+1. Create the profiles with vLLM-Omni's
+   [`precompute_custom_voice.py`](https://github.com/vllm-project/vllm-omni/blob/v0.30.0/examples/online_serving/text_to_speech/qwen3_tts/precompute_custom_voice.py)
+   (`--mode icl --ref-audio <clip> --ref-text "<transcript>"`). It writes
+   `custom_voice_manifest.json` and one `.safetensors` file per voice.
+2. Put that directory at `data/voices/` and uncomment `custom_voice_dir: /app/data/voices` in
+   `data/qwen3_tts_deploy.yaml`.
+3. Make sure the checkpoint's `config.json` declares the speaker embedding size:
+   `"speaker_encoder_config": {"enc_dim": 2048}`. Stock CustomVoice configs omit it, so it
+   defaults to 1024; the model then skips 2048-dim profiles at load time while the API server
+   still accepts requests for them. `serve_patched.py` refuses those requests with a 400 in that
+   case rather than letting them crash the engine.
+4. Request a profile by name, like a built-in speaker:
+   `{"type": "session.config", "voice": "<profile-name>", "instructions": "...", ...}`.
+
+**Why `serve_patched.py`:** vLLM-Omni 0.30.0 runs every stored voice as `task_type: Base` and
+rejects Base on CustomVoice checkpoints ("Qwen3-TTS CustomVoice checkpoint does not support
+task_type='Base'"), even when you send `task_type: CustomVoice`. That gate prevents a crash when
+a Base request runs the speaker encoder, which CustomVoice checkpoints lack. Precomputed
+profiles never run it, so `serve_patched.py` lets them through and leaves every other check as
+is. Built-in speakers, uploaded voices and `ref_audio` requests behave exactly as stock. The
+same fix is proposed upstream; once a release includes it, `do.sh` can call `vllm-omni serve`
+directly.
+
 ## Concurrency
 
 `predict_concurrency: 32`. Measured on one H100 through the Baseten endpoint with
@@ -216,7 +246,8 @@ python3 qwen_tts_bench.py --url wss://model-<model_id>.api.baseten.co/environmen
   both stages; and prefix caching for the shared speaker prompt. Silence banning is
   off, because it targets voice clones.
 - `do.sh` restores the shared torch.compile cache (`b10-compile-cache`) before
-  start-up and sends two warm-up syntheses once the server is healthy.
+  start-up, launches the server through `data/serve_patched.py` (see "Precomputed voice
+  profiles"), and sends two warm-up syntheses once the server is healthy.
 - Bench: registry CI's `qwen3_tts` protocol drives a voice-clone session, which a
   CustomVoice checkpoint rejects, so the CI smoke bench can't measure this preset.
   The numbers above come from `qwen_tts_bench.py` in this directory.
