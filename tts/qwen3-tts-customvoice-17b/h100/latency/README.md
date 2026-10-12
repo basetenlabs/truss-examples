@@ -126,6 +126,56 @@ if __name__ == "__main__":
 Send another `session.config` between utterances to switch speaker or style. Send
 `{"type": "session.close"}` to end the connection.
 
+## Deploy your own CustomVoice checkpoint
+
+This preset can serve a fine-tuned Qwen3-TTS CustomVoice checkpoint (for example, one with
+your own speakers) in place of the stock weights. Everything else, including the latency
+tuning, stays the same.
+
+1. Clone this directory and install the [Baseten CLI](https://docs.baseten.co/quickstart).
+2. If the Hugging Face repo is private or gated, create a Hugging Face read token and save it
+   in your Baseten workspace as a secret named `hf_access_token`
+   ([Secrets](https://app.baseten.co/settings/secrets)).
+3. In `config.yaml`, point the `weights` block at your repo:
+
+   ```yaml
+   weights:
+     - source: "hf://<your-org>/<your-checkpoint>@<commit-sha>"
+       # Keep this path: data/do.sh and docker_server.start_command load the model from it.
+       mount_location: "/models/Qwen3-TTS-12Hz-1.7B-CustomVoice"
+       # Only needed for a private or gated repo.
+       auth:
+         auth_method: CUSTOM_SECRET
+         auth_secret_name: "hf_access_token"
+   ```
+
+   Pin a commit SHA (or omit `@<commit-sha>` to track the default branch while iterating).
+   Keep the `secrets: hf_access_token` entry in `config.yaml`.
+4. If your checkpoint doesn't include the `vivian` speaker, set the warm-up speaker to one
+   it does have, or the start-up warm-up requests fail (the server still starts):
+
+   ```yaml
+   environment_variables:
+     WARMUP_VOICE: <one-of-your-speakers>
+   ```
+
+   Also update `model_metadata.example_model_input.voice`.
+5. Run `baseten model push` from inside the directory. It creates a deployment in your
+   workspace; push again after each config change to get a new deployment.
+
+The checkpoint must keep the stock CustomVoice layout so vLLM-Omni can load it:
+
+- `config.json` with `"tts_model_type": "custom_voice"` and the `Qwen3TTSForConditionalGeneration`
+  architecture.
+- The `speech_tokenizer/` directory (codec config and weights) next to `model.safetensors`.
+- The tokenizer files (`vocab.json`, `merges.txt`, `tokenizer_config.json`).
+
+Speaker names come from `talker_config.spk_id` in `config.json`. Clients pass one of those
+names as `voice` (case-insensitive); any other name is rejected with the list of valid
+speakers. A Base (voice-clone) checkpoint won't work here: vLLM-Omni reads the variant from
+`tts_model_type` and rejects CustomVoice requests on a Base checkpoint. Use the Qwen3-TTS Base
+presets for those.
+
 ## Concurrency
 
 `predict_concurrency: 32`. Measured on one H100 through the Baseten endpoint with
