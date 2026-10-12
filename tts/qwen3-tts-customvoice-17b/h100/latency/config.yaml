@@ -1,0 +1,72 @@
+model_name: "model:qwen3-tts-customvoice-17b preset:latency"
+python_version: py312
+
+model_metadata:
+  repo_id: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+  example_model_input:
+    task_type: CustomVoice
+    voice: vivian
+
+# Base image: upstream vLLM-Omni v0.30.0, the same build as the Qwen3-TTS Base
+# presets.
+base_image:
+  image: "vllm/vllm-omni:v0.30.0@sha256:fc77cfaac7b1b43c30cbf32eaea214864434c6e0f303e6e9eb9f64104241a994"
+
+# Prefetch the model into the image/cache so the server serves from local disk
+# (no HF download at container start). Qwen3-TTS is public, so no token needed.
+weights:
+  - source: "hf://Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice@0c0e3051f131929182e2c023b9537f8b1c68adfe"
+    mount_location: "/models/Qwen3-TTS-12Hz-1.7B-CustomVoice"
+
+environment_variables:
+  # Stage-1 (code2wav) uses max_model_len=65536 for the flat codec stream,
+  # which exceeds the text model's positions; allow it explicitly.
+  VLLM_ALLOW_LONG_MAX_MODEL_LEN: "1"
+  # b10-compile-cache (do.sh) only accepts torch compile caches under /tmp,
+  # /cache or /root/.cache, and polls port 8000 for readiness by default.
+  VLLM_CACHE_ROOT: /root/.cache/vllm
+  B10_TRANSFER_VLLM_URL: http://127.0.0.1:8091/health
+
+secrets:
+  hf_access_token: null
+
+system_packages:
+  - sox
+  - ffmpeg
+
+requirements:
+  # Persist torch.compile artifacts in b10cache so replacement and scale-out
+  # replicas do not repeat vLLM-Omni's full JIT compilation.
+  - b10-transfer
+
+docker_server:
+  # Invoke via bash (do.sh needs bash); avoid nested quotes — Truss JSON-escapes
+  # `'` as ' and the container can end up running literal `u0027chmod`.
+  start_command: bash /app/data/do.sh /models/Qwen3-TTS-12Hz-1.7B-CustomVoice
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/audio/speech/stream
+  server_port: 8091
+
+resources:
+  accelerator: H100
+  use_gpu: true
+
+runtime:
+  # This deployment is websocket-only; there is no HTTP /predict route.
+  is_websocket_endpoint: true
+  # Latency preset: cap at the last level with gapless playback. Measured on
+  # one H100 with qwen_tts_bench.py (closed loop, one socket per agent):
+  #   agents  TTFA p50  TTFA p95  RTF p95  stalled  audio x real time
+  #       1     0.10s     0.10s     0.13      0%       10x
+  #      16     0.16s     0.21s     0.25      0%       78x
+  #      32     0.24s     0.33s     0.38      0%      104x
+  #      48     0.47s     0.60s     0.62     39%      110x
+  #      64     0.75s     0.90s     1.15     99%      109x
+  # Past 32 the GPU is saturated (~110x): throughput stops growing and chunks
+  # arrive after playback runs dry.
+  predict_concurrency: 32
+  transport:
+    kind: websocket
+    ping_interval_seconds: 30.0
+    ping_timeout_seconds: 60.0
