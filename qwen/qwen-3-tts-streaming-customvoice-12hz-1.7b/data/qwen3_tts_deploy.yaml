@@ -1,0 +1,107 @@
+# Qwen3-TTS CustomVoice single-GPU deploy (uniproc executor) for Baseten H100
+# replicas, tuned for time to first audio on vLLM-Omni v0.30.0.
+#
+# Both pipeline stages (talker + code2wav) share the single GPU. The uniproc
+# executor runs each stage's worker in-process (no extra worker subprocess/IPC).
+# Scale out with additional single-GPU replicas rather than splitting stages
+# across GPUs.
+#
+# Based on upstream vllm_omni/deploy/qwen3_tts.yaml (v0.30.0), which selects
+# the experimental Model Runner V2 on CUDA; set `model_runner: v1` to opt out.
+model_runner: v2
+async_chunk: true
+
+# Pipeline-wide: in-process single-worker executor (single GPU, TP=1).
+distributed_executor_backend: uni
+
+# Precomputed voice profiles (custom_voice_manifest.json + one .safetensors per voice), served as
+# extra voices next to the built-in speakers. See "Precomputed voice profiles" in the README.
+# custom_voice_dir: /app/data/voices
+
+connectors:
+  connector_of_shared_memory:
+    name: SharedMemoryConnector
+    extra:
+      codec_streaming: true
+      connector_get_sleep_s: 0.01
+      connector_get_max_wait_first_chunk: 3000
+      connector_get_max_wait: 300
+      # Must match the decoder sliding attention window.
+      codec_chunk_frames: 25
+      codec_left_context_frames: 72
+      # Frames per audio chunk for the first chunks of each request (one frame
+      # is 80 ms). Each chunk must reach the client before the audio already
+      # sent finishes playing. The upstream default, one early frame and then
+      # the full 25-frame window, leaves 80 ms of audio to cover ~24 frames of
+      # generation and stalls the listener for ~300 ms. The ramp overrides
+      # initial_codec_chunk_frames, including the per-request field, and the
+      # Code2Wav CUDA graphs are captured from it; the last entry must equal
+      # codec_chunk_frames. The adaptive controller (`codec_chunk_adaptive`)
+      # picks sizes at runtime that these graphs don't cover.
+      codec_chunk_ramp: [2, 2, 4, 8, 16, 25]
+      # Limit eager batches to reduce temporary stateful cache allocations.
+      decode_batch_max_size: 4
+
+stages:
+  # Stage 0 — talker (autoregressive code LM).
+  - stage_id: 0
+    devices: "0"
+    max_num_seqs: 64
+    gpu_memory_utilization: 0.50
+    trust_remote_code: true
+    # Requests for the same preset speaker share their talker prompt prefix.
+    enable_prefix_caching: true
+    async_scheduling: true
+    # Small per-step prefill batches keep first-chunk latency low.
+    max_num_batched_tokens: 512
+    max_model_len: 4096
+    compilation_config:
+      cudagraph_capture_sizes: [1, 2, 4, 8, 16, 24, 32, 48, 64]
+    # Silence banning targets x-vector-only voice clones; CustomVoice speakers
+    # don't open with dead air, so keep the upstream default (off).
+    silence_ban_frames: 0
+    output_connectors:
+      to_stage_1: connector_of_shared_memory
+    default_sampling_params:
+      temperature: 0.9
+      top_k: 50
+      max_tokens: 4096
+      # Without it, a checkpoint that samples codec EOS on the first frame
+      # returns empty audio.
+      min_tokens: 2
+      seed: 42
+      repetition_penalty: 1.05
+    subtalker_sampling_params:
+      do_sample: true
+      temperature: 0.9
+      top_k: 50
+      top_p: 1.0
+
+  # Stage 1 — code2wav (codec -> waveform decoder).
+  - stage_id: 1
+    devices: "0"
+    dtype: bfloat16
+    max_num_seqs: 64
+    gpu_memory_utilization: 0.35
+    enforce_eager: false
+    trust_remote_code: true
+    enable_prefix_caching: false
+    async_scheduling: true
+    max_num_batched_tokens: 65536
+    max_model_len: 65536
+    input_connectors:
+      from_stage_0: connector_of_shared_memory
+    default_sampling_params:
+      temperature: 0.0
+      top_p: 1.0
+      top_k: -1
+      max_tokens: 65536
+      seed: 42
+      repetition_penalty: 1.0
+
+platforms:
+  npu:
+    model_runner: v1
+    stages:
+      - stage_id: 0
+        enforce_eager: false
