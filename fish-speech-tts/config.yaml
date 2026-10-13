@@ -1,0 +1,19 @@
+model_name: Fish Speech TTS
+python_version: py312
+build_commands: []
+requirements:
+  - torch>=2.0.0
+  - torchaudio
+  - numpy
+  - fish-speech
+system_packages:
+  - portaudio19-dev
+  - libsox-dev
+  - ffmpeg
+resources:
+  accelerator: A100
+  cpu: '4'
+  memory: 24Gi
+  use_gpu: true
+secrets:
+  hf_access_token: null
