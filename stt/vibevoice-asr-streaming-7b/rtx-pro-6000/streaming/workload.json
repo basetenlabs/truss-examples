@@ -43,7 +43,8 @@
         "protocol": "qwen_realtime",
         "ws_path": "/websocket",
         "served_model": "vibevoice"
-      }
+      },
+      "serial": true
     }
   ],
   "initial_relative_tolerance": 0.1,

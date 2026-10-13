@@ -39,7 +39,8 @@
         "concurrency": 8,
         "batch_protocol": "baseten_predict",
         "prompts": "sierra"
-      }
+      },
+      "serial": true
     }
   ],
   "initial_relative_tolerance": 0.1,

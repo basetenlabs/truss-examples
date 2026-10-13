@@ -41,7 +41,8 @@
         "batch_protocol": "openai_chat_audio",
         "prompts": "sierra",
         "served_model": "vibevoice"
-      }
+      },
+      "serial": true
     }
   ],
   "initial_relative_tolerance": 0.1,

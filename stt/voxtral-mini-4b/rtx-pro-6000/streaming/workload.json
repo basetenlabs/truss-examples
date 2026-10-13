@@ -43,7 +43,8 @@
         "protocol": "voxtral_realtime",
         "ws_path": "/websocket",
         "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602"
-      }
+      },
+      "serial": true
     }
   ],
   "initial_relative_tolerance": 0.1,
