@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "vllm-sr/d3",
+      "revision": "093cffbaa7be6f5dfe14252ae7e80c396c06dbd9"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": []
+}
