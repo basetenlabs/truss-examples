@@ -6,5 +6,5 @@
   "definition": null,
   "initial_relative_tolerance": null,
   "noise_band_measured": false,
-  "reason": "Initial benchmark CI covers LLM and embedding only; archives are excluded."
+  "reason": "Diarization-only: the reply carries speaker segments and no text, and b10-bench has no diarization accuracy metric to gate on yet."
 }
