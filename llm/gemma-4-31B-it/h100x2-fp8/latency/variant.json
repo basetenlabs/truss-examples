@@ -16,7 +16,7 @@
   "engine": {
     "kind": "vllm",
     "backend": "vllm",
-    "version": "vllm/vllm-openai:v0.22.0-cu129"
+    "version": "vllm/vllm-openai:v0.31.0"
   },
   "limits": []
 }

@@ -19,7 +19,7 @@ model_metadata:
   tags:
     - openai-compatible
 base_image:
-  image: vllm/vllm-openai:v0.22.0-cu129
+  image: vllm/vllm-openai:v0.31.0
 weights:
   - source: "hf://RedHatAI/gemma-4-31B-it-FP8-block@d7242548c457ab4b45bd3adb8937f2659af4739d"
     mount_location: "/app/checkpoint/model"
