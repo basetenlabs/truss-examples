@@ -6,6 +6,18 @@ The Truss loads weights from `BASETEN_MODEL_PATH`, which defaults to the BDN mou
 `/app/checkpoint/model`. Baseten Training deployments can override that variable with the
 materialized path of a compatible full checkpoint.
 
+## Keep HF and non-HF presets in sync
+
+`Qwen/Qwen3-ASR-1.7B-hf` and `Qwen/Qwen3-ASR-1.7B` are the same underlying
+trained model in different checkpoint formats. The HF variant is a
+[conversion for native Hugging Face Transformers](https://github.com/huggingface/transformers/blob/main/src/transformers/models/qwen3_asr/convert_qwen3_asr_to_hf.py).
+
+Maintain this preset together with its [HF batch counterpart](../../../qwen3-asr-1.7b-hf/rtx-pro-6000/batch/README.md).
+Apply shared serving-configuration changes to both variants in the same PR,
+including runtime/image versions, dependencies, GPU settings, environment
+variables, startup flags, and performance patches. Preserve each variant's model repository ID,
+pinned checkpoint revision, and format-specific loading requirements.
+
 ## Prerequisites
 
 - Python 3.9+
