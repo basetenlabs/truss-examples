@@ -41,6 +41,47 @@ curl -X POST "https://model-{MODEL_ID}.api.baseten.co/development/predict" \
      -d '{"url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"}'
 ```
 
+Here is how to invoke the model in Python:
+
+```python
+import requests
+import os
+
+# Replace the empty string with your model id below
+model_id = ""
+baseten_api_key = os.environ["BASETEN_API_KEY"]
+
+data = {
+  "url": "https://cdn.baseten.co/docs/production/Gettysburg.mp3"
+}
+
+# Call the model endpoint
+res = requests.post(
+    f"https://model-{model_id}.api.baseten.co/production/predict",
+    headers={"Authorization": f"Api-Key {baseten_api_key}"},
+    json=data
+)
+
+# Get the response from the model
+res = res.json()
+print(res)
+```
+
+Here is the output of the model:
+```json
+{
+    "language": "english",
+    "segments": [
+        {
+        "start": 0,
+        "end": 11.52,
+        "text": "Four score and seven years ago our fathers brought forth upon this continent a new nation conceived in liberty and dedicated to the proposition that all men are created equal."
+        }
+    ],
+    "text": "Four score and seven years ago our fathers brought forth upon this continent a new nation conceived in liberty and dedicated to the proposition that all men are created equal."
+}
+```
+
 ### Whisper API documentation
 
 #### Input
