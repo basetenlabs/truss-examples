@@ -72,5 +72,8 @@
     "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
     "source_run_file": "bench-runs/run-28f604df2d43/run.json"
   },
-  "baseline_status": "candidate"
+  "baseline_status": "candidate",
+  "bench": {
+    "tokenizer": "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16"
+  }
 }

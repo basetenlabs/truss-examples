@@ -186,5 +186,8 @@
     },
     "reason": "Reuse measured workload shapes for the same model on another variant; this does not transfer its performance baseline."
   },
-  "baseline_status": "missing"
+  "baseline_status": "missing",
+  "bench": {
+    "tokenizer": "RedHatAI/Qwen3.6-35B-A3B-NVFP4"
+  }
 }

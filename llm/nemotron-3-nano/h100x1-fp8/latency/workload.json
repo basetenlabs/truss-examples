@@ -131,5 +131,8 @@
     "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
     "source_run_file": "bench-runs/run-92564155910f/run.json"
   },
-  "baseline_status": "candidate"
+  "baseline_status": "candidate",
+  "bench": {
+    "tokenizer": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8"
+  }
 }

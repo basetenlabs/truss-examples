@@ -153,5 +153,8 @@
     "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
     "source_run_file": "bench-runs/run-8baaa7701f68/run.json"
   },
-  "baseline_status": "candidate"
+  "baseline_status": "candidate",
+  "bench": {
+    "tokenizer": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4"
+  }
 }

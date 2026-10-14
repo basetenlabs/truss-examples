@@ -153,5 +153,8 @@
     "approval": "candidate evidence; SLOs and required workload matrix not yet specified",
     "source_run_file": "bench-runs/run-ae6f8d18137c/run.json"
   },
-  "baseline_status": "candidate"
+  "baseline_status": "candidate",
+  "bench": {
+    "tokenizer": "zai-org/GLM-5.3-Flash"
+  }
 }

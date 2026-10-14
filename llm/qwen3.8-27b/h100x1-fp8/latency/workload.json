@@ -141,5 +141,8 @@
   ],
   "source": {
     "path": ".github/actions/run-b10-bench/modalities/llm/profiles/full.json"
+  },
+  "bench": {
+    "tokenizer": "Qwen/Qwen3.8-27B"
   }
 }
