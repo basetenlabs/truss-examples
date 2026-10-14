@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 8
+  },
+  "quantization": {
+    "name": "fp8",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "weight_formats": [
+      "fp8",
+      "bf16",
+      "fp32"
+    ],
+    "checkpoint": {
+      "repository": "inclusionAI/Ling-3.1-flash",
+      "revision": "7b864daa2cedb1404e12bc52899def2d151a9719"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.30.0@sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90"
+  },
+  "limits": [
+    {
+      "capability": "context_length",
+      "value": 262144,
+      "reason": "Configured ceiling matches the pinned checkpoint config. Startup, smoke workloads and one 260056-input-token capacity probe passed; exact-ceiling retrieval accuracy and concurrency-32 load/SLOs are not certified."
+    }
+  ]
+}

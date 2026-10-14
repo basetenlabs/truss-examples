@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "status": "candidate",
+  "accepted": false,
+  "entries": [
+    {
+      "event": "ci_smoke_candidate",
+      "run_id": "run-8760ab5f88a7",
+      "config_git_sha": "122be0e36a0e05cabc68a248d90af7be3db0c5f4",
+      "hardware": {
+        "name": "b200",
+        "count": 8
+      },
+      "profile": "smoke",
+      "cells": [
+        {
+          "bench": "D(128,128)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "output_throughput_tps": 95.77,
+              "mean_tpot_ms": 8.61,
+              "error_rate": 0.0,
+              "completed": 136
+            },
+            {
+              "concurrency": 4,
+              "output_throughput_tps": 251.03,
+              "mean_tpot_ms": 13.93,
+              "error_rate": 0.0,
+              "completed": 355
+            }
+          ]
+        },
+        {
+          "bench": "D(1024,1024)",
+          "kind": "perf.aiperf",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "output_throughput_tps": 103.64,
+              "mean_tpot_ms": 9.26,
+              "error_rate": 0.0,
+              "completed": 19
+            },
+            {
+              "concurrency": 4,
+              "output_throughput_tps": 254.09,
+              "mean_tpot_ms": 15.0,
+              "error_rate": 0.0,
+              "completed": 49
+            }
+          ]
+        }
+      ],
+      "source": {
+        "kind": "ci_benchmark_comment",
+        "note": "Rounded values from the completed CI report; not a production baseline or maximum-concurrency certification."
+      }
+    }
+  ],
+  "functional_checks": {
+    "checked_at": "2026-10-14T21:05:31.745873+00:00",
+    "runtime_source_sha": "122be0e36a0e05cabc68a248d90af7be3db0c5f4",
+    "image_digest": "sha256:8a69ffad015f138d7170c4ddc429e230a3bc1c1719f67e14324749df200a4b90",
+    "passed": true,
+    "checks": [
+      {
+        "name": "check_thinking_off",
+        "passed": true,
+        "details": {
+          "expected_answer": 42,
+          "reasoning_present": false
+        }
+      },
+      {
+        "name": "check_thinking_on",
+        "passed": true,
+        "details": {
+          "expected_answer": 323,
+          "reasoning_present": true
+        }
+      },
+      {
+        "name": "check_streaming",
+        "passed": true,
+        "details": {
+          "sse_events": 3,
+          "terminal_done": true
+        }
+      },
+      {
+        "name": "check_tool_round_trip",
+        "passed": true,
+        "details": {
+          "automatic_tool": "get_temperature",
+          "arguments_valid": true,
+          "round_trip_valid": true
+        }
+      },
+      {
+        "name": "check_long_context",
+        "passed": true,
+        "details": {
+          "prompt_tokens": 260056,
+          "requested_output_tokens": 32,
+          "capacity_probe_only": true
+        }
+      }
+    ]
+  }
+}
