@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "Cloudflare/clef",
+      "revision": "0b331204bb13fbd2ca93a64df1956f5b55478ce5"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": [
+    {
+      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
+    }
+  ]
+}
