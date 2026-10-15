@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "Cloudflare/clef-flash",
+      "revision": "8b2e5fd17c09fd49bc2880b805d5323ec7ff4ff3"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": [
+    {
+      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
+    }
+  ]
+}
