@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "l4",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "vllm-sr/d3-mini",
+      "revision": "0e78bbdbe3cf480ed1461c185c9e0c4fa9258011"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": []
+}
