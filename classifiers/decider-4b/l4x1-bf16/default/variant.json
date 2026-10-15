@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "l4",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "Mapika/decider-4b",
+      "revision": "99d7fd5bfcc4d11ba37239dafe0ed653803819d3"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": [
+    {
+      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+model_name: model:decider-4b preset:default
+description: Text SystemOne decisions with Mapika/decider-4b.
+python_version: py311
+requirements:
+- fastapi==0.118.0
+- uvicorn==0.37.0
+- prometheus-client==0.21.1
+- pydantic==2.13.5
+- torch==2.8.0
+- transformers==5.17.0
+- safetensors==0.8.0
+- accelerate==1.15.0
+resources:
+  accelerator: L4:1
+weights:
+- source: hf://Mapika/decider-4b@99d7fd5bfcc4d11ba37239dafe0ed653803819d3
+  mount_location: /models/decider
+  allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.jinja'
+  - LICENSE
+  - decider/*.py
+environment_variables:
+  HF_HUB_OFFLINE: '1'
+  TOKENIZERS_PARALLELISM: 'false'
+model_metadata:
+  repo_id: Mapika/decider-4b
+  example_model_input:
+    model: decider-4b
+    state: The parcel arrived damaged.
+    questions:
+      damaged:
+        type: noul
+        instructions: Is the parcel damaged?
+docker_server:
+  start_command: python3 -m uvicorn model.server:app --host 0.0.0.0 --port 8000 --app-dir
+    /app
+  server_port: 8000
+  predict_endpoint: /predict
+  readiness_endpoint: /health
+  liveness_endpoint: /health
