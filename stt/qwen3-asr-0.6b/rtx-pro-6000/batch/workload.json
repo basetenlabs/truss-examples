@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
+  "profile": "full-batch-length",
+  "definition": [
+    {
+      "name": "data=pipecat",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "pipecat"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      }
+    },
+    {
+      "name": "data=podcast-10s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-10s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-30s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-30s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-1min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-1min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-5min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-5min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 180.0,
+        "measurement_duration_s": 240.0,
+        "warmup_duration_s": 60.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-30min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-30min"
+        ],
+        "num_samples": 32,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 240.0,
+        "measurement_duration_s": 300.0,
+        "warmup_duration_s": 120.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-1hr",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-1hr"
+        ],
+        "num_samples": 32,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 300.0,
+        "measurement_duration_s": 480.0,
+        "warmup_duration_s": 180.0
+      },
+      "serial": true
+    },
+    {
+      "name": "quality",
+      "kind": "quality.stt_transcription",
+      "config": {
+        "datasets": [
+          "mu-bench-full",
+          "pipecat"
+        ],
+        "num_samples": 250,
+        "scoring_methods": [
+          "mubench"
+        ],
+        "concurrency": 8,
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra"
+      },
+      "serial": true
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "source": {
+    "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full-batch-length.json",
+    "reason": "No exact imported run; use the established full profile and obtain a baseline."
+  },
+  "baseline_status": "missing",
+  "bench": {
+    "protocol": "openai_transcriptions",
+    "profile_overrides": {
+      "full": "full-batch-length"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+model_name: "model:qwen3-asr-0.6b preset:batch"
+model_metadata:
+  repo_id: Qwen/Qwen3-ASR-0.6B
+  # No example_model_input: the transcriptions route takes a multipart file
+  # upload, which cannot be expressed as a JSON example.
+  tags:
+    - openai-compatible
+weights:
+  - source: "hf://Qwen/Qwen3-ASR-0.6B@5eb144179a02acc5e5ba31e748d22b0cf3e303b0"
+    mount_location: "/app/checkpoint/model"
+base_image:
+  # data/patch.py edits this exact release's source files in place at start and
+  # asserts every anchor, so bumping the image fails the deploy until the patch
+  # is re-verified against the new source.
+  image: vllm/vllm-openai:v0.29.0-cu129
+docker_server:
+  # data/start.sh runs data/patch.py, then the serve command (flags documented there).
+  start_command: bash /app/data/start.sh
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/audio/transcriptions
+  server_port: 8000
+resources:
+  instance_type: RTX-PRO-6000
+requirements:
+  - vllm[audio]
+  - librosa
+  - torch
+  - torchaudio
+  - pynvml
+  - ffmpeg-python
+environment_variables:
+  BASETEN_MODEL_PATH: "/app/checkpoint/model"
+  # /v1/audio/transcriptions decodes the whole upload before chunking it into
+  # 30 s pieces. vLLM caps that decode at 600 s and the upload at 25 MB by
+  # default, which rejects 30 min and 1 hr files with HTTP 400 before the model
+  # runs. These are the server's own bounds on the decode stage: 65 min of audio
+  # and a 120 MiB file (a 1 hr 16 kHz 16-bit mono WAV is ~110 MiB).
+  VLLM_MAX_AUDIO_DECODE_DURATION_S: "3900"
+  VLLM_MAX_AUDIO_CLIP_FILESIZE_MB: "120"
+  # Compressed uploads over 4 min decode as up to this many parallel torchcodec
+  # ranges spliced on the sample grid (data/b10_decode.py). A single 1 hr m4a
+  # otherwise spends ~3 s of its ~4 s in one decode thread. Neighbouring ranges
+  # are compared bit for bit and any mismatch falls back to a full decode.
+  B10_DECODE_SEGMENTS: "8"
+  # Decode + log-mel threads per API-server process. The vLLM default of 2 per
+  # process leaves the GPU waiting on CPU decode at high concurrency; 4 x 4
+  # processes fills it without the SMT contention 8 x 4 showed on 16 vCPUs.
+  VLLM_MAX_AUDIO_PREPROCESS_WORKERS: "4"
+system_packages:
+  # No python3.10-venv here: nothing in this truss builds a venv (vLLM is started
+  # via docker_server), and pinning a Python minor version in apt ties the build to
+  # whatever the base image happens to ship. That pin already broke the community-1
+  # diarizer when its base moved to Debian trixie:
+  #   E: Unable to locate package python3.10-venv
+  - ffmpeg
+  - openmpi-bin
+  - libopenmpi-dev
+runtime:
+  predict_concurrency: 256
