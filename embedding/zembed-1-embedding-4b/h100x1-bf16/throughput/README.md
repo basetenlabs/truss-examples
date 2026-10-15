@@ -1,6 +1,6 @@
 # Zembed 1 on TEI
 
-Serve [ZeroEntropy's zembed-1-embedding](https://huggingface.co/zeroentropy/zembed-1-embedding), an Apache-2.0, multilingual, 4B-parameter Qwen3-based text-embedding model, with Hugging Face Text Embeddings Inference (TEI) 1.9. This config is the registry copy of the one serving the ZeroEntropy lab listing `zeroentropy/zembed-1`: one `H100`, float16, a 32,768-token server batch budget (the published context) with auto-truncation off, so longer inputs are rejected rather than silently shortened, up to 128 inputs per request, 4,096 concurrent requests, an 8 MiB payload limit, and `document` as the default prompt. It is deploy-only and publishes no listing of its own; see the last section.
+Serve [ZeroEntropy's zembed-1-embedding](https://huggingface.co/zeroentropy/zembed-1-embedding), an Apache-2.0, multilingual, 4B-parameter Qwen3-based text-embedding model, with Hugging Face Text Embeddings Inference (TEI) 1.9. It serves the Baseten library listing `baseten/zembed-1-embedding-4b-throughput`: one `H100`, float16, a 32,768-token server batch budget (the published context) with auto-truncation off, so longer inputs are rejected rather than silently shortened, up to 128 inputs per request, 4,096 concurrent requests, an 8 MiB payload limit, and `document` as the default prompt.
 
 ## Checkpoint
 
@@ -30,7 +30,3 @@ curl -s -X POST "https://model-MODEL_ID.api.baseten.co/environments/production/s
 ```
 
 For documents, omit `prompt_name` or set it to `document`. TEI also serves an OpenAI-compatible `/v1/embeddings` route, which has no `prompt_name` field.
-
-## Relationship to the ZeroEntropy lab listing
-
-ZeroEntropy's lab listing `zeroentropy/zembed-1` is served from this config. This preset is its registry copy: the README declares no `library_id`, so registry CI deploys and benchmarks it but does not create a separate `baseten/…` listing beside the lab-owned one. The `lab_listing` field above records which listing the config serves.
