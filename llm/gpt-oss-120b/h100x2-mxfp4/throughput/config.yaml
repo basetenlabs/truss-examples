@@ -1,9 +1,9 @@
 # Registry copy of the config serving the Baseten library listing
-# baseten/gpt-oss-120b (BIS-LLM, TRT-LLM PyTorch backend behind Dynamo cache-aware routing). The bis_llm block,
-# environment, and weights values are the deployed values from BIS Config Registry
-# composer `gpt-oss-120b` (bcr_version 1.0.5) verbatim; model_name
+# baseten/gpt-oss-120b (BIS-LLM, TRT-LLM PyTorch backend behind Dynamo cache-aware routing). Derived from
+# the B200x4 preset (BIS Config Registry composer `gpt-oss-120b`, bcr_version 1.0.5)
+# for two H100s: TP2/EP2, Triton MoE (TRTLLM MoE is Blackwell-only), 40 GB host KV cache; model_name
 # follows the repo convention and resources use instance_type.
-model_name: "model:gpt-oss-120b preset:bis-throughput"
+model_name: "model:gpt-oss-120b preset:throughput"
 model_metadata:
   repo_id: openai/gpt-oss-120b
   tags:
@@ -67,15 +67,15 @@ bis_llm:
         enable_partial_reuse: false
         event_buffer_max_size: 16384
         free_gpu_memory_fraction: 0.9
-        host_cache_size: 120000000000
+        host_cache_size: 40000000000
       max_batch_size: 64
       max_beam_width: 1
       max_input_len: 131072
       max_num_tokens: 16384
       max_seq_len: 131072
       moe_config:
-        backend: TRTLLM
-      moe_expert_parallel_size: 4
+        backend: TRITON
+      moe_expert_parallel_size: 2
       sampler_type: TRTLLMSampler
       stream_interval: 4
       trust_remote_code: true
@@ -90,12 +90,12 @@ bis_llm:
         - medium
         - high
       default: medium
-    tensor_parallel_size: 4
+    tensor_parallel_size: 2
     tokenizer_limit_length: 131072
   version: 0.0.1-20260804033840-1d68536d
 environment_variables: {}
 resources:
-  instance_type: "B200:4"
+  instance_type: "H100:2"
 weights:
   # Public, ungated checkpoint (Apache-2.0); the auth secret is dropped. Pinned to
   # the revision `@main` resolved to (unchanged since 2025-08-26).

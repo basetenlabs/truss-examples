@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "hardware": {
-    "name": "b200",
-    "count": 4
+    "name": "h100",
+    "count": 2
   },
   "quantization": {
     "name": "mxfp4",

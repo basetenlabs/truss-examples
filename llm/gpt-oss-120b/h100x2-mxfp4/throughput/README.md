@@ -2,22 +2,24 @@
 
 This Truss serves OpenAI's [gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b)
 through the Baseten Inference Stack (TRT-LLM PyTorch backend behind Dynamo cache-aware
-routing) on four B200 GPUs, tuned for throughput. It is the registry copy of the deployed
-configuration from BIS Config Registry composer `gpt-oss-120b` (bcr_version 1.0.5).
+routing) on two H100 GPUs, tuned for throughput. It is the
+[`b200x4-mxfp4/throughput`](../../b200x4-mxfp4/throughput/) configuration (BIS Config Registry
+composer `gpt-oss-120b`, bcr_version 1.0.5) resized for Hopper: tensor and expert parallel 2,
+the Triton MoE backend (the TRTLLM MoE backend is Blackwell-only), and a 40 GB host KV cache.
 
-The [`h100x4-mxfp4/throughput`](../../h100x4-mxfp4/throughput/) preset serves the model with vLLM on
-four H100 GPUs. This preset replaces the earlier vLLM `throughput` preset on four B200 GPUs.
+The B200x4 preset and the vLLM [`h100x4-mxfp4/throughput`](../../h100x4-mxfp4/throughput/) preset
+stay deployable but unlisted.
 
 ## Configuration
 
 | Setting | Value |
 | --- | --- |
 | Checkpoint | `openai/gpt-oss-120b` at `b5c939de` (public, ungated, Apache-2.0) |
-| Hardware | `B200:4`, tensor parallel 4, MoE expert parallel 4 |
-| Engine | BIS-LLM `0.0.1-20260804033840-1d68536d`, TRT-LLM PyTorch backend, `TRTLLM` MoE backend, TRTLLM sampler |
+| Hardware | `H100:2`, tensor parallel 2, MoE expert parallel 2 |
+| Engine | BIS-LLM `0.0.1-20260804033840-1d68536d`, TRT-LLM PyTorch backend, `TRITON` MoE backend, TRTLLM sampler |
 | Context | 131,072 tokens (`max_seq_len`, `max_input_len`, `tokenizer_limit_length`) |
 | Batching | `max_batch_size` 64, `max_num_tokens` 16,384, padded CUDA-graph batch sizes up to 64, chunked prefill, autotuner |
-| KV cache | Block reuse, 120 GB host offload, 90% free-GPU-memory fraction |
+| KV cache | Block reuse, 40 GB host offload, 90% free-GPU-memory fraction |
 | Served model name | `openai/gpt-oss-120b` |
 | Processors | `harmony` chat processor; reasoning effort policy (`low`/`medium`/`high`, default `medium`) |
 | Routing | Worker tree with WSPT queue policy, rate limiting, and cache-miss-aware routing |
