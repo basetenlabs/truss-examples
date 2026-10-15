@@ -1,0 +1,13 @@
+{
+  "request_kwargs": {
+    "chat_template_kwargs": {
+      "enable_thinking": true,
+      "truncate_history_thinking": false
+    }
+  },
+  "expect_reasoning_content": true,
+  "replay_reasoning_field": "reasoning_content",
+  "max_tokens": 4096,
+  "concurrency": 8,
+  "conversation_levels": [1, 8, 16, 32, 45, 64, 80]
+}

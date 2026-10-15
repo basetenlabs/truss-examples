@@ -1,0 +1,70 @@
+model_name: model:phonellm-max-alpha-2 preset:latency
+model_metadata:
+  description: PhoneLLM Max Alpha 2, text-only. DRAFT for the Model Scout phonellm-alpha-2 study.
+    Served via SGLang v0.5.21 on 2x B200 (TP2, EP2). BF16 checkpoint, native 1M context, thinking on by default,
+    qwen3_coder tool calls.
+  repo_id: pipecat-ai/phonellm-max-alpha-2
+  example_model_input:
+    model: pipecat-ai/phonellm-max-alpha-2
+    messages:
+    - role: system
+      content: You are a helpful voice assistant answering a phone call. Keep replies short and speakable.
+    - role: user
+      content: Hi, I'd like to move my appointment to next Tuesday.
+    stream: true
+    max_tokens: 512
+    temperature: 0
+    chat_template_kwargs:
+      enable_thinking: true
+      truncate_history_thinking: false
+  tags:
+  - openai-compatible
+base_image:
+  # Docker Hub 2026-10-01, amd64+arm64, build commit e00930c (sglang v0.5.21).
+  image: lmsysorg/sglang:v0.5.21-cu130
+  python_executable_path: /opt/sglang/bin/python
+weights:
+  # Final release repo, pinned to main of pipecat-ai/phonellm-max-alpha-2 on 2026-10-15
+  # Downloaded anonymously; the pinned revision must be public.
+  - source: "hf://pipecat-ai/phonellm-max-alpha-2@e7c4cdb96e2682259f73c6ed979178a5bb7d13cf"
+    mount_location: "/app/checkpoint/model"
+docker_server:
+  # Serving contract (study.json): BF16, max len = checkpoint native 1048576 (no --context-length; the published benchmarks ran with a 32768 cap), thinking ON by default (enable_thinking true, truncate_history_thinking false) with the
+  # engine's Nemotron v3 reasoning parser,
+  # qwen3_coder auto tool choice, 128 in-flight sequences, fp32 Mamba SSM state.
+  # --tokenizer-worker-num 4: four tokenizer-manager/HTTP workers (as MINI-SGLANG-H1). MAX-SGLANG-D1 showed engine
+  # TTFT minus queue+prefill_forward growing 95 -> 161 -> 294 ms at c=16/32/44 with queue <2 ms and prefill 190-224 ms.
+  # --max-mamba-cache-size 360 (H7): v0.5.21 caps running requests at mamba slots // 5 (extra_buffer with overlap);
+  # the default --mamba-full-memory-ratio 0.9 gave 221 fp32 state slots, so 44 running (H3 logs); 360 -> 72.
+  start_command: >-
+    /opt/sglang/bin/python /packages/start_sglang.py
+    --model-path /app/checkpoint/model
+    --served-model-name pipecat-ai/phonellm-max-alpha-2
+    --trust-remote-code
+    --tp-size 2
+    --ep-size 2
+    --max-running-requests 128
+    --mem-fraction-static 0.85
+    --mamba-ssm-dtype float32
+    --tool-call-parser qwen3_coder
+    --reasoning-parser nemotron_3
+    --tokenizer-worker-num 4
+    --max-mamba-cache-size 360
+    --enable-metrics
+    --bucket-time-to-first-token 0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.95 1.0 1.05 1.1 1.15 1.2 1.25 1.3 1.35 1.4 1.45 1.5 2.0 3.0 5.0 10.0 20.0 40.0
+    --log-level warning
+    --host 0.0.0.0
+    --port 8000
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: B200:2
+  use_gpu: true
+runtime:
+  predict_concurrency: 128
+  health_checks:
+    startup_threshold_seconds: 1800
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120

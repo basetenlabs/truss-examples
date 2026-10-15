@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "pipecat-ai/phonellm-mini-alpha-2",
+      "revision": "4218fdc917a3a56340bf49de7b906637e131d9c1"
+    }
+  },
+  "engine": {
+    "kind": "sglang",
+    "backend": "sglang",
+    "version": "lmsysorg/sglang:v0.5.21-cu130"
+  },
+  "limits": []
+}

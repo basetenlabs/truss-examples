@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "D(14500,36)@c1",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          1
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 43,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    },
+    {
+      "name": "D(14500,36)@c8",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          8
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 50,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    },
+    {
+      "name": "D(14500,36)@c16",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          16
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 58,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    },
+    {
+      "name": "D(14500,36)@c32",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          32
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 74,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    },
+    {
+      "name": "D(14500,36)@c44",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          44
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 86,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    },
+    {
+      "name": "D(14500,36)@c64",
+      "kind": "perf.aiperf",
+      "serial": true,
+      "config": {
+        "api_model_name": "pipecat-ai/phonellm-max-alpha-2",
+        "model_tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
+        "load_mode": "concurrency",
+        "concurrency_levels": [
+          64
+        ],
+        "isl": 14500,
+        "isl_stddev": 500,
+        "osl": 36,
+        "osl_stddev": 18,
+        "max_time_per_run_s": 300,
+        "max_requests_per_run": 500,
+        "warmup_request_count": 8,
+        "random_seed": 106,
+        "streaming": true,
+        "use_server_token_count": true,
+        "shared_system_prompt_length": 0,
+        "additional_request_params": {
+          "ignore_eos": true,
+          "chat_template_kwargs": {
+            "enable_thinking": true,
+            "truncate_history_thinking": false
+          }
+        },
+        "num_dataset_entries": 520
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
+  "noise_band_measured": false,
+  "workload_note": "Synthetic single-turn aiperf profile shaped like Daily's traffic (ISL ~14.5k, 13.5k-15.8k; OSL ~36, 10-95) for the Model Scout phonellm-alpha-2 study; lengths are normal samples (aiperf isl/osl stddev, min 1), output length forced by ignore_eos. One serial cell per concurrency with its own seed and 520 unique prompts, so prefix caching cannot reuse prompts across or within levels. Not customer traffic.",
+  "bench": {
+    "tokenizer": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16"
+  }
+}
