@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "iq2-xxs",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "checkpoint": {
+      "repository": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB",
+      "revision": "c6cc2e8ffa353403213d6b9b18aaf8eb684d705a"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:nightly-77154ca6116ae34cbfe314beef1016bde9b63989@sha256:a7deff2c216def98c193352aca50fb03a2ee29231355b3033dc3789009f6d23e"
+  },
+  "limits": []
+}

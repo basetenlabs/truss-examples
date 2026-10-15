@@ -1,0 +1,82 @@
+model_name: "model:nemotron-3.5-bolt-74b-a9b-24gb preset:latency"
+model_metadata:
+  description: >-
+    NVIDIA Nemotron 3.5 Bolt 74B-A9B-24GB, a hybrid Mamba-2/Transformer
+    LatentMoE vision-language model with IQ2-XXS expert weights, NVFP4 Mamba
+    weights, and Q8_0 projections. Serves text, image, and video prompts with
+    reasoning and tool calling on one Blackwell RTX PRO 6000.
+  repo_id: nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB
+  example_model_input:
+    model: nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB
+    messages:
+      - role: user
+        content: "Explain why binary search takes logarithmic time."
+    stream: true
+    max_tokens: 512
+    temperature: 1.0
+    top_p: 0.95
+    chat_template_kwargs:
+      enable_thinking: false
+  tags:
+    - openai-compatible
+base_image:
+  image: vllm/vllm-openai:nightly-77154ca6116ae34cbfe314beef1016bde9b63989@sha256:a7deff2c216def98c193352aca50fb03a2ee29231355b3033dc3789009f6d23e
+build_commands:
+  - pip install b12x==1.5.1
+weights:
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB@c6cc2e8ffa353403213d6b9b18aaf8eb684d705a"
+    mount_location: /app/checkpoint/model
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr@4c6a5613b6d887194a3a5493e3a18a5b3930bb86"
+    mount_location: /app/checkpoint/drafter
+docker_server:
+  start_command: >-
+    sh -c 'vllm download-kernels && exec vllm serve /app/checkpoint/model
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB
+    --trust-remote-code
+    --load-format runai_streamer
+    --tensor-parallel-size 1
+    --max-model-len 262144
+    --max-num-seqs 32
+    --gpu-memory-utilization 0.90
+    --enable-chunked-prefill
+    --kv-cache-dtype fp8
+    --linear-backend b12x
+    --moe-backend b12x
+    --attention-backend FLASHINFER
+    --mamba-backend flashinfer
+    --mamba-ssm-cache-dtype bfloat16
+    --mamba-cache-dtype bfloat16
+    --mamba-cache-mode align
+    --seed 42
+    --limit-mm-per-prompt.image 1
+    --limit-mm-per-prompt.video 1
+    --video-pruning-rate 0.5
+    --media-io-kwargs.video.fps 2
+    --media-io-kwargs.video.num_frames 256
+    --speculative-config.method dflash
+    --speculative-config.model /app/checkpoint/drafter
+    --speculative-config.num_speculative_tokens 7
+    --speculative-config.rejection_sample_method standard
+    --speculative-config.attention_backend FLASHINFER
+    --speculative-config.draft_load_config.load_format runai_streamer
+    --enable-auto-tool-choice
+    --tool-call-parser qwen3_coder
+    --reasoning-parser-plugin /app/checkpoint/model/ultra_v3_reasoning_parser.py
+    --reasoning-parser ultra_v3'
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+environment_variables:
+  VLLM_USE_V2_MODEL_RUNNER: "1"
+  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+resources:
+  instance_type: RTX-PRO-6000
+runtime:
+  predict_concurrency: 32
+  health_checks:
+    startup_threshold_seconds: 3000
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
