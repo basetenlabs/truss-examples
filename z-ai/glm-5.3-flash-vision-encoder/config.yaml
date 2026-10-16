@@ -1,0 +1,49 @@
+model_name: prod-glm53-flash-vision-encoder
+description: Rust/C++ LibTorch vision encoder for zai-org/GLM-5.3-Flash with two GPU workers.
+
+model_metadata:
+  example_model_input:
+    type: image_url
+    image_url:
+      url: "https://httpbin.org/image/png"
+    model: zai-org/GLM-5.3-Flash
+    allow_bytes_without_b64: true
+
+base_image:
+  image: docker.io/baseten/dynamo-mm-encoder:libtorch-encoder0f38327b76-cuda13compat
+
+environment_variables:
+  NVIDIA_DISABLE_REQUIRE: "true"
+
+docker_server:
+  no_build: true
+  start_command: >-
+    /opt/mm-libtorch/bin/mm-libtorch-encoder
+    /models/glm53
+    zai-org/GLM-5.3-Flash
+    0.0.0.0:8000
+    glm53
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /generate
+  server_port: 8000
+
+resources:
+  accelerator: "H100:2"
+  cpu: "8"
+  memory: 16Gi
+
+weights:
+  - source: "hf://zai-org/GLM-5.3-Flash"
+    mount_location: "/models/glm53"
+    auth_secret_name: hf_access_token
+    allow_patterns:
+      - "*.json"
+      - "model-00062-of-00062.safetensors"
+
+runtime:
+  health_checks:
+    restart_check_delay_seconds: 300
+    restart_threshold_seconds: 30
+    stop_traffic_threshold_seconds: 30
+  predict_concurrency: 16
