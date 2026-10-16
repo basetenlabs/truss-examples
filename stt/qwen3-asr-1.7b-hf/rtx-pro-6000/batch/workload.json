@@ -11,6 +11,7 @@
     "protocol": "openai_transcriptions",
     "profile_overrides": {
       "full": "full-batch-length"
-    }
+    },
+    "capacity_concurrency": 64
   }
 }

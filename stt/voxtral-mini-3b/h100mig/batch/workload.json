@@ -14,11 +14,7 @@
         "num_samples": 64,
         "concurrency_levels": [
           1,
-          4,
-          8,
-          16,
-          32,
-          64
+          16
         ],
         "warmup_request_count": 2,
         "batch_protocol": "openai_transcriptions"
@@ -34,7 +30,7 @@
         ],
         "num_samples": 250,
         "scoring_methods": [
-          "mubench"
+          "naive"
         ],
         "concurrency": 8,
         "batch_protocol": "openai_transcriptions",
@@ -51,6 +47,7 @@
   },
   "baseline_status": "candidate",
   "bench": {
-    "protocol": "openai_transcriptions"
+    "protocol": "openai_transcriptions",
+    "capacity_concurrency": 16
   }
 }
