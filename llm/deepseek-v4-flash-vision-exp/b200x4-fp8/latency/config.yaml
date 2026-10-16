@@ -22,11 +22,9 @@ model_metadata:
   tags:
     - openai-compatible
 base_image:
-  # DeepSeek-V4-Flash-Vision-Exp support (vllm-project/vllm#54566, merge
-  # 1356635d) landed after the last vLLM release. Pin the first immutable
-  # nightly commit that includes it; replace with the first stable vLLM
-  # release containing that support once one is available.
-  image: "vllm/vllm-openai:nightly-27a94d1ce4e3fc100c4732439ccec10f8246a804@sha256:7d5128a92db05e6d70661a18f10e40c17cd2d8fcaad9226e170a0d69f822b795"
+  # v0.29.0 failed loading vision-router gate.bias_vl weights in PR #475.
+  # v0.31.0 includes the vision router and checkpoint parameters; pin its digest.
+  image: "vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3"
 weights:
   - source: "hf://deepseek-ai/DeepSeek-V4-Flash-Vision-Exp@e46e16bf6035c6f317eb2ac7458eb0362926d402"
     mount_location: "/app/checkpoint/model"

@@ -20,7 +20,7 @@
   "engine": {
     "kind": "vllm",
     "backend": "vllm",
-    "version": "vllm/vllm-openai:nightly-27a94d1ce4e3fc100c4732439ccec10f8246a804@sha256:7d5128a92db05e6d70661a18f10e40c17cd2d8fcaad9226e170a0d69f822b795"
+    "version": "vllm/vllm-openai:v0.31.0@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3"
   },
   "limits": []
 }
