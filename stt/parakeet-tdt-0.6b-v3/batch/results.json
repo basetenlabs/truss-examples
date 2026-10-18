@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -109,6 +109,70 @@
             {
               "error_rate": 0.084,
               "accuracy": 0.9686310063463281
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T03:13:10.889639Z",
+      "run_id": "run-f02f3c5b8562",
+      "config_digest": "4a7498d9a231629ff817a8db9a83776f9f687344b98b60d635f5414a37ad41e2",
+      "listing": "baseten/parakeet-tdt-0-6b-v3",
+      "deployment_id": "w558x2j",
+      "hardware": {
+        "instance_type": "T4x4x16 - 1 T4 GPU, 16 GiB VRAM, 4 vCPUs, 16 GiB RAM",
+        "gpu_type": "T4",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 410.4041773825884,
+              "e2e_latency_p90_ms": 514.2500223591924,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.4588669605215943,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1029.458973556757,
+              "e2e_latency_p90_ms": 1434.1989159584045,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 13.272775345922556,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.7908032900665514
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9676412614980289
             }
           ]
         }
