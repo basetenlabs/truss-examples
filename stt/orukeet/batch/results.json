@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -114,6 +114,70 @@
             {
               "error_rate": 0.044,
               "accuracy": 0.9768655418333623
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T02:41:16.492381Z",
+      "run_id": "run-57b948f296de",
+      "config_digest": "2e9f422f7824c19006247f642562d7f467f13781e7870b4c44280a1155847266",
+      "listing": "baseten/orukeet",
+      "deployment_id": "wgk9r4j",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 354.04900182038546,
+              "e2e_latency_p90_ms": 538.7071389704943,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.5922683978086245,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 546.5523051097989,
+              "e2e_latency_p90_ms": 1032.6782744377851,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 40.78702193137599,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.8074544243502986
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9756898817345598
             }
           ]
         }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -114,6 +114,70 @@
             {
               "error_rate": 0.048,
               "accuracy": 0.7804537521815009
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T03:21:18.230664Z",
+      "run_id": "run-25e148f1a0e8",
+      "config_digest": "fcfa6c1f3a2de3c23a35bdce957eb064f069c65a9225a7d9939e161e3705fba6",
+      "listing": "baseten/vibevoice-asr",
+      "deployment_id": "woo4gzn",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 4486.9937831535935,
+              "e2e_latency_p90_ms": 6092.213683761656,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.2278439045234675,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 5033.453579992056,
+              "e2e_latency_p90_ms": 6449.297470971942,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.0257670013443954,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.5321919130858227
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.7519710906701709
             }
           ]
         }
