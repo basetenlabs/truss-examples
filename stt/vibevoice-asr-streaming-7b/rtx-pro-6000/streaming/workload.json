@@ -49,7 +49,7 @@
     "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full.json",
     "reason": "No exact imported run; use the established full profile and obtain a baseline."
   },
-  "baseline_status": "candidate",
+  "baseline_status": "accepted",
   "bench": {
     "protocol": "qwen_realtime",
     "served_model": "vibevoice",

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -114,6 +114,70 @@
             {
               "error_rate": 0.08666666666666667,
               "accuracy": 0.9638049655997607
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T01:27:14.665345Z",
+      "run_id": "run-6a6f62163ffb",
+      "config_digest": "d214c7f3c089de4e3a9787f4c0a5440bb7146deb7bb8e436e0703dd9712e6f1f",
+      "listing": "baseten/voxtral-mini-4b-latency",
+      "deployment_id": "w7d0nd0",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 1097.8658143430948,
+              "ttft_p90_ms": 2386.744781397283,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 793.2871012017131,
+              "e2e_latency_p90_ms": 1022.756814956665,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.07278763292707043,
+              "error_rate": 0.015625
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 1095.0109912082553,
+              "ttft_p90_ms": 2463.107111863792,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 812.9603862762451,
+              "e2e_latency_p90_ms": 1044.7979485616088,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.8518721573457569,
+              "error_rate": 0.015625
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.22,
+              "accuracy": 0.5863623335678366
+            },
+            {
+              "error_rate": 0.013333333333333334,
+              "accuracy": 0.9623477297895903
             }
           ]
         }

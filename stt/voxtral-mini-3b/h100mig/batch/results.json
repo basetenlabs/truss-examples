@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -109,6 +109,70 @@
             {
               "error_rate": 0.06,
               "accuracy": 0.9811220889202541
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T00:55:36.856053Z",
+      "run_id": "run-914087efd54a",
+      "config_digest": "eeeb4239b4e0e9bbff64fe2d427fbfbb6ef0d7311a101109330db5b092dbd8f9",
+      "listing": "baseten/voxtral-mini-3b",
+      "deployment_id": "wldj7d2",
+      "hardware": {
+        "instance_type": "H100MIG - 1 H100 MIG GPU, 40 GiB VRAM",
+        "gpu_type": "H100MIG",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 290.2050381526351,
+              "e2e_latency_p90_ms": 346.3820591568947,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.8036475087517987,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 662.5762293115258,
+              "e2e_latency_p90_ms": 1162.0831778272986,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 22.429067576435394,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.7825991133947912
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9694480946123522
             }
           ]
         }

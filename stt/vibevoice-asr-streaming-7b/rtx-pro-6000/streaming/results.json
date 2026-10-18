@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "candidate",
-  "accepted": false,
+  "status": "accepted",
+  "accepted": true,
   "entries": [
     {
       "event": "imported_candidate",
@@ -109,6 +109,70 @@
             {
               "error_rate": 0.08,
               "accuracy": 0.9613309352517986
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-17T01:18:14.869324Z",
+      "run_id": "run-594d571ce73c",
+      "config_digest": "3aacb9fff44d8c0344c1195a0a62e9a1ae1a8753f23f587e8f21b128416d7dea",
+      "listing": "baseten/vibevoice-asr-streaming-7b",
+      "deployment_id": "wpgm0gl",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 2831.3052728772163,
+              "ttft_p90_ms": 3793.5345340520144,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1142.866955138743,
+              "e2e_latency_p90_ms": 1285.1645415648818,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.09257185118872974,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt-stream@c16",
+              "ttft_p50_ms": 3021.670931018889,
+              "ttft_p90_ms": 3867.472965270281,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1157.0674758404493,
+              "e2e_latency_p90_ms": 1311.0424410551786,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.26846123551969,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.006666666666666667,
+              "accuracy": 0.7149587013731468
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9562569213732004
             }
           ]
         }
