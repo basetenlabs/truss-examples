@@ -23,8 +23,8 @@ build_commands: []
 environment_variables:
   PYTORCH_ALLOC_CONF: "expandable_segments:True"
   VLLM_FLASHINFER_MOE_BACKEND: throughput
-  VLLM_USE_FLASHINFER_MOE_FP4: 1
-  VLLM_USE_FLASHINFER_MOE_FP8: 1
+  VLLM_USE_FLASHINFER_MOE_FP4: "1"
+  VLLM_USE_FLASHINFER_MOE_FP8: "1"
 docker_server:
   start_command: >-
     sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
