@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+model_name: "model:nemotron-3.5-parse preset:throughput"
+
+model_metadata:
+  example_model_input:
+    model: nvidia/Nemotron-3.5-Parse
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "</s><s><predict_bbox><predict_classes><output_markdown><predict_text_in_pic>"
+          - type: image_url
+            image_url:
+              url: https://docs.nvidia.com/nemo-framework/user-guide/24.07/_images/nemo-llm-mm-stack.png
+    max_tokens: 8744
+    temperature: 0
+    top_k: 1
+    repetition_penalty: 1.1
+    skip_special_tokens: false
+  repo_id: nvidia/Nemotron-3.5-Parse
+  tags:
+    - openai-compatible
+    - ocr
+    - multimodal
+    - vllm
+
+# NVIDIA's serving contract is vLLM 0.26.0 plus the nemotron-parse package, whose
+# vllm.general_plugins entry point registers RadioMBartPrefixForCausalLM and the bundled
+# one-token MTP proposer. The package source ships in the model repo; install it from the
+# same pinned revision as the weights. The image already has vLLM 0.26.0, torch 2.11.0,
+# torchvision 0.26.0 and huggingface-hub 1.24.0 at the package's pins, so install the
+# package without dependencies and add only the pins the image lacks.
+base_image:
+  image: vllm/vllm-openai:v0.26.0
+
+build_commands:
+  - 'python3 -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id=''nvidia/Nemotron-3.5-Parse'', revision=''e7ea79242a87ea0ad3919b672bfedb429a683206'', local_dir=''/opt/nemotron-parse'', allow_patterns=[''pyproject.toml'', ''LICENSE'', ''THIRD_PARTY_NOTICES.md'', ''TOKENIZER_ATTRIBUTION.md'', ''postprocessing.py'', ''latex2html.py'', ''nemotron_parse/**'', ''vllm_tied_patch/**''])"'
+  - uv pip install --system --no-deps /opt/nemotron-parse
+  - uv pip install --system "transformers==5.14.1" "accelerate==1.12.0" "timm==1.0.22" "einops==0.8.1" "beautifulsoup4==4.13.3"
+
+# Flags are NVIDIA's reference H100 throughput profile (docs/serving.md). 16,384 tokens is
+# the model's full context (max_sequence_length). Prefix caching stays off as in the
+# reference: every request's prefix is its own page image, so there is nothing to reuse.
+docker_server:
+  start_command: >-
+    vllm serve /models/nemotron-3.5-parse
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name nvidia/Nemotron-3.5-Parse
+    --trust-remote-code
+    --dtype bfloat16
+    --distributed-executor-backend uni
+    --tensor-parallel-size 1
+    --max-model-len 16384
+    --max-num-seqs 192
+    --max-num-batched-tokens 16384
+    --no-enable-prefix-caching
+    --limit-mm-per-prompt.image 1
+    --attention-config.flash_attn_version 3
+    --chat-template /models/nemotron-3.5-parse/chat_template.jinja
+
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+# reference/ holds NVIDIA's benchmark predictions and scorer; none of it is needed to serve.
+weights:
+  - source: "hf://nvidia/Nemotron-3.5-Parse@e7ea79242a87ea0ad3919b672bfedb429a683206"
+    mount_location: "/models/nemotron-3.5-parse"
+    ignore_patterns:
+      - "reference/**"
+      - "tests/**"
+
+resources:
+  instance_type: H100
+
+runtime:
+  predict_concurrency: 192
+  health_checks:
+    startup_threshold_seconds: 900
+    restart_threshold_seconds: 600
+    stop_traffic_threshold_seconds: 240
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+
+secrets: {}
+system_packages: []
+requirements: []

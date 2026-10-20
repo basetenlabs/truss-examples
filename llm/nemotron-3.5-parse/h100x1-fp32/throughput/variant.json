@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp32",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/Nemotron-3.5-Parse",
+      "revision": "e7ea79242a87ea0ad3919b672bfedb429a683206"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.26.0",
+    "packages": [
+      "transformers==5.14.1"
+    ]
+  },
+  "limits": []
+}
