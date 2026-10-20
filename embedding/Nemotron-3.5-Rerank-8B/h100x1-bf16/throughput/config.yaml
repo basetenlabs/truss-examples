@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+model_name: "model:Nemotron-3.5-Rerank-8B preset:throughput"
+
+model_metadata:
+  example_model_input:
+    model: nvidia/Nemotron-3.5-Rerank-8B-BF16
+    query: What is NVIDIA NeMo Framework?
+    documents:
+      - NeMo Framework offers comprehensive functionalities for developing both LLMs and Multimodal Models.
+      - A biological foundation model designed to analyze and generate DNA, RNA, and protein sequences.
+  repo_id: nvidia/Nemotron-3.5-Rerank-8B-BF16
+  tags:
+    - reranker
+    - multimodal
+    - vllm
+
+# vLLM 0.32.0 is the version on NVIDIA's model card.
+base_image:
+  image: vllm/vllm-openai:v0.32.0
+
+# --chat-template: vLLM applies a score template only when one is passed explicitly. With
+# it, /v1/rerank renders each text pair through the checkpoint template's query/document
+# branch ("query: ...\n\npassage: ...", no BOS/EOS), the training format. Documents with an
+# image go to /classify as query/document messages: NVIDIA warns that /score and /rerank
+# can mishandle the image placeholder.
+# --pooler-config: mean pooling over the bidirectional tower, then the 1-wide score head;
+# use_activation false returns the raw logit, as on the model card.
+docker_server:
+  start_command: >-
+    vllm serve /models/nemotron-3.5-rerank-8b
+    --host 0.0.0.0
+    --port 8000
+    --served-model-name nvidia/Nemotron-3.5-Rerank-8B-BF16
+    --runner pooling
+    --dtype bfloat16
+    --pooler-config.seq_pooling_type MEAN
+    --pooler-config.use_activation false
+    --compilation-config.compile_mm_encoder true
+    --chat-template /models/nemotron-3.5-rerank-8b/chat_template.jinja
+    --chat-template-content-format openai
+    --limit-mm-per-prompt.image 1
+    --max-model-len 32768
+    --max-num-batched-tokens 65536
+    --max-num-seqs 64
+    --gpu-memory-utilization 0.90
+
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/rerank
+  server_port: 8000
+
+weights:
+  - source: "hf://nvidia/Nemotron-3.5-Rerank-8B-BF16@39aa01525864f736e63f1d5742fc4cf59e754abd"
+    mount_location: "/models/nemotron-3.5-rerank-8b"
+
+resources:
+  instance_type: H100
+
+runtime:
+  predict_concurrency: 64
+  health_checks:
+    startup_threshold_seconds: 900
+    restart_threshold_seconds: 600
+    stop_traffic_threshold_seconds: 240
+
+environment_variables:
+  VLLM_LOGGING_LEVEL: INFO
+
+secrets: {}
+system_packages: []
+requirements: []

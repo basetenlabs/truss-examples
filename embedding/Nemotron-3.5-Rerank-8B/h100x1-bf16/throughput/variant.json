@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/Nemotron-3.5-Rerank-8B-BF16",
+      "revision": "39aa01525864f736e63f1d5742fc4cf59e754abd"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.32.0"
+  },
+  "limits": []
+}
