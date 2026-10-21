@@ -6,7 +6,7 @@
   "definition": null,
   "initial_relative_tolerance": null,
   "noise_band_measured": false,
-  "reason": "Benchmark CI reads workloads for LLM and embedding presets only.",
+  "reason": "Benchmark CI reads workloads for LLM and embedding presets, and for STT and TTS presets enrolled with preset_metadata.py --enroll-benchmark.",
   "bench": {
     "protocol": "systemone"
   }

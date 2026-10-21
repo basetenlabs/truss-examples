@@ -2,15 +2,15 @@
   "schema_version": 1,
   "hardware": {
     "name": "h100",
-    "count": 1
+    "count": 2
   },
   "quantization": {
     "name": "bf16",
     "status": "sourced",
     "evidence": "hf-safetensors-dtypes",
     "checkpoint": {
-      "repository": "baselabs/elephant-1",
-      "revision": "14537f08b0374edf9867ed0a4d2bd8df59e0400c"
+      "repository": "baselabs/mammoth-1",
+      "revision": "8f9f86193e0ba44a3c5439fc59cc6851998bf8ae"
     }
   },
   "engine": {
@@ -18,9 +18,5 @@
     "backend": null,
     "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.9"
   },
-  "limits": [
-    {
-      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
-    }
-  ]
+  "limits": []
 }

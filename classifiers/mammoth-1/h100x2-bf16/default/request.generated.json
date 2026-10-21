@@ -1,0 +1,27 @@
+{
+  "model": "decision-models/baseten-mammoth-27b-latest",
+  "state": "I was billed twice for the same subscription. Please refund the duplicate charge. I can still use my account.",
+  "questions": {
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "billing": "Billing, charges, and refunds",
+        "technical_support": "Account access and technical issues"
+      }
+    },
+    "refund": {
+      "type": "noul",
+      "instructions": "The customer is asking for a refund."
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "How urgent is this request?",
+      "criteria": [
+        "Routine: no service interruption",
+        "Time-sensitive: work is impaired",
+        "Urgent: service is unavailable"
+      ]
+    }
+  }
+}
