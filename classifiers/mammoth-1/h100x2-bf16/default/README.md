@@ -18,6 +18,13 @@ The `2` GPUs run **independent replicas**, not tensor-parallel shards.
 Infinity automatically selects all visible CUDA devices.
 Each GPU must fit a complete copy of the model. More replicas do not make an oversized model fit on one GPU.
 
+### Adjust deployment settings in the UI
+
+After deploying, you can change **autoscaling** and the **instance type** in the
+[Baseten dashboard](https://app.baseten.co). Open the deployed model's settings to
+adjust them; the generated config provides the initial settings. Choose an
+Infinity-compatible GPU with enough memory for a complete model replica.
+
 ### Dynamic FP8 projections
 
 This recipe explicitly enables `--enable-fp8-dynamic`. Infinity quantizes supported
