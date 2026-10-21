@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "status": "out_of_scope",
+  "perf_gate_applicable": false,
+  "profile": null,
+  "definition": null,
+  "initial_relative_tolerance": null,
+  "noise_band_measured": false,
+  "reason": "Benchmark CI reads workloads for LLM and embedding presets only.",
+  "bench": {
+    "protocol": "systemone"
+  }
+}

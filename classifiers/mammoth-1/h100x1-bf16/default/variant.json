@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "baselabs/mammoth-1",
+      "revision": "8f9f86193e0ba44a3c5439fc59cc6851998bf8ae"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel"
+  },
+  "limits": [
+    {
+      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
+    }
+  ]
+}
