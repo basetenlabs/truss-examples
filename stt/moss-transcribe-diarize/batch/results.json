@@ -557,6 +557,437 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-21T19:28:22.625980Z",
+      "run_id": "run-d667169713c8",
+      "config_digest": "ccca0d7b354dff56759334219d878385844c07f840c389b82d881b20e9a78036",
+      "listing": "baseten/moss-transcribe-diarize",
+      "deployment_id": "w7d8ko6",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1294.4920137524605,
+              "e2e_latency_p90_ms": 1675.114925019443,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.7454534892424943,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1470.019935630262,
+              "e2e_latency_p90_ms": 1802.9518611729145,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 18.99647722574838,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-5min",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 7203.616524115205,
+              "e2e_latency_p90_ms": 7549.878339283168,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.13768889650819324,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 25516.66934695095,
+              "e2e_latency_p90_ms": 26081.07766509056,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.2345181987451708,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-30min",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 50253.16843390465,
+              "e2e_latency_p90_ms": 51232.62553103268,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.019934417543285097,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 315626.53099931777,
+              "e2e_latency_p90_ms": 330634.41126886755,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.04955815241257061,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-10s",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1059.320306405425,
+              "e2e_latency_p90_ms": 1215.4766209423542,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.8835029635971451,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1003.8734432309866,
+              "e2e_latency_p90_ms": 1143.5252409428358,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.784480591131743,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1118.2858925312757,
+              "e2e_latency_p90_ms": 1257.8174388036132,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 6.92832856995254,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1167.5887620076537,
+              "e2e_latency_p90_ms": 1346.558921970427,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 12.619268162410359,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1270.7983953878284,
+              "e2e_latency_p90_ms": 1400.3415321931243,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 22.665482194905174,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1573.291196487844,
+              "e2e_latency_p90_ms": 1616.7141925543547,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 34.19191904410429,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-30s",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1792.0460114255548,
+              "e2e_latency_p90_ms": 1903.4328935667872,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.5585868264799362,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1860.3436555713415,
+              "e2e_latency_p90_ms": 1923.0259023606777,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.1183230889966285,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1913.3725706487894,
+              "e2e_latency_p90_ms": 2041.2704581394792,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 4.107139471992817,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1998.1953585520387,
+              "e2e_latency_p90_ms": 2124.9119639396667,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 7.577055113351151,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2262.9442205652595,
+              "e2e_latency_p90_ms": 2412.309327162802,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 13.541373562262903,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2830.6444166228175,
+              "e2e_latency_p90_ms": 2879.378255456686,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 20.254417766049535,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-1min",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2279.5887645334005,
+              "e2e_latency_p90_ms": 2339.953155256808,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.4425598835991089,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2420.320955105126,
+              "e2e_latency_p90_ms": 2493.5171082615852,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.6545723190837185,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2532.974062487483,
+              "e2e_latency_p90_ms": 2780.4197520017624,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.0827126631483295,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 2849.857471883297,
+              "e2e_latency_p90_ms": 3003.433434292674,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 5.478776796035023,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 3502.568676136434,
+              "e2e_latency_p90_ms": 3692.733841948211,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 8.892449395686626,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 64,
+              "scenario": "stt@c64",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 4777.98623777926,
+              "e2e_latency_p90_ms": 4833.184445276856,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 11.55999876934196,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-1hr",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 79684.07835438848,
+              "e2e_latency_p90_ms": 80527.7103614062,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.012491241697599168,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 192669.17319688946,
+              "e2e_latency_p90_ms": 193207.57423806936,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.020728494656097114,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 343831.07341453433,
+              "e2e_latency_p90_ms": 404689.00091480464,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.022259154745984732,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.7469383014569655
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9733902759526938
+            }
+          ]
+        }
+      ]
     }
   ]
 }
