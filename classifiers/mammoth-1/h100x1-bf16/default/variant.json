@@ -16,7 +16,7 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": "pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel"
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.9"
   },
   "limits": [
     {
