@@ -23,6 +23,39 @@
         "protocol": "qwen3_tts_custom_voice",
         "response_format": "pcm"
       }
+    },
+    {
+      "name": "seed-tts-eval",
+      "kind": "quality.tts_seed_eval",
+      "config": {
+        "protocol": "qwen3_tts_custom_voice",
+        "subsets": [
+          "test-en",
+          "test-zh",
+          "test-hard"
+        ],
+        "num_samples": 100,
+        "concurrency": 8,
+        "asr_concurrency": 8,
+        "sim_concurrency": 8,
+        "asr_en": {
+          "url": "https://model-q861px83.api.baseten.co/environments/production/predict",
+          "protocol": "whisper_predict",
+          "model": "openai/whisper-large-v3@06f233fe06e710322aca913c1bc4249a0d71fce1"
+        },
+        "asr_zh": {
+          "url": "https://model-q40v2y1w.api.baseten.co/environments/production/predict",
+          "protocol": "baseten_predict",
+          "model": "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+        },
+        "sim_url": "https://model-3mz08vzw.api.baseten.co/environments/production/predict",
+        "sim_model": "UniSpeech WavLM-large + ECAPA-TDNN (wavlm_large_finetune.pth)",
+        "languages": {
+          "en": "English",
+          "zh": "Chinese"
+        }
+      },
+      "serial": true
     }
   ],
   "initial_relative_tolerance": 0.1,
