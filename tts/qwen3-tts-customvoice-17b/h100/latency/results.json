@@ -1,6 +1,114 @@
 {
   "schema_version": 1,
-  "status": "missing",
-  "accepted": false,
-  "entries": []
+  "status": "accepted",
+  "accepted": true,
+  "entries": [
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-21T20:18:14.383550Z",
+      "run_id": "run-b8c05e527564",
+      "config_digest": "c0124041a8a582475412b2033e89b9f519bcd7462183decda7ae8ab5f4583cea",
+      "listing": "baseten/qwen-3-tts-streaming-customvoice-12hz-1-7b",
+      "deployment_id": "woo544v",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "text=default",
+          "kind": "perf.tts_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "tts-stream@c1",
+              "ttft_p50_ms": 150.8810557425022,
+              "ttft_p90_ms": 156.168713234365,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 555.9001788496971,
+              "e2e_latency_p90_ms": 605.2631735801697,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.928918836638597,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 2,
+              "scenario": "tts-stream@c2",
+              "ttft_p50_ms": 153.73989380896091,
+              "ttft_p90_ms": 165.0897841900587,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 577.9850799590349,
+              "e2e_latency_p90_ms": 613.9072589576244,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.8007478908413594,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "tts-stream@c4",
+              "ttft_p50_ms": 155.81576339900494,
+              "ttft_p90_ms": 167.14814025908709,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 636.6954129189253,
+              "e2e_latency_p90_ms": 754.1269734501839,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.333023433645918,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "tts-stream@c8",
+              "ttft_p50_ms": 163.5519675910473,
+              "ttft_p90_ms": 193.10589414089918,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 776.1572161689401,
+              "e2e_latency_p90_ms": 881.6601783037186,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 5.821330740360954,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "tts-stream@c16",
+              "ttft_p50_ms": 207.5103698298335,
+              "ttft_p90_ms": 283.60404446721077,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1036.421088501811,
+              "e2e_latency_p90_ms": 1267.9871004074812,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 9.25045451819002,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "seed-tts-eval",
+          "kind": "quality.tts_seed_eval",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9892017345399698
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9918865675387415
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9100089580749298
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
