@@ -1,0 +1,59 @@
+model_name: model:elephant-1 preset:default
+description: Text SystemOne decisions with baselabs/elephant-1.
+# Upstream setup.sh runs on this image: its CUDA 12.8 torch 2.8.0 build is kept, and nvcc builds causal-conv1d.
+base_image:
+  image: pytorch/pytorch:2.8.0-cuda12.8-cudnn9-devel
+  python_executable_path: /opt/conda/bin/python
+system_packages:
+- git
+# Pins from the checkpoint's constraints.txt for the qev serving path (no training, eval, or wandb stack).
+# The adapter's server packages match the other classifier presets; Truss caps fastapi below 0.136.
+requirements:
+- torch==2.8.0
+- transformers==5.19.0
+- tokenizers==0.23.3
+- safetensors==0.8.0
+- accelerate==1.15.0
+- huggingface_hub==2.2.0
+- flash-linear-attention==0.5.2
+- fla-core==0.5.2
+- einops==0.8.2
+- pillow==11.0.0
+- fastapi==0.118.0
+- uvicorn==0.54.0
+- pydantic==2.14.1
+- prometheus-client==0.21.1
+# OneJev qev runtime at the commit setup.sh pins; load() applies the checkpoint's serve.patch to it.
+build_commands:
+- git clone https://github.com/OmniJev/OneJev.git /opt/OneJev && git -C /opt/OneJev checkout -q 81ce62f1597c91e46767d4d02d6ac2e18534fe94
+- /opt/conda/bin/python -m pip install --no-cache-dir --no-deps -e /opt/OneJev
+- /opt/conda/bin/python -m pip install --no-cache-dir --no-build-isolation causal-conv1d==1.7.0
+resources:
+  instance_type: H100
+weights:
+- source: hf://baselabs/elephant-1@14537f08b0374edf9867ed0a4d2bd8df59e0400c
+  mount_location: /models/elephant
+  allow_patterns:
+  - '*.json'
+  - '*.safetensors'
+  - '*.jinja'
+  - serve.patch
+environment_variables:
+  HF_HUB_OFFLINE: '1'
+  TOKENIZERS_PARALLELISM: 'false'
+model_metadata:
+  repo_id: baselabs/elephant-1
+  example_model_input:
+    model: elephant-1
+    state: The parcel arrived damaged.
+    questions:
+      damaged:
+        type: noul
+        instructions: Is the parcel damaged?
+docker_server:
+  start_command: python3 -m uvicorn model.server:app --host 0.0.0.0 --port 8000 --app-dir
+    /app
+  server_port: 8000
+  predict_endpoint: /predict
+  readiness_endpoint: /health
+  liveness_endpoint: /health
