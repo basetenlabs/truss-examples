@@ -1,0 +1,29 @@
+# SGLang Omni pipeline config for MOSS on RTX PRO 6000: upstream defaults, with batching and KV
+# settings raised. Long-audio decode on RTX is KV-bandwidth bound (1.8 vs H100's 3.35 TB/s), so an
+# FP8 KV cache halves the bytes read per step; the larger batch, encoder batch and request-build
+# queue keep short clips from starving upstream of decode at concurrency.
+config_cls: MossTranscribeDiarizePipelineConfig
+model_path: /app/checkpoint/model
+stages:
+  - name: asr
+    process: asr
+    factory: sglang_omni.models.moss_transcribe_diarize.stages.create_sglang_moss_transcribe_diarize_executor
+    gpu: 0
+    terminal: true
+    factory_args:
+      device: "cuda:0"
+      max_running_requests: 64
+      encoder_cache_size_bytes: 4294967296
+      encoder_max_batch_size: 16
+      enable_torch_compile: true
+      torch_compile_max_bs: 16
+      request_build_max_workers: 16
+      request_build_max_pending: 128
+      prefill_coalesce_requests: 8
+      prefill_coalesce_wait_ms: 12
+      prefill_coalesce_when_idle: true
+      prefill_coalesce_requires_pending_builds: true
+      prefill_coalesce_after_builds_during_decode: true
+      server_args_overrides:
+        kv_cache_dtype: fp8_e4m3
+        cuda_graph_max_bs: 64

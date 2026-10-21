@@ -29,19 +29,17 @@ build_commands:
 docker_server:
   start_command: >-
     /opt/sglang-omni-v0.1.2/bin/sgl-omni serve
+    --config /app/data/moss_pipeline.yaml
     --model-path /app/checkpoint/model
     --port 8000
-    --max-running-requests 16
-    --cuda-graph-max-bs 16
+    --max-running-requests 64
+    --cuda-graph-max-bs 64
     --mem-fraction-static 0.80
   readiness_endpoint: /health
   liveness_endpoint: /health
   predict_endpoint: /v1/audio/transcriptions
   server_port: 8000
 resources:
-  accelerator: H100
-  cpu: "8"
-  memory: 32Gi
-  use_gpu: true
+  instance_type: RTX-PRO-6000
 runtime:
   predict_concurrency: 128

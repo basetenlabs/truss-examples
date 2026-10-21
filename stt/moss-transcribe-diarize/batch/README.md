@@ -2,7 +2,14 @@
 
 [MOSS-Transcribe-Diarize 0.9B](https://huggingface.co/OpenMOSS-Team/MOSS-Transcribe-Diarize)
 performs multilingual transcription, speaker diarization, and timestamping in one
-pass. This configuration serves it with SGLang Omni on one H100.
+pass. This configuration serves it with SGLang Omni on one RTX PRO 6000.
+
+`data/moss_pipeline.yaml` tunes SGLang Omni for that GPU: an FP8 KV cache (long-audio decode is
+bound by KV reads, and the RTX PRO 6000 has about half the H100's memory bandwidth), up to 64
+running requests, and larger encoder batches and request-build queues so short clips are not
+starved upstream of decode. Measured against the same recipe on one H100 in bf16, with identical
+b10-bench cells: 5-minute clips at 32 concurrent reach 375x real time (H100: 327) and 30-minute
+clips at 16 concurrent 86x (H100: 85), with no errors.
 
 The deployment exposes the OpenAI-compatible transcription endpoint:
 
