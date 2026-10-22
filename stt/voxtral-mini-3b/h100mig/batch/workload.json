@@ -53,7 +53,7 @@
           16
         ],
         "batch_protocol": "openai_transcriptions",
-        "request_timeout_s": 240.0,
+        "request_timeout_s": 600.0,
         "measurement_duration_s": 300.0,
         "warmup_duration_s": 120.0
       },
