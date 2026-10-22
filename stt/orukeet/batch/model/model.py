@@ -79,6 +79,13 @@ if PREDICT_TIMEOUT_SECONDS <= 0:
 
 BATCH_BUCKET_SECONDS = _env_float_list("BATCH_BUCKET_SECONDS", "2,4,8")
 DIRECT_FORWARD = _env_flag("PARAKEET_DIRECT_FORWARD")
+# Run the timestamps path once at startup and fail if NeMo leaves the model in
+# training mode (see _restore_eval_after_transcribe).
+STARTUP_MODE_CHECK = _env_flag("STARTUP_MODE_CHECK", True)
+_TRANSCRIBE_MODE_LOGGED = []
+# id(model) -> (decoding object, deepcopy of cfg.decoding) as warmed at load; see
+# _snapshot_decoding() and Model._ensure_serving_decoding().
+_SERVING_DECODING = {}
 REQUIRE_FULL_CUDA_GRAPH = _env_flag("REQUIRE_FULL_CUDA_GRAPH")
 WARMUP_AUDIO_SECONDS = _env_float_list("WARMUP_AUDIO_SECONDS")
 WARMUP_BATCH_SIZE = int(os.environ.get("WARMUP_BATCH_SIZE", "1"))
@@ -274,6 +281,52 @@ def _clear_exception_frames(exc: BaseException):
         current = current.__cause__ or current.__context__
 
 
+def _snapshot_decoding(model):
+    """Record the warmed decoding object and config that the direct path serves with."""
+    import copy
+
+    decoding = getattr(model, "decoding", None)
+    decoding_cfg = getattr(getattr(model, "cfg", None), "decoding", None)
+    if decoding is not None and decoding_cfg is not None:
+        _SERVING_DECODING[id(model)] = (decoding, copy.deepcopy(decoding_cfg))
+
+
+def _restore_eval_after_transcribe(model):
+    """Put the model back in inference state after NeMo's transcribe().
+
+    NeMo's ASR transcribe() (2.7.3 and 3.0.0) ends with encoder/decoder/joint
+    .unfreeze(partial=True), and unfreeze() calls module.train(), so those modules
+    stay in training mode, dropout on, for every later pass. transcribe() also
+    restores the checkpoint's featurizer dither and pad_to. The direct path depends on
+    eval mode and on the dither=0 / pad_to=0 that load() set, so restore all three.
+
+    transcribe(timestamps=True) also replaces model.decoding; that is undone, and the
+    rebuilt decoder re-warmed, before the next direct-path batch by
+    Model._ensure_serving_decoding(), not here.
+    Returns the modules transcribe() had left in training mode.
+    """
+    left_training = [
+        name
+        for name in ("encoder", "decoder", "joint")
+        if getattr(getattr(model, name, None), "training", False)
+    ]
+    model.eval()
+    if DIRECT_FORWARD:
+        featurizer = getattr(getattr(model, "preprocessor", None), "featurizer", None)
+        if featurizer is not None:
+            if hasattr(featurizer, "dither"):
+                featurizer.dither = 0.0
+            if hasattr(featurizer, "pad_to"):
+                featurizer.pad_to = 0
+    if left_training and not _TRANSCRIBE_MODE_LOGGED:
+        _TRANSCRIBE_MODE_LOGGED.append(True)
+        LOGGER.info(
+            f"NeMo transcribe() left these modules in training mode: {left_training}; "
+            "restored eval mode"
+        )
+    return left_training
+
+
 class Model:
     def __init__(self, **kwargs):
         self._model = None
@@ -380,6 +433,14 @@ class Model:
             )
         self._warmup()
         self._log_decoder_graph_mode("warmup", enforce=REQUIRE_FULL_CUDA_GRAPH)
+        _snapshot_decoding(self._model)
+        if self._long_model is not None:
+            _snapshot_decoding(self._long_model)
+        if STARTUP_MODE_CHECK:
+            self._check_transcribe_mode(self._model)
+            # The check left NeMo's timestamps decoding object in place; rebuild the
+            # load-time one, warm it and enforce REQUIRE_FULL_CUDA_GRAPH (fatal here).
+            self._ensure_serving_decoding(self._model, phase="after_transcribe", startup=True)
         if STAGE_PROBE:
             self._probe_stages(
                 self._model,
@@ -804,20 +865,26 @@ class Model:
     def _infer_waveforms(self, model, waveforms, *, with_timestamps: bool):
         import torch
 
+        direct = DIRECT_FORWARD and not with_timestamps
+        if direct:
+            self._ensure_serving_decoding(model)
         with (
             torch.inference_mode(),
             torch.autocast(device_type="cuda", dtype=torch.float16),
             _cudnn_enabled(self._cudnn_for(model)),
         ):
-            if DIRECT_FORWARD and not with_timestamps:
+            if direct:
                 return self._infer_direct(model, waveforms)
-            return model.transcribe(
-                waveforms,
-                batch_size=len(waveforms),
-                timestamps=with_timestamps,
-                verbose=False,
-                num_workers=0,
-            )
+            try:
+                return model.transcribe(
+                    waveforms,
+                    batch_size=len(waveforms),
+                    timestamps=with_timestamps,
+                    verbose=False,
+                    num_workers=0,
+                )
+            finally:
+                _restore_eval_after_transcribe(model)
 
     @staticmethod
     def _infer_direct(model, waveforms):
@@ -1019,13 +1086,83 @@ class Model:
             f"batched_on_equals_batched_off={on_vs_off}"
         )
 
-    def _warmup(self):
+    def _check_transcribe_mode(self, model):
+        """Run the timestamps path (NeMo transcribe()) once and fail if it leaves the
+        model in training mode. STARTUP_MODE_CHECK=false skips it."""
+        import numpy as np
+
+        rng = np.random.default_rng(0)
+        waveform = (0.05 * rng.standard_normal(2 * AUDIO_SAMPLE_RATE_HZ)).astype(np.float32)
+        self._infer_waveforms(model, [waveform], with_timestamps=True)
+        modes = {
+            name: bool(getattr(getattr(model, name), "training", False))
+            for name in ("encoder", "decoder", "joint")
+            if getattr(model, name, None) is not None
+        }
+        LOGGER.info(f"Parakeet startup mode check after transcribe(timestamps): training={modes}")
+        if any(modes.values()):
+            raise RuntimeError(f"model left in training mode after transcribe(): {modes}")
+
+    def _ensure_serving_decoding(
+        self, model, *, phase: str = "rewarm_after_timestamps", startup: bool = False
+    ) -> bool:
+        """Before a direct-path batch, undo a decoding object left by transcribe().
+
+        transcribe(timestamps=True) sets cfg.decoding.compute_timestamps=True and
+        rebuilds model.decoding; left alone, that object would serve every later
+        direct-path batch, computing timestamps nobody asked for on a decoder whose
+        CUDA graph warmup never captured. This rebuilds the load-time decoding config
+        (snapshotted by _snapshot_decoding()) and, for the short model, re-runs warmup
+        and the REQUIRE_FULL_CUDA_GRAPH check before the batch is served. Rebuilt
+        rather than putting the old object back: on T4 / NeMo 2.7.3 the old object's
+        CUDA-graph decoder hit an illegal memory access (#873 CI, deployment qe9jg55).
+        Same approach as stt/parakeet-tdt-0.6b-v3/batch's _ensure_serving_decoding().
+
+        Runs only on the thread doing GPU work (load(), then _batch_worker), so no
+        request can see a half-restored model. Doing it here rather than after each
+        timestamps batch means a run of timestamps batches rebuilds nothing. A
+        graph-mode failure raises at startup; at runtime it logs an error and serves
+        on, since failing customer requests would not bring the graph back.
+        Returns True when it rebuilt the decoding object.
+        """
+        import copy
+
+        saved = _SERVING_DECODING.get(id(model))
+        if saved is None or model.decoding is saved[0]:
+            return False
+        started_at = time.monotonic()
+        model.change_decoding_strategy(copy.deepcopy(saved[1]), verbose=False)
+        # Set before warmup, whose direct-path passes must not rebuild again.
+        _SERVING_DECODING[id(model)] = (model.decoding, saved[1])
+        if model is self._model:
+            self._warmup(decoder_only=not startup)
+            try:
+                self._log_decoder_graph_mode(phase, enforce=REQUIRE_FULL_CUDA_GRAPH)
+            except RuntimeError:
+                if startup:
+                    raise
+                LOGGER.exception(
+                    "Parakeet decoder rebuilt after a timestamps request is not in "
+                    "full_graph mode; serving continues on it"
+                )
+        LOGGER.info(
+            f"Parakeet decoding restore finished: phase={phase}, "
+            f"model={'short' if model is self._model else 'long'}, "
+            f"elapsed_s={time.monotonic() - started_at:.3f}"
+        )
+        return True
+
+    def _warmup(self, *, decoder_only: bool = False):
+        """Warm the short model. decoder_only, after a decoding rebuild, runs only the
+        longest warmup clip, which sizes the rebuilt decoder's CUDA graph; the encoder
+        is already warm."""
         if not WARMUP_AUDIO_SECONDS:
             return
 
         import numpy as np
 
-        for duration_seconds in WARMUP_AUDIO_SECONDS:
+        durations = (max(WARMUP_AUDIO_SECONDS),) if decoder_only else WARMUP_AUDIO_SECONDS
+        for duration_seconds in durations:
             waveform = np.zeros(
                 round(duration_seconds * AUDIO_SAMPLE_RATE_HZ), dtype=np.float32
             )
@@ -1035,7 +1172,7 @@ class Model:
                 with_timestamps=False,
             )
         LOGGER.info(
-            f"Parakeet warmup complete: durations={WARMUP_AUDIO_SECONDS}, "
+            f"Parakeet warmup complete: durations={durations}, "
             f"batch_size={WARMUP_BATCH_SIZE}"
         )
 

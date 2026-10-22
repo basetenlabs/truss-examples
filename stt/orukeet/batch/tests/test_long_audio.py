@@ -507,6 +507,9 @@ class LoadableModel:
 
 def _run_load(monkeypatch, module):
     _fake_load_stack(monkeypatch, module)
+    # The startup transcribe() mode check adds one timestamps pass; these tests count
+    # load()'s capacity passes, and test_transcribe_mode.py covers the check.
+    monkeypatch.setattr(module, "STARTUP_MODE_CHECK", False)
     restored = []
 
     def restore():
