@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/Nemotron-3.5-Embed-8B-BF16",
+      "revision": "781e779ee4ca9c2d2a4f38321993556baeab49a1"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.9"
+  },
+  "limits": [
+    {
+      "reason": "8192-token batch budget with text auto-truncation; multimodal inputs must fit the processor limits."
+    },
+    {
+      "reason": "Text queries; text, image, or combined text/image documents. Audio and video are not included."
+    }
+  ]
+}

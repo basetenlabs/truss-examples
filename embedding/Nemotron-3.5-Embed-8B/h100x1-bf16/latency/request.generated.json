@@ -1,0 +1,19 @@
+{
+  "model": "nvidia/Nemotron-3.5-Embed-8B-BF16",
+  "input": [
+    {
+      "role": "system",
+      "content": "query:"
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is NVIDIA NeMo Framework?"
+        }
+      ]
+    }
+  ],
+  "encoding_format": "float"
+}
