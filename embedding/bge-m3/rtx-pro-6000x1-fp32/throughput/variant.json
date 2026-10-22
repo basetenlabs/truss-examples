@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp32",
+    "status": "sourced",
+    "evidence": "hf-pytorch-storage",
+    "checkpoint": {
+      "repository": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.10"
+  },
+  "limits": [
+    {
+      "reason": "Dense 1024-dimensional embeddings only; sparse lexical and ColBERT outputs are not exposed."
+    },
+    {
+      "reason": "The documented per-input limit is 8192 tokens; the 16384-token configuration is a batch budget."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "Qwen/Qwen3-VL-Embedding-8B",
+      "revision": "2c4565515e0f265c6511776e7193b22c0968ddc7"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.10"
+  },
+  "limits": [
+    {
+      "reason": "Text and still-image embeddings only; no audio, video, PDF ingestion, or multimodal reranking API."
+    },
+    {
+      "reason": "16384 batch tokens including vision tokens; full model-card 32K context is not enabled by this preset."
+    }
+  ]
+}

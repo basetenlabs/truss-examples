@@ -1,0 +1,8 @@
+{
+  "model": "Qwen/Qwen3-VL-Embedding-8B",
+  "input": [
+    "A mountain lake surrounded by pine trees.",
+    "An alpine lake reflecting the surrounding forest."
+  ],
+  "encoding_format": "float"
+}

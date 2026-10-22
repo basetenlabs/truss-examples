@@ -1,0 +1,8 @@
+{
+  "model": "BAAI/bge-m3",
+  "input": [
+    "What is semantic search?",
+    "Semantic search retrieves relevant documents by meaning rather than exact keywords."
+  ],
+  "encoding_format": "float"
+}
