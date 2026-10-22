@@ -7,7 +7,7 @@ using Infinity v3. Generate text embedding vectors for semantic search, retrieva
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.10`**.
+- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.11-amd64`**.
 - Weights mounted at **`/models/all-minilm-l12-v2`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/embeddings`** API, with `/health` readiness/liveness probes.
@@ -48,7 +48,7 @@ mean pooling and L2 normalization. No query/document instruction prefix is neede
 The public Apache-2.0 checkpoint requires no Hugging Face token.
 
 The pinned checkpoint stores FP32 weights; this preset uses BF16 CUDA compute on
-one L4 (`L4:4x16` is a single-GPU instance specification). Infinity alpha.10 loads
+one L4 (`L4:4x16` is a single-GPU instance specification). Infinity loads
 the safetensors checkpoint; redundant PyTorch, ONNX, OpenVINO, and Rust exports
 are excluded from the weight mount. No dynamic FP8 is enabled.
 
@@ -464,7 +464,7 @@ model_metadata:
   - sentence-transformers
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.10
+  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.11-amd64
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:
