@@ -31,6 +31,7 @@
         "num_samples": 64,
         "concurrency_levels": [
           1,
+          4,
           16
         ],
         "batch_protocol": "baseten_predict",
@@ -52,9 +53,7 @@
           1,
           4,
           8,
-          16,
-          32,
-          64
+          16
         ],
         "batch_protocol": "baseten_predict",
         "request_timeout_s": 120.0,
@@ -75,9 +74,7 @@
           1,
           4,
           8,
-          16,
-          32,
-          64
+          16
         ],
         "batch_protocol": "baseten_predict",
         "request_timeout_s": 120.0,
@@ -98,9 +95,7 @@
           1,
           4,
           8,
-          16,
-          32,
-          64
+          16
         ],
         "batch_protocol": "baseten_predict",
         "request_timeout_s": 120.0,
