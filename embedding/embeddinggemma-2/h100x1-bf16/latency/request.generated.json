@@ -1,0 +1,8 @@
+{
+  "model": "google/embeddinggemma-2",
+  "input": [
+    "task: search result | query: What is semantic search?",
+    "title: Semantic search | text: Semantic search retrieves relevant documents by meaning rather than exact keywords."
+  ],
+  "encoding_format": "float"
+}
