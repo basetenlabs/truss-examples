@@ -31,6 +31,7 @@
         "num_samples": 64,
         "concurrency_levels": [
           1,
+          4,
           16
         ],
         "batch_protocol": "openai_transcriptions",
@@ -50,7 +51,7 @@
         "num_samples": 32,
         "concurrency_levels": [
           1,
-          16
+          4
         ],
         "batch_protocol": "openai_transcriptions",
         "request_timeout_s": 600.0,
