@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "standard_profile",
   "perf_gate_applicable": true,
-  "profile": "full",
+  "profile": "full-batch-length-short",
   "definition": [
     {
       "name": "data=pipecat",
@@ -16,9 +16,98 @@
           1,
           16
         ],
-        "warmup_request_count": 2,
-        "batch_protocol": "baseten_predict"
+        "batch_protocol": "baseten_predict",
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
       }
+    },
+    {
+      "name": "data=podcast-5min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-5min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          16
+        ],
+        "batch_protocol": "baseten_predict",
+        "request_timeout_s": 180.0,
+        "measurement_duration_s": 240.0,
+        "warmup_duration_s": 60.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-10s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-10s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "baseten_predict",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-30s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-30s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "baseten_predict",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-1min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-1min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "baseten_predict",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
     },
     {
       "name": "quality",
@@ -42,12 +131,15 @@
   "initial_relative_tolerance": 0.1,
   "noise_band_measured": false,
   "source": {
-    "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full.json",
+    "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full-batch-length-short.json",
     "reason": "No exact imported run; use the established full profile and obtain a baseline."
   },
   "baseline_status": "accepted",
   "bench": {
     "protocol": "baseten_predict",
+    "profile_overrides": {
+      "full": "full-batch-length-short"
+    },
     "capacity_concurrency": 16
   }
 }
