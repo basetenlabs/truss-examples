@@ -1,0 +1,18 @@
+{
+  "model": "clef",
+  "state": "The parcel arrived damaged. Please send a replacement.",
+  "questions": {
+    "damaged": {
+      "type": "noul",
+      "instructions": "The parcel arrived damaged."
+    },
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "returns": "Damaged items, returns, and replacements",
+        "billing": "Payments, invoices, and duplicate charges"
+      }
+    }
+  }
+}
