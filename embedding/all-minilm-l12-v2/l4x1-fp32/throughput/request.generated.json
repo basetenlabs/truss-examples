@@ -1,0 +1,8 @@
+{
+  "model": "sentence-transformers/all-MiniLM-L12-v2",
+  "input": [
+    "What is semantic search?",
+    "Semantic search retrieves relevant documents by meaning rather than exact keywords."
+  ],
+  "encoding_format": "float"
+}

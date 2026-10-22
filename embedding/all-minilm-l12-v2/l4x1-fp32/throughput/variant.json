@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "l4",
+    "count": 1
+  },
+  "quantization": {
+    "name": "fp32",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "sentence-transformers/all-MiniLM-L12-v2",
+      "revision": "a50ef00143b4d5391434df20ae11632588ac25be"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.10"
+  },
+  "limits": [
+    {
+      "reason": "128-token serving limit from sentence_bert_config.json; automatic truncation is enabled. The 8192-token setting is a batch budget."
+    },
+    {
+      "reason": "Text inputs only; 384-dimensional embeddings."
+    }
+  ]
+}
