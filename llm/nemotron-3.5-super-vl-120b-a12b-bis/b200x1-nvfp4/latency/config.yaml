@@ -1,0 +1,233 @@
+# Public-artifact port of the Model API production config for
+# nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B. Every bis_llm
+# field is kept verbatim except those that referenced a private artifact: the
+# checkpoint now mounts NVIDIA's public, ungated repo (no HF token needed), the
+# mount and model paths drop the private early-access mirror's name, and the
+# internal alias served name is removed. The worker image is the production
+# BIS image. BIS-LLM deployments require a Business or Startup workspace.
+# model_name follows the repo convention and resources use instance_type.
+model_name: "model:nemotron-3.5-super-vl-120b-a12b-bis preset:latency"
+model_metadata:
+  description: >-
+    NVIDIA Nemotron 3.5 Super VL 120B-A12B reasoning model (NVFP4), served with
+    BIS-LLM, an SGLang worker and Dynamo cache-aware routing on one B200, with
+    MTP speculative decoding and image and video input.
+  repo_id: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+  tags:
+    - openai-compatible
+    - multimodal
+  example_model_input:
+    model: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+    messages:
+      - role: user
+        content: "Hello, what can you do?"
+    stream: true
+    max_tokens: 512
+    temperature: 1.0
+    top_p: 0.95
+weights:
+  # NVIDIA's public, ungated checkpoint (openmdw-1.1); no auth secret.
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4@da5b2650a835292c678994a1fa3fb653250fb508"
+    mount_location: /models/nemotron-3.5-super-vl-nvfp4
+bis_llm:
+  config:
+    services:
+      router:
+        env:
+        - name: DYN_LOG
+          value: info,dynamo_kv_router::indexer=error
+        - name: DYN_ROUTER_MODEL_CARD_WAIT_SECS
+          value: '7200'
+        - name: DYN_ROUTER_KV_BLOCK_SIZE
+          value: '64'
+        - name: B10_KV_EVENT_BLOCK_SIZE
+          value: '64'
+        kind: router
+        replicas: 2
+        resources:
+          limits:
+            cpu: '4'
+            memory: 8Gi
+          requests:
+            cpu: '4'
+            memory: 8Gi
+      worker:
+        env:
+        - name: DYN_TCP_MAX_MESSAGE_SIZE
+          value: '891289600'
+        - name: B10_KV_EVENT_BLOCK_SIZE
+          value: '64'
+        - name: SGLANG_ENABLE_TP_MEMORY_INBALANCE_CHECK
+          value: '0'
+        - name: SGLANG_DECODE_GRAPH_MAX_SEQLEN
+          value: '1048576'
+        - name: SGLANG_OPT_MAMBA_SKIP_DECODE_LOCK
+          value: '1'
+        - name: SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN
+          value: '1'
+        - name: SGLANG_CACHE_DIR
+          value: /root/.cache
+        - name: XDG_CACHE_HOME
+          value: /root/.cache
+        - name: CUDA_CACHE_MAXSIZE
+          value: '1073741824'
+        - name: ADMIN_HOST
+          value: 127.0.0.1
+        - name: NCCL_DEBUG
+          value: INFO
+        - name: DYN_LOG
+          value: info,dynamo_kv_router::indexer=error
+        - name: HF_HOME
+          value: /root/.cache
+        - name: HF_HUB_OFFLINE
+          value: '1'
+        kind: worker
+        replicas: 1
+        resources:
+          limits:
+            nvidia.com/gpu: '1'
+          requests:
+            nvidia.com/gpu: '1'
+        tolerations:
+        - key: nvidia.com/gpu
+          value: present
+          effect: NoSchedule
+          operator: Equal
+      frontend:
+        env:
+        - name: DYN_TCP_MAX_MESSAGE_SIZE
+          value: '2684354560'
+        - name: DYN_REQUEST_PLANE_CODEC
+          value: msgpack
+        - name: DYNAMO_ALLOW_BYTES_BETWEEN_COMPONENTS
+          value: 'true'
+        - name: ROUTE_AND_WORKER_GENERATION_V2
+          value: '1'
+        - name: DYN_HTTP_BODY_LIMIT_MB
+          value: '128'
+        - name: DYN_ALLOW_LONG_MAX_MODEL_LEN
+          value: '1'
+        - name: DYN_HTTP_BACKEND_STREAM_TIMEOUT_SECS
+          value: '900'
+        - name: FRONTEND_MAX_MEMORY_USAGE_GB
+          value: '7'
+        - name: HF_HOME
+          value: /root/.cache
+        - name: HF_HUB_OFFLINE
+          value: '1'
+        - name: B10_KV_EVENT_BLOCK_SIZE
+          value: '64'
+        kind: frontend
+        replicas: 1
+        resources:
+          limits:
+            cpu: '4'
+            memory: 32Gi
+          requests:
+            cpu: '4'
+            memory: 16Gi
+    model_name: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+    model_path: /models/nemotron-3.5-super-vl-nvfp4
+    gpuTRTImage: baseten/dynamo-cache-aware-routing:akorte-nem35-video-master-1018--sglang-a6a8c56015b8dbca4147634fa9ef22c7c836de05-4f8d89760-f4071312d9@sha256:015e73d98cb07d745677ecc6cc62c3fbe9b12d4fa825b929c8528e7c75cceb1c
+    engine_config:
+      host: 0.0.0.0
+      dtype: auto
+      page_size: 64
+      hicache_size: 180
+      quantization: modelopt_fp4
+      context_length: 1048576
+      kv_cache_dtype: fp8_e4m3
+      grammar_backend: xgrammar
+      mamba_ssm_dtype: float32
+      reasoning_parser: nemotron_3
+      tool_call_parser: qwen3_coder
+      attention_backend: trtllm_mha
+      trust_remote_code: true
+      max_prefill_tokens: 32768
+      moe_runner_backend: flashinfer_trtllm
+      kv_event_block_size: 64
+      mem_fraction_static: 0.85
+      chunked_prefill_size: 32768
+      mamba_track_interval: 256
+      max_mamba_cache_size: 96
+      max_running_requests: 64
+      min_free_slots_delay: 2
+      speculative_algorithm: NEXTN
+      speculative_num_steps: 5
+      speculative_eagle_topk: 1
+      cuda_graph_max_bs_decode: 64
+      enable_hierarchical_cache: true
+      mamba_max_states_per_path: 4
+      mamba_radix_cache_strategy: extra_buffer_lazy
+      speculative_num_draft_tokens: 6
+      weight_loader_drop_cache_after_load: true
+    chat_processor: default
+    checkpoint_name: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+    reasoning_parser: nemotron3
+    reasoning_policy:
+      allowed:
+      - none
+      - minimal
+      - low
+      - medium
+      - high
+      - xhigh
+      - max
+      default: none
+      enabled_default: high
+    tool_call_parser: qwen3_coder
+    arguments_as_json: true
+    b10_vision_config:
+      enabled: true
+      max_images: 96
+      max_videos: 12
+      encoding_mode: frontend_plan_worker_exec
+      max_total_media_size_mb: 320
+      supported_multi_modal_types:
+      - image_url
+      - video_url
+    served_model_name: nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4
+    b10_routing_config:
+      durable_kv_events: false
+      enable_worker_tree: true
+      rate_limit_enabled: false
+      router_temperature: 0.15
+      router_active_replicas: 1
+      router_queue_threshold: null
+      router_track_residency: true
+      router_overlap_score_weight: 3.55
+      router_decode_token_discount: 0.8
+      router_prefill_token_discount: 0.2
+      router_queue_by_incoming_missing_isl: null
+    skip_health_warmup: true
+    enable_attention_dp: false
+    split_special_tokens: true
+    tensor_parallel_size: 1
+    b10_autoscaling_config:
+      max_replicas: 1
+      min_replicas: 1
+      additional_autoscaling_config:
+        metrics:
+        - name: in_flight_tokens
+          target: 16000
+    tokenizer_limit_length: 1048576
+    default_sampling_params:
+      top_p: 0.95
+      max_tokens: 16384
+      temperature: 1
+    alias_served_model_names:
+    - nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B
+    - nvidia/nvidia-nemotron-3.5-super-vl-120b-a12b
+    - nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4-sglang
+    default_thinking_enabled: false
+    model_path_for_tokenizer: /models/nemotron-3.5-super-vl-nvfp4
+    enable_structural_tool_choice: false
+    tokenizer_max_new_tokens_limit: 1048576
+    default_sampling_params_thinking:
+      top_p: 0.95
+      max_tokens: 16384
+      temperature: 1
+  version: 0.0.1-20261001221953-8f302211
+resources:
+  instance_type: B200
+environment_variables: {}

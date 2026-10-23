@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 1
+  },
+  "quantization": {
+    "name": "nvfp4",
+    "status": "sourced",
+    "evidence": "checkpoint-name",
+    "weight_formats": [
+      "nvfp4",
+      "fp8"
+    ],
+    "checkpoint": {
+      "repository": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4",
+      "revision": "da5b2650a835292c678994a1fa3fb653250fb508"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": null,
+    "version": "0.0.1-20261001221953-8f302211"
+  },
+  "limits": [
+    {
+      "capability": "context_length",
+      "value": 1048576,
+      "reason": "Configured context ceiling matches the Model API production config and the checkpoint's 1M backbone and tokenizer window. Exact-ceiling KV-cache capacity and quality on this public-artifact port remain unvalidated."
+    },
+    {
+      "capability": "images_per_prompt",
+      "value": 96,
+      "reason": "BIS vision configuration caps image inputs at 96 per request, matching production; PR smoke checks are text-only."
+    },
+    {
+      "capability": "videos_per_prompt",
+      "value": 12,
+      "reason": "BIS vision configuration caps video inputs at 12 per request, matching production; PR smoke checks are text-only."
+    }
+  ]
+}
