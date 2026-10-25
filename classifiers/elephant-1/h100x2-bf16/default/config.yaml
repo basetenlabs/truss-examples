@@ -38,7 +38,7 @@ model_metadata:
         - 'Urgent: service is unavailable'
   repo_id: baselabs/elephant-1
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.11-amd64
+  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:

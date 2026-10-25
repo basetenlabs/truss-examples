@@ -7,7 +7,7 @@ using Infinity v3. Generate text embedding vectors for semantic search, retrieva
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.11-amd64`**.
+- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17`**.
 - Weights mounted at **`/models/qwen3-vl-embedding-8b`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/embeddings`** API, with `/health` readiness/liveness probes.
@@ -445,7 +445,7 @@ model_metadata:
   - multimodal
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.11-amd64
+  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:

@@ -7,7 +7,7 @@ using Infinity v3. Answer typed questions about a shared state through SystemOne
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.16`**.
+- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17`**.
 - Weights mounted at **`/models/mammoth-1`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/systemone`** API, with `/health` readiness/liveness probes.
@@ -462,7 +462,7 @@ model_metadata:
         - 'Urgent: service is unavailable'
   repo_id: baselabs/mammoth-1
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.16
+  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:

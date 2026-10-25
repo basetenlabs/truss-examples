@@ -16,7 +16,7 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.16"
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17"
   },
   "limits": []
 }
