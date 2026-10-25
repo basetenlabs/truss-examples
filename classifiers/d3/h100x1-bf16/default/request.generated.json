@@ -1,0 +1,18 @@
+{
+  "model": "d3",
+  "state": "The parcel arrived damaged. Please send a replacement today.",
+  "questions": {
+    "route": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {
+        "delivery": "Damaged or missing parcels",
+        "billing": "Payments and invoices"
+      }
+    },
+    "urgent": {
+      "type": "noul",
+      "instructions": "Does the customer request action today?"
+    }
+  }
+}

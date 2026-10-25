@@ -16,7 +16,11 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": null
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.19"
   },
-  "limits": []
+  "limits": [
+    {
+      "reason": "Text and JSON state requests are exercised; optional images and videos follow upstream d3-mini's media contract with its own size and frame budgets, and decision requests may reject oversized prompts."
+    }
+  ]
 }
