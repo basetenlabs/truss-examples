@@ -1,0 +1,26 @@
+{
+  "model": "clef-flash",
+  "state": "Our export job failed twice after the schema migration. Please check the logs and tell me who should own the follow-up.",
+  "questions": {
+    "incident": {
+      "type": "noul",
+      "instructions": "The user reports a failed export job after a schema migration."
+    },
+    "owner": {
+      "type": "choice",
+      "instructions": "Which team should own the follow-up?",
+      "criteria": {
+        "platform": "Schema migrations, ingestion, and export pipelines",
+        "billing": "Payments, invoices, and duplicate charges"
+      }
+    },
+    "severity": {
+      "type": "score",
+      "instructions": "How severe is the reported failure?",
+      "criteria": [
+        "Cosmetic or trivially recoverable",
+        "Blocking customer work with no workaround"
+      ]
+    }
+  }
+}

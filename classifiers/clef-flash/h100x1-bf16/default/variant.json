@@ -16,11 +16,11 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": null
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.19"
   },
   "limits": [
     {
-      "reason": "This preset accepts text/JSON only; image and video requests are rejected."
+      "reason": "This recipe demonstrates text SystemOne requests. The 16384-token budget includes the state and formatted questions; decision adapters reject oversized prompts."
     }
   ]
 }
