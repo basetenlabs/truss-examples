@@ -28,7 +28,7 @@ model_metadata:
   - sentence-transformers
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.17
+  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.0-alpha.19
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:
