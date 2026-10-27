@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "hardware": {
-    "name": "h100",
-    "count": 2
+    "name": "b200",
+    "count": 4
   },
   "quantization": {
     "name": "mxfp4",
@@ -16,7 +16,7 @@
   "engine": {
     "kind": "bis",
     "backend": "trt-llm",
-    "version": "0.0.1-20260804033840-1d68536d"
+    "version": "0.0.1-20261001221953-8f302211"
   },
   "limits": []
 }
