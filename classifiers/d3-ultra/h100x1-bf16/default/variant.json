@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "vllm-sr/d3-ultra",
+      "revision": "52ba9e7a00402f9560c7fba8c039608e7ddee7fb"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3"
+  },
+  "limits": [
+    {
+      "reason": "Text and JSON state requests are exercised; optional images and videos follow upstream d3-ultra's media contract with its own size and frame budgets, and decision requests may reject oversized prompts."
+    }
+  ]
+}
