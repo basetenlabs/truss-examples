@@ -1,0 +1,98 @@
+model_name: "model:nemotron-3.5-transcribe-30b-a4b preset:batch"
+
+model_metadata:
+  description: >-
+    NVIDIA Nemotron-3.5-Transcribe-30B-A4B (BF16): a Speech-Augmented
+    Language Model (hybrid Mamba-2/Transformer MoE decoder, ASR and Sortformer
+    speaker encoders, CTC timestamp head). Offline/batch transcription on one
+    RTX PRO 6000 with vLLM 0.28.0 and NeMo Speech's nemo_speechlm plugin,
+    using NVIDIA's model-card serving flags: MTP speculative decoding
+    (8 tokens), FP32 Mamba SSM cache, 65,536-token window (audio up to about
+    1 hour per request).
+  repo_id: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
+  example_model_input:
+    model: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
+    messages:
+      - role: user
+        content:
+          - type: text
+            text: "Audio transcription. Language: as spoken. Wording: verbatim, including fillers and repetitions. Formatting: punctuation and capitalization. Output: transcript only."
+          - type: audio_url
+            audio_url:
+              url: https://raw.githubusercontent.com/ggerganov/whisper.cpp/b0a11594aec50892a02cd8d129eee2dfe93a8bb8/samples/jfk.wav
+    max_tokens: 1024
+    temperature: 0
+    chat_template_kwargs:
+      enable_thinking: false
+  tags:
+    - audio
+    - transcription
+    - speech-to-text
+    - openai-compatible
+    - vllm
+    - nemo
+    - nemotron
+    - mtp
+    - rtx-pro-6000
+
+# A Baseten Training deployment replaces this mount with its merged checkpoint
+# and repoints BASETEN_MODEL_PATH.
+weights:
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B@a188fff16c4f129a046788c2ad69e6198079a102"
+    mount_location: "/app/checkpoint/model"
+
+base_image:
+  # vllm/vllm-openai:v0.28.0; supplies CUDA 13.0 and nvcc for JIT. Serving runs
+  # from the Python 3.13 venv built below.
+  image: "vllm/vllm-openai:v0.28.0@sha256:61fc8a896b0a4fbbbdc063bc4b0dbc25ce98e02b5050c24aeb7830ac02039b14"
+
+system_packages:
+  - git
+
+# The model card's locked install: NeMo Speech 16b0ff2 synced with the asr and
+# vllm extras (vLLM 0.28.0, Torch 2.13.0), Speech itself editable.
+build_commands:
+  # FlashInfer's MoE JIT on Blackwell needs nvrtc.h, which the image lacks.
+  - apt-get update && apt-get install -y --no-install-recommends "cuda-nvrtc-dev-$(/usr/local/cuda/bin/nvcc --version | sed -n 's/.*release \([0-9]*\)\.\([0-9]*\).*/\1-\2/p')" && rm -rf /var/lib/apt/lists/*
+  - pip install --no-cache-dir uv==0.13.1
+  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git 16b0ff2584c6355c53cbd6c28f0f431a76b24956 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
+  - uv venv --python 3.13 /opt/nemo-speech/venv
+  - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
+  # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
+  # PyAV (without it m4a/mp3 return HTTP 500).
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.1'
+
+docker_server:
+  # start.sh ignores the argument; it exposes the served model name to b10-bench.
+  start_command: /bin/bash /app/data/start.sh --served-model-name nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+resources:
+  instance_type: RTX-PRO-6000
+
+runtime:
+  # Matches --max-num-seqs in start.sh.
+  predict_concurrency: 192
+  streaming_read_timeout: 3600
+  health_checks:
+    # A cold JIT cache adds up to ~20 silent minutes of warmup.
+    startup_threshold_seconds: 3000
+    restart_threshold_seconds: 900
+    stop_traffic_threshold_seconds: 120
+
+environment_variables:
+  # Checkpoint directory start.sh serves; Training overrides it.
+  BASETEN_MODEL_PATH: "/app/checkpoint/model"
+  VLLM_PLUGINS: "nemo_speechlm"
+  # fork fails CUDA driver initialization.
+  VLLM_WORKER_MULTIPROC_METHOD: "spawn"
+  # Model card: audio up to one hour per request.
+  VLLM_MAX_AUDIO_DECODE_DURATION_S: "3600"
+  # Not in the card: the 256 MiB default rejects 30-minute-plus 44.1 kHz stereo files.
+  VLLM_MAX_AUDIO_DECODE_BYTES: "1610612736"
+  # Not in the card: an hour-long audio_url can exceed the default fetch timeout.
+  VLLM_AUDIO_FETCH_TIMEOUT: "120"
