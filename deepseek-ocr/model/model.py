@@ -12,6 +12,7 @@ from config import MODEL_PATH, PROMPT, CROP_MODE
 # Register the custom model only if import succeeded
 ModelRegistry.register_model("DeepseekOCRForCausalLM", DeepseekOCRForCausalLM)
 
+from ast import literal_eval
 import asyncio
 import re
 import os
@@ -114,7 +115,7 @@ class Model:
         """Extract coordinates and labels from reference text"""
         try:
             label_type = ref_text[1]
-            cor_list = eval(ref_text[2])
+            cor_list = literal_eval(ref_text[2])
         except Exception as e:
             print(f"Error extracting coordinates: {e}")
             return None
