@@ -10,7 +10,7 @@
     "evidence": "hf-safetensors-dtypes",
     "checkpoint": {
       "repository": "baselabs/elephant-1",
-      "revision": "14537f08b0374edf9867ed0a4d2bd8df59e0400c"
+      "revision": "b3f8a93462fb1051a9de031e94a7ff380e254072"
     }
   },
   "engine": {

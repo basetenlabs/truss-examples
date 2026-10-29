@@ -39,7 +39,7 @@ from this runtime option. Validate decision quality for your inputs before use.
 | Setting | Value |
 | --- | --- |
 | Checkpoint | `baselabs/mammoth-1` |
-| Revision | `8f9f86193e0ba44a3c5439fc59cc6851998bf8ae` |
+| Revision | `61cec44c281c693992e3d6ebeb44dd3402dfa186` |
 | Function | `decision_model` |
 | Hardware | `H100:2` |
 | Weight precision | `bf16` |
@@ -466,7 +466,7 @@ base_image:
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:
-- source: hf://baselabs/mammoth-1@8f9f86193e0ba44a3c5439fc59cc6851998bf8ae
+- source: hf://baselabs/mammoth-1@61cec44c281c693992e3d6ebeb44dd3402dfa186
   mount_location: /models/mammoth-1
   ignore_patterns:
   - '*.bin'

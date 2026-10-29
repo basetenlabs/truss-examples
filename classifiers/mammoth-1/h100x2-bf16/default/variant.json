@@ -10,7 +10,7 @@
     "evidence": "hf-safetensors-dtypes",
     "checkpoint": {
       "repository": "baselabs/mammoth-1",
-      "revision": "8f9f86193e0ba44a3c5439fc59cc6851998bf8ae"
+      "revision": "61cec44c281c693992e3d6ebeb44dd3402dfa186"
     }
   },
   "engine": {

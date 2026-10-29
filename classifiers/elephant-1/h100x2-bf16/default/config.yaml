@@ -42,7 +42,7 @@ base_image:
 environment_variables:
   INFINITY_BILLING_HEADERS: X-Baseten
 weights:
-- source: hf://baselabs/elephant-1@14537f08b0374edf9867ed0a4d2bd8df59e0400c
+- source: hf://baselabs/elephant-1@b3f8a93462fb1051a9de031e94a7ff380e254072
   mount_location: /models/elephant-1
   ignore_patterns:
   - '*.bin'
