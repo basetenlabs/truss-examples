@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 4
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "baselabs/joey-1",
+      "revision": "9efbe485efbed9598dfca5294cbbe8da00e21908"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.4"
+  },
+  "limits": []
+}

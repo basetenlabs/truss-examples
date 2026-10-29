@@ -1,0 +1,28 @@
+{
+  "model": "decision-models/baseten-joey-latest",
+  "state": "I was charged twice this month, please refund one of them.",
+  "questions": {
+    "refund": {
+      "type": "noul",
+      "instructions": "Is the customer asking for a refund?"
+    },
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should handle this?",
+      "criteria": {
+        "billing": "Charges, refunds, invoices",
+        "technical": "App or site faults",
+        "fraud": "Suspected unauthorised use"
+      }
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "How urgent is this?",
+      "criteria": [
+        "Can wait",
+        "Today",
+        "Blocking the customer now"
+      ]
+    }
+  }
+}
