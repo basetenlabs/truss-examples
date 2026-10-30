@@ -21,6 +21,7 @@ environment_variables:
   SGLANG_WARMUP_SIZE_ON_INIT: "1024x1024"
 
 model_metadata:
+  repo_id: black-forest-labs/FLUX.2-dev
   output_media:
     - json_path: "data[*].b64_json"
       media_type: "image/png"

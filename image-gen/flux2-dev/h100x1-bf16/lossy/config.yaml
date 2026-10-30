@@ -26,6 +26,7 @@ environment_variables:
   SGLANG_CACHE_DIT_BN: "0"
 
 model_metadata:
+  repo_id: black-forest-labs/FLUX.2-dev
   output_media:
     - json_path: "data[*].b64_json"
       media_type: "image/png"
