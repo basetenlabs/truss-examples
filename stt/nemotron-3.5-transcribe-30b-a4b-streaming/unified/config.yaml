@@ -1,0 +1,141 @@
+model_name: "model:nemotron-3.5-transcribe-30b-a4b-streaming preset:unified"
+# Nemotron 3.5 Transcribe over baseten-stt's unified WebSocket protocol. Built from the
+# Qwen3-ASR unified preset (stt/qwen3-asr-1.7b-streaming/unified): baseten-stt owns the wire
+# protocol, turn control, partials, the session ceiling, /metrics and the turn timers; the
+# nemotron_stt backend only turns a turn's audio into text.
+#
+# One deliberate difference from that template: the engine is not loaded in-process. It is the
+# batch preset's (stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch) NeMo SpeechLM vLLM
+# server, run as a localhost sidecar from its own Python 3.13 venv, because the model needs NeMo's
+# locked vLLM 0.28 / CUDA 13 stack and baseten-stt runs on the server image's Python 3.12. See
+# packages/nemotron_stt/engine.py.
+model_metadata:
+  repo_id: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
+  tags:
+    - audio-to-text
+    - streaming-asr
+    - baseten-stt-unified
+
+# The batch preset's mount of the public checkpoint; the sidecar serves BASETEN_MODEL_PATH.
+weights:
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B@a188fff16c4f129a046788c2ad69e6198079a102"
+    mount_location: "/app/checkpoint/model"
+
+base_image:
+  # stt-server 0.2.0 (basetenlabs/baseten-stt v0.2.0, from 99bc151), as the other unified
+  # presets. Built by baseten-stt's build-server-images.yml, with signed provenance:
+  #
+  #   gh attestation verify oci://baseten/stt-server:0.2.0 --repo basetenlabs/baseten-stt
+  #
+  # Over the dev-8eaf894 this preset was first measured on: the wait for a slot at a full
+  # replica (#26), the 29 s turn cut (#27), decode-language negotiation (#29, unused here) and
+  # the end-of-speech and partial metrics (#30, #37).
+  #
+  # The slim variant: python:3.12-slim with baseten-stt installed. The `-vllm` variant's vLLM
+  # is too old for this model, so the engine stack is built below instead.
+  #
+  # Published as sha256:c1236b8fc35f59733ea7b905c8d5bea0c394aaedb2dd24332a87558d5976e048.
+  image: baseten/stt-server:0.2.0
+
+system_packages:
+  # Triton compiles a CUDA helper at runtime with the system C compiler, and FlashInfer
+  # JIT-compiles the fused-MoE kernels with g++ as nvcc's host compiler.
+  - build-essential
+  - git
+
+# The engine venv, built as the batch preset's: the model card's locked install, NeMo Speech
+# 16b0ff2 synced with the asr and vllm extras (vLLM 0.28.0, Torch 2.13.0), Speech itself
+# editable. On top of that, a CUDA 13.0 toolchain from wheels, because this image has no
+# /usr/local/cuda and FlashInfer JIT-compiles its SM120 fused-MoE kernels -- here, at build (last
+# three commands), and at start for anything smaller (nvcc, crt headers, cicc, nvrtc.h,
+# cuda_runtime.h -- all unpacked under nvidia/cu13, which start_vllm.sh exports as CUDA_HOME).
+build_commands:
+  - pip install --no-cache-dir uv==0.13.1
+  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git 16b0ff2584c6355c53cbd6c28f0f431a76b24956 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
+  - uv venv --python 3.13 /opt/nemo-speech/venv
+  - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
+  # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
+  # PyAV (without it m4a/mp3 return HTTP 500).
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.1'
+  # The JIT toolchain, matched to the venv's CUDA 13.0 runtime (cuda-runtime 13.0.96,
+  # nvrtc 13.0.88 from the lock).
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'nvidia-cuda-nvcc==13.0.88' 'nvidia-cuda-crt==13.0.88' 'nvidia-nvvm==13.0.88'
+  # FlashInfer drives that JIT build with ninja, which the slim image doesn't have either.
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-cache 'ninja==1.13.0'
+  - test -x /opt/nemo-speech/venv/bin/ninja
+  # FlashInfer links with -L$CUDA_HOME/lib64 -lcudart -lcuda, and its fused-MoE module adds
+  # -lnvrtc. The wheels ship lib/ and only versioned sonames (libcudart.so.13,
+  # libnvrtc.so.13), so give every versioned library the unversioned name the linker looks
+  # for. -lcuda resolves to the host driver.
+  - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && ln -sfn lib lib64 && for f in lib/lib*.so.*; do b=lib/$(basename $f | sed 's/\.so\..*/.so/'); [ -e $b ] || ln -s $(basename $f) $b; done && ls -l lib/*.so
+  - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && test -x bin/nvcc && test -x nvvm/bin/cicc && test -f include/nvrtc.h && test -f include/cuda_runtime.h && test -f include/crt/host_config.h && test -e lib64/libcudart.so && test -e lib64/libnvrtc.so
+  - /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13/bin/nvcc --version
+  # Compile the SM120 fused-MoE kernel (fused_moe_120) here instead of at first start, where it
+  # ran 25-45 min silently after "Warming up Mamba2" on every new deployment and restart -- past
+  # truss's startup threshold and CI's 45-min wait. FlashInfer's own JIT build, for the arch it
+  # picks on an RTX PRO 6000 (12.0f), so the kernel is the one a start would build; its prebuilt
+  # wheel (flashinfer-jit-cache) boots as fast but stalled 3% of finals for 2-8 s. Installed in
+  # FlashInfer's AOT directory, which it loads before compiling anything.
+  #
+  # The image has no driver, and the link takes -lcuda from $CUDA_HOME/lib64/stubs: a stub with
+  # the driver's soname, so the kernel resolves the real libcuda.so.1 at start.
+  - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13/lib && mkdir -p stubs && ( [ -e stubs/libcuda.so ] || echo 'void cuInit(void) {}' | gcc -x c -shared -fPIC -Wl,-soname,libcuda.so.1 -o stubs/libcuda.so - )
+  - cd /tmp && CU=/opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && FLASHINFER_CUDA_ARCH_LIST=12.0f FLASHINFER_WORKSPACE_BASE=/tmp/flashinfer-build CUDA_HOME=$CU PATH=/opt/nemo-speech/venv/bin:$CU/bin:$PATH /opt/nemo-speech/venv/bin/python -c "import pathlib, shutil, time, flashinfer; from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as gen; t = time.time(); spec = gen(); spec.build(); aot = pathlib.Path(flashinfer.__file__).parent / 'data' / 'aot' / spec.name; aot.mkdir(parents=True, exist_ok=True); shutil.copy(spec.jit_library_path, aot / (spec.name + '.so')); print(spec.name, 'built in', round(time.time() - t), 's')" && rm -rf /tmp/flashinfer-build
+  # Fail the build, not the first start, if the kernel did not land where FlashInfer loads it.
+  - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as gen; assert gen().is_aot"
+
+requirements:
+  # The backend's client for the sidecar. Already in baseten-stt's resolve; pinned to it.
+  - httpx==0.28.1
+
+resources:
+  # As the batch preset: BF16 weights take ~63-65 GiB of the 96 GB card.
+  instance_type: RTX-PRO-6000
+
+# Runs baseten-stt's own uvicorn app. Keep start_command free of quoting, shell expansion and
+# redirection: the platform delivers it with JSON escapes undecoded.
+docker_server:
+  start_command: "python3 -m baseten_stt.server"
+  server_port: 9000
+  predict_endpoint: /v1/realtime
+  readiness_endpoint: /health/ready
+  liveness_endpoint: /health/live
+
+runtime:
+  transport:
+    kind: websocket
+    ping_timeout_seconds: 86400
+  # Sessions routed to one replica. A high-concurrency sweep (README, Capacity) holds ~1.0-1.6 s
+  # final p50 at 32 streams and 7-11 s at 64, with throughput flat past that, so 32 is the
+  # per-replica ceiling: scale out rather than queue more sessions on one replica.
+  predict_concurrency: 32
+  health_checks:
+    # Neither probe answers until build() returns: ~10 min on a new deployment, with the
+    # fused-MoE kernel compiled at build (above). The margin covers a slow weight mount.
+    startup_threshold_seconds: 3000
+    restart_threshold_seconds: 900
+    stop_traffic_threshold_seconds: 120
+
+environment_variables:
+  # The factory the server imports for its backend. Without this the app serves NoOpBackend.
+  BASETEN_STT_BACKEND: "nemotron_stt:build"
+  # packages/ is copied to /packages; this puts nemotron_stt on the path.
+  PYTHONPATH: /packages
+  # The upstream port nginx proxies to, matching server_port. Not PORT, which the platform owns.
+  BASETEN_STT_PORT: "9000"
+  # Partials re-decode only the trailing window; the final decodes the whole turn.
+  STREAM_PARTIAL_WINDOW_S: "8.0"
+  NEMOTRON_SIDECAR_PORT: "8000"
+  # The rest as the batch preset's environment_variables.
+  # Checkpoint directory start_vllm.sh serves.
+  BASETEN_MODEL_PATH: "/app/checkpoint/model"
+  VLLM_PLUGINS: "nemo_speechlm"
+  # fork fails CUDA driver initialization.
+  VLLM_WORKER_MULTIPROC_METHOD: "spawn"
+  # Model card: audio up to one hour per request.
+  VLLM_MAX_AUDIO_DECODE_DURATION_S: "3600"
+  # Not in the card: the 256 MiB default rejects 30-minute-plus 44.1 kHz stereo files.
+  VLLM_MAX_AUDIO_DECODE_BYTES: "1610612736"
+  # Not in the card: an hour-long audio_url can exceed the default fetch timeout.
+  VLLM_AUDIO_FETCH_TIMEOUT: "120"

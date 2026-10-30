@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+      "revision": "a188fff16c4f129a046788c2ad69e6198079a102"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": "baseten/stt-server:0.2.0"
+  },
+  "limits": []
+}
