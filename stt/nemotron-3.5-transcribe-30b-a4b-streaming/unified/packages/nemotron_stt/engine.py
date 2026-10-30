@@ -31,6 +31,7 @@ import httpx
 from baseten_stt.backend.base import TurnDecodeError
 
 if TYPE_CHECKING:
+    from baseten_stt.protocol.capabilities import GrantedContext
     from nemotron_stt.backend import NemotronBackend
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,25 @@ PARTIAL_WINDOW_S = float(os.environ.get("STREAM_PARTIAL_WINDOW_S", "8.0"))
 #: instead of transcribing it. This is the prompt b10-bench sends, which scored 1.5% WER on
 #: pipecat and kept non-English speech in its own language.
 PROMPT = "Transcribe this audio."
+#: The model card's verbatim ASR instruction, with its ``Language: as spoken`` naming one
+#: instead. The card forces a language by naming it in the instruction; there is no decoder
+#: prefix to pin it, as Qwen3-ASR has.
+LANGUAGE_PROMPT = (
+    "Audio transcription. Language: {language}. Wording: verbatim, including fillers and "
+    "repetitions. Formatting: punctuation and capitalization. Output: transcript only."
+)
+#: The 40 languages on the model card, by the BCP-47 code the backend declares, to the English
+#: name the instruction gives the model.
+LANGUAGE_NAMES = {
+    "ar": "Arabic", "bg": "Bulgarian", "bn": "Bengali", "cs": "Czech", "da": "Danish",
+    "de": "German", "el": "Greek", "en": "English", "es": "Spanish", "et": "Estonian",
+    "fi": "Finnish", "fr": "French", "he": "Hebrew", "hi": "Hindi", "hr": "Croatian",
+    "hu": "Hungarian", "id": "Indonesian", "it": "Italian", "ja": "Japanese", "ko": "Korean",
+    "lt": "Lithuanian", "lv": "Latvian", "mr": "Marathi", "mt": "Maltese", "nl": "Dutch",
+    "pl": "Polish", "pt": "Portuguese", "ro": "Romanian", "ru": "Russian", "sk": "Slovak",
+    "sl": "Slovenian", "sv": "Swedish", "ta": "Tamil", "te": "Telugu", "th": "Thai",
+    "tl": "Tagalog", "tr": "Turkish", "uk": "Ukrainian", "vi": "Vietnamese", "zh": "Chinese",
+}  # fmt: skip
 #: Speech runs ~3.3 output tokens per second of audio (11.7k for the 1 hr podcast); the cap is
 #: generous against that, and bounds a runaway decode.
 TOKENS_PER_AUDIO_S = 12
@@ -80,8 +100,29 @@ def pcm_to_wav(pcm: bytes) -> bytes:
     return buf.getvalue()
 
 
-def request_body(pcm: bytes) -> dict:
-    """The chat-completions request for one decode of ``pcm``."""
+def prompt_for(language: str = "auto", context: GrantedContext | None = None) -> str:
+    """The instruction for one decode: in ``language`` (a declared code, or ``"auto"``), with
+    the session's context, if it was granted any.
+
+    A session that sets neither gets ``PROMPT`` unchanged, which is what the README's numbers
+    were measured with. The context's text follows the instruction as the client wrote it --
+    framing for the domain, or a further instruction such as the card's near-field one -- and
+    its terms take the card's contextual-ASR form, ``Context terms: ...``.
+    """
+    if language == "auto":
+        prompt = PROMPT
+    else:
+        prompt = LANGUAGE_PROMPT.format(language=LANGUAGE_NAMES[language])
+    if context is not None:
+        if context.text:
+            prompt += " " + context.text
+        if context.keyterms:
+            prompt += " Context terms: " + ", ".join(context.keyterms) + "."
+    return prompt
+
+
+def request_body(pcm: bytes, prompt: str = PROMPT) -> dict:
+    """The chat-completions request for one decode of ``pcm`` under ``prompt``."""
     uri = "data:audio/wav;base64," + base64.b64encode(pcm_to_wav(pcm)).decode("ascii")
     return {
         "model": SERVED_MODEL,
@@ -89,7 +130,7 @@ def request_body(pcm: bytes) -> dict:
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": PROMPT},
+                    {"type": "text", "text": prompt},
                     {"type": "audio_url", "audio_url": {"url": uri}},
                 ],
             }
@@ -122,16 +163,19 @@ class _SidecarEngine:
     def __init__(self, client: httpx.AsyncClient) -> None:
         self._client = client
 
-    async def transcribe(self, pcm: bytes, language: str = "auto") -> tuple[str, str | None]:
-        """One full decode of ``pcm``. The language is never forced: the model auto-detects
-        and reports none, so the second element is always None.
+    async def transcribe(
+        self, pcm: bytes, language: str = "auto", context: GrantedContext | None = None
+    ) -> tuple[str, str | None]:
+        """One full decode of ``pcm``. Returns the text and the language it was decoded in:
+        the one named, or None under ``"auto"``, since the model reports no detection.
 
         Cancelling the task awaiting this closes the request's connection, and vLLM aborts a
         request whose client went away -- so a cleared turn frees the GPU.
         """
-        resp = await self._client.post("/v1/chat/completions", json=request_body(pcm))
+        body = request_body(pcm, prompt_for(language, context))
+        resp = await self._client.post("/v1/chat/completions", json=body)
         resp.raise_for_status()
-        return parse_response(resp.json()), None
+        return parse_response(resp.json()), None if language == "auto" else language
 
 
 def _wait_for_sidecar(proc: subprocess.Popen, timeout_s: float) -> None:

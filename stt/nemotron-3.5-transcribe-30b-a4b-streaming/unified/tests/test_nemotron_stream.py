@@ -15,11 +15,12 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from nemotron_stt.backend import NemotronStream
+from nemotron_stt.backend import NemotronBackend, NemotronStream
 
 from baseten_stt.protocol.capabilities import (
     PCM16_16K_MONO,
     GrantedConfig,
+    GrantedContext,
     SegmentationMode,
 )
 
@@ -32,12 +33,20 @@ FRAME = PCM16_16K_MONO.bytes_per_frame
 WAIT_S = 1.0
 
 
-def config(*, partials: bool = False, interval: float | None = None) -> GrantedConfig:
+def config(
+    *,
+    partials: bool = False,
+    interval: float | None = None,
+    language: str | None = None,
+    context: GrantedContext | None = None,
+) -> GrantedConfig:
     return GrantedConfig(
         input_format=PCM16_16K_MONO,
         segmentation_mode=SegmentationMode.CLIENT_FLUSH,
         partials=partials,
         partial_interval_s=interval,
+        language=language,
+        context=context,
     )
 
 
@@ -47,9 +56,14 @@ class RecordingEngine:
     def __init__(self, text: str = "hello") -> None:
         self.text = text
         self.seen: list[int] = []
+        #: The (language, context) of every decode, in order.
+        self.asked: list[tuple[str, GrantedContext | None]] = []
 
-    async def transcribe(self, pcm: bytes, language: str = "auto") -> tuple[str, str | None]:
+    async def transcribe(
+        self, pcm: bytes, language: str = "auto", context: GrantedContext | None = None
+    ) -> tuple[str, str | None]:
         self.seen.append(len(pcm))
+        self.asked.append((language, context))
         # The failure this guards: numpy rejects a buffer that is not a whole number of
         # samples, so an odd length reaching a real engine is a crashed turn.
         assert len(pcm) % FRAME == 0, f"odd-length PCM reached the engine: {len(pcm)}"
@@ -69,7 +83,9 @@ class BlockingEngine:
         self.aborted = asyncio.Event()
         self.completed = 0
 
-    async def transcribe(self, pcm: bytes, language: str = "auto") -> tuple[str, str | None]:
+    async def transcribe(
+        self, pcm: bytes, language: str = "auto", context: GrantedContext | None = None
+    ) -> tuple[str, str | None]:
         self.started.set()
         try:
             await self.release.wait()
@@ -238,6 +254,45 @@ async def test_partials_granted_without_an_interval_is_a_bug_not_a_default() -> 
     await stream.append(b"\x01" * 3200)
     with pytest.raises(AssertionError, match="without an interval"):
         await asyncio.wait_for(stream._partials, timeout=WAIT_S)
+
+
+# --- language and context ---------------------------------------------------------------
+
+
+async def test_a_session_with_no_language_decodes_with_detection() -> None:
+    """A grant without a language -- a server that negotiates none -- decodes as before."""
+    engine = RecordingEngine()
+    stream = NemotronStream(engine, config(), None)
+
+    await stream.append(b"\x01" * 3200)
+    await stream.flush()
+    assert engine.asked == [("auto", None)]
+
+
+async def test_every_decode_carries_the_granted_language_and_context() -> None:
+    """Partials and finals alike: a partial in another language would be replaced by a final
+    that disagrees with it."""
+    context = GrantedContext(text="A retail support call.", keyterms=("W2702727",))
+    engine = RecordingEngine()
+    stream = NemotronStream(
+        engine, config(partials=True, interval=0.01, language="en", context=context), _swallow
+    )
+
+    await stream.append(b"\x01" * 3200)
+    await asyncio.sleep(0.1)
+    await stream.flush()
+    await stream.close()
+    assert len(engine.asked) >= 2
+    assert set(engine.asked) == {("en", context)}
+
+
+async def test_capabilities_declare_the_cards_languages_and_a_context_slot() -> None:
+    caps = NemotronBackend(RecordingEngine()).capabilities
+    assert len(caps.languages) == 41 and "en" in caps.languages and "auto" in caps.languages
+    assert caps.default_language == "auto"
+    assert caps.context is not None and caps.context.text and caps.context.keyterms
+    # Declared as BCP-47 codes, so a client is told exactly what the backend declared.
+    assert caps.on_the_wire().languages == caps.languages
 
 
 async def _swallow(segments: object) -> None:

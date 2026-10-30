@@ -25,7 +25,7 @@ torch stack (NVIDIA validates Python 3.13), while baseten-stt runs on the server
 | Server | `baseten/stt-server:0.2.0` (baseten-stt v0.2.0), Python 3.12 |
 | Backend | `packages/nemotron_stt`: the template's stream unchanged except for the name, and an engine that calls a sidecar |
 | Engine | The batch preset's `vllm serve` (`stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch`, NVIDIA's model-card flags: MTP-8, FP32 SSM state, utilization 0.94, 65,536-token window, no async scheduling; thinking off), launched by `build()` from `/opt/nemo-speech/venv` on `127.0.0.1:8000` |
-| Decode | One `/v1/chat/completions` request per final or partial: the turn's PCM as WAV, prompt "Transcribe this audio." |
+| Decode | One `/v1/chat/completions` request per final or partial: the turn's PCM as WAV, prompt "Transcribe this audio." unless the session sets a language or context (below) |
 | Cancel | Cancelling a decode closes its request; vLLM aborts requests whose client disconnected |
 | CUDA toolchain | The slim image has no CUDA toolkit, but FlashInfer JIT-compiles its SM120 fused-MoE kernels at first start, so the build installs nvcc, crt, nvvm and nvrtc 13.0 wheels into the venv and the sidecar points `CUDA_HOME` at them |
 
@@ -60,6 +60,46 @@ platform replaces the replica, instead of keeping one that fails every decode.
 A decode that stops on `max_tokens` (12 tokens per second of audio, about 4x the model's rate) is
 a truncated transcript, so the turn fails with `transcription.failed` and the session continues.
 A partial tick whose audio hasn't changed since the last partial is skipped.
+
+### Language and context
+
+The model takes both as instructions, so the backend writes them into the decode's prompt
+(`engine.prompt_for`). A client sets them with `session.update`, and every decode in the
+session, partials included, carries them:
+
+| Session sets | Prompt |
+|---|---|
+| Nothing (`language` defaults to `auto`) | `Transcribe this audio.`, as measured below |
+| `language: "en"` (any of the card's 40, as BCP-47 codes) | The card's verbatim ASR instruction with the language named: `Audio transcription. Language: English. Wording: verbatim, including fillers and repetitions. Formatting: punctuation and capitalization. Output: transcript only.` |
+| `context.text` | Appended to the instruction as written: domain framing, or a further instruction such as the card's near-field one (`Transcribe only the speaker nearest to the microphone. Do not transcribe any other voices.`) |
+| `context.keyterms` | Appended in the card's contextual-ASR form: `Context terms: <term>, <term>.` |
+
+The context slot holds 256 words across text and terms.
+
+#### On noisy telephone audio
+
+16 τ-voice retail calls (111 min of the caller's side: 8 kHz μ-law with street, metro, crowd
+and TV noise), replayed through a voice-agent chain into this preset, every session with the
+same turns from one Silero VAD pass. Scored against what the simulated caller said:
+
+| Session sets | Caller words wrong or missed | of which missed | Words added | WER | Digit runs caught | Final after VAD stop, p50 |
+|---|---|---|---|---|---|---|
+| Nothing (`auto`) | 26.5% | 14.0% | 20.5% | 47.0% | 75/104 | 0.53 s |
+| `language: "en"` | 26.1% | 14.9% | 16.7% | 42.8% | 77/104 | 0.53 s |
+| `en` + the card's near-field `context.text` | 34.7% | 24.3% | 4.0% | 38.7% | 58/104 | 0.51 s |
+| *Nemotron ASR NIM, for reference* | *24.7%* | *16.0%* | *2.2%* | *26.9%* | *76/104* | *~0 s* |
+
+Most added words are background voices transcribed as the caller's. With `auto` some come out
+in their own language -- in a full 114-call τ-voice run, 717 of 4,296 finals were Tamil,
+Russian or Chinese -- and on noise-only turns the model sometimes answers instead of
+transcribing ("I'm sorry, I cannot provide a transcription...": 15 finals here with `auto`,
+3 with `en`, 0 with near-field).
+
+- **`language`:** name it when it's known. `en` removed most of the added words at no cost to
+  the caller's.
+- **Near-field:** keeps other voices out, but also drops parts of the caller on noisy phone
+  audio, a third of the digit runs among them. Not a default for phone agents.
+- **Key terms:** not measured here yet.
 
 ## Results
 

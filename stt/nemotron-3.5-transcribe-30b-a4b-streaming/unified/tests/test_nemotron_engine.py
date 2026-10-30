@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import io
+import json
 import subprocess
 import wave
 
@@ -17,12 +18,14 @@ import httpx
 import pytest
 from baseten_stt.backend.base import TurnDecodeError
 from nemotron_stt import engine
+from baseten_stt.protocol.capabilities import GrantedContext
 from nemotron_stt.engine import (
     PROMPT,
     _SidecarEngine,
     _wait_for_sidecar,
     parse_response,
     pcm_to_wav,
+    prompt_for,
     request_body,
 )
 
@@ -50,6 +53,40 @@ def test_request_carries_instruction_audio_and_scaled_cap():
     assert body["temperature"] == 0
     assert body["max_tokens"] == 10 * engine.TOKENS_PER_AUDIO_S + 32
     assert body["chat_template_kwargs"] == {"enable_thinking": False}
+
+
+def test_a_session_that_sets_nothing_keeps_the_measured_prompt():
+    assert prompt_for() == prompt_for("auto", None) == PROMPT
+    assert prompt_for("auto", GrantedContext()) == PROMPT
+
+
+def test_a_named_language_takes_the_cards_instruction():
+    assert prompt_for("en") == (
+        "Audio transcription. Language: English. Wording: verbatim, including fillers and "
+        "repetitions. Formatting: punctuation and capitalization. Output: transcript only."
+    )
+    assert "Language: Tamil." in prompt_for("ta")
+
+
+def test_context_follows_the_instruction():
+    context = GrantedContext(
+        text="Transcribe only the speaker nearest to the microphone.",
+        keyterms=("Yusuf Hernandez", "W2702727"),
+    )
+    assert prompt_for("auto", context) == (
+        "Transcribe this audio. Transcribe only the speaker nearest to the microphone."
+        " Context terms: Yusuf Hernandez, W2702727."
+    )
+    assert prompt_for("en", GrantedContext(keyterms=("Elm Street",))).endswith(
+        "Output: transcript only. Context terms: Elm Street."
+    )
+
+
+def test_the_request_carries_the_prompt_it_is_given():
+    text, _ = request_body(ONE_SECOND, "Transcribe this audio. Context terms: X.")["messages"][0][
+        "content"
+    ]
+    assert text == {"type": "text", "text": "Transcribe this audio. Context terms: X."}
 
 
 @pytest.mark.parametrize(
@@ -84,6 +121,23 @@ async def test_transcribe_posts_to_chat_completions():
     async with _client(handler) as client:
         assert await _SidecarEngine(client).transcribe(ONE_SECOND) == ("hola mundo", None)
     assert [r.url.path for r in seen] == ["/v1/chat/completions"]
+
+
+@pytest.mark.asyncio
+async def test_transcribe_sends_the_sessions_instruction_and_reports_a_named_language():
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(request.content))
+        return httpx.Response(200, json={"choices": [{"message": {"content": "hello"}}]})
+
+    context = GrantedContext(keyterms=("Elm Street",))
+    async with _client(handler) as client:
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en", context) == (
+            "hello",
+            "en",
+        )
+    assert seen[0]["messages"][0]["content"][0]["text"] == prompt_for("en", context)
 
 
 @pytest.mark.asyncio

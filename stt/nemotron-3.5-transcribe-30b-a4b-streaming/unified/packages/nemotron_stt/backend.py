@@ -18,19 +18,33 @@ from baseten_stt.backend.base import BackendStream, OnPartial, STTBackend
 from baseten_stt.protocol.capabilities import (
     PCM16_16K_MONO,
     Capabilities,
+    ContextConfig,
     GrantedConfig,
+    GrantedContext,
     PartialStyle,
     SegmentationMode,
     VadConfig,
 )
+from baseten_stt.protocol.languages import label_for
 from baseten_stt.protocol.transcript import Segment
+
+from nemotron_stt.engine import LANGUAGE_NAMES
 
 logger = logging.getLogger(__name__)
 
-#: The protocol has no language field, so there is no choice to carry and "auto" is the only
-#: value this backend asks for. Nemotron auto-detects; on 20 es/fr/de/pt clips it kept the
-#: spoken language every time without a hint.
-DECODE_LANGUAGE = "auto"
+#: The model card's 40 languages, as the BCP-47 codes the wire uses, plus detection. A
+#: named language goes into the instruction (``engine.prompt_for``).
+LANGUAGES: tuple[str, ...] = (*sorted(LANGUAGE_NAMES), "auto")
+
+#: Detection unless a client asks: on 20 es/fr/de/pt clips Nemotron kept the spoken language
+#: every time without a hint. A client that knows its language should name it -- on noisy
+#: telephone audio, detection transcribed background voices in Tamil, Russian and Chinese.
+DEFAULT_LANGUAGE = "auto"
+
+#: Context-slot ceiling, in words across text and terms. The context rides in the instruction,
+#: where it costs tokens on every decode, partials included; a few hundred words is ample for a
+#: domain framing and a term list.
+CONTEXT_MAX_WORDS = 256
 
 #: How much audio a partial re-decodes. Partials re-decode the unflushed span, so their cost
 #: grows with the turn unless bounded; the final is always a full decode, so the bound costs
@@ -42,7 +56,9 @@ class _Engine(Protocol):
     """The model handle, kept to one member so the suite can drive a stub -- `the engine is an
     HTTP sidecar that needs the image's GPU stack."""
 
-    async def transcribe(self, pcm: bytes, language: str = ...) -> tuple[str, str | None]:
+    async def transcribe(
+        self, pcm: bytes, language: str = ..., context: GrantedContext | None = ...
+    ) -> tuple[str, str | None]:
         """One full decode. Returns the text and the language it was decoded as."""
         ...
 
@@ -60,6 +76,11 @@ class NemotronStream:
     ) -> None:
         self._engine = engine
         self._format = config.input_format
+        #: The grant's code, handed back as declared. A grant with no language comes from a
+        #: server that negotiates none, and decodes as this backend always did.
+        self._language = label_for(config.language or DEFAULT_LANGUAGE, LANGUAGES)
+        #: Fixed for the session: every decode, partial or final, carries the same context.
+        self._context = config.context
         self._buffer = bytearray()
         self._consumed_bytes = 0
         self._closed = False
@@ -186,7 +207,7 @@ class NemotronStream:
             task.cancel()
 
     async def _decode(self, audio: bytes, *, offset: float, until: float) -> tuple[Segment, ...]:
-        text, language = await self._engine.transcribe(audio, DECODE_LANGUAGE)
+        text, language = await self._engine.transcribe(audio, self._language, self._context)
         if not text.strip():
             # Silence, or a decode that produced only whitespace: an empty span says nothing
             # and still has to be rendered.
@@ -296,6 +317,11 @@ class NemotronBackend:
             # The replica's admission ceiling. Above predict_concurrency (32), so connection
             # churn does not refuse a session the platform has already routed.
             max_sessions_per_replica=48,
+            # Both kinds, as the card documents both: free text joins the instruction, terms
+            # take its "Context terms:" form. See engine.prompt_for.
+            context=ContextConfig(text=True, keyterms=True, max_words=CONTEXT_MAX_WORDS),
+            languages=LANGUAGES,
+            default_language=DEFAULT_LANGUAGE,
         )
 
     async def open(
