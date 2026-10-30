@@ -182,6 +182,70 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-10-22T20:23:54.266504Z",
+      "run_id": "run-c291385f80b3",
+      "config_digest": "2e9f422f7824c19006247f642562d7f467f13781e7870b4c44280a1155847266",
+      "listing": "baseten/orukeet",
+      "deployment_id": "qrmejov",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 492.81924962997437,
+              "e2e_latency_p90_ms": 506.29374850541353,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.232118201707552,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 615.6911849975586,
+              "e2e_latency_p90_ms": 823.3220120891929,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 41.952335269128454,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.8074544243502986
+            },
+            {
+              "error_rate": 0.0,
+              "accuracy": 0.9756898817345598
+            }
+          ]
+        }
+      ]
     }
   ]
 }
