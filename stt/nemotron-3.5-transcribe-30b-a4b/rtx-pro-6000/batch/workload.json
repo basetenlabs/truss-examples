@@ -17,6 +17,7 @@
           96
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "measurement_duration_s": 120.0,
         "warmup_duration_s": 30.0
@@ -36,6 +37,7 @@
           16
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 180.0,
         "measurement_duration_s": 240.0,
@@ -57,6 +59,7 @@
           16
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 600.0,
         "measurement_duration_s": 300.0,
@@ -81,6 +84,7 @@
           64
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 120.0,
         "measurement_duration_s": 120.0,
@@ -105,6 +109,7 @@
           64
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 120.0,
         "measurement_duration_s": 120.0,
@@ -129,6 +134,7 @@
           64
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 120.0,
         "measurement_duration_s": 120.0,
@@ -151,6 +157,7 @@
           16
         ],
         "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "request_timeout_s": 600.0,
         "measurement_duration_s": 480.0,
@@ -173,6 +180,7 @@
         "concurrency": 8,
         "batch_protocol": "openai_chat_audio",
         "prompts": "sierra",
+        "max_tokens_cap": 16000,
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"
       },
       "serial": true
@@ -191,6 +199,7 @@
     "profile_overrides": {
       "full": "full-batch-length-chart"
     },
-    "capacity_concurrency": 96
+    "capacity_concurrency": 96,
+    "max_tokens_cap": 16000
   }
 }
