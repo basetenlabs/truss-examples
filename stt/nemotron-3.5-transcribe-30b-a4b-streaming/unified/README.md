@@ -16,7 +16,7 @@ the batch preset. Serves NVIDIA's public checkpoint, as the batch preset does.
 ## How it is built
 
 The Qwen3-ASR unified preset (`stt/qwen3-asr-1.7b-streaming/unified`) loads vLLM in-process.
-That doesn't work here: the model needs NeMo Speech's vLLM plugin on vLLM 0.28 with a CUDA 13
+That doesn't work here: the model needs NeMo Speech's vLLM plugin on vLLM 0.32 with a CUDA 13
 torch stack (NVIDIA validates Python 3.13), while baseten-stt runs on the server image's Python
 3.12 with its own pins. So:
 
@@ -27,14 +27,14 @@ torch stack (NVIDIA validates Python 3.13), while baseten-stt runs on the server
 | Engine | The batch preset's `vllm serve` (`stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch`, NVIDIA's model-card flags: MTP-8, FP32 SSM state, utilization 0.94, 65,536-token window, no async scheduling; thinking off), launched by `build()` from `/opt/nemo-speech/venv` on `127.0.0.1:8000` |
 | Decode | One `/v1/chat/completions` request per final or partial: the turn's PCM as WAV, prompt "Transcribe this audio." unless the session sets a language or context (below) |
 | Cancel | Cancelling a decode closes its request; vLLM aborts requests whose client disconnected |
-| CUDA toolchain | The slim image has no CUDA toolkit, but FlashInfer JIT-compiles its SM120 fused-MoE kernels at first start, so the build installs nvcc, crt, nvvm and nvrtc 13.0 wheels into the venv and the sidecar points `CUDA_HOME` at them |
+| CUDA toolchain | The slim image has no CUDA toolkit, but FlashInfer JIT-compiles its SM120 fused-MoE kernels at start, with the CUDA 13 wheels (nvcc, crt, nvvm, nvrtc) and ninja the lock installs into the venv; the sidecar points `CUDA_HOME` at them |
 
 Weights, build and engine envelope match the batch preset (see its README):
 
 - **Weights.** The public `nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B` at revision
   `a188fff`, mounted at `/app/checkpoint/model` (`BASETEN_MODEL_PATH`). No secret is needed.
-  The public `config.json` renamed the architecture, so the sidecar passes the batch preset's
-  `--hf-overrides` with the name the pinned Speech commit registers.
+  The pinned Speech commit registers the public `config.json`'s architecture name, so no
+  `--hf-overrides`.
 - **Build.** The model card's locked install, with the batch preset's pins. The one difference
   is the CUDA toolchain from wheels above, because this image has no `/usr/local/cuda`.
 - **Envelope.** The batch preset's `vllm serve` flags, written out in
@@ -45,11 +45,16 @@ Weights, build and engine envelope match the batch preset (see its README):
   a final's decode bounded. The model's 65,536-token window would hold about an hour per turn,
   so the cap can be raised (up to 3600, or `0` for none) at the cost of final latency.
 
-No probe answers until the sidecar is ready and warm. A new deployment measured ~10 min from
-sidecar start to ready: weights, ~300 s of engine init, and the warmup. That needs the SM120
-fused-MoE kernel compiled into the image (`config.yaml`, ~5 min of the build); compiled by
-FlashInfer at first start instead, it ran 25-45 min silently after "Warming up Mamba2" on every
-new deployment, and FlashInfer's prebuilt wheel of it stalled ~3% of finals for 2-8 s. `build()`
+No probe answers until the sidecar is ready and warm. A cold start (deploy `3y6elmn`, vLLM 0.32, no
+BDN startup cache yet) took 712 s of engine init, about 6 min of it silent after "Warming up
+Mamba2" while FlashInfer and Triton JIT-compile, and was ready ~20 min after the deployment was
+created. The BDN startup cache (`ORG_ENABLE_BDN_STARTUP_CACHE`) publishes the JIT caches once a
+replica is ready and restores them on later starts of the same deployment, per GPU type; a new
+deployment starts cold. Leave `VLLM_CACHE_ROOT`, `TORCHINDUCTOR_CACHE_DIR`, `TRITON_CACHE_DIR` and
+`FLASHINFER_WORKSPACE_BASE` unset: pointed at the shared `/cache/org` mount, they left the engine
+idle (about 0 CPU) after "Warming up Mamba2" until the startup check killed it (#1077), which
+looked like a 25-45 min kernel compile but was not. FlashInfer's prebuilt `flashinfer-jit-cache`
+wheel stalled ~3% of finals for 2-8 s on vLLM 0.28, so it is not used. `build()`
 then decodes 1-29 s turns of seeded noise, one at a time and then 32 at once, so the first
 decodes' Triton compiles happen before the replica reports ready (`NEMOTRON_WARMUP=0` skips it).
 

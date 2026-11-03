@@ -10,8 +10,9 @@ head. This preset runs batch transcription on one RTX PRO 6000.
 | | |
 |---|---|
 | Checkpoint | `nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B` (BF16), pinned to a commit and mounted at `/app/checkpoint/model` |
-| Runtime | `vllm/vllm-openai:v0.28.0` image; Python 3.13 venv from the model card's locked install of NeMo Speech `16b0ff2` (vLLM 0.28.0, Torch 2.13.0, `nemo_speechlm` plugin) |
-| Serve flags | NVIDIA's model-card flags: MTP speculative decoding with 8 tokens, FP32 Mamba SSM state, GPU memory utilization 0.94, 65,536-token window, 192 sequences, 4,096 batched tokens, one audio clip of up to 120,000,000 samples (3600 s) per request |
+| Runtime | `vllm/vllm-openai:v0.32.0` image; Python 3.13 venv from the model card's locked install of NeMo Speech main `a837f4e` (vLLM 0.32.0, Torch 2.13.0, FlashInfer 0.7.0.post1, `nemo_speechlm` plugin) |
+| Serve flags | NVIDIA's model-card flags: MTP speculative decoding with 8 tokens, FP32 Mamba SSM state, ReplaySSM with the FlashInfer Mamba backend, request-level multimodal kwargs, GPU memory utilization 0.94, 65,536-token window, one audio clip of up to 120,000,000 samples (3600 s) per request |
+| Scheduler | 384 sequences and 16,384 batched tokens (`predict_concurrency` 384), tuned with `/batch-bench` (the card uses 192 and 4,096) |
 
 Deviations from the card:
 
@@ -20,14 +21,13 @@ Deviations from the card:
 - A `cuda-nvrtc-dev` build step: FlashInfer's MoE JIT needs `nvrtc.h`, which the image lacks.
 - Thinking off by default: clients that omit `chat_template_kwargs` get a transcript, not a reasoning monologue.
 - The CTC timestamp middleware: requests can opt into word timestamps and diarization.
-- `--hf-overrides` sets the architecture to `NeMoSpeechLMForConditionalGeneration`: the public `config.json` renamed it, and the pinned NeMo Speech commit registers only the old name.
 
 `BASETEN_MODEL_PATH` names the checkpoint directory. A Baseten Training
 deployment mounts its merged checkpoint and repoints it.
 
 Cold start is about 16-20 minutes, most of it JIT compilation and Mamba2
-warmup. `start.sh` keeps the JIT caches in b10cache when it is enabled, so
-later starts reuse them.
+warmup. The BDN startup cache (`ORG_ENABLE_BDN_STARTUP_CACHE`) sets the JIT
+cache paths and restores them, so later starts reuse them.
 
 ## Call the deployment
 
@@ -60,26 +60,33 @@ For word timestamps and diarization, add `"skip_special_tokens": false` and
 `"mm_processor_kwargs": {"capture_ctc_timestamps": true}` to a non-streaming
 request with `n: 1`. The response carries a top-level `ctc_timestamps` object.
 
-## Measured performance (2026-10-28)
+## Measured performance (2026-10-31)
 
-`/batch-bench` on one RTX PRO 6000 with this config. Podcast clips are 44.1 kHz
-stereo m4a URLs.
+`/batch-bench` on one RTX PRO 6000 with this config
+([results](https://github.com/basetenlabs/model-registry/pull/1078#issuecomment-6539178953)).
+Audio xRT is seconds of audio transcribed per wall-clock second. Podcast clips
+are 44.1 kHz stereo m4a URLs.
 
-| Cell | Concurrency | Requests/s | Audio s per wall s | Server p50 / p95 |
+| Cell | Concurrency | Audio xRT | Requests/s | Server p50 / p95 |
 |---|---:|---:|---:|---|
-| pipecat (mean 9.6 s) | 32 | 40.2 | 386 | 761 / 1,028 ms |
-| pipecat | 64 | 61.4 | 590 | 1,008 / 1,393 ms |
-| pipecat | 96 | 61.7 | 591 | 1,560 / 1,859 ms |
-| podcast 1 min | 2 | 1.52 | 91 | 1.32 / 1.37 s |
-| podcast 5 min | 2 | 0.40 | 120 | 5.0 / 5.1 s |
-| podcast 5 min | 16 | 0.97 | 290 | 16.9 / 18.6 s |
-| podcast 5 min | 48 | 1.40 | 420 | 34.4 / 39.9 s |
+| pipecat (short clips) | 64 | 756 | 76.7 | 799 / 1,034 ms |
+| pipecat | 128 | 347 | 35.2 | 679 / 1,366 ms |
+| podcast 5 min | 64 | 960 | 3.20 | 20.0 / 22.5 s |
+| podcast 5 min | 128 | 1,119 | 3.73 | 35.1 / 36.3 s |
+| podcast 5 min | 256 | 1,136 | 3.79 | 65.8 / 79.9 s |
+| podcast 30 min | 16 | 384 | 0.21 | 75.6 / 76.3 s |
+| podcast 30 min | 64 | 570 | 0.32 | 195.6 / 215.5 s |
 
-- Long audio passes: a direct client with `max_tokens` unset got full
-  transcripts (`finish_reason: stop`) for 30 minutes at concurrency 1 in
-  41.7 s, and 1 hour at concurrency 4 in about 160 s.
-- No errors, out-of-memory events or engine deaths in any cell.
-- WER (naive, micro): mu-bench-full 19.10%, pipecat 1.30%, pipecat-5min 2.35%.
+- Raising the limits from the card's 192 sequences and 4,096 batched tokens
+  lifted 5-minute throughput at concurrency 128 from 746 to 1,119 xRT.
+- No request errors in the cells above. 30-minute audio at concurrency 128
+  failed half its requests with either setting; keep long-audio concurrency at
+  64 or below.
+- Short-clip throughput peaks at concurrency 64. At 128 and above it drops
+  while server latency stays flat, so requests wait before reaching the server.
+- WER (naive, micro): pipecat 1.36% (250 samples), FLEURS 7.77% (160),
+  mu-bench-full 23.14% (250). The card's limits measured 1.35%, 7.73% and
+  22.87%.
 
 ## Limits
 

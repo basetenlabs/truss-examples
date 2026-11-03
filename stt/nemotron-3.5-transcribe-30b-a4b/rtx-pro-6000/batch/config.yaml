@@ -5,7 +5,7 @@ model_metadata:
     NVIDIA Nemotron-3.5-Transcribe-30B-A4B (BF16): a Speech-Augmented
     Language Model (hybrid Mamba-2/Transformer MoE decoder, ASR and Sortformer
     speaker encoders, CTC timestamp head). Offline/batch transcription on one
-    RTX PRO 6000 with vLLM 0.28.0 and NeMo Speech's nemo_speechlm plugin,
+    RTX PRO 6000 with vLLM 0.32.0 and NeMo Speech's nemo_speechlm plugin,
     using NVIDIA's model-card serving flags: MTP speculative decoding
     (8 tokens), FP32 Mamba SSM cache, 65,536-token window (audio up to about
     1 hour per request).
@@ -42,26 +42,27 @@ weights:
     mount_location: "/app/checkpoint/model"
 
 base_image:
-  # vllm/vllm-openai:v0.28.0; supplies CUDA 13.0 and nvcc for JIT. Serving runs
+  # vllm/vllm-openai:v0.32.0; supplies CUDA 13.0 and nvcc for JIT. Serving runs
   # from the Python 3.13 venv built below.
-  image: "vllm/vllm-openai:v0.28.0@sha256:61fc8a896b0a4fbbbdc063bc4b0dbc25ce98e02b5050c24aeb7830ac02039b14"
+  image: "vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34"
 
 system_packages:
   - git
 
-# The model card's locked install: NeMo Speech 16b0ff2 synced with the asr and
-# vllm extras (vLLM 0.28.0, Torch 2.13.0), Speech itself editable.
+# The model card's locked install: NeMo Speech main (a837f4e) synced with the
+# asr and vllm extras (vLLM 0.32.0, Torch 2.13.0, FlashInfer 0.7.0.post1),
+# Speech itself editable.
 build_commands:
   # FlashInfer's MoE JIT on Blackwell needs nvrtc.h, which the image lacks.
   - apt-get update && apt-get install -y --no-install-recommends "cuda-nvrtc-dev-$(/usr/local/cuda/bin/nvcc --version | sed -n 's/.*release \([0-9]*\)\.\([0-9]*\).*/\1-\2/p')" && rm -rf /var/lib/apt/lists/*
   - pip install --no-cache-dir uv==0.13.1
-  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git 16b0ff2584c6355c53cbd6c28f0f431a76b24956 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
+  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git a837f4e588ca778f46e586a8ad1acf5dc9a244a7 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
   - uv venv --python 3.13 /opt/nemo-speech/venv
   - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
   - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
   # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
   # PyAV (without it m4a/mp3 return HTTP 500).
-  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.1'
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.2'
 
 docker_server:
   # start.sh ignores the argument; it exposes the served model name to b10-bench.
@@ -75,8 +76,8 @@ resources:
   instance_type: RTX-PRO-6000
 
 runtime:
-  # Matches --max-num-seqs in start.sh.
-  predict_concurrency: 192
+  # Matches --max-num-seqs in start.sh (NEMOTRON_MAX_NUM_SEQS).
+  predict_concurrency: 384
   streaming_read_timeout: 3600
   health_checks:
     # A cold JIT cache adds up to ~20 silent minutes of warmup.
@@ -96,3 +97,11 @@ environment_variables:
   VLLM_MAX_AUDIO_DECODE_BYTES: "1610612736"
   # Not in the card: an hour-long audio_url can exceed the default fetch timeout.
   VLLM_AUDIO_FETCH_TIMEOUT: "120"
+  # Model card: compressed uploads up to 180 MB (the default is 25 MB).
+  VLLM_MAX_AUDIO_CLIP_FILESIZE_MB: "180"
+  # Model card: word timestamps (CTC middleware) need the V1 model runner.
+  VLLM_USE_V2_MODEL_RUNNER: "0"
+  # Scheduler limits passed to vLLM; overridable per /batch-bench variant. Keep
+  # NEMOTRON_MAX_NUM_SEQS equal to runtime.predict_concurrency.
+  NEMOTRON_MAX_NUM_BATCHED_TOKENS: "16384"
+  NEMOTRON_MAX_NUM_SEQS: "384"

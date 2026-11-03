@@ -7,7 +7,7 @@ model_name: "model:nemotron-3.5-transcribe-30b-a4b-streaming preset:unified"
 # One deliberate difference from that template: the engine is not loaded in-process. It is the
 # batch preset's (stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch) NeMo SpeechLM vLLM
 # server, run as a localhost sidecar from its own Python 3.13 venv, because the model needs NeMo's
-# locked vLLM 0.28 / CUDA 13 stack and baseten-stt runs on the server image's Python 3.12. See
+# locked vLLM 0.32 / CUDA 13 stack and baseten-stt runs on the server image's Python 3.12. See
 # packages/nemotron_stt/engine.py.
 model_metadata:
   repo_id: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
@@ -44,25 +44,27 @@ system_packages:
   - git
 
 # The engine venv, built as the batch preset's: the model card's locked install, NeMo Speech
-# 16b0ff2 synced with the asr and vllm extras (vLLM 0.28.0, Torch 2.13.0), Speech itself
-# editable. On top of that, a CUDA 13.0 toolchain from wheels, because this image has no
-# /usr/local/cuda and FlashInfer JIT-compiles its SM120 fused-MoE kernels -- here, at build (last
-# three commands), and at start for anything smaller (nvcc, crt headers, cicc, nvrtc.h,
-# cuda_runtime.h -- all unpacked under nvidia/cu13, which start_vllm.sh exports as CUDA_HOME).
+# main (a837f4e) synced with the asr and vllm extras (vLLM 0.32.0, Torch 2.13.0, FlashInfer
+# 0.7.0.post1), Speech itself editable. This image has no /usr/local/cuda, so FlashInfer and
+# Triton JIT-compile at start with CUDA 13.0 wheels in the venv (nvcc, crt headers,
+# cicc, nvrtc.h, cuda_runtime.h -- all unpacked under nvidia/cu13, which start_vllm.sh exports
+# as CUDA_HOME) and the lock's ninja.
 build_commands:
   - pip install --no-cache-dir uv==0.13.1
-  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git 16b0ff2584c6355c53cbd6c28f0f431a76b24956 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
+  - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git a837f4e588ca778f46e586a8ad1acf5dc9a244a7 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
   - uv venv --python 3.13 /opt/nemo-speech/venv
-  - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
+  # a837f4e's .python-version says 3.12, which would make uv sync replace the 3.13 venv; the
+  # paths below and in start_vllm.sh are python3.13's.
+  - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache --python 3.13
   - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
   # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
   # PyAV (without it m4a/mp3 return HTTP 500).
-  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.1'
-  # The JIT toolchain, matched to the venv's CUDA 13.0 runtime (cuda-runtime 13.0.96,
-  # nvrtc 13.0.88 from the lock).
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.2'
+  # The lock's nvcc/crt (13.4) and nvvm (13.2) are newer than its CUDA runtime (13.0.96, nvrtc
+  # 13.0.88); pin the JIT toolchain back to the runtime's 13.0, which the batch preset's image
+  # compiles with.
   - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'nvidia-cuda-nvcc==13.0.88' 'nvidia-cuda-crt==13.0.88' 'nvidia-nvvm==13.0.88'
-  # FlashInfer drives that JIT build with ninja, which the slim image doesn't have either.
-  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-cache 'ninja==1.13.0'
+  # FlashInfer drives its JIT build with ninja (from the lock), which the slim image doesn't have.
   - test -x /opt/nemo-speech/venv/bin/ninja
   # FlashInfer links with -L$CUDA_HOME/lib64 -lcudart -lcuda, and its fused-MoE module adds
   # -lnvrtc. The wheels ship lib/ and only versioned sonames (libcudart.so.13,
@@ -71,19 +73,6 @@ build_commands:
   - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && ln -sfn lib lib64 && for f in lib/lib*.so.*; do b=lib/$(basename $f | sed 's/\.so\..*/.so/'); [ -e $b ] || ln -s $(basename $f) $b; done && ls -l lib/*.so
   - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && test -x bin/nvcc && test -x nvvm/bin/cicc && test -f include/nvrtc.h && test -f include/cuda_runtime.h && test -f include/crt/host_config.h && test -e lib64/libcudart.so && test -e lib64/libnvrtc.so
   - /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13/bin/nvcc --version
-  # Compile the SM120 fused-MoE kernel (fused_moe_120) here instead of at first start, where it
-  # ran 25-45 min silently after "Warming up Mamba2" on every new deployment and restart -- past
-  # truss's startup threshold and CI's 45-min wait. FlashInfer's own JIT build, for the arch it
-  # picks on an RTX PRO 6000 (12.0f), so the kernel is the one a start would build; its prebuilt
-  # wheel (flashinfer-jit-cache) boots as fast but stalled 3% of finals for 2-8 s. Installed in
-  # FlashInfer's AOT directory, which it loads before compiling anything.
-  #
-  # The image has no driver, and the link takes -lcuda from $CUDA_HOME/lib64/stubs: a stub with
-  # the driver's soname, so the kernel resolves the real libcuda.so.1 at start.
-  - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13/lib && mkdir -p stubs && ( [ -e stubs/libcuda.so ] || echo 'void cuInit(void) {}' | gcc -x c -shared -fPIC -Wl,-soname,libcuda.so.1 -o stubs/libcuda.so - )
-  - cd /tmp && CU=/opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && FLASHINFER_CUDA_ARCH_LIST=12.0f FLASHINFER_WORKSPACE_BASE=/tmp/flashinfer-build CUDA_HOME=$CU PATH=/opt/nemo-speech/venv/bin:$CU/bin:$PATH /opt/nemo-speech/venv/bin/python -c "import pathlib, shutil, time, flashinfer; from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as gen; t = time.time(); spec = gen(); spec.build(); aot = pathlib.Path(flashinfer.__file__).parent / 'data' / 'aot' / spec.name; aot.mkdir(parents=True, exist_ok=True); shutil.copy(spec.jit_library_path, aot / (spec.name + '.so')); print(spec.name, 'built in', round(time.time() - t), 's')" && rm -rf /tmp/flashinfer-build
-  # Fail the build, not the first start, if the kernel did not land where FlashInfer loads it.
-  - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as gen; assert gen().is_aot"
 
 requirements:
   # The backend's client for the sidecar. Already in baseten-stt's resolve; pinned to it.
@@ -111,8 +100,9 @@ runtime:
   # per-replica ceiling: scale out rather than queue more sessions on one replica.
   predict_concurrency: 32
   health_checks:
-    # Neither probe answers until build() returns: ~10 min on a new deployment, with the
-    # fused-MoE kernel compiled at build (above). The margin covers a slow weight mount.
+    # Neither probe answers until build() returns. A cold start (no BDN startup cache yet)
+    # measured 712 s of engine init and ~20 min from deployment creation to ready on vLLM 0.32;
+    # later starts restore the caches. The margin covers a slow weight mount.
     startup_threshold_seconds: 3000
     restart_threshold_seconds: 900
     stop_traffic_threshold_seconds: 120
@@ -139,3 +129,5 @@ environment_variables:
   VLLM_MAX_AUDIO_DECODE_BYTES: "1610612736"
   # Not in the card: an hour-long audio_url can exceed the default fetch timeout.
   VLLM_AUDIO_FETCH_TIMEOUT: "120"
+  # The V1 model runner, as the batch preset's vLLM 0.32 config.
+  VLLM_USE_V2_MODEL_RUNNER: "0"

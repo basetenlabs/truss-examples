@@ -4,7 +4,7 @@
 ``BASETEN_STT_BACKEND`` and awaits the backend it returns.
 
 Unlike the Qwen3-ASR template, the engine is not loaded in this process. The model needs NeMo
-Speech's vLLM plugin on vLLM 0.28 with a CUDA 13 torch stack, which NVIDIA validates on
+Speech's vLLM plugin on vLLM 0.32 with a CUDA 13 torch stack, which NVIDIA validates on
 Python 3.13 -- while baseten-stt runs on the server image's Python 3.12 with its own pins. So
 the engine is the batch preset's ``vllm serve``, launched as a localhost sidecar from its own
 venv, and a decode is one chat-completions request to it.
@@ -42,9 +42,9 @@ SERVED_MODEL = "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"
 SIDECAR_PORT = int(os.environ.get("NEMOTRON_SIDECAR_PORT", "8000"))
 SIDECAR_URL = f"http://127.0.0.1:{SIDECAR_PORT}"
 SIDECAR_SCRIPT = os.environ.get("NEMOTRON_SIDECAR_SCRIPT", "/packages/sidecar/start_vllm.sh")
-#: The sidecar loads the mounted weights and initialises the engine: ~300 s of engine init with the
-#: fused-MoE kernel compiled into the image, 25-45 min when FlashInfer had to compile it at start.
-#: Under truss's startup threshold.
+#: The sidecar loads the mounted weights and initialises the engine: 712 s of engine init on a cold
+#: start (no BDN startup cache yet) on vLLM 0.32, less once the cache is restored. Under truss's
+#: startup threshold.
 SIDECAR_STARTUP_TIMEOUT_S = float(os.environ.get("NEMOTRON_SIDECAR_STARTUP_TIMEOUT_S", "2700"))
 #: See ``nemotron_stt.DEFAULT_PARTIAL_WINDOW_S``.
 PARTIAL_WINDOW_S = float(os.environ.get("STREAM_PARTIAL_WINDOW_S", "8.0"))

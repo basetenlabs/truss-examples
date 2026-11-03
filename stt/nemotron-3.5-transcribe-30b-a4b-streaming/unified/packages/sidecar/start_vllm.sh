@@ -12,37 +12,31 @@ set -euo pipefail
 
 VENV=/opt/nemo-speech/venv
 # The slim server image has no CUDA toolkit. FlashInfer JIT-compiles its fused-MoE kernels at
-# first start with nvcc and includes nvrtc.h, so point it at the CUDA 13.0 wheels the build
-# installed into the venv (nvcc, crt, nvrtc, runtime all unpack under nvidia/cu13). The venv's
-# bin/ also has the ninja FlashInfer runs its JIT build with.
+# start with nvcc and includes nvrtc.h, so point it at the CUDA 13.0 wheels in the venv (nvcc,
+# crt, nvrtc, runtime all unpack under nvidia/cu13). The venv's bin/ also has the ninja
+# FlashInfer runs its JIT build with.
 export CUDA_HOME="${VENV}/lib/python3.13/site-packages/nvidia/cu13"
 export PATH="${VENV}/bin:${CUDA_HOME}/bin:${PATH}"
 
-# The cold JIT warmup takes ~20 min; b10cache (/cache/org) keeps it across replicas and
-# restarts when enabled, else fall back to local disk. Separate from the batch preset's
-# directory: this toolchain comes from wheels, not the image.
-CACHE_BASE=/cache/org/nemotron-3.5-transcribe-30b-a4b-streaming
-mkdir -p "${CACHE_BASE}" 2>/dev/null && [[ -w "${CACHE_BASE}" ]] || CACHE_BASE=/root/.cache/nemotron-3.5-transcribe-30b-a4b-streaming
-export FLASHINFER_WORKSPACE_BASE="${CACHE_BASE}"
-export VLLM_CACHE_ROOT="${CACHE_BASE}/vllm"
-export TORCHINDUCTOR_CACHE_DIR="${CACHE_BASE}/inductor"
-export TRITON_CACHE_DIR="${CACHE_BASE}/triton"
-mkdir -p "${VLLM_CACHE_ROOT}" "${TORCHINDUCTOR_CACHE_DIR}" "${TRITON_CACHE_DIR}"
+# As the batch preset: the BDN startup cache (ORG_ENABLE_BDN_STARTUP_CACHE) sets the JIT cache
+# paths (VLLM_CACHE_ROOT, TORCHINDUCTOR_CACHE_DIR, TRITON_CACHE_DIR, FLASHINFER_WORKSPACE_BASE,
+# ...) and restores them across replicas and restarts, keyed by GPU type.
+# Never point them at /cache/org: on that shared mount the engine sat idle after "Warming up
+# Mamba2" until the startup check killed it (#1077).
 
 # config.json names pretrained_llm as the relative path "llm_backbone".
 cd "${BASETEN_MODEL_PATH}"
 
-# The card's --mamba-cache-mode all resolves to none: vLLM 0.28.0 keeps prefix caching off for
-# this model. Deviation from the card: thinking off by default (the backend also sends it off).
-# The public config.json renamed the architecture; the pinned Speech commit registers only the
-# old name.
+# The batch preset's card flags for vLLM 0.32.0: ReplaySSM with the FlashInfer Mamba backend
+# and prefix caching off. Deviation from the card: thinking off by default (the backend also
+# sends it off). NeMo Speech main registers the current architecture name, so no
+# --hf-overrides.
 exec "${VENV}/bin/vllm" serve "${BASETEN_MODEL_PATH}" \
     --tokenizer "${BASETEN_MODEL_PATH}" \
     --served-model-name nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B \
     --host 127.0.0.1 \
     --port "${NEMOTRON_SIDECAR_PORT}" \
     --trust-remote-code \
-    --hf-overrides '{"architectures":["NeMoSpeechLMForConditionalGeneration"]}' \
     --dtype bfloat16 \
     --gpu-memory-utilization 0.94 \
     --max-model-len 65536 \
@@ -50,6 +44,8 @@ exec "${VENV}/bin/vllm" serve "${BASETEN_MODEL_PATH}" \
     --max-num-batched-tokens 4096 \
     --enable-chunked-prefill \
     --no-enable-prefix-caching \
+    --use-replayssm \
+    --mamba-backend flashinfer \
     --mamba-cache-mode none \
     --mm-processor-cache-gb 0 \
     --no-async-scheduling \
