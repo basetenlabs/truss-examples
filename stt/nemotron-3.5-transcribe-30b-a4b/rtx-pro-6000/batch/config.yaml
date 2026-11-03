@@ -43,7 +43,8 @@ weights:
 
 base_image:
   # vllm/vllm-openai:v0.32.0; supplies CUDA 13.0 and nvcc for JIT. Serving runs
-  # from the Python 3.13 venv built below.
+  # from the venv built below (Python 3.12, from the .python-version file in
+  # NeMo Speech a837f4e).
   image: "vllm/vllm-openai:v0.32.0@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34"
 
 system_packages:
@@ -58,11 +59,16 @@ build_commands:
   - pip install --no-cache-dir uv==0.13.1
   - git init -q /opt/nemo-speech/src && git -C /opt/nemo-speech/src fetch -q --depth 1 https://github.com/NVIDIA-NeMo/Speech.git a837f4e588ca778f46e586a8ad1acf5dc9a244a7 && git -C /opt/nemo-speech/src checkout -q FETCH_HEAD
   - uv venv --python 3.13 /opt/nemo-speech/venv
-  - UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
-  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
+  # The base image sets UV_LINK_MODE=copy, UV_COMPILE_BYTECODE=1 and UV_OVERRIDE
+  # (the vLLM pins) for its own install. Copy mode unpacks every wheel to /tmp
+  # and copies it into the venv, about twice the venv size on disk, and the
+  # build ran out of space (No space left on device, deploy qj7409j). Hardlink,
+  # skip bytecode and drop the overrides for this venv.
+  - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 UV_PROJECT_ENVIRONMENT=/opt/nemo-speech/venv uv sync --project /opt/nemo-speech/src --extra asr --extra vllm --no-install-project --locked --no-cache
+  - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache -e /opt/nemo-speech/src
   # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
   # PyAV (without it m4a/mp3 return HTTP 500).
-  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.2'
+  - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.2'
 
 docker_server:
   # start.sh ignores the argument; it exposes the served model name to b10-bench.
