@@ -1,6 +1,73 @@
 {
   "schema_version": 1,
-  "status": "missing",
-  "accepted": false,
-  "entries": []
+  "status": "accepted",
+  "accepted": true,
+  "entries": [
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-04T02:08:50.968522Z",
+      "run_id": "run-d31ce38aac99",
+      "config_digest": "5477527a5cddd713369fd924a64478358ca2a762951c7f10435674823a497697",
+      "listing": "baseten/nemotron-3-5-transcribe-30b-a4b-streaming",
+      "deployment_id": "qe9rjrr",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": -324.95797239243984,
+              "ttft_p90_ms": 415.2367040514946,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1135.5080679059029,
+              "e2e_latency_p90_ms": 1261.3433208316565,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.09869267605064422,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 958.7590862065554,
+              "ttft_p90_ms": 3093.0132158100605,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1336.411140859127,
+              "e2e_latency_p90_ms": 1693.9837243407965,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.1740995750492353,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "mu-bench-full:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.7652049297793064
+            },
+            {
+              "task": "pipecat:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.9858803986710963
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
