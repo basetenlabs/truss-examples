@@ -1,52 +1,71 @@
-model_name: model:gemma-4-31B-it preset:throughput
+# Gemma 4 31B (NVIDIA NVFP4) on BIS-LLM with the vLLM backend, one RTX PRO 6000, throughput.
+# Converted in place from the vLLM docker_server preset: same checkpoint, 64 sequences,
+# 131,072 context, FP8 KV cache, chunked prefill and prefix caching.
+#
+# Serving image: the 2026-11-02 MP release (baseten/bis-llm-vllm:mp-v2026.11.02), pinned by its
+# green tag; includes the Gemma 4 reasoning-parser fix (baseten#37383). Platform-default chart.
+#
+# Text only (language_model_only: true). Current BIS plans images in the frontend with
+# mm-libtorch-encoder, which has no Gemma 4 family yet, so image requests would fail; the
+# vLLM preset accepted images.
+# Weights pinned to the revision in variant.json (the vLLM preset used @main).
+model_name: "model:gemma-4-31B-it preset:bis-throughput"
 model_metadata:
   description: >-
-    Gemma 4 multimodal instruct (NVFP4), OpenAI-compatible chat with vision using vLLM on RTX PRO 6000.
+    Gemma 4 instruct (NVFP4), OpenAI-compatible chat (text only), served with vLLM through the
+    Baseten Inference Stack on RTX PRO 6000.
   repo_id: nvidia/Gemma-4-31B-IT-NVFP4
   example_model_input:
     model: google/gemma-4-31B-it
     messages:
       - role: user
-        content:
-          - type: text
-            text: "Describe this image in one sentence."
-          - type: image_url
-            image_url:
-              url: "https://picsum.photos/id/237/200/300"
+        content: "Summarize the benefits of solar power in two sentences."
     stream: true
     max_tokens: 512
     temperature: 1.0
   tags:
     - openai-compatible
-base_image:
-  image: vllm/vllm-openai:v0.22.1
-weights:
-  - source: "hf://nvidia/Gemma-4-31B-IT-NVFP4@main"
-    mount_location: "/app/checkpoint/gemma"
-docker_server:
-  start_command: >-
-    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/gemma
-    --tensor-parallel-size $GPU_COUNT
-    --served-model-name google/gemma-4-31B-it
-    --max-num-seqs 64
-    --max-model-len 131072
-    --kv-cache-dtype fp8
-    --enable-chunked-prefill
-    --enable-prefix-caching
-    --trust-remote-code
-    --enable-auto-tool-choice
-    --reasoning-parser gemma4
-    --tool-call-parser gemma4
-    --load-format runai_streamer'
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        HF_HUB_ENABLE_HF_TRANSFER: "1"
+        SAFETENSORS_FAST_GPU: "1"
+        VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+    arguments_as_json: true
+    b10_routing_config:
+      algo_selector: B10
+      durable_kv_events: false
+      enable_worker_tree: true
+      router_cache_miss_weight: 0
+      router_overlap_score_weight: 1000
+      router_temperature: 0.001
+    checkpoint_name: nvidia/Gemma-4-31B-IT-NVFP4
+    engine_backend: vllm
+    engine_config:
+      dtype: auto
+      enable_chunked_prefill: true
+      enable_prefix_caching: true
+      enforce_eager: false
+      kv_cache_dtype: fp8
+      kv_events_endpoint: "tcp://*:5557"
+      max_model_len: 131072
+      max_num_seqs: 64
+      trust_remote_code: true
+    gpuTRTImage: baseten/bis-llm-vllm:green-mp--v0.26.0-d9e38b3e4-b6573aaba5
+    language_model_only: true
+    model_name: google/gemma-4-31B-it
+    model_path: /models/gemma-4-31b
+    reasoning_parser: gemma_4
+    served_model_name: google/gemma-4-31B-it
+    served_model_name_response: google/gemma-4-31B-it
+    tensor_parallel_size: 1
+    tokenizer_limit_length: 131072
+    tool_call_parser: gemma_4
+environment_variables: {}
 resources:
-  instance_type: RTX-PRO-6000
-runtime:
-  health_checks:
-    startup_threshold_seconds: 1800
-    restart_threshold_seconds: 1200
-    stop_traffic_threshold_seconds: 120
-  predict_concurrency: 64
+  accelerator: RTX_PRO_6000
+  use_gpu: true
+weights:
+  - source: hf://nvidia/Gemma-4-31B-IT-NVFP4@4135a98a9b728a548947683219633b25682223ac
+    mount_location: /models/gemma-4-31b

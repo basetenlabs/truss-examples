@@ -14,9 +14,9 @@
     }
   },
   "engine": {
-    "kind": "vllm",
+    "kind": "bis",
     "backend": "vllm",
-    "version": "vllm/vllm-openai:v0.22.1"
+    "version": null
   },
   "limits": []
 }
