@@ -21,6 +21,7 @@ import signal
 import subprocess
 import threading
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 import wave
@@ -71,6 +72,22 @@ LANGUAGE_NAMES = {
     "sl": "Slovenian", "sv": "Swedish", "ta": "Tamil", "te": "Telugu", "th": "Thai",
     "tl": "Tagalog", "tr": "Turkish", "uk": "Ukrainian", "vi": "Vietnamese", "zh": "Chinese",
 }  # fmt: skip
+#: The card's languages written in the Latin alphabet. A decode named one of these that comes
+#: back in another script did not follow the instruction: on noisy telephone audio named
+#: English, Nemotron answered turns in Chinese or Tamil -- background voices, and the caller's
+#: own spelled email ("L I 点儿 C O M") -- in 7% of finals (see RETRY_INSTRUCTION).
+LATIN_SCRIPT_LANGUAGES = frozenset(
+    "cs da de en es et fi fr hr hu id it lt lv mt nl pl pt ro sk sl sv tl tr vi".split()
+)
+#: Appended to the session's instruction for the one retry of a wrong-script decode.
+#: Replaying 69 noisy retail τ-bench calls (voice-agent, client_flush, language en): 175 of 2415
+#: finals came back in another script, in 47 calls; the retry turned 28 into English and the rest
+#: were dropped. Non-English words 3.7% -> 0.1% of the caller's, words missed 5.9% -> 7.3%, WER
+#: 45.8% -> 44.0%, digit recall 89.5% -> 90.1%.
+RETRY_INSTRUCTION = (
+    "Every word is spoken in {language}: write the transcript in {language}. Do not transcribe "
+    "background voices, television, radio, or other conversations."
+)
 #: Speech runs ~3.3 output tokens per second of audio (11.7k for the 1 hr podcast); the cap is
 #: generous against that, and bounds a runaway decode.
 TOKENS_PER_AUDIO_S = 12
@@ -119,6 +136,29 @@ def prompt_for(language: str = "auto", context: GrantedContext | None = None) ->
         if context.keyterms:
             prompt += " Context terms: " + ", ".join(context.keyterms) + "."
     return prompt
+
+
+def _is_foreign_letter(ch: str) -> bool:
+    """Whether ``ch`` is a letter of a script other than Latin.
+
+    Classified by Unicode name rather than code-point ranges, which miss Latin outside the
+    Latin blocks (the ``ﬃ`` ligature, fullwidth Latin). Modifier letters (``ʼ`` U+02BC, ``ˈ``)
+    are shared marks rather than a script's letters, so they never count; a decode in another
+    script still has that script's base letters. Latin-1 letters (``µ``, ``º``) never count.
+    """
+    if not ch.isalpha() or ord(ch) < 0x100:
+        return False
+    if unicodedata.category(ch) == "Lm":
+        return False
+    return "LATIN" not in unicodedata.name(ch, "")
+
+
+def in_wrong_script(text: str, language: str) -> bool:
+    """Whether ``text`` has letters a decode in ``language`` cannot contain. Only Latin-script
+    languages are checked; the rest, and ``"auto"``, never are."""
+    if language not in LATIN_SCRIPT_LANGUAGES:
+        return False
+    return any(_is_foreign_letter(ch) for ch in text)
 
 
 def request_body(pcm: bytes, prompt: str = PROMPT) -> dict:
@@ -172,10 +212,21 @@ class _SidecarEngine:
         Cancelling the task awaiting this closes the request's connection, and vLLM aborts a
         request whose client went away -- so a cleared turn frees the GPU.
         """
-        body = request_body(pcm, prompt_for(language, context))
-        resp = await self._client.post("/v1/chat/completions", json=body)
+        prompt = prompt_for(language, context)
+        text = await self._decode(pcm, prompt)
+        if in_wrong_script(text, language):
+            # The instruction names the language but cannot force it, so ask once more, harder.
+            # A second miss is not the language the session asked for, so it is no words.
+            name = LANGUAGE_NAMES[language]
+            retried = await self._decode(pcm, prompt + " " + RETRY_INSTRUCTION.format(language=name))
+            logger.info("decode not in %s, retried: %r -> %r", name, text[:80], retried[:80])
+            text = "" if in_wrong_script(retried, language) else retried
+        return text, None if language == "auto" else language
+
+    async def _decode(self, pcm: bytes, prompt: str) -> str:
+        resp = await self._client.post("/v1/chat/completions", json=request_body(pcm, prompt))
         resp.raise_for_status()
-        return parse_response(resp.json()), None if language == "auto" else language
+        return parse_response(resp.json())
 
 
 def _wait_for_sidecar(proc: subprocess.Popen, timeout_s: float) -> None:

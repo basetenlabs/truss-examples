@@ -21,10 +21,12 @@ from nemotron_stt import engine
 from baseten_stt.protocol.capabilities import GrantedContext
 from nemotron_stt.engine import (
     PROMPT,
+    RETRY_INSTRUCTION,
     _SidecarEngine,
     _wait_for_sidecar,
     parse_response,
     pcm_to_wav,
+    in_wrong_script,
     prompt_for,
     request_body,
 )
@@ -195,3 +197,79 @@ def test_warmup_audio_is_not_silence():
     pcm = engine._warmup_audio(1.0)
     assert len(pcm) == 2 * engine.SAMPLE_RATE
     assert any(pcm)
+
+
+@pytest.mark.parametrize(
+    "text, language, wrong",
+    [
+        ("L I 点儿 C O M", "en", True),
+        ("பேரு பேசுறேன் பா.", "en", True),
+        ("Семьдесят семь.", "en", True),
+        ("Sì, con l'uva.", "en", False),
+        # Latin outside the Latin blocks, and marks every script shares, are not another script.
+        ("Iʼm calling about my order.", "en", False),
+        ("The oﬃce shipped it.", "en", False),
+        ("Order ＡＢＣ one two three.", "en", False),
+        ("It's 5 µm, the 1º one.", "en", False),
+        ("ˈhɛloʊ", "en", False),
+        # A non-Latin decode is still caught, modifier letters and all.
+        ("はい、そうですー。", "en", True),
+        ("Γεια σας.", "en", True),
+        ("I said 你好.", "en", True),
+        ("Tôi tên là Ngọc.", "vi", False),
+        ("Семьдесят семь.", "ru", False),
+        ("你好", "auto", False),
+    ],
+)
+def test_wrong_script(text, language, wrong):
+    assert in_wrong_script(text, language) is wrong
+
+
+def _scripted(*answers):
+    seen = []
+    replies = list(answers)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(request.content)["messages"][0]["content"][0]["text"])
+        return httpx.Response(200, json={"choices": [{"message": {"content": replies.pop(0)}}]})
+
+    return seen, handler
+
+
+@pytest.mark.asyncio
+async def test_a_wrong_script_decode_is_retried_with_the_stricter_instruction():
+    seen, handler = _scripted("L I 点儿 C O M", "L I dot C O M")
+    async with _client(handler) as client:
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == ("L I dot C O M", "en")
+    assert seen == [
+        prompt_for("en"),
+        prompt_for("en") + " " + RETRY_INSTRUCTION.format(language="English"),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_a_second_wrong_script_decode_is_no_words():
+    seen, handler = _scripted("三不满一没有。", "三不满。")
+    async with _client(handler) as client:
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == ("", "en")
+    assert len(seen) == 2
+
+
+@pytest.mark.asyncio
+async def test_detection_and_right_script_decodes_are_not_retried():
+    seen, handler = _scripted("你好", "hello")
+    async with _client(handler) as client:
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND) == ("你好", None)
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == ("hello", "en")
+    assert len(seen) == 2
+
+
+@pytest.mark.asyncio
+async def test_an_english_decode_with_a_modifier_apostrophe_is_kept_as_is():
+    seen, handler = _scripted("Iʼm calling about my order.")
+    async with _client(handler) as client:
+        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == (
+            "Iʼm calling about my order.",
+            "en",
+        )
+    assert seen == [prompt_for("en")]

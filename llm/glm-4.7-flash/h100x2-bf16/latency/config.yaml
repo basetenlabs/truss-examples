@@ -1,7 +1,21 @@
-model_name: "model:glm-4.7-flash preset:latency"
+# BIS-LLM (vLLM backend), converted in place from h100x2-bf16/latency, the vLLM
+# docker_server preset that served baseten/glm-4.7-flash-latency. Same checkpoint and
+# revision, same H100:2 / TP2, same 202,752-token context and 0.8 memory fraction.
+# Deploys as a new model (preset:bis-latency) because the platform rejects BIS deployments into
+# the old preset's KNATIVE model; the listing switches with replace_model on merge.
+#
+# Differences from the vLLM preset:
+# - Serving image: the 2026-11-02 MP release (baseten/bis-llm-vllm:mp-v2026.11.02), pinned by its
+#   green tag. Platform-default chart (no bis_llm.version).
+# - block_size 64: GLM-4.7-Flash uses MLA, and vLLM's Hopper MLA backend raises smaller
+#   pages to 64; the KV-event publisher must hash at the engine's real page size.
+# - max_num_seqs 32 replaces predict_concurrency 32 (BIS has no concurrency target).
+# - No reasoning_parser, matching the vLLM preset: thinking stays inline in content.
+model_name: "model:glm-4.7-flash preset:bis-latency"
 model_metadata:
   description: >-
-    Zhipu GLM-4.7 Flash using vLLM (H100 × 2 TP), fast GLM tool calling and auto tool choice from BDN-mounted weights.
+    Zhipu GLM-4.7 Flash served with vLLM through the Baseten Inference Stack on two H100 GPUs,
+    with GLM tool calling and auto tool choice.
   repo_id: zai-org/GLM-4.7-Flash
   example_model_input:
     model: zai-org/GLM-4.7-Flash
@@ -15,43 +29,50 @@ model_metadata:
     temperature: 0.7
   tags:
     - openai-compatible
-base_image:
-  image: vllm/vllm-openai:v0.22.0-cu129
-weights:
-  - source: "hf://zai-org/GLM-4.7-Flash@7dd20894a642a0aa287e9827cb1a1f7f91386b67"
-    mount_location: "/app/checkpoint/model"
-environment_variables:
-  VLLM_LOGGING_LEVEL: WARNING
-  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-docker_server:
-  start_command: >-
-    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
-    --tensor-parallel-size $GPU_COUNT
-    --gpu-memory-utilization 0.8
-    --tool-call-parser glm47
-    --enable-auto-tool-choice
-    --served-model-name zai-org/GLM-4.7-Flash
-    --host 0.0.0.0
-    --port 8000
-    --trust-remote-code
-    --max-model-len auto
-    --enable-prefix-caching
-    --load-format runai_streamer'
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        HF_HUB_ENABLE_HF_TRANSFER: '1'
+        OMP_NUM_THREADS: '1'
+        SAFETENSORS_FAST_GPU: '1'
+        VLLM_ENGINE_READY_TIMEOUT_S: '3600'
+        VLLM_LOGGING_LEVEL: WARNING
+    arguments_as_json: true
+    b10_routing_config:
+      algo_selector: B10
+      durable_kv_events: false
+      enable_worker_tree: true
+      router_cache_miss_weight: 0
+      router_overlap_score_weight: 1000
+      router_temperature: 0.001
+    checkpoint_name: zai-org/GLM-4.7-Flash
+    engine_backend: vllm
+    engine_config:
+      block_size: 64
+      dtype: auto
+      enable_chunked_prefill: true
+      enable_prefix_caching: true
+      enforce_eager: false
+      gpu_memory_utilization: 0.8
+      kv_events_endpoint: tcp://*:5557
+      max_model_len: 202752
+      max_num_batched_tokens: 8192
+      max_num_seqs: 32
+      trust_remote_code: true
+    gpuTRTImage: baseten/bis-llm-vllm:green-mp--v0.26.0-d9e38b3e4-b6573aaba5
+    language_model_only: true
+    model_name: zai-org/GLM-4.7-Flash
+    model_path: /models/glm-4.7-flash
+    served_model_name: zai-org/GLM-4.7-Flash
+    served_model_name_response: zai-org/GLM-4.7-Flash
+    tensor_parallel_size: 2
+    tokenizer_limit_length: 202752
+    tool_call_parser: glm47
+environment_variables: {}
 resources:
   accelerator: H100:2
-  cpu: "1"
-  memory: 2Gi
   use_gpu: true
-runtime:
-  is_websocket_endpoint: false
-  predict_concurrency: 32
-  transport:
-    kind: http
-  health_checks:
-    startup_threshold_seconds: 1800
-    restart_threshold_seconds: 1200
-    stop_traffic_threshold_seconds: 120
+weights:
+  - source: hf://zai-org/GLM-4.7-Flash@7dd20894a642a0aa287e9827cb1a1f7f91386b67
+    mount_location: /models/glm-4.7-flash
