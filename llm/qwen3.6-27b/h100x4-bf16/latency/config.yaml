@@ -1,53 +1,88 @@
-model_name: "model:qwen3.6-27b preset:latency"
-
+# BIS-LLM (vLLM backend) conversion of this preset, in place: same path, new deployment model
+# `preset:bis-latency` because the platform rejects BIS deployments into the old KNATIVE model.
+# Kept from the vLLM docker_server preset: same checkpoint and revision, TP4, 262,144 context, MTP speculative decoding (2 tokens), text only, qwen3 reasoning and qwen3_coder tool parsers.
+#
+# Serving image: the 2026-11-02 MP release (baseten/bis-llm-vllm:mp-v2026.11.02), pinned by its
+# green tag. No bis_llm.version: the platform's current chart is used.
+#
+# Differences from the vLLM preset:
+# - Qwen3.5 hybrid GDN settings from llm/qwen3.5-9b-bis: --mamba-cache-mode align,
+#   --gdn-prefill-backend triton, DYN_KV_EVENT_MAIN_GROUP_IDX 3 (KV events from the
+#   full-attention group), capped worker thread pools.
+# - Text only, as before (language_model_only: true).
+# - Speculative decoding passed to vLLM as --speculative-config {"method": "mtp", "num_speculative_tokens": 2}.
+# - max_num_seqs 64 replaces predict_concurrency 64.
+model_name: model:qwen3.6-27b preset:bis-latency
 model_metadata:
   example_model_input:
-    model: "Qwen/Qwen3.6-27B"
+    model: Qwen/Qwen3.6-27B
     messages:
-      - role: user
-        content: "What is the capital of France?"
+    - role: user
+      content: What is the capital of France?
     stream: true
     max_tokens: 512
     temperature: 1.0
     top_p: 0.95
   tags:
-    - openai-compatible
-
-base_image:
-  image: vllm/vllm-openai:v0.20.0
-
-weights:
-  - source: "hf://Qwen/Qwen3.6-27B@6a9e13bd6fc8f0983b9b99948120bc37f49c13e9"
-    mount_location: "/app/checkpoint/model"
-
+  - openai-compatible
+  description: Qwen 3.6 27B (dense, BF16) on four H100 GPUs (TP4), latency, text only, with MTP speculative
+    decoding and Qwen tool calling, served with vLLM through the Baseten Inference Stack.
+  repo_id: Qwen/Qwen3.6-27B
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        DYN_KV_EVENT_MAIN_GROUP_IDX: '3'
+        HF_HUB_ENABLE_HF_TRANSFER: '1'
+        MKL_NUM_THREADS: '4'
+        OMP_NUM_THREADS: '1'
+        RAYON_NUM_THREADS: '4'
+        SAFETENSORS_FAST_GPU: '1'
+        TOKENIZERS_PARALLELISM: 'false'
+        VLLM_ENGINE_READY_TIMEOUT_S: '3600'
+        VLLM_LOGGING_LEVEL: WARNING
+    arguments_as_json: true
+    b10_routing_config:
+      algo_selector: B10
+      durable_kv_events: false
+      enable_worker_tree: true
+      router_cache_miss_weight: 0
+      router_overlap_score_weight: 1000
+      router_temperature: 0.001
+    checkpoint_name: Qwen/Qwen3.6-27B
+    engine_backend: vllm
+    engine_config:
+      dtype: auto
+      enable_chunked_prefill: true
+      enable_prefix_caching: true
+      enforce_eager: false
+      kv_events_endpoint: tcp://*:5557
+      max_model_len: 262144
+      max_num_seqs: 64
+      trust_remote_code: true
+      vllm_extra_args:
+      - --mamba-cache-mode
+      - align
+      - --reasoning-parser
+      - qwen3
+      - --gdn-prefill-backend
+      - triton
+      - --speculative-config
+      - '{"method": "mtp", "num_speculative_tokens": 2}'
+    gpuTRTImage: baseten/bis-llm-vllm:green-mp--v0.26.0-d9e38b3e4-b6573aaba5
+    language_model_only: true
+    model_name: Qwen/Qwen3.6-27B
+    model_path: /models/qwen3.6-27b
+    reasoning_parser: qwen3
+    served_model_name: Qwen/Qwen3.6-27B
+    served_model_name_response: Qwen/Qwen3.6-27B
+    tensor_parallel_size: 4
+    tokenizer_limit_length: 262144
+    tool_call_parser: qwen3_coder
+environment_variables: {}
 resources:
-  instance_type: H100:4
-
-runtime:
-  predict_concurrency: 64
-
-environment_variables:
-  HF_HUB_ENABLE_HF_TRANSFER: "1"
-  VLLM_LOGGING_LEVEL: WARNING
-
-
-docker_server:
-  start_command: >-
-    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
-    --served-model-name Qwen/Qwen3.6-27B
-    --host 0.0.0.0
-    --port 8000
-    --trust-remote-code
-    --tensor-parallel-size $GPU_COUNT
-    --max-model-len 262144
-    --language-model-only
-    --reasoning-parser qwen3
-    --enable-auto-tool-choice
-    --tool-call-parser qwen3_coder
-    --speculative_config.method mtp
-    --speculative_config.num_speculative_tokens 2'
-    --load-format runai_streamer
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
+  accelerator: H100:4
+  use_gpu: true
+weights:
+- source: hf://Qwen/Qwen3.6-27B@6a9e13bd6fc8f0983b9b99948120bc37f49c13e9
+  mount_location: /models/qwen3.6-27b

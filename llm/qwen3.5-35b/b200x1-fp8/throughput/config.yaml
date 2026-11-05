@@ -1,57 +1,87 @@
-########################################################
-# Remove ( --language-model-only ) from the start command to turn on multimodal mode
-########################################################
-model_name: "model:qwen3.5-35b preset:throughput"
+# BIS-LLM (vLLM backend) conversion of this preset, in place: same path, new deployment model
+# `preset:bis-throughput` because the platform rejects BIS deployments into the old KNATIVE model.
+# Kept from the vLLM docker_server preset: same checkpoint and revision, 512 sequences, 0.95 GPU memory, FP8 KV cache, chunked prefill, prefix caching, qwen3 reasoning parser, no tool parser.
+#
+# Serving image: the 2026-11-02 MP release (baseten/bis-llm-vllm:mp-v2026.11.02), pinned by its
+# green tag. No bis_llm.version: the platform's current chart is used.
+#
+# Differences from the vLLM preset:
+# - Qwen3.5 hybrid GDN settings from llm/qwen3.5-9b-bis: --mamba-cache-mode align,
+#   --gdn-prefill-backend triton, DYN_KV_EVENT_MAIN_GROUP_IDX 3 (KV events from the
+#   full-attention group), capped worker thread pools.
+# - Text only, as before (language_model_only: true).
+# - max_model_len 262,144 set explicitly (the vLLM preset left the checkpoint default).
+model_name: model:qwen3.5-35b preset:bis-throughput
 model_metadata:
-  description: >-
-    Qwen 3.5 35B A3B FP8 MoE throughput on B200, language-only mode (--language-model-only) optional.
+  description: Qwen 3.5 35B A3B FP8 MoE throughput on one B200, text only, served with vLLM through the
+    Baseten Inference Stack.
   repo_id: Qwen/Qwen3.5-35B-A3B-FP8
   example_model_input:
-    model: "Qwen/Qwen3.5-35B-A3B-FP8"
+    model: Qwen/Qwen3.5-35B-A3B-FP8
     messages:
-      - role: user
-        content: "What is the capital of France?"
+    - role: user
+      content: What is the capital of France?
     stream: true
     max_tokens: 100
     temperature: 0.7
   tags:
-    - openai-compatible
-base_image:
-  image: vllm/vllm-openai:v0.22.0
-weights:
-  - source: "hf://Qwen/Qwen3.5-35B-A3B-FP8@9d1823d2dee688a6b25e77009dc727688c44936e"
-    mount_location: "/app/checkpoint/model"
-environment_variables:
-  VLLM_LOGGING_LEVEL: WARNING
-  VLLM_ENGINE_READY_TIMEOUT_S: "3600"
-  VLLM_USE_FLASHINFER_MOE_FP8: "0"
-  PYTORCH_ALLOC_CONF: "expandable_segments:True"
-docker_server:
-  start_command: >-
-    sh -c 'GPU_COUNT=$(nvidia-smi --list-gpus | wc -l) && vllm serve /app/checkpoint/model
-    --tensor-parallel-size $GPU_COUNT
-    --served-model-name Qwen/Qwen3.5-35B-A3B-FP8
-    --host 0.0.0.0
-    --port 8000
-    --language-model-only
-    --gpu-memory-utilization 0.95
-    --kv-cache-dtype fp8
-    --reasoning-parser qwen3
-    --enable-chunked-prefill
-    --enable-prefix-caching
-    --max-num-seqs 512
-    --trust-remote-code
-    --load-format runai_streamer'
-  readiness_endpoint: /health
-  liveness_endpoint: /health
-  predict_endpoint: /v1/chat/completions
-  server_port: 8000
-runtime:
-  predict_concurrency: 1000
-  health_checks:
-    startup_threshold_seconds: 1800
-    restart_threshold_seconds: 1200
-    stop_traffic_threshold_seconds: 120
+  - openai-compatible
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        DYN_KV_EVENT_MAIN_GROUP_IDX: '3'
+        HF_HUB_ENABLE_HF_TRANSFER: '1'
+        MKL_NUM_THREADS: '4'
+        OMP_NUM_THREADS: '1'
+        RAYON_NUM_THREADS: '4'
+        SAFETENSORS_FAST_GPU: '1'
+        TOKENIZERS_PARALLELISM: 'false'
+        VLLM_ENGINE_READY_TIMEOUT_S: '3600'
+        VLLM_LOGGING_LEVEL: WARNING
+        VLLM_USE_FLASHINFER_MOE_FP8: '0'
+        PYTORCH_ALLOC_CONF: expandable_segments:True
+    arguments_as_json: true
+    b10_routing_config:
+      algo_selector: B10
+      durable_kv_events: false
+      enable_worker_tree: true
+      router_cache_miss_weight: 0
+      router_overlap_score_weight: 1000
+      router_temperature: 0.001
+    checkpoint_name: Qwen/Qwen3.5-35B-A3B-FP8
+    engine_backend: vllm
+    engine_config:
+      dtype: auto
+      enable_chunked_prefill: true
+      enable_prefix_caching: true
+      enforce_eager: false
+      gpu_memory_utilization: 0.95
+      kv_cache_dtype: fp8
+      kv_events_endpoint: tcp://*:5557
+      max_model_len: 262144
+      max_num_seqs: 512
+      trust_remote_code: true
+      vllm_extra_args:
+      - --mamba-cache-mode
+      - align
+      - --reasoning-parser
+      - qwen3
+      - --gdn-prefill-backend
+      - triton
+    gpuTRTImage: baseten/bis-llm-vllm:green-mp--v0.26.0-d9e38b3e4-b6573aaba5
+    language_model_only: true
+    model_name: Qwen/Qwen3.5-35B-A3B-FP8
+    model_path: /models/qwen3.5-35b-a3b
+    reasoning_parser: qwen3
+    served_model_name: Qwen/Qwen3.5-35B-A3B-FP8
+    served_model_name_response: Qwen/Qwen3.5-35B-A3B-FP8
+    tensor_parallel_size: 1
+    tokenizer_limit_length: 262144
+environment_variables: {}
 resources:
   accelerator: B200
   use_gpu: true
+weights:
+- source: hf://Qwen/Qwen3.5-35B-A3B-FP8@9d1823d2dee688a6b25e77009dc727688c44936e
+  mount_location: /models/qwen3.5-35b-a3b
