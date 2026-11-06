@@ -25,9 +25,20 @@ Deviations from the card:
 `BASETEN_MODEL_PATH` names the checkpoint directory. A Baseten Training
 deployment mounts its merged checkpoint and repoints it.
 
-Cold start is about 16-20 minutes, most of it JIT compilation and Mamba2
-warmup. The BDN startup cache (`ORG_ENABLE_BDN_STARTUP_CACHE`) sets the JIT
-cache paths and restores them, so later starts reuse them.
+FlashInfer's prebuilt kernels (`flashinfer-jit-cache`, sm120f provider) cover
+the fused-MoE and sampling modules, so a cold start no longer compiles them.
+With SSU autotuning enabled, cold engine init took 400 / 418 s, against 749 s
+without the wheel. Serving performance takes priority over cold-start time:
+ReplaySSM (`checkpointing_ssu`) autotuning remains enabled, and the MoE backend
+selection is unchanged. Skipping SSU autotuning was an experiment; its default
+tactic was within ±4% of tuned on RTX PRO 6000, but serving parity was not
+benchmarked on B200 or H100. No saved tuning file is shipped: it is coupled to
+the GPU architecture, FlashInfer version and vLLM configuration.
+
+The model-specific ReplaySSM module and Triton kernels still JIT-compile.
+The BDN startup cache (`ORG_ENABLE_BDN_STARTUP_CACHE`) sets the JIT cache paths
+and restores them on later starts of the same deployment. Weight loading is
+additional to the vLLM `init engine` timer.
 
 ## Call the deployment
 

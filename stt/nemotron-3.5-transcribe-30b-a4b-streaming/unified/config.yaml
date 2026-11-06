@@ -39,7 +39,8 @@ base_image:
 
 system_packages:
   # Triton compiles a CUDA helper at runtime with the system C compiler, and FlashInfer
-  # JIT-compiles the fused-MoE kernels with g++ as nvcc's host compiler.
+  # JIT-compiles the ReplaySSM (checkpointing_ssu) module with g++ as nvcc's host compiler.
+  # The fused-MoE and sampling kernels come prebuilt from flashinfer-jit-cache (below).
   - build-essential
   - git
 
@@ -73,6 +74,10 @@ build_commands:
   - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && ln -sfn lib lib64 && for f in lib/lib*.so.*; do b=lib/$(basename $f | sed 's/\.so\..*/.so/'); [ -e $b ] || ln -s $(basename $f) $b; done && ls -l lib/*.so
   - cd /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13 && test -x bin/nvcc && test -x nvvm/bin/cicc && test -f include/nvrtc.h && test -f include/cuda_runtime.h && test -f include/crt/host_config.h && test -e lib64/libcudart.so && test -e lib64/libnvrtc.so
   - /opt/nemo-speech/venv/lib/python3.13/site-packages/nvidia/cu13/bin/nvcc --version
+  # FlashInfer's prebuilt kernels for 0.7.0.post1 on CUDA 13.0, as the batch preset: the
+  # flashinfer-jit-cache shim plus its sm120f provider (fused_moe_120, sampling).
+  - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=9630eeb32396adb89ce8ffa8465fedd14549eb2e2ad3aff182d9e69be4a12075' 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache_sm120f-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=1c8b5a3614fdc9ad4f0e26502c5438657e28d667d165b05ff0383ca8d208568f'
+  - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as g; from flashinfer.jit.sampling import gen_sampling_module as s; assert g().is_aot and s().is_aot"
 
 requirements:
   # The backend's client for the sidecar. Already in baseten-stt's resolve; pinned to it.
@@ -101,8 +106,9 @@ runtime:
   predict_concurrency: 32
   health_checks:
     # Neither probe answers until build() returns. A cold start (no BDN startup cache yet)
-    # measured 712 s of engine init and ~20 min from deployment creation to ready on vLLM 0.32;
-    # later starts restore the caches. The margin covers a slow weight mount.
+    # measured 328 / 315 s of engine init with the prebuilt FlashInfer kernels (712 s and
+    # ~20 min to ready without them, vLLM 0.32); later starts restore the caches. The margin
+    # covers a slow weight mount.
     startup_threshold_seconds: 3000
     restart_threshold_seconds: 900
     stop_traffic_threshold_seconds: 120

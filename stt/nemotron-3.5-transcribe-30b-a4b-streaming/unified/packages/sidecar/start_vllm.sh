@@ -11,8 +11,9 @@ set -euo pipefail
 : "${NEMOTRON_SIDECAR_PORT:=8000}"
 
 VENV=/opt/nemo-speech/venv
-# The slim server image has no CUDA toolkit. FlashInfer JIT-compiles its fused-MoE kernels at
-# start with nvcc and includes nvrtc.h, so point it at the CUDA 13.0 wheels in the venv (nvcc,
+# The slim server image has no CUDA toolkit. FlashInfer JIT-compiles its ReplaySSM module at
+# start with nvcc and includes nvrtc.h (fused-MoE and sampling come prebuilt from
+# flashinfer-jit-cache), so point it at the CUDA 13.0 wheels in the venv (nvcc,
 # crt, nvrtc, runtime all unpack under nvidia/cu13). The venv's bin/ also has the ninja
 # FlashInfer runs its JIT build with.
 export CUDA_HOME="${VENV}/lib/python3.13/site-packages/nvidia/cu13"

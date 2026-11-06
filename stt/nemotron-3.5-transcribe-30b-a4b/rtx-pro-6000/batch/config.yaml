@@ -69,6 +69,12 @@ build_commands:
   # Outside the lock: vLLM needs OpenCV (NeMo's uv policy suppresses it) and
   # PyAV (without it m4a/mp3 return HTTP 500).
   - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'opencv-python-headless==5.0.0.93' 'av==19.0.2'
+  # FlashInfer's prebuilt kernels for 0.7.0.post1 on CUDA 13.0: the flashinfer-jit-cache shim
+  # plus only its sm120f provider (the shim's other providers are other GPU types). It covers
+  # fused_moe_120 and sampling: batch engine init 749 s -> 400 s on a cold deploy (woogrev).
+  - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=9630eeb32396adb89ce8ffa8465fedd14549eb2e2ad3aff182d9e69be4a12075' 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache_sm120f-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=1c8b5a3614fdc9ad4f0e26502c5438657e28d667d165b05ff0383ca8d208568f'
+  # Fail the build, not the first start, if FlashInfer would still JIT the MoE kernel.
+  - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as g; from flashinfer.jit.sampling import gen_sampling_module as s; assert g().is_aot and s().is_aot"
 
 docker_server:
   # start.sh ignores the argument; it exposes the served model name to b10-bench.
@@ -86,7 +92,8 @@ runtime:
   predict_concurrency: 384
   streaming_read_timeout: 3600
   health_checks:
-    # A cold JIT cache adds up to ~20 silent minutes of warmup.
+    # Cold engine init measured 400 / 418 s with the prebuilt FlashInfer kernels (749 s,
+    # ~20 min of warmup, without them). The margin covers a slow weight mount.
     startup_threshold_seconds: 3000
     restart_threshold_seconds: 900
     stop_traffic_threshold_seconds: 120

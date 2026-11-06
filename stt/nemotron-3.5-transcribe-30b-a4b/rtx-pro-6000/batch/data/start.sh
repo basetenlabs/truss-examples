@@ -6,11 +6,13 @@ set -euo pipefail
 : "${BASETEN_MODEL_PATH:?BASETEN_MODEL_PATH must name the checkpoint directory}"
 
 VENV=/opt/nemo-speech/venv
-# FlashInfer and Triton JIT-compile at startup with the image's CUDA toolkit.
+# FlashInfer (ReplaySSM module) and Triton JIT-compile at startup with the
+# image's CUDA toolkit; FlashInfer's fused-MoE and sampling kernels come
+# prebuilt from flashinfer-jit-cache (config.yaml).
 export CUDA_HOME=/usr/local/cuda
 export PATH="${VENV}/bin:${CUDA_HOME}/bin:${PATH}"
 
-# The cold JIT warmup takes ~20 min. The BDN startup cache
+# Cold engine init takes ~400 s (749 s before the prebuilt kernels). The BDN startup cache
 # (ORG_ENABLE_BDN_STARTUP_CACHE) sets the JIT cache paths (VLLM_CACHE_ROOT,
 # TORCHINDUCTOR_CACHE_DIR, TRITON_CACHE_DIR, FLASHINFER_WORKSPACE_BASE, ...)
 # and restores them across replicas and restarts, keyed by GPU type.
