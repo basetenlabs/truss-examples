@@ -7,7 +7,7 @@ using Infinity v3. Generate text embedding vectors for semantic search, retrieva
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/qwen3-vl-embedding-8b`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/embeddings`** API, with `/health` readiness/liveness probes.
@@ -421,10 +421,10 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/embeddings
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/qwen3-vl-embedding-8b
-    --served-model-name Qwen/Qwen3-VL-Embedding-8B --torch-device cuda --dtype bfloat16
-    --hostname 0.0.0.0 --port 8000 --auto-truncate --image-allowed-hosts s3.amazonaws.com
-    --max-batch-tokens 16384
+  start_command: /usr/local/bin/bei --model-id /models/qwen3-vl-embedding-8b --served-model-name
+    Qwen/Qwen3-VL-Embedding-8B --torch-device cuda --dtype bfloat16 --hostname 0.0.0.0
+    --port 8000 --auto-truncate --image-allowed-hosts s3.amazonaws.com --max-batch-tokens
+    16384
 runtime:
   predict_concurrency: 32
   health_checks:
@@ -445,9 +445,9 @@ model_metadata:
   - multimodal
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://Qwen/Qwen3-VL-Embedding-8B@2c4565515e0f265c6511776e7193b22c0968ddc7
   mount_location: /models/qwen3-vl-embedding-8b

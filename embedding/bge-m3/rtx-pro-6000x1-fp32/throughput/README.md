@@ -7,7 +7,7 @@ using Infinity v3. Generate text embedding vectors for semantic search, retrieva
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/bge-m3`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/embeddings`** API, with `/health` readiness/liveness probes.
@@ -421,7 +421,7 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/embeddings
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/bge-m3 --served-model-name
+  start_command: /usr/local/bin/bei --model-id /models/bge-m3 --served-model-name
     BAAI/bge-m3 --torch-device cuda --dtype bfloat16 --hostname 0.0.0.0 --port 8000
     --max-batch-tokens 16384
 runtime:
@@ -444,9 +444,9 @@ model_metadata:
   - multilingual
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://BAAI/bge-m3@5617a9f61b028005a4858fdac845db406aefb181
   mount_location: /models/bge-m3

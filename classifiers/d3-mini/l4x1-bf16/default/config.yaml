@@ -5,7 +5,7 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/systemone
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/d3-mini --served-model-name
+  start_command: /usr/local/bin/bei --model-id /models/d3-mini --served-model-name
     d3-mini --torch-device cuda --dtype bfloat16 --hostname 0.0.0.0 --port 8000 --auto-truncate
     --decision-protocol d3 --max-batch-tokens 32768
 runtime:
@@ -34,9 +34,9 @@ model_metadata:
   - systemone
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://vllm-sr/d3-mini@0e78bbdbe3cf480ed1461c185c9e0c4fa9258011
   mount_location: /models/d3-mini

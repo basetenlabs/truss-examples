@@ -7,7 +7,7 @@ using Infinity v3. Answer typed questions about a shared state through SystemOne
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/elephant-1`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/systemone`** API, with `/health` readiness/liveness probes.
@@ -27,10 +27,12 @@ Infinity-compatible GPU with enough memory for a complete model replica.
 
 ### Dynamic FP8 projections
 
-This recipe explicitly enables `--enable-fp8-dynamic`. Infinity quantizes supported
-projection weights once at startup and their activations during inference.
-Attention, normalization, embeddings, and output heads retain the selected
-`bfloat16` dtype. Dynamic FP8 is not a claim that the downloaded
+This recipe explicitly enables `--dynamic-quantization fp8` for rowwise FP8.
+The default `auto` scope quantizes supported linear projections in eligible dense
+decoders and MLP projections in encoders. Projection weights are quantized at
+startup and activations during inference; normalization, embeddings, and output
+heads retain the selected `bfloat16` dtype. The FP8 selector no longer
+automatically selects MXFP8 kernels on eligible hardware. Dynamic FP8 is not a claim that the downloaded
 checkpoint stores FP8 weights. The registry checkpoint precision remains separate
 from this runtime option. Validate decision quality for your inputs before use.
 
@@ -429,9 +431,10 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/systemone
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/elephant-1 --served-model-name
+  start_command: /usr/local/bin/bei --model-id /models/elephant-1 --served-model-name
     decision-models/baseten-elephant-9b-latest --torch-device cuda --dtype bfloat16
-    --hostname 0.0.0.0 --port 8000 --enable-fp8-dynamic --decision-protocol onejev
+    --hostname 0.0.0.0 --port 8000 --dynamic-quantization fp8 --decision-protocol
+    onejev
 runtime:
   predict_concurrency: 32
   health_checks:
@@ -462,9 +465,9 @@ model_metadata:
         - 'Urgent: service is unavailable'
   repo_id: baselabs/elephant-1
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://baselabs/elephant-1@b3f8a93462fb1051a9de031e94a7ff380e254072
   mount_location: /models/elephant-1

@@ -7,7 +7,7 @@ using Infinity v3. Answer typed questions about a shared state through SystemOne
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.4`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/joey-1`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/systemone`** API, with `/health` readiness/liveness probes.
@@ -27,10 +27,12 @@ Infinity-compatible GPU with enough memory for a complete model replica.
 
 ### Dynamic FP8 projections
 
-This recipe explicitly enables `--enable-fp8-dynamic`. Infinity quantizes supported
-projection weights once at startup and their activations during inference.
-Attention, normalization, embeddings, and output heads retain the selected
-`bfloat16` dtype. Dynamic FP8 is not a claim that the downloaded
+This recipe explicitly enables `--dynamic-quantization fp8` for rowwise FP8.
+The default `auto` scope quantizes supported linear projections in eligible dense
+decoders and MLP projections in encoders. Projection weights are quantized at
+startup and activations during inference; normalization, embeddings, and output
+heads retain the selected `bfloat16` dtype. The FP8 selector no longer
+automatically selects MXFP8 kernels on eligible hardware. Dynamic FP8 is not a claim that the downloaded
 checkpoint stores FP8 weights. The registry checkpoint precision remains separate
 from this runtime option. Validate decision quality for your inputs before use.
 
@@ -430,9 +432,9 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/systemone
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/joey-1 --served-model-name
+  start_command: /usr/local/bin/bei --model-id /models/joey-1 --served-model-name
     decision-models/baseten-joey-latest --torch-device cuda --dtype bfloat16 --hostname
-    0.0.0.0 --port 8000 --enable-fp8-dynamic --decision-protocol onejev --max-sequence-length
+    0.0.0.0 --port 8000 --dynamic-quantization fp8 --decision-protocol onejev --max-sequence-length
     16384 --max-batch-tokens 32768 --priority-queue-bonus-ms 150
 runtime:
   predict_concurrency: 32
@@ -464,12 +466,11 @@ model_metadata:
         - Blocking the customer now
   repo_id: baselabs/joey-1
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.4
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
-  INFINITY_EXPERIMENTAL_MULTIPLIER_PRIORITY: '2.0'
-  INFINITY_EXPERIMENTAL_MULTIPLIER_FLEX: '0.90'
-  INFINITY_TORCH_GDN_SUFFIX_PREFILL: '1'
+  BEI_BILLING_HEADERS: X-Baseten
+  BEI_EXPERIMENTAL_MULTIPLIER_PRIORITY: '2.0'
+  BEI_EXPERIMENTAL_MULTIPLIER_FLEX: '0.90'
 weights:
 - source: hf://baselabs/joey-1@9efbe485efbed9598dfca5294cbbe8da00e21908
   mount_location: /models/joey-1

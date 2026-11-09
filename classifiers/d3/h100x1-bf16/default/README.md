@@ -7,7 +7,7 @@ using Infinity v3. Answer typed questions about a shared state through SystemOne
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/d3`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/systemone`** API, with `/health` readiness/liveness probes.
@@ -392,9 +392,9 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/systemone
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/d3 --served-model-name
-    d3 --torch-device cuda --dtype bfloat16 --hostname 0.0.0.0 --port 8000 --auto-truncate
-    --decision-protocol d3 --max-batch-tokens 32768
+  start_command: /usr/local/bin/bei --model-id /models/d3 --served-model-name d3 --torch-device
+    cuda --dtype bfloat16 --hostname 0.0.0.0 --port 8000 --auto-truncate --decision-protocol
+    d3 --max-batch-tokens 32768
 runtime:
   predict_concurrency: 32
   health_checks:
@@ -421,9 +421,9 @@ model_metadata:
   - systemone
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://vllm-sr/d3@093cffbaa7be6f5dfe14252ae7e80c396c06dbd9
   mount_location: /models/d3

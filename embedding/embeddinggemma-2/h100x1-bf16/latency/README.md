@@ -7,7 +7,7 @@ using Infinity v3. Generate text embedding vectors for semantic search, retrieva
 Infinity v3 serves this model with the native `infinity_v3` binary, not the older
 Python `infinity_emb v2` server. The generated recipe uses:
 
-- Container image **`ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3`**.
+- Container image **`baseten/bei:v3.0.1-a50c8393cbfa-nvidia`**.
 - Weights mounted at **`/models/embeddinggemma-2`** before startup.
 - CUDA compute dtype **`bfloat16`**.
 - The native **`/v1/embeddings`** API, with `/health` readiness/liveness probes.
@@ -447,7 +447,7 @@ docker_server:
   server_port: 8000
   no_build: true
   predict_endpoint: /v1/embeddings
-  start_command: /usr/local/bin/infinity_v3 --model-id /models/embeddinggemma-2 --served-model-name
+  start_command: /usr/local/bin/bei --model-id /models/embeddinggemma-2 --served-model-name
     google/embeddinggemma-2 --torch-device cuda --dtype bfloat16 --hostname 0.0.0.0
     --port 8000 --auto-truncate --max-batch-tokens 8192
 runtime:
@@ -472,9 +472,9 @@ model_metadata:
   - multimodal
   - infinity-v3
 base_image:
-  image: ghcr.io/michaelfeil/infinity_v3:nvidia-3.0.1-beta.3
+  image: baseten/bei:v3.0.1-a50c8393cbfa-nvidia
 environment_variables:
-  INFINITY_BILLING_HEADERS: X-Baseten
+  BEI_BILLING_HEADERS: X-Baseten
 weights:
 - source: hf://google/embeddinggemma-2@914f7f89142e33e77833254d9c9b90c3cef7303b
   mount_location: /models/embeddinggemma-2
