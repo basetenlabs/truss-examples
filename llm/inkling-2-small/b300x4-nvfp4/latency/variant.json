@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b300",
+    "count": 4
+  },
+  "quantization": {
+    "name": "nvfp4",
+    "status": "sourced",
+    "evidence": "hf-quantization-config",
+    "weight_formats": [
+      "nvfp4",
+      "mxfp8"
+    ],
+    "checkpoint": {
+      "repository": "thinkingmachines/Inkling-2-Small",
+      "revision": "b0e7afb8892a07897c78ce1c5b801a0d9cbd5e7b"
+    }
+  },
+  "engine": {
+    "kind": "sglang",
+    "backend": "sglang",
+    "version": "lmsysorg/sglang:dev-inkling-2-small@sha256:424c1da97f6d6eef1612006c77b2ca791657a8184c1fbdbc682ebf9485d3b32c"
+  },
+  "limits": []
+}

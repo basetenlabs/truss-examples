@@ -1,0 +1,86 @@
+# Thinking Machines' Inkling 2 Small on the public NVFP4 checkpoint
+# thinkingmachines/Inkling-2-Small (ungated, Apache-2.0; no HF token needed).
+#
+# Inkling-2-Small is not in an SGLang release yet (upstream PR sgl-project/sglang#50186). The
+# image is SGLang's official dev image for it, lmsysorg/sglang:dev-inkling-2-small, pinned by
+# digest; it reads the public checkpoint (model_type inkling2) directly. The earlier image,
+# with Thinking Machines' early-access fork prebaked, only accepts the early-access
+# model_type inkling2_mm_model and crash-loops on the public checkpoint.
+#
+# Flags follow SGLang's Inkling-2-Small cookbook B300 NVFP4 recipe
+# (DSpark, marked in-progress upstream): TP4/EP4, the DeepGEMM MegaMoE
+# backend, fa4 attention, page size 128, xgrammar, images, and the inkling reasoning and
+# inkling2 tool-call parsers.
+# DSPARK speculative decoding is on, with the recipe's --max-running-requests 192. Upstream
+# says the draft covers the full window; this preset keeps the 131,072-token cap it had with
+# the fork. The full-context preset is llm/inkling-2-small/b300x4-nvfp4/long-context.
+model_name: "model:inkling-2-small preset:b300x4-nvfp4-latency"
+model_metadata:
+  description: >-
+    Thinking Machines Inkling 2 Small (NVFP4/MXFP8 MoE, 384 routed experts, top-8)
+    served with SGLang's Inkling-2-Small dev image on four B300 GPUs, with image input,
+    reasoning and tool calling, and DSPARK speculative decoding at a 131,072-token context.
+  repo_id: thinkingmachines/Inkling-2-Small
+  tags:
+    - openai-compatible
+  example_model_input:
+    model: thinkingmachines/inkling-2-small
+    messages:
+      - role: user
+        content: "Summarize how a transformer works in three sentences."
+    stream: true
+    max_tokens: 1024
+    temperature: 1.0
+
+base_image:
+  image: lmsysorg/sglang:dev-inkling-2-small@sha256:424c1da97f6d6eef1612006c77b2ca791657a8184c1fbdbc682ebf9485d3b32c
+
+weights:
+  # Public, ungated (Apache-2.0): 24 safetensors shards + mtp.safetensors, ~394 GB.
+  - source: "hf://thinkingmachines/Inkling-2-Small@b0e7afb8892a07897c78ce1c5b801a0d9cbd5e7b"
+    mount_location: /models/inkling2
+
+docker_server:
+  start_command: >-
+    sh -c 'exec python3 -m sglang.launch_server
+    --model-path /models/inkling2
+    --served-model-name thinkingmachines/inkling-2-small
+    --host 0.0.0.0
+    --port 8000
+    --tp 4
+    --ep 4
+    --moe-a2a-backend megamoe
+    --attention-backend fa4
+    --bf16-gemm-backend torch
+    --dtype bfloat16
+    --page-size 128
+    --speculative-algorithm DSPARK
+    --max-running-requests 192
+    --grammar-backend xgrammar
+    --enable-multimodal
+    --reasoning-parser inkling
+    --tool-call-parser inkling2
+    --context-length 131072'
+  readiness_endpoint: /health
+  liveness_endpoint: /health
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+
+resources:
+  accelerator: B300:4
+  instance_type: B300:4
+  use_gpu: true
+
+runtime:
+  predict_concurrency: 64
+  streaming_read_timeout: 3600
+  health_checks:
+    startup_threshold_seconds: 3000
+    restart_threshold_seconds: 1200
+    stop_traffic_threshold_seconds: 120
+
+environment_variables:
+  HF_HUB_OFFLINE: "1"
+  # From the cookbook recipe: caps MegaMoE's per-rank token buffer so it covers a 16,384-token
+  # prefill chunk at EP4 while costing ~1.2% of the KV pool (8192 default: ~6.2%).
+  SGLANG_OPT_DEEPGEMM_MEGA_MOE_NUM_MAX_TOKENS_PER_RANK: "4096"
