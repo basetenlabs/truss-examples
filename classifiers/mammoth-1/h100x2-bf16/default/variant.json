@@ -16,7 +16,7 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": "baseten/bei:v3.0.1-a50c8393cbfa-nvidia"
+    "version": "baseten/bei:7b311e3e-nvidia@sha256:1e7149e35aa91e5087212aaf1d75085f831c7d6c27ca594f1a1c58a5add1c94e"
   },
   "limits": []
 }
