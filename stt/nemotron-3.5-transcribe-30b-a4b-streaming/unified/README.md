@@ -22,7 +22,7 @@ torch stack (NVIDIA validates Python 3.13), while baseten-stt runs on the server
 
 | Piece | What |
 |---|---|
-| Server | `baseten/stt-server:0.2.0` (baseten-stt v0.2.0), Python 3.12 |
+| Server | `baseten/stt-server:0.3.0` (baseten-stt v0.3.0), Python 3.12 |
 | Backend | `packages/nemotron_stt`: the template's stream unchanged except for the name, and an engine that calls a sidecar |
 | Engine | The batch preset's `vllm serve` (`stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch`, NVIDIA's model-card flags: MTP-8, FP32 SSM state, utilization 0.94, 65,536-token window, no async scheduling; thinking off), launched by `build()` from `/opt/nemo-speech/venv` on `127.0.0.1:8000` |
 | Decode | One `/v1/chat/completions` request per final or partial: the turn's PCM as WAV, prompt "Transcribe this audio." unless the session sets a language or context (below) |
@@ -40,7 +40,7 @@ Weights, build and engine envelope match the batch preset (see its README):
 - **Envelope.** The batch preset's `vllm serve` flags, written out in
   `packages/sidecar/start_vllm.sh`, and its `environment_variables`. The sidecar drops only
   the CTC timestamp middleware and listens on localhost.
-- **Turn length.** stt-server 0.2.0 cuts a turn at 29 s (`BASETEN_STT_MAX_TURN_S`, unset here),
+- **Turn length.** stt-server (since 0.2.0) cuts a turn at 29 s (`BASETEN_STT_MAX_TURN_S`, unset here),
   as for the other unified presets, and the final says `ended_by: max_turn_length`. That keeps
   a final's decode bounded. The model's 65,536-token window would hold about an hour per turn,
   so the cap can be raised (up to 3600, or `0` for none) at the cost of final latency.

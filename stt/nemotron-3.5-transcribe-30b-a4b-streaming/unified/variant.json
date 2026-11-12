@@ -16,7 +16,7 @@
   "engine": {
     "kind": "custom",
     "backend": null,
-    "version": "baseten/stt-server:0.2.0"
+    "version": "baseten/stt-server:0.3.0"
   },
   "limits": []
 }

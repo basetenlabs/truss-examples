@@ -22,10 +22,12 @@ weights:
     mount_location: "/app/checkpoint/model"
 
 base_image:
-  # stt-server 0.2.0 (basetenlabs/baseten-stt v0.2.0, from 99bc151), as the other unified
-  # presets. Built by baseten-stt's build-server-images.yml, with signed provenance:
+  # stt-server 0.3.0 (basetenlabs/baseten-stt v0.3.0, from 81a7c9b), as the other unified
+  # presets. 0.3.0 times Silero's resets by audio analyzed, so `server_vad` turn ends no
+  # longer move with load (#45), and adds opt-in batched voice detection (#44, left off here).
+  # Built by baseten-stt's build-server-images.yml, with signed provenance:
   #
-  #   gh attestation verify oci://baseten/stt-server:0.2.0 --repo basetenlabs/baseten-stt
+  #   gh attestation verify oci://baseten/stt-server:0.3.0 --repo basetenlabs/baseten-stt
   #
   # Over the dev-8eaf894 this preset was first measured on: the wait for a slot at a full
   # replica (#26), the 29 s turn cut (#27), decode-language negotiation (#29, unused here) and
@@ -34,8 +36,8 @@ base_image:
   # The slim variant: python:3.12-slim with baseten-stt installed. The `-vllm` variant's vLLM
   # is too old for this model, so the engine stack is built below instead.
   #
-  # Published as sha256:c1236b8fc35f59733ea7b905c8d5bea0c394aaedb2dd24332a87558d5976e048.
-  image: baseten/stt-server:0.2.0
+  # Published as sha256:b689f860bd76ef4d6754f7bb646d23731abf48f80c019f73b29cf6a033574d82.
+  image: baseten/stt-server:0.3.0
 
 system_packages:
   # Triton compiles a CUDA helper at runtime with the system C compiler, and FlashInfer
