@@ -43,7 +43,7 @@ The checkpoint must expose the tokenizer, weights, and pooling configuration sup
 
 ### Checkpoint-specific usage
 
-Qwen3-VL-Embedding-8B embeds text and images into a shared 4096-dimensional vector space. This public Apache-2.0 checkpoint requires no Hugging Face token. The preset uses one H100 with BF16 weights and compute, without dynamic FP8. The 16384-token batch budget includes visual tokens and is not a promise of the model card's full 32K context on this configuration. Infinity applies the native chat template; send plain text or user messages rather than manually formatting vision tokens or supplying custom system prompts. The generated multimodal client shows independent text and image requests for retrieval.
+Qwen3-VL-Embedding-8B embeds text and images into a shared 4096-dimensional vector space. This public Apache-2.0 checkpoint requires no Hugging Face token. The preset uses one H100 with BF16 weights and compute, without dynamic FP8. The 16384-token batch budget includes visual tokens and is not a promise of the model card's full 32K context on this configuration. BEI v3 applies the native chat template; send plain text or user messages rather than manually formatting vision tokens or supplying custom system prompts. The generated multimodal client shows independent text and image requests for retrieval.
 
 ## Deployment with Truss
 
@@ -435,7 +435,7 @@ model_metadata:
   - openai-compatible
   - embedding
   - multimodal
-  - infinity-v3
+  - bei-v3
 bei:
   backend: nvidia
   configuration:

@@ -20,7 +20,7 @@ model_metadata:
   - embedding
   - multilingual
   - multimodal
-  - infinity-v3
+  - bei-v3
 bei:
   backend: nvidia
   configuration:

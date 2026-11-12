@@ -18,7 +18,7 @@ model_metadata:
   - openai-compatible
   - embedding
   - multimodal
-  - infinity-v3
+  - bei-v3
 bei:
   backend: nvidia
   configuration:

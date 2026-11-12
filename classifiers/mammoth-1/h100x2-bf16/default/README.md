@@ -52,7 +52,7 @@ Requires a checkpoint with a trained typed-decision head or protocol. The HTTP r
 
 ### Checkpoint-specific usage
 
-Mammoth 27B accepts a shared state and named choice, noul, and score questions through the OneJev protocol. The pinned checkpoint stores BF16 weights; Infinity converts supported projection weights to FP8 at startup while attention, normalization, embeddings, and heads retain BF16. Each H100 holds a complete model replica. Supply the configured served model name in requests. Do not treat the example questions as an application policy or trigger side effects without validating the returned decisions.
+Mammoth 27B accepts a shared state and named choice, noul, and score questions through the OneJev protocol. The pinned checkpoint stores BF16 weights; BEI v3 converts supported projection weights to FP8 at startup while attention, normalization, embeddings, and heads retain BF16. Each H100 holds a complete model replica. Supply the configured served model name in requests. Do not treat the example questions as an application policy or trigger side effects without validating the returned decisions.
 
 ## Deployment with Truss
 

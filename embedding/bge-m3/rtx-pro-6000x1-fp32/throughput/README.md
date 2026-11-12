@@ -43,7 +43,7 @@ The checkpoint must expose the tokenizer, weights, and pooling configuration sup
 
 ### Checkpoint-specific usage
 
-This preset serves BGE-M3 dense embeddings only: 1024-dimensional normalized CLS vectors from the XLM-RoBERTa backbone. It does not expose BGE-M3 sparse lexical weights or ColBERT multi-vector outputs. The checkpoint is public and requires no token. It stores its backbone in pytorch_model.bin, which is mounted and loaded by Infinity; the unused sparse_linear.pt and colbert_linear.pt heads are excluded. Checkpoint storage precision is FP32 and CUDA compute is BF16. BGE-M3 supports up to 8192 input tokens; the 16384-token setting is a batch budget, not a larger per-input limit. No query instruction prefix is required for this model.
+This preset serves BGE-M3 dense embeddings only: 1024-dimensional normalized CLS vectors from the XLM-RoBERTa backbone. It does not expose BGE-M3 sparse lexical weights or ColBERT multi-vector outputs. The checkpoint is public and requires no token. It stores its backbone in pytorch_model.bin, which is mounted and loaded by BEI v3; the unused sparse_linear.pt and colbert_linear.pt heads are excluded. Checkpoint storage precision is FP32 and CUDA compute is BF16. BGE-M3 supports up to 8192 input tokens; the 16384-token setting is a batch budget, not a larger per-input limit. No query instruction prefix is required for this model.
 
 ## Deployment with Truss
 
@@ -435,7 +435,7 @@ model_metadata:
   - openai-compatible
   - embedding
   - multilingual
-  - infinity-v3
+  - bei-v3
 bei:
   backend: nvidia
   configuration:

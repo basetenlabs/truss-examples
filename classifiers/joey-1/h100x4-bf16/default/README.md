@@ -52,7 +52,7 @@ Requires a checkpoint with a trained typed-decision head or protocol. The HTTP r
 
 ### Checkpoint-specific usage
 
-joey-1 is a 2B decision model post-trained from Qwen3.5-2B. It accepts a shared state and named choice, noul, and score questions through the OneJev protocol, answering every question from one shared-prefix prefill. Requests are limited to 16,384 tokens; longer requests are refused, not truncated. The pinned checkpoint stores BF16 weights; Infinity converts supported projection weights to FP8 at startup while attention, normalization, embeddings, and heads retain BF16. Each H100 holds a complete model replica. Supply the configured served model name in requests. Do not treat the example questions as an application policy or trigger side effects without validating the returned decisions.
+joey-1 is a 2B decision model post-trained from Qwen3.5-2B. It accepts a shared state and named choice, noul, and score questions through the OneJev protocol, answering every question from one shared-prefix prefill. Requests are limited to 16,384 tokens; longer requests are refused, not truncated. The pinned checkpoint stores BF16 weights; BEI v3 converts supported projection weights to FP8 at startup while attention, normalization, embeddings, and heads retain BF16. Each H100 holds a complete model replica. Supply the configured served model name in requests. Do not treat the example questions as an application policy or trigger side effects without validating the returned decisions.
 
 ## Deployment with Truss
 

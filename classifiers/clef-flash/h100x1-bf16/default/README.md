@@ -427,7 +427,7 @@ model_metadata:
   tags:
   - classification
   - systemone
-  - infinity-v3
+  - bei-v3
 bei:
   backend: nvidia
   configuration:
