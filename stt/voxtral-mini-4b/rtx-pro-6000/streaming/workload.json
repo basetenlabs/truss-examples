@@ -31,7 +31,7 @@
           "mu-bench-full",
           "pipecat"
         ],
-        "num_samples": 150,
+        "num_samples": 250,
         "scoring_methods": [
           "naive"
         ],
