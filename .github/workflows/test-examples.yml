@@ -5,6 +5,15 @@ on:
     # Runs daily at 6am UTC
     - cron: '0 6 * * *'
   workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/test-examples.yml
+      - bin/test_example.py
+      - ci.yaml
+
+concurrency:
+  group: test-examples-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   generate_tests:
@@ -23,6 +32,8 @@ jobs:
           echo "tests=$TESTS" >> $GITHUB_OUTPUT
 
   ci:
+    # Forks get no secrets, so the tests can't deploy.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     needs:
       - generate_tests
@@ -36,7 +47,7 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11.4'
+          python-version: '3.11.18'
       - name: Install dependencies (if any)
         run: |
           python -m pip install --upgrade pip
