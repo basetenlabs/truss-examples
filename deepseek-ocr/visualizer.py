@@ -7,6 +7,7 @@ Handles bounding box drawing and geometric visualization
 import base64
 import io
 import re
+from ast import literal_eval
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -33,7 +34,7 @@ class DeepSeekOCRVisualizer:
         """Extract coordinates and labels from reference text"""
         try:
             label_type = ref_text[1]
-            cor_list = eval(ref_text[2])
+            cor_list = literal_eval(ref_text[2])
         except Exception as e:
             print(f"Error extracting coordinates: {e}")
             return None
@@ -186,9 +187,9 @@ class DeepSeekOCRVisualizer:
             if "line_type" not in outputs:
                 return None
 
-            lines = eval(outputs)["Line"]["line"]
-            line_type = eval(outputs)["Line"]["line_type"]
-            endpoints = eval(outputs)["Line"]["line_endpoint"]
+            lines = literal_eval(outputs)["Line"]["line"]
+            line_type = literal_eval(outputs)["Line"]["line_type"]
+            endpoints = literal_eval(outputs)["Line"]["line_endpoint"]
 
             fig, ax = plt.subplots(figsize=(3, 3), dpi=200)
             ax.set_xlim(-15, 15)
@@ -196,8 +197,8 @@ class DeepSeekOCRVisualizer:
 
             for idx, line in enumerate(lines):
                 try:
-                    p0 = eval(line.split(" -- ")[0])
-                    p1 = eval(line.split(" -- ")[-1])
+                    p0 = literal_eval(line.split(" -- ")[0])
+                    p1 = literal_eval(line.split(" -- ")[-1])
 
                     if line_type[idx] == "--":
                         ax.plot(
@@ -216,7 +217,7 @@ class DeepSeekOCRVisualizer:
             for endpoint in endpoints:
                 try:
                     label = endpoint.split(": ")[0]
-                    (x, y) = eval(endpoint.split(": ")[1])
+                    (x, y) = literal_eval(endpoint.split(": ")[1])
                     ax.annotate(
                         label,
                         (x, y),
@@ -229,12 +230,12 @@ class DeepSeekOCRVisualizer:
                     pass
 
             try:
-                if "Circle" in eval(outputs).keys():
-                    circle_centers = eval(outputs)["Circle"]["circle_center"]
-                    radius = eval(outputs)["Circle"]["radius"]
+                if "Circle" in literal_eval(outputs).keys():
+                    circle_centers = literal_eval(outputs)["Circle"]["circle_center"]
+                    radius = literal_eval(outputs)["Circle"]["radius"]
 
                     for center, r in zip(circle_centers, radius):
-                        center = eval(center.split(": ")[1])
+                        center = literal_eval(center.split(": ")[1])
                         circle = Circle(
                             center,
                             radius=r,
