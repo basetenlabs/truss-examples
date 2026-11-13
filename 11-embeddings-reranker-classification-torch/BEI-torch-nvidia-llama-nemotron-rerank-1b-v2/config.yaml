@@ -1,0 +1,25 @@
+model_metadata:
+  example_model_input:
+    query: what is baseten?
+    documents:
+      - Baseten is a model deployment platform.
+      - Bananas are yellow.
+    model: model
+model_name: BEI-torch-nvidia-llama-nemotron-rerank-1b-v2-truss-example
+python_version: py39
+resources:
+  accelerator: L4
+  cpu: '1'
+  memory: 15Gi
+  use_gpu: true
+trt_llm:
+  build:
+    base_model: encoder_torch
+    checkpoint_repository:
+      repo: nvidia/llama-nemotron-rerank-1b-v2
+      revision: main
+      source: HF
+    max_num_tokens: 32768
+    quantization_type: no_quant
+  runtime:
+    webserver_default_route: /rerank
