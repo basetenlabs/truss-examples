@@ -3,6 +3,7 @@
 # Running Falcon 7B requires torch, transformers,
 # and a few other related libraries.
 model_name: "LLM with Streaming"
+python_version: py311
 model_metadata:
     example_model_input: {"prompt": "what is the meaning of life"}
 requirements:

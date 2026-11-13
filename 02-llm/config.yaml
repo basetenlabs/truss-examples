@@ -21,7 +21,7 @@ resources:
   accelerator: A10G
   use_gpu: true
 secrets:
-  hf_access_token: "ENTER HF ACCESS TOKEN HERE"
+  hf_access_token: null
 system_packages: []
 # # Deploy the model
 #
