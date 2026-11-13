@@ -8,7 +8,7 @@ using BEI v3. Generate text embedding vectors for semantic search, retrieval, an
 BEI v3 serves this model through the `bei:` configuration supported by
 **Truss 0.18.40 or newer**. Truss manages the native server command, no-build
 container, port `8080`, and `/health` probes. The generated recipe pins its NVIDIA image by digest:
-`baseten/bei:7b311e3e-nvidia@sha256:1e7149e35aa91e5087212aaf1d75085f831c7d6c27ca594f1a1c58a5add1c94e`.
+`baseten/bei:v3.0.1-81da98c1a120-nvidia@sha256:4983683b158cd8067858b8ec0aac3b68461e2d4cc3bb712455df0badfd7df4c4`.
 
 - Weights mounted at **`/models/all-minilm-l12-v2`** before startup.
 - CUDA compute dtype **`bfloat16`** (`BEI_DTYPE`).
@@ -478,7 +478,7 @@ weights:
   - openvino/**
   - rust_model.ot
 base_image:
-  image: baseten/bei:7b311e3e-nvidia@sha256:1e7149e35aa91e5087212aaf1d75085f831c7d6c27ca594f1a1c58a5add1c94e
+  image: baseten/bei:v3.0.1-81da98c1a120-nvidia@sha256:4983683b158cd8067858b8ec0aac3b68461e2d4cc3bb712455df0badfd7df4c4
 model_name: model:all-minilm-l12-v2 preset:throughput
 resources:
   instance_type: L4:4x16
