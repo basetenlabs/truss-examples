@@ -18,6 +18,8 @@ python_version: py39
 requirements:
 - torch>=2
 - audiocraft==1.3.0
+- transformers==4.35.0
+- numpy<2
 - torchaudio
 resources:
   accelerator: A10G

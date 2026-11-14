@@ -66,7 +66,7 @@ def report_failure(api: BasetenApi, model_id: str, deployment_id: str):
     print("Status:", api.get_deployment(model_id, deployment_id).get("status"))
     logs = api.get_model_deployment_logs(model_id, deployment_id)
     print(f"{len(logs)} log lines; last 40:")
-    print("\n".join(str(l.get("message", ""))[:300] for l in logs[-40:]))
+    print("\n".join(str(l.get("message", ""))[:3000] for l in logs[-40:]))
 
 
 def delete_model_deployment(api: BasetenApi, model_id: str, deployment_id: str) -> Any:
