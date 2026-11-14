@@ -1,11 +1,12 @@
 import json
+import re
 import sys
 from typing import Any
 
 import packaging.version
 import requests
 import truss
-from tenacity import retry, stop_after_attempt, wait_fixed, wait_random_exponential
+from tenacity import retry, stop_after_attempt, wait_fixed
 from truss.cli.cli import _get_truss_from_directory
 from truss.remote.baseten import BasetenRemote
 from truss.remote.baseten.api import BasetenApi
@@ -60,17 +61,17 @@ def attempt_inference(truss_handle, model_id, model_version_id, api_key):
     response.raise_for_status()
 
 
-@retry(
-    wait=wait_random_exponential(multiplier=1, max=120),
-    stop=stop_after_attempt(3),
-    reraise=True,
-)
-def deploy_truss(target_directory: str) -> str:
-    model_deployment = truss.push(
-        target_directory, remote=REMOTE_NAME, trusted=True, publish=True
-    )
-    model_deployment.wait_for_active(timeout_seconds=30 * 60)
-    return model_deployment.model_id, model_deployment.model_deployment_id
+def report_failure(api: BasetenApi, model_id: str, deployment_id: str):
+    """TEMPORARY (batch check): print status and error-looking log lines."""
+    try:
+        print("Status:", api.get_deployment(model_id, deployment_id).get("status"))
+        logs = api.get_model_deployment_logs(model_id, deployment_id)
+        pattern = re.compile(r"error|exception|traceback|failed|not found|no matching|killed|oom", re.I)
+        hits = [str(l.get("message", ""))[:300] for l in logs]
+        hits = [m for m in hits if pattern.search(m)]
+        print("\n".join(hits[-40:]))
+    except Exception as e:
+        print(f"Could not fetch failure details: {e}")
 
 
 def delete_model_deployment(api: BasetenApi, model_id: str, deployment_id: str) -> Any:
@@ -102,15 +103,25 @@ def clean_up_deployments(model_name: str, model_id: str):
 def main(api_key: str, target_directory: str):
     write_trussrc_file(api_key)
     truss_handle = _get_truss_from_directory(target_directory)
-    model_id, model_version_id = deploy_truss(target_directory)
-    print(f"Deployed Truss {model_version_id}")
+    # TEMPORARY (batch check): one attempt, always deactivate afterwards.
+    deployment = truss.push(
+        target_directory, remote=REMOTE_NAME, trusted=True, publish=True
+    )
+    model_id, model_version_id = deployment.model_id, deployment.model_deployment_id
+    print(f"Deployed Truss {model_id}:{model_version_id}")
+    api = RemoteFactory.create(REMOTE_NAME).api
     try:
+        deployment.wait_for_active(timeout_seconds=30 * 60)
         attempt_inference(truss_handle, model_id, model_version_id, api_key)
-    finally:  # If inference fails, still the last N versions are left deployed.
-        try:
-            clean_up_deployments(truss_handle.spec.config.model_name, model_id)
-        except Exception as e:
-            print(f"Error when deleting old deployments: {e}")
+    except Exception:
+        report_failure(api, model_id, model_version_id)
+        raise
+    finally:
+        resp = requests.post(
+            f"{api._rest_api_url}/v1/models/{model_id}/deployments/{model_version_id}/deactivate",
+            headers=api._auth_token.header(),
+        )
+        print(f"Deactivate {model_id}:{model_version_id}: {resp.status_code} {resp.text[:200]}")
 
 
 if __name__ == "__main__":
