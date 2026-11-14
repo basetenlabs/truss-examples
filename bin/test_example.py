@@ -124,7 +124,7 @@ def deactivate_all(api: BasetenApi, model_id: str):
     # cancelled runs. Batches must not list examples that daily CI uses.
     client = api._rest_api_client
     for d in client.get(f"v1/models/{model_id}/deployments")["deployments"]:
-        if d["status"] != "INACTIVE":
+        if d["status"] != "INACTIVE" and not d["status"].endswith("FAILED"):
             client.post(
                 f"v1/models/{model_id}/deployments/{d['id']}/deactivate", body={}
             )
