@@ -119,19 +119,20 @@ def main(api_key: str, target_directory: str):
         report_failure(api, model_id, model_version_id)
         raise
     finally:
-        # Deactivate every deployment of this model, including leftovers from
-        # cancelled runs. Batches must not list examples that daily CI uses.
-        client = api._rest_api_client
-        for d in client.get(f"v1/models/{model_id}/deployments")["deployments"]:
-            if d["status"] == "INACTIVE":
-                continue
-            try:
-                client.post(
-                    f"v1/models/{model_id}/deployments/{d['id']}/deactivate", body={}
-                )
-                print(f"Deactivated {model_id}:{d['id']} (was {d['status']})")
-            except Exception as e:
-                print(f"Deactivate {model_id}:{d['id']} failed: {e}")
+        deactivate_all(api, model_id)
+
+
+@retry(wait=wait_fixed(20), stop=stop_after_attempt(5))
+def deactivate_all(api: BasetenApi, model_id: str):
+    # Deactivate every deployment of this model, including leftovers from
+    # cancelled runs. Batches must not list examples that daily CI uses.
+    client = api._rest_api_client
+    for d in client.get(f"v1/models/{model_id}/deployments")["deployments"]:
+        if d["status"] != "INACTIVE":
+            client.post(
+                f"v1/models/{model_id}/deployments/{d['id']}/deactivate", body={}
+            )
+            print(f"Deactivated {model_id}:{d['id']} (was {d['status']})")
 
 
 if __name__ == "__main__":
