@@ -226,6 +226,58 @@ Levers not yet measured: partials every 1-2 s instead of 0.5 s (fewer decodes pe
 FP8 checkpoint (more KV cache), and more server processes (`--api-server-count`, baseten-stt
 workers) if the single-process hypothesis holds.
 
+## FlashInfer autotune reuse (on by default)
+
+`NEMOTRON_AUTOTUNE_REUSE=1` lets a warm start skip FlashInfer's start-time tuning for the ops
+in the autotune file the BDN startup cache restored. vLLM 0.32 loads that file but FlashInfer
+0.7.0.post1 still re-profiles `checkpointing_ssu` every start (its cold-L2 policy ignores file
+entries while tuning). `packages/sidecar/autotune_hook/sitecustomize.py` runs inside vLLM right before kernel warmup loads the file and
+skips only when the file is the one vLLM resolves for this exact config (same vLLM config hash),
+is the only one in the cache, and matches the installed FlashInfer version and this GPU's name.
+Cold starts and mismatches tune as before and log `autotune_reuse:` with the reason. `0` opts
+out. Same implementation as the H100 streaming preset, vendored here.
+
+`NEMOTRON_DIAG_RESTART_ONCE=1` (diagnostic) starts vLLM twice in the container so the reuse is
+measured on a warm start; see `packages/sidecar/start_vllm.sh`.
+
+`NEMOTRON_DIAG_WARMUP_PROFILE=1` (diagnostic) profiles the STT warmup, which takes ~85 s on RTX PRO
+6000 against ~3 s on H100 (one 1 s and one 8 s turn). It runs the warmup twice and logs, per turn
+(`diag[...]` lines), vLLM's request-time histogram deltas, CPU per sidecar process and thread with
+GPU utilisation every 10 s, SIGUSR2 Python stack dumps of the vLLM processes and the growth of each
+JIT cache directory (CUDA driver, Triton, Inductor, vLLM, FlashInfer). With
+`NEMOTRON_DIAG_RESTART_ONCE=1`, boot 1 runs it as well, so boot 2's first pass shows whether
+on-disk caches remove the cost. Logs carry no request content.
+
+What it found (exec-13, q9opglx): the 1 s and 8 s turns spend 27.6 s and 53.3 s in prefill, all of
+it in the MTP draft's FlashAttention 2 call (`vllm_flash_attn.flash_attn_varlen_func`) with the
+engine at 100% CPU and the GPU idle, and each adds one entry (19.2 / 31.5 MiB) to the CUDA driver's
+JIT cache. vLLM 0.32's `_vllm_fa2_C` ships only sm_80 SASS and compute_80 PTX, so on sm120 the
+driver compiles each FA2 kernel variant from PTX at first use (H100 runs FA3, sm_90 SASS). A
+second pass in the same process takes 5 s. The BDN startup cache already persists the driver cache
+(`CUDA_CACHE_PATH`), so later cold starts should skip it. `NEMOTRON_ATTENTION_BACKEND` (default
+unset) moves attention off FA2 (`TRITON_ATTN`, `FLASHINFER`). exec-14 showed that
+`--attention-backend` alone moves only the backbone: vLLM 0.32 auto-selects the MTP draft's
+backend unless `speculative_config.attention_backend` is set, so the draft stayed on FA2 and the
+warmup still took 75.9 s (FlashInfer) / 74.2 s (Triton). The start script now sets the draft's
+backend too; `NEMOTRON_DRAFT_ATTENTION_BACKEND` overrides it separately (`auto` = vLLM's pick).
+
+`FLASHINFER` for backbone and draft removes the FA2 warmup JIT (exec-18, qe7219p: boot1 warmup
+pass 1 10.8 s instead of 74-85 s) but is opt-in, not the default. Across cold starts on
+ali-ue1-prod-1 it served with a c32 tail (client p95 ~2.2-2.3 s and p95 time to first partial
+~1.0 s, against ~1.75 s / ~0.7 s) in 10 of 14 runs (exec-19, 20, 22, 23, 25, 27, 28, 31, 32,
+33; clean in exec-18, 21, 24, 29), with or without prebuilt FlashInfer modules. Every vLLM-auto
+(FA2) baseline on that cluster served cleanly (exec-26, 34). c1 and WER did not change. The
+cause is not identified. Triton for both (exec-16) also removes the JIT but raises c32 p95 by
+~30%. So the default stays vLLM's pick (FA2): a deployment's first cold start pays the ~85 s
+warmup JIT once, and the BDN startup cache restores the driver cache (`CUDA_CACHE_PATH`) for
+later starts.
+
+No FlashInfer module is prebuilt into the image. Image-built sm120f `checkpointing_ssu` and
+`trtllm_utils` cut cold start by ~55 s (init engine 190 vs 248 s here, 268 vs 323 s on the batch
+preset), but on the batch preset they raised c1 server p50 in all three cold starts that used them
+(445 / 496 / 569 ms against 302-373 ms; c96 and p95 unchanged; exec-43, 44, 50 vs 45-49), so they
+were dropped again. A cold start JIT-compiles `checkpointing_ssu` (~55 s) as main does.
+
 ## Tests
 
 ```bash
@@ -237,3 +289,7 @@ PYTHONPATH=stt/nemotron-3.5-transcribe-30b-a4b-streaming/unified/packages \
 The stream tests are the template's. The engine tests cover the request body, response
 parsing, the empty-output and truncated cases, cancellation, sidecar startup failure, the
 sidecar supervisor and the warmup audio. One stream test covers skipping unchanged partials.
+
+`tests/test_autotune_reuse.py` (standard library and pytest only) covers the reuse decision and
+the hook against a stand-in vLLM:
+`python -m pytest stt/nemotron-3.5-transcribe-30b-a4b-streaming/unified/tests/test_autotune_reuse.py`.

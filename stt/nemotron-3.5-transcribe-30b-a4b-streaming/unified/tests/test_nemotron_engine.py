@@ -9,9 +9,13 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import contextlib
 import io
 import json
+import os
 import subprocess
+import sys
+import time
 import wave
 
 import httpx
@@ -273,3 +277,105 @@ async def test_an_english_decode_with_a_modifier_apostrophe_is_kept_as_is():
             "en",
         )
     assert seen == [prompt_for("en")]
+
+
+# NEMOTRON_DIAG_WARMUP_PROFILE (diagnostic warmup profiler).
+
+_HOOK_DIR = engine.__file__.rsplit("/nemotron_stt/", 1)[0] + "/sidecar/autotune_hook"
+
+
+def test_warmup_profiles_every_turn(monkeypatch):
+    real_client = httpx.Client
+    monkeypatch.setattr(
+        engine.httpx, "Client",
+        lambda **kw: real_client(transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={"choices": []})), **kw),
+    )
+    turns = []
+
+    class Profiler:
+        def turn(self, name):
+            turns.append(name)
+            return contextlib.nullcontext()
+
+    engine._warmup("http://sidecar", Profiler(), label="boot1 pass1")
+    assert turns == [f"warmup boot1 pass1 {s:.0f}s" for s in engine.WARMUP_AUDIO_S] + [
+        f"warmup boot1 pass1 {engine.WARMUP_CONCURRENCY}x"
+    ]
+
+
+def test_parse_vllm_metrics_sums_label_sets():
+    text = (
+        "# HELP vllm:e2e_request_latency_seconds x\n"
+        'vllm:e2e_request_latency_seconds_sum{engine="0",model_name="m"} 1.5\n'
+        'vllm:e2e_request_latency_seconds_sum{engine="1",model_name="m"} 2.0\n'
+        'vllm:e2e_request_latency_seconds_count{engine="0",model_name="m"} 3.0\n'
+        'vllm:e2e_request_latency_seconds_bucket{le="1.0"} 9.0\n'
+        "vllm:num_requests_running 1.0\n"
+    )
+    assert engine._parse_vllm_metrics(text) == {
+        "vllm:e2e_request_latency_seconds_sum": 3.5,
+        "vllm:e2e_request_latency_seconds_count": 3.0,
+    }
+
+
+def test_process_tree_and_cache_sizes(tmp_path):
+    child = subprocess.Popen(["/bin/sh", "-c", "sleep 30"])
+    try:
+        assert child.pid in engine._descendants(os.getpid())
+        assert engine._proc_stat(os.getpid())[1] == os.getppid()
+    finally:
+        child.kill()
+        child.wait()
+    (tmp_path / "a").mkdir()
+    (tmp_path / "a" / "f").write_bytes(b"x" * 10)
+    assert engine._tree_size(str(tmp_path)) == (1, 10)
+    assert engine._tree_size(str(tmp_path / "missing")) == (0, 0)
+
+
+def test_stack_dumps_reach_only_registered_processes(tmp_path, monkeypatch, caplog):
+    """A registered process prints its stacks and lives; an unregistered one is never signalled
+    (SIGUSR2 would end it)."""
+    markers = tmp_path / "markers"
+    env = dict(os.environ, PYTHONPATH=_HOOK_DIR, NEMOTRON_DIAG_WARMUP_PROFILE="1",
+               NEMOTRON_DIAG_STACK_DIR=str(markers))
+    env.pop("NEMOTRON_AUTOTUNE_REUSE_HOOK", None)
+    root = subprocess.Popen(
+        [sys.executable, "-c",
+         "import subprocess, sys, time\n"
+         "plain = subprocess.Popen(['sleep', '60'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n"
+         "print(plain.pid, flush=True)\n"
+         "def waiting_in_python():\n    time.sleep(60)\n"
+         "waiting_in_python()\n"],
+        env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    try:
+        plain = int(root.stdout.readline())
+        assert (markers / str(root.pid)).exists()
+        monkeypatch.setenv("NEMOTRON_DIAG_STACK_DIR", str(markers))
+        profiler = engine._WarmupProfiler("http://127.0.0.1:9", root.pid, "test")
+        with caplog.at_level("INFO", logger=engine.logger.name):
+            profiler._dump_stacks("turn", 5.0)
+        assert f"[{root.pid}]" in caplog.text
+        time.sleep(1.0)
+        assert root.poll() is None
+        assert engine._proc_stat(plain) is not None
+    finally:
+        subprocess.run(["kill", "-9", str(plain)], check=False)  # it holds the pipes open
+        root.kill()
+        _, err = root.communicate(timeout=10)
+    assert "waiting_in_python" in err
+
+
+def test_profiled_turn_logs_a_summary(tmp_path, monkeypatch, caplog):
+    monkeypatch.setattr(engine, "DIAG_SAMPLE_AT_S", (0.05,))
+    monkeypatch.setattr(engine, "DIAG_SAMPLE_EVERY_S", 0.05)
+    monkeypatch.setattr(engine, "DIAG_STACKS_FROM_S", 1e9)
+    monkeypatch.setenv("TRITON_CACHE_DIR", str(tmp_path))
+    profiler = engine._WarmupProfiler("http://127.0.0.1:9", os.getpid(), "test")
+    with caplog.at_level("INFO", logger=engine.logger.name):
+        with profiler.turn("warmup 8s"):
+            (tmp_path / "kernel.cubin").write_bytes(b"x" * 2048)
+            time.sleep(0.3)
+    assert "diag[test] warmup 8s +0s: cpu" in caplog.text
+    assert "triton=+1f/" in caplog.text

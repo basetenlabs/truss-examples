@@ -80,6 +80,16 @@ build_commands:
   # flashinfer-jit-cache shim plus its sm120f provider (fused_moe_120, sampling).
   - uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=9630eeb32396adb89ce8ffa8465fedd14549eb2e2ad3aff182d9e69be4a12075' 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache_sm120f-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=1c8b5a3614fdc9ad4f0e26502c5438657e28d667d165b05ff0383ca8d208568f'
   - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as g; from flashinfer.jit.sampling import gen_sampling_module as s; assert g().is_aot and s().is_aot"
+  # Startup study (RTX arm): no FlashInfer module is prebuilt into the image. Image-built sm120f
+  # checkpointing_ssu/trtllm_utils saved ~55 s of cold start but raised batch c1 server p50 in all
+  # three cold starts that used them (445/496/569 vs 302-373 ms; exec-43/44/50). FlashInfer JIT-builds
+  # them on the first cold start (cached by the BDN startup cache), as on main.
+  # Byte-compile the engine venv at build (startup study); errors are left to import time.
+  - /opt/nemo-speech/venv/bin/python -m compileall -q -j 0 /opt/nemo-speech/venv/lib/python3.13/site-packages /opt/nemo-speech/src > /tmp/compileall-venv.log 2>&1 || echo "compileall venv - some files left uncompiled, $(grep -c Error /tmp/compileall-venv.log) errors"
+  # Fail the build unless the byte-compile actually wrote .pyc next to the engine's heaviest
+  # imports (timestamp-checked, no SOURCE_DATE_EPOCH, so the runtime loads them as is).
+  - /opt/nemo-speech/venv/bin/python -c "import importlib.util as u, pathlib, sys; import sysconfig; sp = pathlib.Path(sysconfig.get_paths()['purelib']); srcs = [sp / 'vllm/__init__.py', sp / 'torch/__init__.py', sp / 'flashinfer/__init__.py', sp / 'transformers/__init__.py', pathlib.Path('/opt/nemo-speech/src/nemo/__init__.py')]; missing = [str(s) for s in srcs if not pathlib.Path(u.cache_from_source(str(s))).exists()]; n = sum(1 for _ in sp.rglob('*.' + sys.implementation.cache_tag + '.pyc')); print('engine venv pyc files:', sp, n); assert not missing and n > 1000, ('compileall wrote no pyc for', missing, n)"
+  - python3 -m compileall -q -j 0 $(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])') > /tmp/compileall-server.log 2>&1 || echo "compileall server - some files left uncompiled, $(grep -c Error /tmp/compileall-server.log) errors"
 
 requirements:
   # The backend's client for the sidecar. Already in baseten-stt's resolve; pinned to it.
@@ -139,3 +149,35 @@ environment_variables:
   VLLM_AUDIO_FETCH_TIMEOUT: "120"
   # The V1 model runner, as the batch preset's vLLM 0.32 config.
   VLLM_USE_V2_MODEL_RUNNER: "0"
+  # Startup levers (Model Scout startup study; defaults reproduce main except autotune reuse, on). See the start script.
+  # NEMOTRON_FLASHINFER_AUTOTUNE: "0" passes --no-enable-flashinfer-autotune.
+  # NEMOTRON_WEIGHT_PREFETCH: "early" reads the checkpoint into the page cache in parallel during
+  #   imports (fails the start if it cannot fit or a read fails); "vllm" passes
+  #   --safetensors-load-strategy prefetch; "off" is main's mmap load.
+  NEMOTRON_FLASHINFER_AUTOTUNE: "1"
+  NEMOTRON_WEIGHT_PREFETCH: "off"
+  # NEMOTRON_AUTOTUNE_REUSE: "1" (default) skips FlashInfer tuning on a warm start for the ops in
+  #   this deployment's own saved autotune file, only when it is the file vLLM loads for this
+  #   exact config (same vLLM config hash, FlashInfer version and GPU name); serving reads the
+  #   tuned tactics from it. Cold starts and mismatches tune as before. "0" opts out.
+  # NEMOTRON_DIAG_RESTART_ONCE: "1" (diagnostic) starts vLLM twice in the container: boot 1 on a
+  #   private port, stopped once healthy, then boot 2 on the served port with boot 1's local
+  #   caches, so NEMOTRON_AUTOTUNE_REUSE is measured on a warm start. Ready only after boot 2.
+  # NEMOTRON_DIAG_WARMUP_PROFILE: "1" (diagnostic) runs the STT warmup twice and logs, per turn,
+  #   vLLM's request-time histograms, sidecar CPU/thread/GPU samples, SIGUSR2 stack dumps of the
+  #   vLLM processes and JIT cache growth (nemotron_stt/engine.py _WarmupProfiler). With
+  #   NEMOTRON_DIAG_RESTART_ONCE: "1", boot 1 runs the profiled warmup too.
+  NEMOTRON_AUTOTUNE_REUSE: "1"
+  NEMOTRON_DIAG_RESTART_ONCE: "0"
+  NEMOTRON_DIAG_WARMUP_PROFILE: "0"
+  # NEMOTRON_ATTENTION_BACKEND: "" (default) lets vLLM pick (FLASH_ATTN/FA2 on sm120, PTX-JITed by
+  #   the driver at first use: ~85 s of the STT warmup on a deployment's first cold start; the BDN
+  #   startup cache keeps the driver cache for later starts). A name passes --attention-backend and
+  #   the same "attention_backend" in --speculative-config, since the MTP draft does not inherit it
+  #   (exec-14). FLASHINFER (opt-in) removes the warmup JIT (exec-18: pass1 10.8 s) but served with
+  #   a c32 tail (p95 ~2.2 s vs ~1.75 s, TTFP ~1.0 s vs ~0.7 s) in 10 of 14 cold starts (README).
+  #   TRITON_ATTN for both (exec-16) costs ~30% c32 p95.
+  # NEMOTRON_DRAFT_ATTENTION_BACKEND: "" (default) follows NEMOTRON_ATTENTION_BACKEND; "auto" lets
+  #   vLLM pick the draft's backend; a name sets it separately. See start_vllm.sh.
+  NEMOTRON_ATTENTION_BACKEND: ""
+  NEMOTRON_DRAFT_ATTENTION_BACKEND: ""

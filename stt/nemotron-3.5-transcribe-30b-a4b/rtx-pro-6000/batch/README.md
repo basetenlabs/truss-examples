@@ -99,6 +99,22 @@ are 44.1 kHz stereo m4a URLs.
   mu-bench-full 23.14% (250). The card's limits measured 1.35%, 7.73% and
   22.87%.
 
+## FlashInfer autotune reuse (on by default)
+
+`NEMOTRON_AUTOTUNE_REUSE=1` lets a warm start skip FlashInfer's start-time tuning for the ops
+in the autotune file the BDN startup cache restored. vLLM 0.32 loads that file but FlashInfer
+0.7.0.post1 still re-profiles `checkpointing_ssu` every start (its cold-L2 policy ignores file
+entries while tuning). `data/autotune_hook/sitecustomize.py` runs inside vLLM right before kernel warmup loads the file and
+skips only when the file is the one vLLM resolves for this exact config (same vLLM config hash),
+is the only one in the cache, and matches the installed FlashInfer version and this GPU's name.
+Cold starts and mismatches tune as before and log `autotune_reuse:` with the reason. `0` opts
+out. Same implementation as the H100 streaming preset, vendored here.
+
+`NEMOTRON_DIAG_RESTART_ONCE=1` (diagnostic) starts vLLM twice in the container so the reuse is
+measured on a warm start; see `data/start.sh`.
+
+Tests: `python -m pytest stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch/tests/test_autotune_reuse.py`.
+
 ## Limits
 
 Audio costs about 12.5 prompt tokens per second and the transcript about 3-4

@@ -13,10 +13,12 @@ venv, and a decode is one chat-completions request to it.
 from __future__ import annotations
 
 import base64
+import contextlib
 import io
 import logging
 import os
 import random
+import shutil
 import signal
 import subprocess
 import threading
@@ -104,6 +106,37 @@ WARMUP_CONCURRENCY = 32
 WARMUP_REQUEST_TIMEOUT_S = float(os.environ.get("NEMOTRON_WARMUP_REQUEST_TIMEOUT_S", "900"))
 #: How long a server whose sidecar died gets to shut down on its own before it is exited.
 SIDECAR_EXIT_GRACE_S = 30.0
+#: NEMOTRON_DIAG_WARMUP_PROFILE=1 (diagnostic, default off): run the warmup twice and profile each
+#: turn (see _WarmupProfiler); with NEMOTRON_DIAG_RESTART_ONCE=1, start_vllm.sh also runs it against
+#: boot 1 (diag_warmup).
+DIAG_WARMUP_PROFILE = os.environ.get("NEMOTRON_DIAG_WARMUP_PROFILE", "0") == "1"
+#: Seconds into a turn at which the profiler samples; past the last, every DIAG_SAMPLE_EVERY_S.
+DIAG_SAMPLE_AT_S = (2.0, 5.0, 10.0)
+DIAG_SAMPLE_EVERY_S = 10.0
+#: Stack dumps per turn at most (from DIAG_STACKS_FROM_S on), to bound the log volume.
+DIAG_MAX_STACK_DUMPS = 6
+DIAG_STACKS_FROM_S = 5.0
+#: The sidecar-side vLLM histograms whose sums/counts the profiler diffs across a turn.
+DIAG_VLLM_METRICS = (
+    "vllm:e2e_request_latency_seconds",
+    "vllm:request_queue_time_seconds",
+    "vllm:request_prefill_time_seconds",
+    "vllm:request_decode_time_seconds",
+    "vllm:time_to_first_token_seconds",
+    "vllm:request_inference_time_seconds",
+)
+#: The JIT/compile cache directories (the BDN startup cache's, else each library's default), whose
+#: growth across a turn says which compiler ran. Read only; never set here.
+DIAG_CACHE_DIRS = (
+    ("cuda_driver", "CUDA_CACHE_PATH", "~/.nv/ComputeCache"),
+    ("triton", "TRITON_CACHE_DIR", "~/.triton/cache"),
+    ("inductor", "TORCHINDUCTOR_CACHE_DIR", "/tmp/torchinductor_root"),
+    ("vllm", "VLLM_CACHE_ROOT", "~/.cache/vllm"),
+    ("flashinfer", "FLASHINFER_WORKSPACE_BASE", "~/.cache/flashinfer"),
+    ("torch_ext", "TORCH_EXTENSIONS_DIR", "~/.cache/torch_extensions"),
+    ("numba", "NUMBA_CACHE_DIR", ""),
+    ("cute_dsl", "CUTE_DSL_CACHE_DIR", ""),
+)
 
 
 def pcm_to_wav(pcm: bytes) -> bytes:
@@ -255,13 +288,16 @@ def _warmup_audio(seconds: float) -> bytes:
     return b"".join(rng.randint(-3000, 3000).to_bytes(2, "little", signed=True) for _ in range(n))
 
 
-def _warmup() -> None:
+def _warmup(base_url: str = SIDECAR_URL, profiler: _WarmupProfiler | None = None, label: str = "") -> None:
     """Decode representative turns before the backend is published, failing startup if the
-    engine cannot. The transcripts are discarded; only completing matters."""
+    engine cannot. The transcripts are discarded; only completing matters.
+
+    ``profiler`` (diagnostic) wraps each turn; ``label`` prefixes the timing lines."""
+    prefix = f"warmup{label and ' ' + label}"
     clips = [_warmup_audio(s) for s in WARMUP_AUDIO_S]
     started = time.monotonic()
     with httpx.Client(
-        base_url=SIDECAR_URL,
+        base_url=base_url,
         timeout=httpx.Timeout(WARMUP_REQUEST_TIMEOUT_S, connect=5.0),
         limits=httpx.Limits(max_connections=WARMUP_CONCURRENCY),
     ) as client:
@@ -269,16 +305,262 @@ def _warmup() -> None:
         def decode(pcm: bytes) -> None:
             client.post("/v1/chat/completions", json=request_body(pcm)).raise_for_status()
 
+        def turn(name: str):
+            return profiler.turn(f"{prefix} {name}") if profiler else contextlib.nullcontext()
+
         for seconds, pcm in zip(WARMUP_AUDIO_S, clips):
             t0 = time.monotonic()
-            decode(pcm)
-            logger.info("warmup: %.0fs turn in %.1fs", seconds, time.monotonic() - t0)
+            with turn(f"{seconds:.0f}s"):
+                decode(pcm)
+            logger.info("%s: %.0fs turn in %.1fs", prefix, seconds, time.monotonic() - t0)
         burst = [clips[i % len(clips)] for i in range(WARMUP_CONCURRENCY)]
         t0 = time.monotonic()
-        with ThreadPoolExecutor(WARMUP_CONCURRENCY) as pool:
+        with turn(f"{len(burst)}x"), ThreadPoolExecutor(WARMUP_CONCURRENCY) as pool:
             list(pool.map(decode, burst))
-        logger.info("warmup: %d concurrent turns in %.1fs", len(burst), time.monotonic() - t0)
-    logger.info("warmup done in %.1fs", time.monotonic() - started)
+        logger.info("%s: %d concurrent turns in %.1fs", prefix, len(burst), time.monotonic() - t0)
+    logger.info("%s done in %.1fs", prefix, time.monotonic() - started)
+
+
+def _proc_stat(pid: int | str, tid: int | str | None = None) -> tuple[str, int, int] | None:
+    """(comm, ppid, utime + stime ticks) of a process (or one of its threads), None if gone."""
+    path = f"/proc/{pid}/task/{tid}/stat" if tid is not None else f"/proc/{pid}/stat"
+    try:
+        with open(path) as f:
+            raw = f.read()
+    except OSError:
+        return None
+    comm = raw[raw.index("(") + 1 : raw.rindex(")")]
+    fields = raw[raw.rindex(")") + 2 :].split()
+    return comm, int(fields[1]), int(fields[11]) + int(fields[12])
+
+
+def _descendants(root: int) -> list[int]:
+    """``root`` and every live process under it."""
+    children: dict[int, list[int]] = {}
+    for entry in os.listdir("/proc"):
+        if entry.isdigit():
+            st = _proc_stat(entry)
+            if st is not None:
+                children.setdefault(st[1], []).append(int(entry))
+    found, todo = [], [root]
+    while todo:
+        pid = todo.pop()
+        if pid in found or _proc_stat(pid) is None:
+            continue
+        found.append(pid)
+        todo.extend(children.get(pid, []))
+    return sorted(found)
+
+
+def _tree_size(path: str) -> tuple[int, int]:
+    """(files, bytes) under ``path``; (0, 0) when it does not exist."""
+    files = size = 0
+    for dirpath, _, names in os.walk(path):
+        for name in names:
+            try:
+                size += os.lstat(os.path.join(dirpath, name)).st_size
+                files += 1
+            except OSError:
+                pass
+    return files, size
+
+
+def _parse_vllm_metrics(text: str, names=DIAG_VLLM_METRICS) -> dict[str, float]:
+    """``<name>_sum`` and ``<name>_count`` of each histogram, summed over label sets."""
+    wanted = {f"{n}{suffix}" for n in names for suffix in ("_sum", "_count")}
+    out: dict[str, float] = {}
+    for line in text.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        key = line.split("{", 1)[0].split(" ", 1)[0]
+        if key in wanted:
+            try:
+                out[key] = out.get(key, 0.0) + float(line.rsplit(" ", 1)[1])
+            except ValueError:
+                pass
+    return out
+
+
+class _WarmupProfiler:
+    """Diagnostic (NEMOTRON_DIAG_WARMUP_PROFILE=1): what the sidecar does during each warmup turn.
+
+    The decode runs in vLLM's processes, not here, so for each turn this logs, from outside them:
+
+    * vLLM's own request histograms diffed across the turn (``/metrics``): e2e, queue, prefill,
+      decode, inference and TTFT seconds. Turn time not in e2e was spent before vLLM's request
+      accounting started (input processing in the API server).
+    * Samples at DIAG_SAMPLE_AT_S then every DIAG_SAMPLE_EVERY_S while the turn runs: CPU used
+      by each sidecar process and its busiest threads since the last sample, and GPU utilisation
+      (nvidia-smi, when present). Busy CPU with an idle GPU is a compile or a driver JIT.
+    * From DIAG_STACKS_FROM_S on, up to DIAG_MAX_STACK_DUMPS SIGUSR2 stack dumps of every sidecar
+      process that registered one (autotune_hook/sitecustomize.py), which name the code running.
+    * Growth of the JIT/compile cache directories (DIAG_CACHE_DIRS) across the turn: the CUDA
+      driver's (PTX JIT), Triton's, Inductor's, vLLM's, FlashInfer's.
+
+    Request content is never logged: only timings, process names, sizes and stacks.
+    """
+
+    def __init__(self, base_url: str, root_pid: int, tag: str) -> None:
+        self.base_url = base_url
+        self.root_pid = root_pid
+        self.tag = tag
+        self.marker_dir = os.environ.get("NEMOTRON_DIAG_STACK_DIR", "/tmp/nemotron-diag-stacks")
+        self.cache_dirs = []
+        for name, var, default in DIAG_CACHE_DIRS:
+            path = os.environ.get(var) or (os.path.expanduser(default) if default else "")
+            if path:
+                self.cache_dirs.append((name, path))
+        self.tick_s = 1.0 / os.sysconf("SC_CLK_TCK")
+        logger.info("diag[%s] profiler on: sidecar root pid %d, cache dirs %s", tag, root_pid,
+                    " ".join(f"{n}={p}" for n, p in self.cache_dirs))
+
+    def _metrics(self) -> dict[str, float]:
+        try:
+            with urllib.request.urlopen(f"{self.base_url}/metrics", timeout=5) as resp:
+                return _parse_vllm_metrics(resp.read().decode("utf-8", "replace"))
+        except Exception as e:  # noqa: BLE001 - diagnostic
+            logger.info("diag[%s] metrics unavailable: %s", self.tag, e)
+            return {}
+
+    def _caches(self) -> dict[str, tuple[int, int]]:
+        return {name: _tree_size(path) for name, path in self.cache_dirs}
+
+    def _cpu(self) -> dict[tuple[int, int | None], tuple[str, int]]:
+        """CPU ticks of each sidecar process (tid None) and each of its threads."""
+        out = {}
+        for pid in _descendants(self.root_pid):
+            st = _proc_stat(pid)
+            if st is None:
+                continue
+            out[pid, None] = (st[0], st[2])
+            try:
+                tids = os.listdir(f"/proc/{pid}/task")
+            except OSError:
+                continue
+            for tid in tids:
+                tst = _proc_stat(pid, tid)
+                if tst is not None:
+                    out[pid, int(tid)] = (tst[0], tst[2])
+        return out
+
+    def _gpu(self) -> str:
+        if not shutil.which("nvidia-smi"):
+            return "n/a"
+        try:
+            return subprocess.run(
+                ["nvidia-smi", "--query-gpu=utilization.gpu,memory.used", "--format=csv,noheader"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip().replace("\n", "; ")
+        except Exception as e:  # noqa: BLE001 - diagnostic
+            return f"n/a ({type(e).__name__})"
+
+    def _dump_stacks(self, name: str, at: float) -> None:
+        """SIGUSR2 to each sidecar process that registered a dump and is the process it was."""
+        signalled = []
+        for pid in _descendants(self.root_pid):
+            try:
+                with open(os.path.join(self.marker_dir, str(pid))) as f:
+                    expected = f.read().strip()
+                with open(f"/proc/{pid}/stat") as f:
+                    actual = f.read().rsplit(")", 1)[1].split()[19]
+            except (OSError, IndexError):
+                continue
+            if actual == expected:
+                signalled.append(pid)
+        logger.info("diag[%s] %s +%.0fs: stack dump of pids %s follows", self.tag, name, at, signalled)
+        for pid in signalled:
+            try:
+                os.kill(pid, signal.SIGUSR2)
+            except OSError:
+                pass
+
+    def _sample(self, name: str, at: float, last: dict) -> dict:
+        now = self._cpu()
+        span = max(at - last.get("_at", 0.0), 1e-3)
+        procs, threads = [], []
+        for (pid, tid), (comm, ticks) in now.items():
+            if (pid, tid) not in last:
+                continue
+            pct = 100.0 * (ticks - last[pid, tid][1]) * self.tick_s / span
+            (procs if tid is None else threads).append((pct, pid, tid, comm))
+        busy = " ".join(f"{comm}[{pid}]={pct:.0f}%" for pct, pid, _, comm in sorted(procs, reverse=True) if pct >= 1)
+        top = " ".join(f"{comm}[{tid}]={pct:.0f}%" for pct, _, tid, comm in sorted(threads, reverse=True)[:4] if pct >= 1)
+        logger.info("diag[%s] %s +%.0fs: cpu %s | threads %s | gpu %s", self.tag, name, at,
+                    busy or "idle", top or "idle", self._gpu())
+        now["_at"] = at
+        return now
+
+    @contextlib.contextmanager
+    def turn(self, name: str):
+        metrics0, caches0 = self._metrics(), self._caches()
+        cpu0 = self._cpu()
+        cpu0["_at"] = 0.0
+        done = threading.Event()
+        t0 = time.monotonic()
+
+        def sampler() -> None:
+            last, dumps, i = cpu0, 0, 0
+            while True:
+                at = DIAG_SAMPLE_AT_S[i] if i < len(DIAG_SAMPLE_AT_S) else (
+                    DIAG_SAMPLE_AT_S[-1] + DIAG_SAMPLE_EVERY_S * (i - len(DIAG_SAMPLE_AT_S) + 1))
+                i += 1
+                if done.wait(max(0.0, at - (time.monotonic() - t0))):
+                    return
+                try:
+                    last = self._sample(name, at, last)
+                    if at >= DIAG_STACKS_FROM_S and dumps < DIAG_MAX_STACK_DUMPS:
+                        dumps += 1
+                        self._dump_stacks(name, at)
+                except Exception as e:  # noqa: BLE001 - diagnostic
+                    logger.info("diag[%s] sample failed: %s", self.tag, e)
+
+        thread = threading.Thread(target=sampler, name="diag-warmup-sampler", daemon=True)
+        thread.start()
+        try:
+            yield
+        finally:
+            elapsed = time.monotonic() - t0
+            done.set()
+            thread.join(timeout=30)
+            try:
+                metrics1, caches1 = self._metrics(), self._caches()
+                deltas = " ".join(
+                    f"{k.removeprefix('vllm:')}=+{metrics1[k] - metrics0.get(k, 0.0):.2f}"
+                    for k in sorted(metrics1) if metrics1[k] != metrics0.get(k, 0.0)
+                )
+                grown = " ".join(
+                    f"{n}=+{caches1[n][0] - caches0[n][0]}f/+{(caches1[n][1] - caches0[n][1]) / 2**20:.1f}MiB"
+                    f"(now {caches1[n][1] / 2**20:.1f}MiB)"
+                    for n in caches1 if caches1[n] != caches0.get(n)
+                )
+                logger.info("diag[%s] %s: %.2fs | vllm %s | caches grown %s", self.tag, name, elapsed,
+                            deltas or "unchanged", grown or "none")
+            except Exception as e:  # noqa: BLE001 - diagnostic
+                logger.info("diag[%s] %s: %.2fs (summary failed: %s)", self.tag, name, elapsed, e)
+
+
+def _profiled_warmups(base_url: str, root_pid: int, tag: str) -> None:
+    """The diagnostic warmup: twice in this process, every turn profiled. Pass 1 is the cold one
+    (fails startup as the normal warmup would); pass 2 shows what this process's caches fix."""
+    profiler = _WarmupProfiler(base_url, root_pid, tag)
+    times = []
+    for n in (1, 2):
+        t0 = time.monotonic()
+        _warmup(base_url, profiler, label=f"{tag} pass{n}")
+        times.append(time.monotonic() - t0)
+    logger.info("diag[%s] warmup pass1 %.1fs, pass2 %.1fs", tag, *times)
+
+
+def diag_warmup(port: int, root_pid: int, tag: str) -> None:
+    """The profiled warmup against another vLLM (start_vllm.sh's boot 1 under
+    NEMOTRON_DIAG_RESTART_ONCE=1 and NEMOTRON_DIAG_WARMUP_PROFILE=1), from its own interpreter."""
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(name)s | %(message)s")
+    try:
+        _profiled_warmups(f"http://127.0.0.1:{port}", root_pid, tag)
+    except Exception:
+        logger.exception("diag[%s] warmup failed", tag)
+        raise
 
 
 def _supervise(proc: subprocess.Popen) -> None:
@@ -310,9 +592,16 @@ def build() -> NemotronBackend:
     logger.info("starting engine sidecar: %s", SIDECAR_SCRIPT)
     proc = subprocess.Popen(["/bin/bash", SIDECAR_SCRIPT])
     _wait_for_sidecar(proc, SIDECAR_STARTUP_TIMEOUT_S)
+    if os.environ.get("NEMOTRON_DIAG_RESTART_ONCE") == "1":
+        # start_vllm.sh's diagnostic second start answered /health (boot 1 used a private port).
+        logger.info("diag restart: boot2 ready")
     if WARMUP:
         try:
-            _warmup()
+            if DIAG_WARMUP_PROFILE:
+                tag = "boot2" if os.environ.get("NEMOTRON_DIAG_RESTART_ONCE") == "1" else "boot"
+                _profiled_warmups(SIDECAR_URL, proc.pid, tag)
+            else:
+                _warmup()
         except Exception:
             proc.terminate()
             raise
