@@ -66,7 +66,9 @@ def report_failure(api: BasetenApi, model_id: str, deployment_id: str):
     try:
         print("Status:", api.get_deployment(model_id, deployment_id).get("status"))
         logs = api.get_model_deployment_logs(model_id, deployment_id)
-        pattern = re.compile(r"error|exception|traceback|failed|not found|no matching|killed|oom", re.I)
+        pattern = re.compile(
+            r"error|exception|traceback|failed|not found|no matching|killed|oom", re.I
+        )
         hits = [str(l.get("message", ""))[:300] for l in logs]
         hits = [m for m in hits if pattern.search(m)]
         print("\n".join(hits[-40:]))
@@ -121,7 +123,9 @@ def main(api_key: str, target_directory: str):
             f"{api._rest_api_url}/v1/models/{model_id}/deployments/{model_version_id}/deactivate",
             headers=api._auth_token.header(),
         )
-        print(f"Deactivate {model_id}:{model_version_id}: {resp.status_code} {resp.text[:200]}")
+        print(
+            f"Deactivate {model_id}:{model_version_id}: {resp.status_code} {resp.text[:200]}"
+        )
 
 
 if __name__ == "__main__":
