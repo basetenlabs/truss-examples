@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 from typing import Any
 
@@ -61,19 +60,13 @@ def attempt_inference(truss_handle, model_id, model_version_id, api_key):
     response.raise_for_status()
 
 
+@retry(wait=wait_fixed(20), stop=stop_after_attempt(4))
 def report_failure(api: BasetenApi, model_id: str, deployment_id: str):
-    """TEMPORARY (batch check): print status and error-looking log lines."""
-    try:
-        print("Status:", api.get_deployment(model_id, deployment_id).get("status"))
-        logs = api.get_model_deployment_logs(model_id, deployment_id)
-        pattern = re.compile(
-            r"error|exception|traceback|failed|not found|no matching|killed|oom", re.I
-        )
-        hits = [str(l.get("message", ""))[:300] for l in logs]
-        hits = [m for m in hits if pattern.search(m)]
-        print("\n".join(hits[-40:]))
-    except Exception as e:
-        print(f"Could not fetch failure details: {e}")
+    """TEMPORARY (batch check): print status and the tail of the logs."""
+    print("Status:", api.get_deployment(model_id, deployment_id).get("status"))
+    logs = api.get_model_deployment_logs(model_id, deployment_id)
+    print(f"{len(logs)} log lines; last 40:")
+    print("\n".join(str(l.get("message", ""))[:300] for l in logs[-40:]))
 
 
 def delete_model_deployment(api: BasetenApi, model_id: str, deployment_id: str) -> Any:
@@ -116,7 +109,10 @@ def main(api_key: str, target_directory: str):
         deployment.wait_for_active(timeout_seconds=30 * 60)
         attempt_inference(truss_handle, model_id, model_version_id, api_key)
     except Exception:
-        report_failure(api, model_id, model_version_id)
+        try:
+            report_failure(api, model_id, model_version_id)
+        except Exception as e:
+            print(f"Could not fetch failure details: {e}")
         raise
     finally:
         deactivate_all(api, model_id)
