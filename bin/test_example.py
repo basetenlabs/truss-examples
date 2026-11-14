@@ -118,7 +118,7 @@ def main(api_key: str, target_directory: str):
         deactivate_all(api, model_id)
 
 
-@retry(wait=wait_fixed(20), stop=stop_after_attempt(5))
+@retry(wait=wait_fixed(30), stop=stop_after_attempt(10))
 def deactivate_all(api: BasetenApi, model_id: str):
     # Deactivate every deployment of this model, including leftovers from
     # cancelled runs. Batches must not list examples that daily CI uses.
