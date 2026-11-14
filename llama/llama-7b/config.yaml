@@ -23,7 +23,8 @@ requirements:
 - torch==2.0.1
 - peft==0.3.0
 - sentencepiece==0.1.99
-- git+https://github.com/huggingface/transformers.git
+- transformers==4.30.2
+- accelerate==0.20.3
 resources:
   accelerator: A10G
   cpu: '3'
