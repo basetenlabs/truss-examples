@@ -10,9 +10,9 @@ jobs:
   warm_chains:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: chainguard-actions/actions-checkout@31bbccf724702f8a0dc7a3ed7db8fcca2066babc # v4.4.0
       - name: Set up Python environment
-        uses: actions/setup-python@v2
+        uses: chainguard-actions/actions-setup-python@c1869dcf3733fc23f862a7b6ebb625aba29b87e2 # v2.3.4
         with:
           python-version: '3.11.4'
       - name: Install dependencies (if any)

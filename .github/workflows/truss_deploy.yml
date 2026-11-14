@@ -14,12 +14,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: chainguard-actions/actions-checkout@31bbccf724702f8a0dc7a3ed7db8fcca2066babc # v4.4.0
               with:
                 fetch-depth: 0
 
             - name: Set up Python
-              uses: actions/setup-python@v5
+              uses: chainguard-actions/actions-setup-python@ace3254bb5011efbd0650a7120a0441ebd1f9400 # v5.6.0
               with:
                 python-version: 3.11
 
