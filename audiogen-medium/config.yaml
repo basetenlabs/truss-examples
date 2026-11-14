@@ -27,3 +27,12 @@ resources:
 secrets: {}
 system_packages:
 - ffmpeg
+- pkg-config
+- build-essential
+- libavformat-dev
+- libavcodec-dev
+- libavdevice-dev
+- libavutil-dev
+- libavfilter-dev
+- libswscale-dev
+- libswresample-dev
