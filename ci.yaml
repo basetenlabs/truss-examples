@@ -1,7 +1,11 @@
 tests:
-  - clip
-  - dis-segmentation
   - kokoro
-  - layoutlm-document-qa
-  - piper-tts
-  - whisper/faster-whisper-small
+  - whisper/faster-whisper-v2
+  - segment-anything
+  - audiogen-medium
+  - musicgen-large
+  - musicgen-melody
+  - stable-diffusion/sdxl-controlnet
+  - llama/llama-7b
+  - llama/llama-7b-vllm
+  - qwen/qwen-7b-chat
