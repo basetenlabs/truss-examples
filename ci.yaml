@@ -1,11 +1,14 @@
 tests:
-  - kokoro
-  - whisper/faster-whisper-v2
-  - segment-anything
   - audiogen-medium
-  - musicgen-large
-  - musicgen-melody
-  - stable-diffusion/sdxl-controlnet
   - llama/llama-7b
+  - stable-diffusion/sdxl-controlnet
   - llama/llama-7b-vllm
   - qwen/qwen-7b-chat
+  - 11-embeddings-reranker-classification-tensorrt/TEI-alibaba-nlp-gte-modernbert-base-embedding
+  - 11-embeddings-reranker-classification-tensorrt/TEI-jina-ai-jina-embeddings-v2-base-en
+  - 11-embeddings-reranker-classification-tensorrt/TEI-nomic-ai-nomic-embed-text-v1.5
+  - 11-embeddings-reranker-classification-tensorrt/TEI-taylorai-bge-micro-v2
+  - comfyui-truss
+  - python-function-call-sandbox
+  - inference-ssh/tune-vllm-args
+  - qwen/qwen3guard-stream-0.6b-sglang
