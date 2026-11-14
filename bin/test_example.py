@@ -119,13 +119,19 @@ def main(api_key: str, target_directory: str):
         report_failure(api, model_id, model_version_id)
         raise
     finally:
-        resp = requests.post(
-            f"{api._rest_api_url}/v1/models/{model_id}/deployments/{model_version_id}/deactivate",
-            headers=api._auth_token.header(),
-        )
-        print(
-            f"Deactivate {model_id}:{model_version_id}: {resp.status_code} {resp.text[:200]}"
-        )
+        # Deactivate every deployment of this model, including leftovers from
+        # cancelled runs. Batches must not list examples that daily CI uses.
+        client = api._rest_api_client
+        for d in client.get(f"v1/models/{model_id}/deployments")["deployments"]:
+            if d["status"] == "INACTIVE":
+                continue
+            try:
+                client.post(
+                    f"v1/models/{model_id}/deployments/{d['id']}/deactivate", body={}
+                )
+                print(f"Deactivated {model_id}:{d['id']} (was {d['status']})")
+            except Exception as e:
+                print(f"Deactivate {model_id}:{d['id']} failed: {e}")
 
 
 if __name__ == "__main__":
