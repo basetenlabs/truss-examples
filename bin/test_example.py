@@ -97,6 +97,16 @@ def clean_up_deployments(model_name: str, model_id: str):
 
 def main(api_key: str, target_directory: str):
     write_trussrc_file(api_key)
+    if target_directory.startswith("deactivate:"):
+        # TEMPORARY: one-off cleanup of a single leftover deployment.
+        _, model_id, deployment_id = target_directory.split(":")
+        client = RemoteFactory.create(REMOTE_NAME).api._rest_api_client
+        path = f"v1/models/{model_id}/deployments/{deployment_id}"
+        print("Before:", client.get(path).get("status"))
+        if client.get(path).get("status") != "INACTIVE":
+            client.post(f"{path}/deactivate", body={})
+        print("After:", client.get(path).get("status"))
+        return
     truss_handle = _get_truss_from_directory(target_directory)
     # TEMPORARY (batch check): one attempt, always deactivate afterwards.
     deployment = truss.push(
