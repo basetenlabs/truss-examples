@@ -17,7 +17,7 @@ class Model:
             "huggyllama/llama-7b",
         )
         self._model = LlamaForCausalLM.from_pretrained(
-            str(self._data_dir),
+            "huggyllama/llama-7b",
             torch_dtype=torch.float16,
             device_map="auto",
         )
