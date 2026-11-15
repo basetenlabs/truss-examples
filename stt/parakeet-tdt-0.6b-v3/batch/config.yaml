@@ -62,7 +62,13 @@ environment_variables:
   # allocated GPU memory unchanged at 3.25 GiB (rounds 8-9 pod logs).
   ENCODER_GRAPH_BATCH_SIZES: "1,2,4,6,8,10,12,14,16"
   ENCODER_GRAPH_MAX_SECONDS: "30"
-  ENCODER_GRAPH_STEP_SECONDS: "1"
+  # Model Scout startup study (2026-11-13, #1267, two matched pairs on ali-ue1): 2 s length
+  # steps capture 135 graphs instead of 270, cutting encoder capture from 100-103 s to ~51 s and
+  # startup from 111-114 s to ~62 s (runs 43503035256 / 43511583556). A batch pads up to 2 s
+  # rather than 1 s past its longest clip (+0.6 s per pipecat batch, ~0.1 ms encoder time);
+  # padded frames are masked and WER matched (mu-bench 18.68/18.77%, pipecat 3.19/3.17%).
+  # "1" is the matched baseline.
+  ENCODER_GRAPH_STEP_SECONDS: "2"
   # Decode batch N on a second CUDA stream while batch N+1's encoder graph
   # replays (#926, see model/model.py). Model Scout round 11 (run 39767116873,
   # same cluster, aws-uw2) lifted audio xRT 11.4%; round 13 (run 39777023292,

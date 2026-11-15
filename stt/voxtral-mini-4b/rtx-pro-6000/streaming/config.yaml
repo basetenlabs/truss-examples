@@ -4,10 +4,11 @@ model_metadata:
 weights:
   - source: "hf://mistralai/Voxtral-Mini-4B-Realtime-2602@2769294da9567371363522aac9bbcfdd19447add"
     mount_location: "/app/checkpoint/model"
-environment_variables:
-  VLLM_CACHE_ROOT: /cache/org/vllm
-  TORCHINDUCTOR_CACHE_DIR: /cache/org/inductor
-  TRITON_CACHE_DIR: /cache/org/triton
+# VLLM_CACHE_ROOT, TORCHINDUCTOR_CACHE_DIR and TRITON_CACHE_DIR stay unset: the platform's
+# startup cache sets them to paths it restores into every new pod. Pointing them at the shared
+# /cache/org mount (as this preset did) skips that restore, and on another preset it hung startup
+# until the 3000 s check killed it (#1077, #1079); tests/test_registry_jit_cache_dirs.py.
+environment_variables: {}
 base_image:
   image: "baseten/vllm-openai:0.22.0-voxtral-realtime-fixes"
 docker_server:

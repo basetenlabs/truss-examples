@@ -91,7 +91,8 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   replay the preprocessor and encoder from graphs captured at startup, one per batch size in
   `ENCODER_GRAPH_BATCH_SIZES` (up to the first covering `MAX_BATCH_SIZE`) and length step of
   `ENCODER_GRAPH_STEP_SECONDS` up to `ENCODER_GRAPH_MAX_SECONDS`. `config.yaml` captures batch sizes
-  1,2,4,6,8,10,12,14,16 (270 graphs; the code default 1,2,4,8,16 gives 150). Model Scout round 9 (run
+  1,2,4,6,8,10,12,14,16 in 2 s steps (135 graphs; the code default 1,2,4,8,16 in 1 s steps gives
+  150; see "Startup" below for the 2 s grid). Model Scout round 9 (run
   39750926774, same cluster) adopted the even sizes: a 9-15 clip batch no longer pads to 16 rows, which
   cut the encoder median by 28-43% for 5-6 and 9-12 clip batches (batch 9: 50.7 to 32.8 ms) and server
   p50 at c=64 from 48 to 42 ms, with throughput and WER tied. Capturing 270 graphs takes 56-74 s at
@@ -150,3 +151,23 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   model-defined label is the bounded `phase` set; there are no request-level or audio-level labels.
 - Bench: `baseten_predict` → `perf.stt_transcription` + `quality.stt_transcription`.
 - License: CC-BY-4.0 (attribution required).
+
+## Startup
+
+`ENCODER_GRAPH_STEP_SECONDS` is `"2"`: the encoder graphs are captured every 2 s of audio length
+instead of every 1 s, 135 graphs instead of 270. Measured in the Model Scout startup study
+(2026-11-13; two matched pairs, cold boots, same cluster;
+[records](../../../model-scout/experiments/stt/parakeet-tdt-0.6b-v3/README.md)):
+
+| Pair | `model.load` 1 s grid | `model.load` 2 s grid | encoder capture 1 s / 2 s |
+| --- | ---: | ---: | ---: |
+| round 1 | 121.5 s | 73.5 s | 100.3 / 50.5 s |
+| round 2 | 128.6 s | 72.0 s | 102.8 / 50.7 s |
+
+That is about 50 s off every boot, and 0.8 GiB less GPU memory after load. WER is within 0.1 pt
+on mu-bench-full and pipecat (250 clips each). A batch now pads up to 2 s past its longest clip;
+per-batch timing logs put the extra encoder time at about 0.1 ms per batch, against 135-405 ms
+server p50. In the repeat pair, pipecat server p95 was equal to the 1 s grid at c1-c16 and lower at
+c32; server p50 swings both ways between cells and runs on the same cluster, and client throughput
+is not settled (see the study records). A capture failure still fails startup. To go back, set
+`ENCODER_GRAPH_STEP_SECONDS=1`.
