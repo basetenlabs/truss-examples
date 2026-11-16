@@ -1,10 +1,174 @@
 {
   "schema_version": 1,
-  "status": "out_of_scope",
-  "perf_gate_applicable": false,
-  "profile": null,
-  "definition": null,
-  "initial_relative_tolerance": null,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "speed",
+      "kind": "perf.diarization",
+      "serial": true,
+      "config": {
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "ami",
+          "callhome",
+          "aishell4",
+          "ami-sdm",
+          "notsofar1",
+          "voxconverse"
+        ],
+        "num_samples": 5,
+        "concurrency_levels": [
+          1,
+          8
+        ]
+      }
+    },
+    {
+      "name": "der=ami",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "ami"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=ami-sdm",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "ami-sdm"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=callhome",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "callhome"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=aishell4",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "aishell4"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=notsofar1",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "notsofar1"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=voxconverse",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "diarization_input",
+        "request_extra": {
+          "latency": "offline"
+        },
+        "transcribe": false,
+        "datasets": [
+          "voxconverse"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
   "noise_band_measured": false,
-  "reason": "Diarization-only: the reply carries speaker segments and no text, and b10-bench has no diarization accuracy metric to gate on yet."
+  "source": {
+    "path": ".github/actions/run-b10-bench/modalities/stt/spec.py",
+    "reason": "b10-bench's standard diarization suite (diar-std-v3); obtain a baseline."
+  },
+  "baseline_status": "missing",
+  "bench": {
+    "protocol": "diarization_input",
+    "task": "diarization",
+    "request_extra": {
+      "latency": "offline"
+    }
+  }
 }

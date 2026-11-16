@@ -1,10 +1,157 @@
 {
   "schema_version": 1,
-  "status": "out_of_scope",
-  "perf_gate_applicable": false,
-  "profile": null,
-  "definition": null,
-  "initial_relative_tolerance": null,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "speed",
+      "kind": "perf.diarization",
+      "serial": true,
+      "config": {
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "ami",
+          "callhome",
+          "aishell4",
+          "ami-sdm",
+          "notsofar1",
+          "voxconverse"
+        ],
+        "num_samples": 5,
+        "concurrency_levels": [
+          1,
+          8
+        ]
+      }
+    },
+    {
+      "name": "der=ami",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "ami"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=ami-sdm",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "ami-sdm"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=callhome",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "callhome"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=aishell4",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "aishell4"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=notsofar1",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "notsofar1"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    },
+    {
+      "name": "der=voxconverse",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "batch",
+        "protocol": "transcription_input",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "voxconverse"
+        ],
+        "num_samples": null,
+        "concurrency": 4,
+        "collar_s": 0.0,
+        "request_timeout_s": 1800
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
   "noise_band_measured": false,
-  "reason": "Speaker-attributed transcription over a nested transcription_input predict envelope that b10-bench has no batch protocol for yet; cpWER scoring lives in this preset's own harness (see BENCHMARK.md)."
+  "source": {
+    "path": ".github/actions/run-b10-bench/modalities/stt/spec.py",
+    "reason": "b10-bench's standard diarization suite (diar-std-v3); obtain a baseline."
+  },
+  "baseline_status": "missing",
+  "bench": {
+    "protocol": "transcription_input",
+    "task": "transcribe_diarize"
+  }
 }

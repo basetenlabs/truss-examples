@@ -1,10 +1,196 @@
 {
   "schema_version": 1,
-  "status": "out_of_scope",
-  "perf_gate_applicable": false,
-  "profile": null,
-  "definition": null,
-  "initial_relative_tolerance": null,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
+  "profile": "full",
+  "definition": [
+    {
+      "name": "latency",
+      "kind": "perf.diarization",
+      "serial": true,
+      "config": {
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "voxconverse",
+          "notsofar1",
+          "callhome"
+        ],
+        "sessions": {
+          "voxconverse": [
+            "eazeq",
+            "eguui",
+            "gkiki",
+            "cqfmj",
+            "bvyvm",
+            "fpfvy",
+            "cwbvu",
+            "erslt"
+          ],
+          "notsofar1": [
+            "MTG_32009",
+            "MTG_32049",
+            "MTG_32073",
+            "MTG_32042",
+            "MTG_32045",
+            "MTG_32048",
+            "MTG_32066",
+            "MTG_32068"
+          ],
+          "callhome": [
+            "callhome_eng_0003",
+            "callhome_eng_0000",
+            "callhome_eng_0007",
+            "callhome_eng_0002"
+          ]
+        },
+        "concurrency_levels": [
+          4
+        ]
+      }
+    },
+    {
+      "name": "capacity",
+      "kind": "perf.diarization",
+      "serial": true,
+      "config": {
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "voxconverse"
+        ],
+        "num_samples": 64,
+        "min_duration_s": 180,
+        "max_duration_s": 480,
+        "concurrency_levels": [
+          16,
+          32,
+          64
+        ]
+      }
+    },
+    {
+      "name": "der=ami",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "ami"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    },
+    {
+      "name": "der=ami-sdm",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "ami-sdm"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    },
+    {
+      "name": "der=callhome",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "callhome"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    },
+    {
+      "name": "der=aishell4",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "aishell4"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    },
+    {
+      "name": "der=notsofar1",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "notsofar1"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    },
+    {
+      "name": "der=voxconverse",
+      "kind": "quality.diarization",
+      "serial": true,
+      "config": {
+        "suite": "diar-std-v3",
+        "mode": "streaming",
+        "protocol": "nemotron_realtime",
+        "request_extra": {},
+        "transcribe": true,
+        "datasets": [
+          "voxconverse"
+        ],
+        "num_samples": 8,
+        "concurrency": 16,
+        "collar_s": 0.0
+      }
+    }
+  ],
+  "initial_relative_tolerance": 0.1,
   "noise_band_measured": false,
-  "reason": "Speaker-attributed streaming over a preset-specific WebSocket contract that b10-bench has no streaming protocol for yet; cpWER scoring lives in this preset's own harness (see BENCHMARK.md)."
+  "source": {
+    "path": ".github/actions/run-b10-bench/modalities/stt/spec.py",
+    "reason": "b10-bench's standard diarization suite (diar-std-v3); obtain a baseline."
+  },
+  "baseline_status": "missing",
+  "bench": {
+    "protocol": "nemotron_realtime",
+    "task": "transcribe_diarize"
+  }
 }
