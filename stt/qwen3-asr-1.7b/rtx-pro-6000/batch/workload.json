@@ -150,6 +150,46 @@
       "serial": true
     },
     {
+      "name": "data=podcast-5min,chart",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-5min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          16
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 180.0,
+        "measurement_duration_s": 240.0,
+        "warmup_duration_s": 60.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-30min,chart",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-30min"
+        ],
+        "num_samples": 32,
+        "concurrency_levels": [
+          1,
+          4,
+          16
+        ],
+        "batch_protocol": "openai_transcriptions",
+        "request_timeout_s": 240.0,
+        "measurement_duration_s": 300.0,
+        "warmup_duration_s": 120.0
+      },
+      "serial": true
+    },
+    {
       "name": "quality",
       "kind": "quality.stt_transcription",
       "config": {
@@ -180,6 +220,18 @@
     "profile_overrides": {
       "full": "full-batch-length"
     },
-    "capacity_concurrency": 96
+    "capacity_concurrency": 96,
+    "chart_cells": {
+      "podcast-5min": [
+        1,
+        4,
+        16
+      ],
+      "podcast-30min": [
+        1,
+        4,
+        16
+      ]
+    }
   }
 }

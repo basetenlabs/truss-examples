@@ -24,6 +24,29 @@
       }
     },
     {
+      "name": "data=pipecat,chart",
+      "kind": "perf.stt_streaming",
+      "config": {
+        "datasets": [
+          "pipecat"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32
+        ],
+        "warmup_request_count": 2,
+        "protocol": "voxtral_realtime",
+        "enable_partials": true,
+        "ws_path": "/websocket",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602"
+      },
+      "serial": true
+    },
+    {
       "name": "quality",
       "kind": "quality.stt_streaming",
       "config": {
@@ -52,6 +75,15 @@
   "baseline_status": "accepted",
   "bench": {
     "protocol": "voxtral_realtime",
-    "capacity_concurrency": 32
+    "capacity_concurrency": 32,
+    "chart_cells": {
+      "pipecat": [
+        1,
+        4,
+        8,
+        16,
+        32
+      ]
+    }
   }
 }
