@@ -22,9 +22,9 @@ jobs:
       tests: ${{ steps.generate-matrix.outputs.tests }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: chainguard-actions/actions-checkout@31bbccf724702f8a0dc7a3ed7db8fcca2066babc # v4.4.0
       - name: yq - portable yaml processor
-        uses: mikefarah/yq@v4.35.2
+        uses: chainguard-actions/mikefarah-yq@6a1e078deaa34c9fc0c3e1bb904faeb45e792cf6 # v4.54.2
       - name: Generate all tests that need to be run
         id: generate-matrix
         run: |
@@ -43,9 +43,9 @@ jobs:
       matrix:
         test: ${{ fromJSON(needs.generate_tests.outputs.tests) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: chainguard-actions/actions-checkout@31bbccf724702f8a0dc7a3ed7db8fcca2066babc # v4.4.0
       - name: Set up Python environment
-        uses: actions/setup-python@v5
+        uses: chainguard-actions/actions-setup-python@ace3254bb5011efbd0650a7120a0441ebd1f9400 # v5.6.0
         with:
           python-version: '3.11.18'
       - name: Install dependencies (if any)
@@ -64,7 +64,7 @@ jobs:
       - name: get-branch
         run: echo ${{ github.ref }}
       - name: show-slack-status
-        uses: 8398a7/action-slack@v3
+        uses: chainguard-actions/8398a7-action-slack@f61be439726281ffef6ba03905e077117d05df89 # v3.19.0
         with:
           status: custom
           fields: author, job, commit, repo

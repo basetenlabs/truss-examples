@@ -5,7 +5,7 @@ description: "setups python, poetry and associated cache"
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-python@v5
+    - uses: chainguard-actions/actions-setup-python@ace3254bb5011efbd0650a7120a0441ebd1f9400 # v5.6.0
       with:
         python-version: '3.11.18'
 
@@ -22,7 +22,7 @@ runs:
       shell: bash
 
     - name: Set up cache
-      uses: actions/cache@v4
+      uses: chainguard-actions/actions-cache@1a492a110f951652a0d2d3327bc20ee36867788e # v4
       id: cache
       with:
         path: .venv
