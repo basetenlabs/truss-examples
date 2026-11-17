@@ -1,0 +1,7 @@
+# TODO: Fill this out
+stable_diffusion:
+  name: Stable Diffusion
+  path: "stable-diffusion/stable-diffusion"
+qwen-vl:
+  name: "Quen VL"
+  path: "qwen/qwen-vl"
