@@ -6,7 +6,6 @@ from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 
 class Model:
     def __init__(self, **kwargs) -> None:
-        self._data_dir = kwargs["data_dir"]
         self._config = kwargs["config"]
         self._secrets = kwargs["secrets"]
         self._model = None
@@ -17,7 +16,7 @@ class Model:
             "huggyllama/llama-7b",
         )
         self._model = LlamaForCausalLM.from_pretrained(
-            str(self._data_dir),
+            "huggyllama/llama-7b",
             torch_dtype=torch.float16,
             device_map="auto",
         )
