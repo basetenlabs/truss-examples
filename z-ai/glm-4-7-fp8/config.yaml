@@ -1,0 +1,32 @@
+model_metadata:
+  example_model_input:
+    messages:
+      - role: system
+        content: "You are a helpful assistant."
+      - role: user
+        content: "Write FizzBuzz in Python"
+    stream: true
+    model: "glm-4.7-fp8"
+    max_tokens: 131072
+    temperature: 1.0
+    top_p: 0.95
+  tags:
+    - openai-compatible
+model_name: GLM-4.7-FP8
+base_image:
+  image: lmsysorg/sglang@sha256:cedd5a9d449444c2f1460e549efe7cded85e2e46246efb8d00c1eba1f917e5b0
+docker_server:
+  start_command: sh -c "GPU_COUNT=$(nvidia-smi --list-gpus | wc -l); python3 -m sglang.launch_server --model-path zai-org/GLM-4.7-FP8 --tp-size $GPU_COUNT --tool-call-parser glm47 --reasoning-parser glm45 --speculative-algorithm EAGLE --speculative-num-steps 3 --speculative-eagle-topk 1 --speculative-num-draft-tokens 4 --mem-fraction-static 0.8 --served-model-name glm-4.7-fp8 --host 0.0.0.0 --port 8000"
+  readiness_endpoint: /health_generate
+  liveness_endpoint: /health_generate
+  predict_endpoint: /v1/chat/completions
+  server_port: 8000
+resources:
+  accelerator: H100:8
+  use_gpu: true
+runtime:
+  predict_concurrency: 256
+  health_checks:
+    restart_check_delay_seconds: 1500 # Waits 15 minutes after deployment before starting health checks
+    restart_threshold_seconds: 30 # Triggers a restart if health checks fail for 30 seconds
+    stop_traffic_threshold_seconds: 30 # Stops traffic if health checks fail for 30 seconds
