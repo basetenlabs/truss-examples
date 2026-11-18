@@ -1,0 +1,19 @@
+description: Configuration for the Natural SQL 7B model following truss documentation conventions.
+model_name: Natural SQL 7B
+python_version: py311
+requirements_file: ./natural-sql-7b/requirements.txt
+model_metadata:
+  example_model_input: '{"question": "Show me the day with the most users joining", "schema": "CREATE TABLE users (user_id SERIAL PRIMARY KEY, username VARCHAR(50) NOT NULL, email VARCHAR(100) NOT NULL, password_hash TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);"}'
+resources:
+  use_gpu: true
+  accelerator: A10G
+model_cache:
+  repo_id: chatdb/natural-sql-7b
+  revision: main
+  allow_patterns: []
+  ignore_patterns: []
+requirements:
+  - transformers==4.35.2
+  - accelerate>=0.25.0
+  - sqlparse>=0.4.2
+external_package_dirs: []
