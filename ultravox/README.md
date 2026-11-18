@@ -9,7 +9,7 @@ This Truss is compatible with a *custom* version of our [bridge endpoint for Ope
 ```
 client = OpenAI(
     api_key=os.environ["BASETEN_API_KEY"],
-    base_url=f"https://bridge.baseten.co/{model_id}/direct/v1"
+    base_url=f"https://bridge.baseten.co/{model_id}/v1/direct"
 )
 ```
 
@@ -64,7 +64,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="YOUR-API-KEY",
-    base_url="https://bridge.baseten.co/MODEL-ID/v1"
+    base_url="https://bridge.baseten.co/MODEL-ID/v1/direct"
 )
 
 response = client.chat.completions.create(
