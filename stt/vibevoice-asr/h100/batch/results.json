@@ -182,6 +182,75 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-18T17:20:52.041453Z",
+      "run_id": "run-d36b7361317f",
+      "config_digest": "0f2bfdf5524ec1e0fc4a9bdcd195d8ffe5d9621e55460c6421abe71a451b32a0",
+      "bench_code_sha": "1b2779ae1d1ca1cc78270a8df5f88ea83216bb0b",
+      "listing": "baseten/vibevoice-asr",
+      "deployment_id": "qe77jy2",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 813.1847810000181,
+              "e2e_latency_p90_ms": 955.3967099636793,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.238477654370108,
+              "error_rate": 0.0,
+              "audio_rtf_x": 12.22
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 901.0997582226992,
+              "e2e_latency_p90_ms": 1213.6404197663069,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 15.883177632645621,
+              "error_rate": 0.0,
+              "audio_rtf_x": 156.69
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "mu-bench-full:naive",
+              "error_rate": 0.004,
+              "accuracy": 0.7257673836750458
+            },
+            {
+              "task": "pipecat:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.9740473061760841
+            }
+          ]
+        }
+      ]
     }
   ]
 }
