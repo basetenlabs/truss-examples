@@ -62,12 +62,84 @@ truss predict -d '{"prompt": "What is the Mistral wind?"}'
 You can also invoke your model via a REST API:
 
 ```
-curl -X POST " https://app.baseten.co/model_versions/YOUR_MODEL_VERSION_ID/predict" \
+curl -X POST "https://model-<MODEL_ID>.api.baseten.co/production/predict" \
      -H "Content-Type: application/json" \
      -H 'Authorization: Api-Key {YOUR_API_KEY}' \
      -d '{
            "prompt": "What is the meaning of life? Answer in substantial detail with multiple examples from famous philosophies, religions, and schools of thought.",
            "stream": true,
-           "max_tokens": 4096
+           "max_new_tokens": 4096
          }' --no-buffer
+```
+
+This model supports streaming tokens as well. Here is an example of how to stream tokens using Python:
+
+```python
+import requests
+import os
+
+# Replace the empty string with your model id below
+model_id = ""
+baseten_api_key = os.environ["BASETEN_API_KEY"]
+
+url = f"https://model-{model_id}.api.baseten.co/production/predict"
+
+headers = {"Authorization": f"Api-Key {baseten_api_key}"}
+
+data = {
+    "prompt": "What is mistral wind?",
+    "stream": True,
+    "max_new_tokens": 100,
+    "temperature": 0.9,
+    "top_p": 0.85,
+    "top_k": 40,
+    "repetition_penalty": 1.1,
+    "no_repeat_ngram_size": 3
+}
+
+# Call model endpoint
+response = requests.post(url, headers=headers, json=data, stream=True)
+
+# Print the generated tokens as they get streamed
+for content in response.iter_content():
+    print(content.decode("utf-8"), end="", flush=True)
+```
+
+Non-streaming example using Python:
+
+```python
+import requests
+import os
+
+# Replace the empty string with your model id below
+model_id = ""
+baseten_api_key = os.environ["BASETEN_API_KEY"]
+
+url = f"https://model-{model_id}.api.baseten.co/production/predict"
+
+headers = {"Authorization": f"Api-Key {baseten_api_key}"}
+
+data = {
+    "prompt": "What is mistral wind?",
+    "stream": False,
+    "max_new_tokens": 100,
+    "temperature": 0.9,
+    "top_p": 0.85,
+    "top_k": 40,
+    "repetition_penalty": 1.1,
+    "no_repeat_ngram_size": 3
+}
+
+# Call model endpoint
+response = requests.post(url, headers=headers, json=data)
+
+# Print the output of the model
+print(response.json())
+```
+
+## Output
+The output of the model is a string containing the generated text. Here is an example of the LLM output:
+
+```
+[INST] What is mistral wind? [/INST] Mistral is a type of strong, cold, and dry wind that blows from the northeast to the southwest across the French Alps and through the Provence region in southeastern France. It is known for its strength and persistence, often reaching speeds of up to 100 km/h (62 mph) and lasting for several days or even weeks.
 ```
