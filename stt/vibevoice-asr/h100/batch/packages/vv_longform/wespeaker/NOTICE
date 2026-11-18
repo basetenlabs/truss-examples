@@ -1,0 +1,8 @@
+resnet.py and pooling_layers.py are WeSpeaker code (https://github.com/wenet-e2e/wespeaker,
+wespeaker/models/resnet.py and wespeaker/models/pooling_layers.py), Apache License 2.0 (LICENSE),
+(c) Shuai Wang, Zhengyang Chen, Bing Han et al. They are copied unchanged from the eDIAR draft
+preset (model-registry PR #1305, stt/nemotron-3-diarization/ediar-batch/packages/emeans_diar,
+commit 7d5a7f8), which vendors them from WeSpeaker; vv_longform does not import that preset.
+
+No weights are stored here. The ResNet34-LM checkpoint (Wespeaker/wespeaker-voxceleb-resnet34-LM,
+CC-BY-4.0, not gated) is mounted by the truss `weights:` block in config.yaml.

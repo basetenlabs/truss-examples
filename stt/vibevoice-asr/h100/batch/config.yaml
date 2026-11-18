@@ -20,7 +20,7 @@ model_metadata:
               url: https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav
           - type: text
             text: Transcribe this audio.
-    max_tokens: 64
+    max_tokens: 256
     temperature: 0.0
 
 base_image:
@@ -34,6 +34,37 @@ environment_variables:
   VIBEVOICE_FFMPEG_MAX_CONCURRENCY: "64"
   VLLM_MEDIA_LOADING_THREAD_COUNT: "16"
   PYTORCH_ALLOC_CONF: "expandable_segments:True"
+  # Train-to-serve: serve another checkpoint by swapping weights.source below (hf://<org>/<repo>@<rev>,
+  # plus auth_secret_name: hf_access_token if private) or by mounting a training checkpoint and
+  # pointing BASETEN_MODEL_PATH at it. start.sh serves whatever this path holds.
+  BASETEN_MODEL_PATH: "/models/vibevoice-asr"
+  # vLLM serve flags (data/start.sh). Model Scout long-audio study defaults (PR #1337): 64k context
+  # so a 1-h file fits one request, a 12,288-block KV pool (196k tokens, ~10.5 GiB), CUDA graphs.
+  VV_MAX_MODEL_LEN: "65536"
+  VV_NUM_GPU_BLOCKS: "12288"  # 0 = let vLLM size the KV pool
+  VV_ENFORCE_EAGER: "0"       # 1 = eager (no CUDA graphs)
+  VV_MAX_NUM_SEQS: "16"
+  VV_GPU_MEMORY_UTILIZATION: "0.85"
+  # Opt-in, unset by default: VV_MAX_NUM_BATCHED_TOKENS, VV_MM_PROCESSOR_CACHE_GB, VV_EXTRA_VLLM_ARGS.
+  # packages/vv_longform proxy on :8000 (vLLM on 127.0.0.1:8001); VV_PROXY=0 serves vLLM directly.
+  VV_PROXY: "1"
+  # Upstream recipe prompt ("This is a N seconds audio, please transcribe it with these keys: ...") on both
+  # routes, plus stop_token_ids <|endoftext|>/<|im_end|>. 0 = forward the client's prompt unchanged.
+  VV_CANONICAL_PROMPT: "1"
+  # max_tokens = 12 x audio seconds + 256 per request or chunk (loop guard), clamped to the context window.
+  VV_MAX_TOKENS_PER_S: "12"
+  VV_MAX_TOKENS_BASE: "256"
+  VV_MAX_TOKENS_CAP: "65536"
+  # Audio longer than ~1.1 x VV_CHUNK_S is cut at the quietest point near every 300 s and the chunks decode
+  # in parallel; 0 = one pass per file.
+  VV_CHUNK_S: "300"
+  # Cross-chunk speaker linking (chunked requests only): embed = WeSpeaker ResNet34-LM embeddings +
+  # constrained clustering; none = chunk-local labels c<i>s<k>.
+  VV_LINK: "embed"
+  VV_LINK_THRESHOLD: "0.30"   # cosine similarity at which speaker clusters stop merging
+  # Chunked requests only: decode long audio as VV_PREP_THREADS (4) parallel ffmpeg segments, seams
+  # checked against a sequential decode fallback; PNS-coded AAC can differ slightly (README). 0 = sequential.
+  VV_PREP_PARALLEL: "1"
 
 requirements:
   - transformers==4.57.6
@@ -45,7 +76,9 @@ requirements:
   - scipy
   - pydub
   - diffusers
-  - git+https://github.com/microsoft/VibeVoice.git@main
+  - aiohttp  # packages/vv_longform proxy; already in the vLLM image
+  # Pinned: data/patch.py anchors are checked against this plugin revision (main on 2026-11-17).
+  - git+https://github.com/microsoft/VibeVoice.git@16fb2cb1217c9934a886e1948ffb06120caa2df5
 
 resources:
   accelerator: H100
@@ -65,6 +98,12 @@ system_packages:
 weights:
   - source: "hf://microsoft/VibeVoice-ASR@d0c9efdb8d614685062c04425d91e01b6f37d944"
     mount_location: "/models/vibevoice-asr"
+  # Speaker embeddings for VV_LINK=embed (45 MB, CC-BY-4.0, not gated); read only when chunking is on.
+  - source: "hf://Wespeaker/wespeaker-voxceleb-resnet34-LM@f0c48c298fd835726c27956a5d617bad7115627e"
+    mount_location: "/models/wespeaker-resnet34-lm"
+    allow_patterns:
+      - avg_model
+      - config.yaml
 
 # Pass-through mode: no model.py, Truss just runs vllm serve and proxies
 # /predict requests to /v1/chat/completions on the container's localhost.
