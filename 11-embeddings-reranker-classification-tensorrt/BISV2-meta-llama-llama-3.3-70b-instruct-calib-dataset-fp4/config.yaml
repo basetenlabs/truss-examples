@@ -1,0 +1,31 @@
+model_metadata:
+  example_model_input:
+    max_tokens: 512
+    messages:
+    - content: Tell me everything you know about optimized inference.
+      role: user
+    stream: true
+    temperature: 0.5
+  tags:
+  - openai-compatible
+model_name: BISV2-meta-llama-llama-3.3-70b-instruct-calib-dataset-fp4-truss-example
+python_version: py39
+resources:
+  accelerator: B200
+  cpu: '1'
+  memory: 10Gi
+  use_gpu: true
+trt_llm:
+  inference_stack: v2
+  build:
+    checkpoint_repository:
+      repo: meta-llama/Llama-3.3-70B-Instruct
+      revision: main
+      source: HF
+    quantization_config:
+      calib_dataset: baseten/quant_calibration_dataset_v1
+    quantization_type: fp4
+  runtime:
+    max_batch_size: 32
+    max_num_tokens: 32768
+    max_seq_len: 32768
