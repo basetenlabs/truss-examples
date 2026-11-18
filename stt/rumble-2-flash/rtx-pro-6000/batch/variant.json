@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "Reson8/Rumble-2-Flash",
+      "revision": "92e36f7945b1d28fed23f597d0e2a83155dcf31e"
+    }
+  },
+  "engine": {
+    "kind": "vllm",
+    "backend": "vllm",
+    "version": "vllm/vllm-openai:v0.29.0-cu129"
+  },
+  "limits": []
+}
