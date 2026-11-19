@@ -109,6 +109,117 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-19T20:50:19.542405Z",
+      "run_id": "run-04e966ce5abf",
+      "config_digest": "e58b1ef910da5f29c2e64196ea6868365a4ab063547589db27e45225f880f111",
+      "bench_code_sha": "2d9a3c6bbad5f08f74bd4400d93cd5ae68bcd509",
+      "listing": "baseten/qwen-3-tts-streaming-customvoice-12hz-1-7b",
+      "deployment_id": "wnmrr01",
+      "hardware": {
+        "instance_type": "H100 - 1 H100 GPU, 80 GiB VRAM",
+        "gpu_type": "H100",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "text=default",
+          "kind": "perf.tts_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "tts-stream@c1",
+              "ttft_p50_ms": 127.02606990933418,
+              "ttft_p90_ms": 134.52369906008244,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 562.9795882850885,
+              "e2e_latency_p90_ms": 609.02014747262,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.5400236308615096,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 2,
+              "scenario": "tts-stream@c2",
+              "ttft_p50_ms": 124.04151447117329,
+              "ttft_p90_ms": 139.06343281269073,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 553.8292266428471,
+              "e2e_latency_p90_ms": 619.5580326020718,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.0818457699409152,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 4,
+              "scenario": "tts-stream@c4",
+              "ttft_p50_ms": 127.6384349912405,
+              "ttft_p90_ms": 159.54624861478806,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 578.0104361474514,
+              "e2e_latency_p90_ms": 689.0978403389454,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.030278245811523,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 8,
+              "scenario": "tts-stream@c8",
+              "ttft_p50_ms": 149.17298033833504,
+              "ttft_p90_ms": 240.4072917997837,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 760.3940051048994,
+              "e2e_latency_p90_ms": 875.3697369247675,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.72566968941709,
+              "error_rate": 0.0
+            },
+            {
+              "concurrency": 16,
+              "scenario": "tts-stream@c16",
+              "ttft_p50_ms": 192.89147667586803,
+              "ttft_p90_ms": 308.60832519829273,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 988.5550383478403,
+              "e2e_latency_p90_ms": 1300.8753806352615,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 6.318207027093708,
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "seed-tts-eval",
+          "kind": "quality.tts_seed_eval",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "seed-tts-eval:test-en",
+              "error_rate": 0.0,
+              "accuracy": 0.9867344142785319
+            },
+            {
+              "task": "seed-tts-eval:test-zh",
+              "error_rate": 0.0,
+              "accuracy": 0.9913165266106443
+            },
+            {
+              "task": "seed-tts-eval:test-hard",
+              "error_rate": 0.0,
+              "accuracy": 0.91420192635678
+            }
+          ]
+        }
+      ]
     }
   ]
 }
