@@ -20,6 +20,37 @@ cd /app/vllm-omni
 echo "Starting shared torch compile cache manager..."
 b10-compile-cache &
 
+# Talker (stage 0) startup levers, set per deployment through config.yaml's
+# environment_variables so a /batch-bench variant can switch them without a
+# file change. Both feed `--stage-overrides`, which wins over the deploy YAML.
+#   QWEN_TTS_TALKER_ATTENTION_BACKEND: a vLLM attention backend name, or
+#     `auto` (default) to keep vLLM's own pick (FA3 on H100, FA2 elsewhere).
+#   QWEN_TTS_TALKER_CUDAGRAPH_CAPTURE_SIZES: comma-separated batch sizes that
+#     replace the deploy YAML's cudagraph_capture_sizes; unset keeps the YAML.
+STAGE_OVERRIDES="$(python3 - <<'EOF'
+import json
+import os
+
+talker = {}
+backend = os.environ.get("QWEN_TTS_TALKER_ATTENTION_BACKEND", "auto").strip()
+if backend and backend.lower() != "auto":
+    talker["attention_backend"] = backend
+sizes = os.environ.get("QWEN_TTS_TALKER_CUDAGRAPH_CAPTURE_SIZES", "").strip()
+if sizes:
+    talker["compilation_config"] = {
+        "cudagraph_capture_sizes": [int(s) for s in sizes.split(",") if s.strip()]
+    }
+print(json.dumps({"0": talker}) if talker else "")
+EOF
+)"
+EXTRA_ARGS=()
+if [[ -n "${STAGE_OVERRIDES}" ]]; then
+    echo "Talker stage overrides: ${STAGE_OVERRIDES}"
+    EXTRA_ARGS+=(--stage-overrides "${STAGE_OVERRIDES}")
+else
+    echo "Talker stage overrides: none (deploy YAML and vLLM defaults)"
+fi
+
 # serve_patched.py runs `vllm-omni` with precomputed voice profiles allowed on CustomVoice
 # checkpoints (see that file); it takes the same arguments.
 echo "Starting Qwen3-TTS server: model=${MODEL_PATH} deploy_config=${DEPLOY_CONFIG} port=${PORT}"
@@ -28,7 +59,8 @@ python3 /app/data/serve_patched.py serve "${MODEL_PATH}" \
     --host 0.0.0.0 \
     --port "${PORT}" \
     --trust-remote-code \
-    --omni &
+    --omni \
+    "${EXTRA_ARGS[@]}" &
 SERVER_PID=$!
 
 echo "Waiting for vllm server on port ${PORT}..."

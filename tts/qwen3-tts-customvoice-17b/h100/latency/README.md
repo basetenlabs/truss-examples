@@ -251,3 +251,18 @@ python3 qwen_tts_bench.py --url wss://model-<model_id>.api.baseten.co/environmen
 - Bench: registry CI's `qwen3_tts` protocol drives a voice-clone session, which a
   CustomVoice checkpoint rejects, so the CI smoke bench can't measure this preset.
   The numbers above come from `qwen_tts_bench.py` in this directory.
+
+## Startup
+
+The talker captures CUDA graphs for batch sizes 1-32 (`data/qwen3_tts_deploy.yaml`),
+matching `predict_concurrency: 32`. The 48 and 64 graphs it used to capture should never
+replay at that cap, and the full 1-64 grid took 55-61 s to capture on a cold H100 boot in
+the 2026-11-02 to 11-16 startup scan. Raise the grid together with
+`predict_concurrency`. The measured startup, TTFA/RTF and seed-tts-eval deltas are in the
+PR that trimmed it.
+
+`data/do.sh` reads two optional overrides and passes them to vLLM-Omni as
+`--stage-overrides`: `QWEN_TTS_TALKER_CUDAGRAPH_CAPTURE_SIZES` (comma-separated, replaces
+the YAML grid; `1,2,4,8,16,24,32,48,64` restores the old one) and
+`QWEN_TTS_TALKER_ATTENTION_BACKEND` (a vLLM backend name; unset or `auto` keeps vLLM's
+pick, FlashAttention 3 on H100).

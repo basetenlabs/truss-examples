@@ -56,7 +56,11 @@ stages:
     max_num_batched_tokens: 512
     max_model_len: 4096
     compilation_config:
-      cudagraph_capture_sizes: [1, 2, 4, 8, 16, 24, 32, 48, 64]
+      # Capped at config.yaml's predict_concurrency (32): the replica admits
+      # at most 32 sessions, so 48- and 64-sequence graphs should never replay
+      # and only add capture time to every boot. Raise both together.
+      # QWEN_TTS_TALKER_CUDAGRAPH_CAPTURE_SIZES (data/do.sh) overrides this.
+      cudagraph_capture_sizes: [1, 2, 4, 8, 16, 24, 32]
     # Silence banning targets x-vector-only voice clones; CustomVoice speakers
     # don't open with dead air, so keep the upstream default (off).
     silence_ban_frames: 0
