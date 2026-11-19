@@ -75,6 +75,5 @@ environment_variables:
   VLLM_USE_RUST_FRONTEND: "1"
   VLLM_WORKER_MULTIPROC_METHOD: spawn
   VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS: "0"
-  VLLM_CACHE_ROOT: /tmp/vllmcache
-  TORCHINDUCTOR_CACHE_DIR: /tmp/inductor
+  # JIT/compile cache dirs are left unset so the platform startup cache restores and saves them.
   HF_HUB_OFFLINE: "1"
