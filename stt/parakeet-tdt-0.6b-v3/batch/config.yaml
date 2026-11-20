@@ -69,12 +69,13 @@ environment_variables:
   # padded frames are masked and WER matched (mu-bench 18.68/18.77%, pipecat 3.19/3.17%).
   # "1" is the matched baseline.
   ENCODER_GRAPH_STEP_SECONDS: "2"
-  # Decode batch N on a second CUDA stream while batch N+1's encoder graph
-  # replays (#926, see model/model.py). Model Scout round 11 (run 39767116873,
-  # same cluster, aws-uw2) lifted audio xRT 11.4%; round 13 (run 39777023292,
-  # same cluster, cor-ue13a) lifted it 6.4%, client-path bound. WER flat in
-  # both; the startup serial-vs-pipeline transcript parity check passes.
-  PIPELINE_OVERLAP: "true"
+  # Off by default: with overlap on, a CUDA fault (device-side assert or
+  # "invalid argument") hit 5 of 7 greedy Model Scout runs of this serving
+  # code on #1377 (Fluid Speech Pro); 0 of 2 with it off. Root cause
+  # unconfirmed; see README "Encoder/decoder overlap". "true" restores the
+  # overlapped encode/decode path (#926, model/model.py), which lifted audio
+  # xRT 11.4% (run 39767116873) and 6.4% (run 39777023292) on this model.
+  PIPELINE_OVERLAP: "false"
 
 # Weights are pre-fetched and mounted, so the server never downloads from HF at
 # request time. The .nemo checkpoint in the repo is what model/model.py loads.
@@ -114,3 +115,10 @@ runtime:
   # not beat 16. One worker thread still owns the mutable NeMo decoder state, so
   # extra admitted requests queue for the batcher, not for parallel decoding.
   predict_concurrency: 128
+  health_checks:
+    # is_healthy() turns False after a fatal CUDA error (the process also exits)
+    # or when the GPU batch worker thread has died, which does not exit the
+    # process and never recovers. Act on it quickly instead of the 30 min
+    # platform default; same thresholds as stt/orukeet/batch.
+    stop_traffic_threshold_seconds: 30
+    restart_threshold_seconds: 60

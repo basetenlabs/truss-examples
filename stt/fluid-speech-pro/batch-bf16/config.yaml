@@ -1,0 +1,140 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/basetenlabs/truss/main/truss/config.schema.json
+
+model_name: "model:fluid-speech-pro preset:batch-bf16"
+python_version: py310
+
+model_metadata:
+  description: >-
+    Fluid Speech Pro (FluidVoice): a 0.63B FastConformer-TDT transcriber for 25
+    European languages with automatic language detection, punctuation and
+    capitalization. Batch transcription on one RTX PRO 6000 in bfloat16 with
+    NVIDIA NeMo. Fluid Speech Pro by FluidVoice. Built on NVIDIA Parakeet TDT
+    0.6B v3 and Moondream Parakeet Ultra. License: CC BY 4.0.
+  repo_id: FluidVoice-Labs/fluid-speech-pro
+  example_model_input: {"audio_url": "https://dldata-public.s3.us-east-2.amazonaws.com/2086-149220-0033.wav"}
+  tags:
+    - audio-to-text
+    - speech-to-text
+    - multilingual
+    - timestamps
+
+
+# Copied unchanged from stt/parakeet-tdt-0.6b-v3/batch (same FastConformer-TDT 0.6B
+# encoder/decoder plus one small residual block), so every serving knob and the Model
+# Scout round notes below were measured on Parakeet TDT 0.6B v3, not on this checkpoint.
+# These defaults are tuned for short-form traffic on one GPU. The direct path
+# removes NeMo's per-call DataLoader setup, while a small duration-aware batch
+# raises utilization without padding short clips to an unrelated long clip.
+environment_variables:
+  MODEL_DIR: "/models/fluid-speech-pro"
+  NEMO_CHECKPOINT: "/models/fluid-speech-pro/fluid-speech-pro.nemo"
+  # Fluid Speech's optional clean mode (edited text: no repeated or filler words),
+  # folded into the weights at load. Off = the model's default verbatim output, which is
+  # what the reference loader does and what verbatim WER references expect.
+  FLUID_CLEAN_MODE: "false"
+  MAX_BATCH_SIZE: "16"
+  BATCH_WINDOW_MS: "5"
+  BATCH_BUCKET_SECONDS: "2,4,8"
+  PREDICT_TIMEOUT_SECONDS: "300"
+  PARAKEET_DIRECT_FORWARD: "true"
+  REQUIRE_FULL_CUDA_GRAPH: "true"
+  WARMUP_AUDIO_SECONDS: "0.15,0.4,0.85,1.6,3.2,6"
+  WARMUP_BATCH_SIZE: "2"
+  FREEZE_GC_AFTER_WARMUP: "true"
+  # Model Scout round 2 winners on RTX PRO 6000 (#865, run 39667523725). cuDNN off
+  # tripled throughput at c=64 (49.9 vs 16.1 req/s). Full bfloat16 (model weights
+  # cast once, no autocast) matched fp16 autocast on throughput and WER with a lower
+  # encoder time (17.8 vs 22.6 ms at c=1).
+  ENCODER_CUDNN: "false"
+  PRECISION_MODE: "full"
+  INFERENCE_DTYPE: "bfloat16"
+  # Model Scout round 3 winner on RTX PRO 6000 (#865, run 39678817538). Length
+  # bucketing lifted c=64 throughput from 45.96 to 53.79 req/s and cut server p50
+  # from 86 to 75 ms (c=32: 31.52 -> 32.07 req/s, 65 -> 55 ms); c=1/8 tied and WER
+  # was identical (20.82% / 3.20%).
+  BATCH_LENGTH_BUCKETING: "true"
+  # Model Scout round 7 on RTX PRO 6000 (#865, run 39733446532, same cluster,
+  # 60 s timed cells): ending the 5 ms batch window once the queue is empty and
+  # no predict() call is still decoding lifted c=64 throughput 6.0% over the mean
+  # of two identical shipped arms (1,760.5 vs 1,658.8 / 1,661.9 audio-s per
+  # wall-s, which agreed within 0.2%) and cut server p50 at c=1 to 26 ms (29-31)
+  # and at c=64 to 112 ms (123-127). WER matched: 20.87% / 3.17% vs
+  # 20.85-20.90% / 3.17-3.20%.
+  BATCH_WINDOW_EARLY_EXIT: "true"
+  # Encoder CUDA graphs (ported from stt/orukeet/batch-short, #604). Model Scout
+  # round 4 on RTX PRO 6000 (#865, run 39701075887, same cluster): graphs cut
+  # server p50 from 42 to 30 ms at c=1 and 86 to 51 ms at c=32, with throughput
+  # within noise and WER 3.20% / 20.90% vs 3.20% / 20.70%. Batch sizes 1-16 x 1 s
+  # length steps up to 30 s; longer inputs and larger batches run eagerly.
+  ENCODER_CUDA_GRAPHS: "true"
+  # Model Scout round 9 on RTX PRO 6000 (#865, run 39750926774, both arms on the
+  # same cluster, c=64 90 s timed cells): capturing even batch sizes so a 9-15
+  # clip batch no longer pads to 16 rows cut the encoder median at matched batch
+  # sizes by 28-43% for 5-6 and 9-12 clip batches (batch 9: 50.7 -> 32.8 ms) and
+  # server p50 from 48 to 42 ms. Throughput tied (1,010 vs 1,001 audio-s per
+  # wall-s, client-path bound) and WER matched (20.87% / 3.17% vs 20.90% /
+  # 3.17%). 270 graphs instead of 150: capture 56-74 s vs 34-57 s, peak
+  # allocated GPU memory unchanged at 3.25 GiB (rounds 8-9 pod logs).
+  ENCODER_GRAPH_BATCH_SIZES: "1,2,4,6,8,10,12,14,16"
+  ENCODER_GRAPH_MAX_SECONDS: "30"
+  # Model Scout startup study (2026-11-13, #1267, two matched pairs on ali-ue1): 2 s length
+  # steps capture 135 graphs instead of 270, cutting encoder capture from 100-103 s to ~51 s and
+  # startup from 111-114 s to ~62 s (runs 43503035256 / 43511583556). A batch pads up to 2 s
+  # rather than 1 s past its longest clip (+0.6 s per pipecat batch, ~0.1 ms encoder time);
+  # padded frames are masked and WER matched (mu-bench 18.68/18.77%, pipecat 3.19/3.17%).
+  # "1" is the matched baseline.
+  ENCODER_GRAPH_STEP_SECONDS: "2"
+  # Off by default: with overlap on, a CUDA fault (device-side assert or
+  # "invalid argument") hit 5 of 7 greedy Model Scout runs on #1377; 0 of 2
+  # with it off. Root cause unconfirmed; see README "Pipeline overlap".
+  # "true" restores the overlapped encode/decode path (#926, model/model.py).
+  PIPELINE_OVERLAP: "false"
+
+# Weights are pre-fetched and mounted, so the server never downloads from HF at
+# request time. model/model.py loads the repo's .nemo checkpoint through the vendored
+# model/fluid_speech.py (NOT the repo's model.safetensors, which leaves out the extra
+# encoder block).
+weights:
+  - source: "hf://FluidVoice-Labs/fluid-speech-pro@46027a3bffc5817ce8f9b29add0a062610134a90"
+    mount_location: "/models/fluid-speech-pro"
+    allow_patterns:
+      - "fluid-speech-pro.nemo"
+
+requirements:
+  # The RTX PRO 6000 is a Blackwell GPU (sm_120). torch 2.6.0's PyPI wheels are
+  # the CUDA 12.4 build, which has no sm_120 kernels; torch 2.8.0's are the CUDA
+  # 12.8 build (nvidia-cuda-runtime-cu12==12.8.90, cuDNN 9.10), the first CUDA
+  # line with Blackwell support. NeMo 3.0.0 requires torch>=2.6.0 and, for
+  # CUDA 12, cuda-python>=12,<13. These pins match stt/orukeet/batch, which
+  # serves the same FastConformer-TDT architecture on this GPU.
+  - torch==2.8.0
+  - torchaudio==2.8.0
+  - nemo_toolkit[asr]==3.0.0
+  - cuda-python>=12.8,<13
+  - httpx==0.28.1
+  - soundfile==0.13.1
+
+resources:
+  # RTX PRO 6000 (96 GiB, Blackwell). Concurrency and batching were tuned on this GPU
+  # for Parakeet TDT 0.6B v3 (rounds 1, 3, 7 and 9 above).
+  instance_type: RTX-PRO-6000
+
+system_packages:
+  - ffmpeg
+  - libsndfile1
+
+runtime:
+  # Model Scout round 1 on RTX PRO 6000 (#865, run 39657501848): raising
+  # predict_concurrency from 8 to 64 with MAX_BATCH_SIZE 16 lifted throughput at
+  # c=32/64 from 6.84/7.41 to 10.96/18.21 req/s and cut server p50 from
+  # 3359/6167 to 1595/1896 ms, with c=1/8 unchanged. MAX_BATCH_SIZE 32 or 64 did
+  # not beat 16. One worker thread still owns the mutable NeMo decoder state, so
+  # extra admitted requests queue for the batcher, not for parallel decoding.
+  predict_concurrency: 128
+  health_checks:
+    # is_healthy() turns False after a fatal CUDA error (the process also exits)
+    # or when the GPU batch worker thread has died, which does not exit the
+    # process and never recovers. Act on it quickly instead of the 30 min
+    # platform default; same thresholds as stt/orukeet/batch.
+    stop_traffic_threshold_seconds: 30
+    restart_threshold_seconds: 60

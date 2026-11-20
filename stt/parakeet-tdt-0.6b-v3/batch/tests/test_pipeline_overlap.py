@@ -83,11 +83,11 @@ def test_invalid_overlap_config_is_rejected(monkeypatch, env):
         _load(monkeypatch, **env)
 
 
-def test_config_yaml_ships_overlap_on():
+def test_config_yaml_ships_overlap_off():
     yaml = pytest.importorskip("yaml")
     config = yaml.safe_load((MODEL_PATH.parents[1] / "config.yaml").read_text())
     env = config["environment_variables"]
-    assert env["PIPELINE_OVERLAP"] == "true"
+    assert env["PIPELINE_OVERLAP"] == "false"
     assert env["ENCODER_CUDA_GRAPHS"] == "true"
 
 

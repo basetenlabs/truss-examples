@@ -104,8 +104,8 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   input rebuilds it and switches the replica to eager for good (logged as an error).
   `parakeet_encoder_batches_total{path}` counts graphed and eager batches, and `GRAPH_PARITY_BATCHES=N`
   (debug, default 0) reruns the first N graphed batches eagerly and logs transcript differences.
-- Encoder/decoder overlap (`PIPELINE_OVERLAP`, on in `config.yaml` since #926, code default `false`;
-  requires `ENCODER_CUDA_GRAPHS`). Model Scout round 11 (run 39767116873, same cluster, aws-uw2) lifted
+- Encoder/decoder overlap (`PIPELINE_OVERLAP`, default `false`; on in `config.yaml` from #926 until
+  the fault below; requires `ENCODER_CUDA_GRAPHS`). Model Scout round 11 (run 39767116873, same cluster, aws-uw2) lifted
   audio xRT 11.4% and round 13 (run 39777023292, same cluster, cor-ue13a) 6.4%, client-path bound,
   with WER flat. The batch worker replays batch N+1's encoder graph on one CUDA stream,
   from double-buffered pinned input, while a decode thread runs batch N's TDT decode on a second
@@ -115,6 +115,28 @@ Well, I don't wish to see it any more, observed Phoebe, turning away her eyes. I
   twice through the pipeline, and any transcript difference fails the deploy. `TIMING_LOG_BATCHES`
   times overlapped batches with per-stream CUDA events and logs `pipeline=overlap` with each stage's
   start on a shared GPU timeline.
+  Overlap is off by default as a mitigation for an intermittent CUDA fault; the root cause is
+  open. The evidence comes from the Fluid Speech Pro study (#1377), including one run on this
+  checkpoint: the stock preset (overlap on, no fail-fast) hit an `IndexKernel.cu:113`
+  index-out-of-bounds device-side assert on FLEURS uk_ua in run 44467068402, lost 65 of 160 clips,
+  and then failed every later request on that replica. Across that study, overlap on faulted in 5 of
+  7 greedy runs, each losing 38-93 clips: that assert in the TDT label-looping greedy decode, or
+  `invalid argument` at the pinned-staging sync. With overlap off, two full 55-job runs
+  (44487637672, 44493920088) had zero faults. That evidence is thin: at a 5/7 fault rate two clean
+  runs happen by chance about 8% of the time, and both were on Fluid Speech Pro, not this
+  checkpoint. The likeliest reading is a race between the overlapped encoder and decoder streams
+  that corrupts the decode's indices; a zero cuBLAS workspace (run 44483085719) did not prevent it.
+  The open decision is to fix the race or delete the overlap path. Quality was the same either way
+  (Fluid FLEURS-25 mean 10.82%). Off cost 7-11% peak throughput on ali-ue1-prod-1 (294 vs 315-330
+  req/s) and 18% on aws-uw2-prod-2 (243 vs 297), measured on Fluid Speech Pro in same-request
+  matched comparisons. On this checkpoint, two #1379 CI benchmarks with overlap off (runs
+  44596533250 and 44602703162, both on aws-uw2-prod-2) passed the gate against the stored main
+  baseline with overlap on (run-d2c5150a04eb, 2026-11-16): pipecat c16 RTFx +29% and +14% (277.64
+  and 245.03 vs 215.56), podcast-5min c16 RTFx +4% and +1% (1437 and 1401 vs 1383), pipecat c1
+  p50 server latency flat, WER unchanged (mu-bench-full 22.27%, pipecat 3.19%) and 0 errors. Read
+  this as no measurable throughput loss from overlap off here, not a gain.
+  `PIPELINE_OVERLAP=true` restores the overlapped path; whether or not overlap is the cause, the
+  CUDA fail-fast limits a recurrence to one replica restart.
 - Offline ceiling: the Open ASR leaderboard harness that measured this model's offline RTFx ceiling
   on this GPU is bench-only and does not ship in the serving image. See
   [`model-scout/tools/open-asr-offline-ceiling/`](../../../model-scout/tools/open-asr-offline-ceiling/).

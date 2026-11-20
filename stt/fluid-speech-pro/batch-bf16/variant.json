@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "rtx-pro-6000",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "weight_formats": [
+      "fp32",
+      "bf16"
+    ],
+    "checkpoint": {
+      "repository": "FluidVoice-Labs/fluid-speech-pro",
+      "revision": "46027a3bffc5817ce8f9b29add0a062610134a90"
+    }
+  },
+  "engine": {
+    "kind": "custom",
+    "backend": null,
+    "version": null
+  },
+  "limits": []
+}

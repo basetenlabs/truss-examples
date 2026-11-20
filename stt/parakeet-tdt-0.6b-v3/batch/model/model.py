@@ -4,6 +4,10 @@ FastConformer-TDT transducer served through NVIDIA NeMo — no vLLM/SGLang
 implementation exists for this architecture, so this follows the registry's
 custom `model/model.py` path (b10-bench protocol: `baseten_predict`).
 
+A device health probe after any CUDA error, fail-fast when it fails, and a log of the
+last few batches when one fails (see FATAL_EXIT_DELAY_SECONDS and _is_cuda_error);
+ported from stt/fluid-speech-pro/batch-bf16.
+
 Contract:
 - in:  {"audio_url": "https://..."} or {"audio_b64": "..."}
        optional: {"timestamps": true}
@@ -229,6 +233,47 @@ TIMING_LOG_BATCHES = int(os.environ.get("TIMING_LOG_BATCHES", "0"))
 if TIMING_LOG_BATCHES < 0:
     raise ValueError("TIMING_LOG_BATCHES must be non-negative")
 _TIMING_STATE = {"serving": False, "batches": 0}
+
+
+# A sticky CUDA error (illegal memory access, device-side assert, launch failure,
+# misaligned address) poisons the process's CUDA context, so every later batch fails
+# too. This preset did that after a device-side assert in Canary 1B V2 Track B
+# (2026-11-13) and again in Model Scout E2 on #1377 (2026-11-19: one assert during
+# fleurs-uk_ua, then five datasets at 100% failure on the same replica). Other CUDA
+# errors (e.g. "invalid argument", Model Scout E1 on #1377) can leave the context
+# usable: the old rule exited on every CUDA error and that cost 62 requests in E1.
+# So after any CUDA error, only that batch fails, and a health probe (synchronize,
+# then one kernel read back; same as stt/orukeet/batch) decides: if the probe errors,
+# is_healthy() turns false and the process exits this many seconds later, after the
+# failed batch's requests got their errors, so the replica restarts instead of
+# answering 500s until someone notices. Ported from stt/fluid-speech-pro/batch-bf16
+# (#1377).
+FATAL_EXIT_DELAY_SECONDS = float(os.environ.get("FATAL_EXIT_DELAY_SECONDS", "2"))
+FATAL_EXIT_CODE = 3
+if FATAL_EXIT_DELAY_SECONDS < 0:
+    raise ValueError("FATAL_EXIT_DELAY_SECONDS must be non-negative")
+
+
+# How many recent batches the failed-batch log lists (oldest first).
+RECENT_BATCH_LOG_SIZE = 4
+
+
+def _is_cuda_error(exc) -> bool:
+    """True when a CUDA runtime error is anywhere in exc's cause chain:
+    torch.AcceleratorError (which torch >= 2.8 raises for CUDA runtime errors) or a
+    RuntimeError carrying the runtime's "CUDA error" prefix. False for everything
+    else, including "CUDA out of memory", which the caching allocator raises without
+    a "CUDA error" prefix and which leaves the context usable.
+    """
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        if type(exc).__name__ == "AcceleratorError" or (
+            isinstance(exc, RuntimeError) and "CUDA error" in str(exc)
+        ):
+            return True
+        exc = exc.__cause__ or exc.__context__
+    return False
 
 
 class ParakeetMetrics:
@@ -653,7 +698,10 @@ class PinnedStaging:
         slot = self._next
         self._next = (slot + 1) % len(self._signals)
         if self._copied[slot] is not None:
-            self._copied[slot].synchronize()
+            event, self._copied[slot] = self._copied[slot], None
+            # Cleared first: if this sync raises, the next batch staged in the slot
+            # does not re-sync the same event (and fail again) after a recovered error.
+            event.synchronize()
         if rows * length > self._signals[slot].numel() or rows > self._lengths[slot].numel():
             raise ValueError(f"batch {rows} x {length} does not fit the pinned staging buffer")
         signal = self._signals[slot][: rows * length].view(rows, length)
@@ -886,6 +934,102 @@ class Model:
         self._encode_stream = self._decode_stream = None
         self._staging = None
         self._timing_origin = None
+        self._worker = None
+        self._fatal_error = None
+        # The last RECENT_BATCH_LOG_SIZE batches run, logged when a batch fails with a
+        # CUDA error. Appended by the batch worker, read (as a copy) by either thread.
+        self._recent_batches = collections.deque(maxlen=RECENT_BATCH_LOG_SIZE)
+        self._batch_seq = 0
+        self.recovered_cuda_errors = 0
+
+    def is_healthy(self) -> bool:
+        """Truss health hook: false after a fatal CUDA error (the process then exits
+        so the replica restarts) or if the GPU batch worker thread died."""
+        if self._fatal_error is not None:
+            LOGGER.error(f"Parakeet health check failed: fatal CUDA error: {self._fatal_error}")
+            return False
+        if self._worker is not None and not self._worker.is_alive():
+            LOGGER.error("Parakeet health check failed: GPU batch worker exited")
+            return False
+        return True
+
+    def _exit_process(self):  # replaced in tests
+        os._exit(FATAL_EXIT_CODE)
+
+    def _on_fatal(self, exc):
+        """Turn unhealthy once and schedule the process exit (the replica restarts)."""
+        if self._fatal_error is not None:
+            return
+        self._fatal_error = exc
+        first_line = str(exc).splitlines()[0] if str(exc) else ""
+        LOGGER.critical(
+            "Parakeet fatal CUDA error, unhealthy; exiting in "
+            f"{FATAL_EXIT_DELAY_SECONDS:g} s so the replica restarts: "
+            f"{type(exc).__name__}: {first_line}"
+        )
+        timer = threading.Timer(FATAL_EXIT_DELAY_SECONDS, self._exit_process)
+        timer.daemon = True
+        timer.start()
+
+    def _cuda_health_probe(self):
+        """Synchronize the device, then launch one kernel and read its result back
+        (the same check as stt/orukeet/batch's _cuda_context_usable), which also
+        catches a context that can synchronize but cannot launch. Return the
+        exception it raises, or None."""
+        try:
+            import torch
+
+            torch.cuda.synchronize()
+            probe = torch.ones(1, device="cuda")
+            value = float((probe + 1).item())
+        except Exception as exc:  # noqa: BLE001 -- any failure means the probe failed
+            return exc
+        if value != 2.0:
+            return RuntimeError(f"CUDA health probe kernel returned {value}, expected 2.0")
+        return None
+
+    def _on_cuda_error(self, exc):
+        """After any CUDA error, probe the device; fail fast only if the probe errors."""
+        probe_error = self._cuda_health_probe()
+        if probe_error is not None:
+            LOGGER.error(
+                "Parakeet CUDA health probe failed after a CUDA error: "
+                f"{type(probe_error).__name__}: {probe_error}"
+            )
+            self._on_fatal(probe_error)
+            return
+        self.recovered_cuda_errors += 1
+        first_line = str(exc).splitlines()[0] if str(exc) else ""
+        LOGGER.warning(
+            "Parakeet CUDA error failed one batch; CUDA health probe passed, replica "
+            f"stays up (recovered errors so far: {self.recovered_cuda_errors}): "
+            f"{type(exc).__name__}: {first_line}"
+        )
+
+    def _record_batch(self, jobs, waveforms, overlapped: bool):
+        """Add a batch to the recent-batch ring buffer (batch worker thread).
+        Diagnostics only: a failure here is logged and never fails the batch."""
+        self._batch_seq += 1
+        try:
+            graph_key = None
+            key_fn = getattr(self._graphs, "key", None)
+            if key_fn is not None:
+                graph_key = key_fn(len(waveforms), max(w.shape[0] for w in waveforms))
+            record = {
+                "seq": self._batch_seq,
+                "rows": len(jobs),
+                "audio_s": [
+                    round(float(job.get("duration_seconds", w.shape[0] / AUDIO_SAMPLE_RATE_HZ)), 2)
+                    for job, w in zip(jobs, waveforms)
+                ],
+                "path": "graph+overlap" if overlapped else "serial",
+                "graph_key": graph_key,
+                "timestamps": bool(jobs[0].get("timestamps")),
+            }
+            self._recent_batches.append(record)
+        except Exception:  # noqa: BLE001
+            LOGGER.exception("Parakeet recent-batch record failed")
+        return self._batch_seq
 
     def load(self):
         import httpx
@@ -1006,7 +1150,8 @@ class Model:
             f"gpu_used_gib={(total_bytes - free_bytes) / 2**30:.2f} of {total_bytes / 2**30:.2f}"
         )
         _TIMING_STATE["serving"] = True
-        threading.Thread(target=self._batch_worker, daemon=True).start()
+        self._worker = threading.Thread(target=self._batch_worker, daemon=True)
+        self._worker.start()
 
     def _capture_encoder_graphs(self):
         sizes = _graph_batch_sizes(ENCODER_GRAPH_BATCH_SIZES, MAX_BATCH_SIZE)
@@ -1141,6 +1286,10 @@ class Model:
             raise
 
     def _predict_impl(self, request: dict) -> dict:
+        if self._fatal_error is not None:
+            raise RuntimeError(
+                "Parakeet replica hit a fatal CUDA error and is restarting"
+            ) from self._fatal_error
         request_started_at = time.monotonic()
         preprocessing_started_at = request_started_at
         with self._admitting_lock:
@@ -1322,7 +1471,11 @@ class Model:
             )
         PARAKEET_METRICS.batch_size.observe(len(jobs))
         waveforms = [job["waveform"] for job in jobs]
-        if self._pipeline is not None and self._overlap_eligible(first, waveforms):
+        overlapped = self._pipeline is not None and self._overlap_eligible(first, waveforms)
+        seq = self._record_batch(jobs, waveforms, overlapped)
+        for job in jobs:
+            job["batch_seq"] = seq
+        if overlapped:
             self._submit_overlapped(jobs, waveforms, inference_started_at)
             return
         result = RuntimeError("Parakeet batch was interrupted")
@@ -1343,12 +1496,24 @@ class Model:
         finally:
             self._finish_jobs(jobs, inference_started_at, result)
 
-    @staticmethod
-    def _finish_jobs(jobs, inference_started_at, result):
-        """Give each request its output, or the batch's exception, and wake it."""
+    def _finish_jobs(self, jobs, inference_started_at, result):
+        """Give each request its output, or the batch's exception, and wake it.
+        A CUDA error logs the recent batches, then fails fast if the device health
+        probe fails (see _on_cuda_error)."""
         try:
             if isinstance(result, BaseException):
                 error = result
+                if _is_cuda_error(result):
+                    LOGGER.error(
+                        "Parakeet failed batch (CUDA error): seq=%s, rows=%d, "
+                        "row_audio_s=%s; recent batches, oldest first: %s",
+                        jobs[0].get("batch_seq") if jobs else None,
+                        len(jobs),
+                        [round(float(job["duration_seconds"]), 2) for job in jobs],
+                        list(self._recent_batches),
+                        exc_info=result,
+                    )
+                    self._on_cuda_error(result)
             elif not isinstance(result, (list, tuple)) or len(result) != len(jobs):
                 count = len(result) if isinstance(result, (list, tuple)) else type(result).__name__
                 error = RuntimeError(f"NeMo returned {count} outputs for {len(jobs)} inputs")
