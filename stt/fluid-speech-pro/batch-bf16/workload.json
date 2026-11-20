@@ -129,7 +129,7 @@
     "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full-batch-length-short.json",
     "reason": "No exact imported run; use the established full profile and obtain a baseline."
   },
-  "baseline_status": "missing",
+  "baseline_status": "accepted",
   "bench": {
     "protocol": "baseten_predict",
     "profile_overrides": {

@@ -1,6 +1,314 @@
 {
   "schema_version": 1,
-  "status": "missing",
-  "accepted": false,
-  "entries": []
+  "status": "accepted",
+  "accepted": true,
+  "entries": [
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-20T19:09:40.437655Z",
+      "run_id": "run-8e433a8b8f7e",
+      "config_digest": "56e477aa6507a8875e886944f02bef811f87ba94e58ae5f361677449d263c88f",
+      "bench_code_sha": "8105aafa012287e6f013a7131c18a74ab210dc86",
+      "listing": "baseten/fluid-speech-pro",
+      "deployment_id": "wgze68o",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 439.8697651922703,
+              "e2e_latency_p90_ms": 533.8078085333109,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.3833333333333333,
+              "error_rate": 0.0,
+              "audio_rtf_x": 24.93
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 352.8616186231375,
+              "e2e_latency_p90_ms": 514.5770013332367,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 44.325,
+              "error_rate": 0.0,
+              "audio_rtf_x": 461.71
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-5min",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1381.9511160254478,
+              "e2e_latency_p90_ms": 1467.2640413045883,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.7208333333333333,
+              "error_rate": 0.0,
+              "audio_rtf_x": 215.63
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1407.5258821249008,
+              "e2e_latency_p90_ms": 1556.3849471509457,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.7916666666666665,
+              "error_rate": 0.0,
+              "audio_rtf_x": 835.24
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 4295.912645757198,
+              "e2e_latency_p90_ms": 4637.474754825234,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 4.183333333333334,
+              "error_rate": 0.0,
+              "audio_rtf_x": 1251.58
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-10s",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 408.4388241171837,
+              "e2e_latency_p90_ms": 443.90673749148846,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 2.4583333333333335,
+              "error_rate": 0.0,
+              "audio_rtf_x": 22.58
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 408.14816765487194,
+              "e2e_latency_p90_ms": 444.3849176168442,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 9.975,
+              "error_rate": 0.0,
+              "audio_rtf_x": 91.74
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 407.41114877164364,
+              "e2e_latency_p90_ms": 446.52564637362957,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 20.358333333333334,
+              "error_rate": 0.0,
+              "audio_rtf_x": 187.23
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 394.36720684170723,
+              "e2e_latency_p90_ms": 444.3802386522293,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 43.30833333333333,
+              "error_rate": 0.0,
+              "audio_rtf_x": 398.39
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-30s",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 603.5545002669096,
+              "e2e_latency_p90_ms": 655.1871839910746,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.675,
+              "error_rate": 0.0,
+              "audio_rtf_x": 48.82
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 599.2137435823679,
+              "e2e_latency_p90_ms": 654.864951968193,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 6.841666666666667,
+              "error_rate": 0.0,
+              "audio_rtf_x": 199.85
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 585.95160394907,
+              "e2e_latency_p90_ms": 656.3420835882425,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 14.325,
+              "error_rate": 0.0,
+              "audio_rtf_x": 418.27
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 537.4912172555923,
+              "e2e_latency_p90_ms": 661.0453873872757,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 30.9,
+              "error_rate": 0.0,
+              "audio_rtf_x": 902.27
+            }
+          ]
+        },
+        {
+          "bench": "data=podcast-1min",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 728.6808919161558,
+              "e2e_latency_p90_ms": 794.2060362547636,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.4,
+              "error_rate": 0.0,
+              "audio_rtf_x": 82.78
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt@c4",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 716.5237758308649,
+              "e2e_latency_p90_ms": 788.983067497611,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 5.891666666666667,
+              "error_rate": 0.0,
+              "audio_rtf_x": 348.74
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 741.484435275197,
+              "e2e_latency_p90_ms": 812.4909531325102,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 11.133333333333333,
+              "error_rate": 0.0,
+              "audio_rtf_x": 659.09
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt@c16",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 753.8981232792139,
+              "e2e_latency_p90_ms": 865.4161561280489,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 22.283333333333335,
+              "error_rate": 0.0,
+              "audio_rtf_x": 1319.16
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "mu-bench-full:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.7675201081389686
+            },
+            {
+              "task": "pipecat:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.9770039421813403
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
