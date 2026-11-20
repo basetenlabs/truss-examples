@@ -1,0 +1,94 @@
+# JetBrains Mellum2.1 Thinking (12B MoE, 2.5B active, BF16) with its MTP head on BIS-LLM, vLLM
+# engine backend, one B200, latency preset. Full 131,072-token native context, thinking on by
+# default, hermes tool calling, MTP speculative decoding (2 tokens) from the checkpoint's own head.
+#
+# Serving image: a one-off BIS vLLM v0.33.0 build from baseten main (revision 0dff5b3d9e), the
+# first with fastokens-b10 0.2.18 (baseten#42912, BIS-350). Earlier BIS images crash-loop in the
+# frontend on Mellum's Digits pre-tokenizer. Swap to the next MP release tag once one is cut.
+# vLLM 0.33 is the first release that loads the MTP head (Mellum runs on vLLM's Transformers
+# modeling backend). No bis_llm.version: the platform's current chart is used.
+model_name: "model:mellum2.1-12b-a2.5b-thinking preset:b200x1-bf16-latency"
+model_metadata:
+  description: >-
+    JetBrains Mellum2.1 Thinking, a 12B mixture-of-experts reasoning model (2.5B active) for agentic
+    coding, with MTP speculative decoding and tool calling, served with vLLM through the Baseten
+    Inference Stack on one B200.
+  repo_id: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+  tags:
+    - openai-compatible
+  example_model_input:
+    model: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+    messages:
+      - role: user
+        content: "Find the bug in this function and explain the fix: def mean(xs): return sum(xs) / len(xs) - 1"
+    stream: true
+    max_tokens: 4096
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+bis_llm:
+  config:
+    additional_environment_variables:
+      Worker:
+        HF_HUB_ENABLE_HF_TRANSFER: "1"
+        # Thread pools otherwise size to the node, not the worker's CPU limit.
+        MKL_NUM_THREADS: "4"
+        OMP_NUM_THREADS: "1"
+        RAYON_NUM_THREADS: "4"
+        SAFETENSORS_FAST_GPU: "1"
+        TOKENIZERS_PARALLELISM: "false"
+        VLLM_ENGINE_READY_TIMEOUT_S: "3600"
+        VLLM_LOGGING_LEVEL: WARNING
+    arguments_as_json: true
+    b10_routing_config:
+      algo_selector: B10
+      durable_kv_events: false
+      enable_worker_tree: true
+      router_cache_miss_weight: 0
+      router_overlap_score_weight: 1000
+      router_temperature: 0.001
+    checkpoint_name: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+    default_thinking_enabled: true
+    engine_backend: vllm
+    engine_config:
+      dtype: bfloat16
+      enable_chunked_prefill: true
+      enable_prefix_caching: true
+      enforce_eager: false
+      gpu_memory_utilization: 0.92
+      kv_events_endpoint: "tcp://*:5557"
+      max_model_len: 131072
+      max_num_batched_tokens: 8192
+      max_num_seqs: 64
+      trust_remote_code: true
+      vllm_extra_args:
+        # Engine-side parser so structured output waits for the end of reasoning.
+        - --reasoning-parser
+        - qwen3
+        # 2 tokens, not the model card's 1: on one B200, TPOT was 5-11% lower than with 1 token on
+        # coding and code-review prompts (concurrency 1-32) and 5-8% higher only on random-word
+        # prompts. 3 tokens was never better than 2, since the checkpoint has a single MTP layer.
+        - --speculative-config
+        - "{\"method\": \"mtp\", \"num_speculative_tokens\": 2}"
+    gpuTRTImage: baseten/dynamo-cache-aware-routing:bis-t558j5--vllm-v0.33.0-98b4c547b-0dff5b3d9e
+    language_model_only: true
+    model_name: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+    model_path: /models/mellum2.1-12b-a2.5b-thinking-mtp
+    # basic, not qwen3: Mellum's template doesn't prefill <think> (the model emits it), and the
+    # BIS qwen3 parser only looks for </think>, which leaves "<think>" in reasoning_content.
+    reasoning_parser: basic
+    served_model_name: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+    served_model_name_response: JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP
+    tensor_parallel_size: 1
+    tokenizer_limit_length: 131072
+    tool_call_parser: hermes
+environment_variables: {}
+resources:
+  # Pinned to the harmonized B200 SKU. `accelerator: B200` resolved to the legacy B200x28x384
+  # shape at the same price, which most orgs can't deploy (see #319). Under 32 concurrent
+  # requests the deployment used under 2 cores, so B200's 16 vCPUs are plenty.
+  instance_type: B200
+  use_gpu: true
+weights:
+  - source: hf://JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP@d55846102dd1c047e95d4841070f88290227c3b7
+    mount_location: /models/mellum2.1-12b-a2.5b-thinking-mtp

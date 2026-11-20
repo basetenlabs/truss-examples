@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "b200",
+    "count": 1
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "JetBrains/Mellum2.1-12B-A2.5B-Thinking-MTP",
+      "revision": "d55846102dd1c047e95d4841070f88290227c3b7"
+    }
+  },
+  "engine": {
+    "kind": "bis",
+    "backend": "vllm",
+    "version": null
+  },
+  "limits": []
+}
