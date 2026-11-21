@@ -202,6 +202,132 @@
         "prompts": "sierra"
       },
       "serial": true
+    },
+    {
+      "name": "quality-open-asr-leaderboard-ami-cleaned",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "ami-cleaned"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-earnings22-cleaned-aa-chunked",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "earnings22-cleaned-aa-chunked"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-gigaspeech-cleaned-1in4",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "gigaspeech-cleaned-1in4"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-spgispeech-1in8",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "spgispeech-1in8"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-urgent2024",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "urgent2024"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-monsoon-en-in",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "monsoon-en-in"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-voxpopuli-cleaned-aa",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_transcriptions",
+        "prompts": "sierra",
+        "datasets": [
+          "voxpopuli-cleaned-aa"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8,
+        "per_sample_language": true
+      }
     }
   ],
   "initial_relative_tolerance": 0.1,
@@ -228,6 +354,9 @@
         4,
         16
       ]
-    }
+    },
+    "quality_suites": [
+      "open-asr-leaderboard"
+    ]
   }
 }

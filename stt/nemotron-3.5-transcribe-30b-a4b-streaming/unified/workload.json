@@ -23,7 +23,27 @@
       }
     },
     {
-      "name": "data=pipecat,chart",
+      "name": "data=pipecat,mode=server_vad",
+      "kind": "perf.stt_streaming",
+      "config": {
+        "datasets": [
+          "pipecat"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          32
+        ],
+        "warmup_request_count": 2,
+        "protocol": "baseten_stt_unified",
+        "enable_partials": true,
+        "ws_path": "/websocket",
+        "segmentation_mode": "server_vad"
+      },
+      "serial": true
+    },
+    {
+      "name": "data=pipecat,mode=server_vad,chart",
       "kind": "perf.stt_streaming",
       "config": {
         "datasets": [
@@ -40,7 +60,9 @@
         "warmup_request_count": 2,
         "protocol": "baseten_stt_unified",
         "enable_partials": true,
-        "ws_path": "/websocket"
+        "ws_path": "/websocket",
+        "segmentation_mode": "server_vad",
+        "realtime_silence_tail": true
       },
       "serial": true
     },
@@ -73,8 +95,12 @@
   "bench": {
     "protocol": "baseten_stt_unified",
     "capacity_concurrency": 32,
+    "segmentation_modes": [
+      "client_flush",
+      "server_vad"
+    ],
     "chart_cells": {
-      "pipecat": [
+      "pipecat,mode=server_vad": [
         1,
         4,
         8,

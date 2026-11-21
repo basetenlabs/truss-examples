@@ -42,7 +42,8 @@
         "protocol": "voxtral_realtime",
         "enable_partials": true,
         "ws_path": "/websocket",
-        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602"
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "realtime_silence_tail": true
       },
       "serial": true
     },
@@ -64,6 +65,132 @@
         "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602"
       },
       "serial": true
+    },
+    {
+      "name": "quality-open-asr-leaderboard-ami-cleaned",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "ami-cleaned"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-earnings22-cleaned-aa-chunked",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "earnings22-cleaned-aa-chunked"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-gigaspeech-cleaned-1in4",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "gigaspeech-cleaned-1in4"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-spgispeech-1in8",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "spgispeech-1in8"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-urgent2024",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "urgent2024"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-monsoon-en-in",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "monsoon-en-in"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-voxpopuli-cleaned-aa",
+      "kind": "quality.stt_streaming",
+      "serial": true,
+      "config": {
+        "protocol": "voxtral_realtime",
+        "served_model": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+        "ws_path": "/websocket",
+        "datasets": [
+          "voxpopuli-cleaned-aa"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 32
+      }
     }
   ],
   "initial_relative_tolerance": 0.1,
@@ -84,6 +211,9 @@
         16,
         32
       ]
-    }
+    },
+    "quality_suites": [
+      "open-asr-leaderboard"
+    ]
   }
 }
