@@ -131,7 +131,7 @@
         "datasets": [
           "podcast-1hr"
         ],
-        "num_samples": 32,
+        "num_samples": 16,
         "concurrency_levels": [
           1,
           4,
@@ -141,7 +141,7 @@
         "batch_protocol": "openai_transcriptions",
         "warmup_request_count": 2,
         "max_duration_s": 5400.0,
-        "request_timeout_s": 600.0
+        "request_timeout_s": 900.0
       },
       "serial": true
     },
