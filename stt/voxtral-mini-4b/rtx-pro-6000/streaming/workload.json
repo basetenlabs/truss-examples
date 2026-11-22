@@ -81,7 +81,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -101,7 +101,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -121,7 +121,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -141,7 +141,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -161,7 +161,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -181,7 +181,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
@@ -201,7 +201,7 @@
         "scoring_methods": [
           "open_asr"
         ],
-        "concurrency": 32,
+        "concurrency": 48,
         "request_timeout_s": 10,
         "realtime_silence_tail": true
       }
