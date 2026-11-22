@@ -36,7 +36,8 @@
           4,
           8,
           16,
-          32
+          32,
+          48
         ],
         "warmup_request_count": 2,
         "protocol": "voxtral_realtime",
@@ -223,7 +224,8 @@
         4,
         8,
         16,
-        32
+        32,
+        48
       ]
     },
     "quality_suites": [
