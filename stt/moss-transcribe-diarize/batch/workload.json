@@ -199,7 +199,8 @@
         ],
         "concurrency": 8,
         "batch_protocol": "openai_transcriptions",
-        "prompts": "sierra"
+        "prompts": "sierra",
+        "strip_inline_tags": true
       },
       "serial": true
     },
@@ -210,6 +211,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "ami-cleaned"
         ],
@@ -228,6 +230,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "earnings22-cleaned-aa-chunked"
         ],
@@ -246,6 +249,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "gigaspeech-cleaned-1in4"
         ],
@@ -264,6 +268,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "spgispeech-1in8"
         ],
@@ -282,6 +287,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "urgent2024"
         ],
@@ -300,6 +306,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "monsoon-en-in"
         ],
@@ -318,6 +325,7 @@
       "config": {
         "batch_protocol": "openai_transcriptions",
         "prompts": "sierra",
+        "strip_inline_tags": true,
         "datasets": [
           "voxpopuli-cleaned-aa"
         ],
@@ -357,6 +365,7 @@
     },
     "quality_suites": [
       "open-asr-leaderboard"
-    ]
+    ],
+    "strip_inline_tags": true
   }
 }
