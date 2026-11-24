@@ -149,7 +149,7 @@
     "path": ".github/actions/run-b10-bench/modalities/stt/spec.py",
     "reason": "b10-bench's standard diarization suite (diar-std-v3); obtain a baseline."
   },
-  "baseline_status": "missing",
+  "baseline_status": "accepted",
   "bench": {
     "protocol": "transcription_input",
     "task": "transcribe_diarize"

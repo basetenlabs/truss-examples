@@ -1,6 +1,174 @@
 {
   "schema_version": 1,
-  "status": "missing",
-  "accepted": false,
-  "entries": []
+  "status": "accepted",
+  "accepted": true,
+  "entries": [
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-24T23:01:28.070597Z",
+      "run_id": "run-758addfef24f",
+      "config_digest": "e054d5eaf8d3ab221af2f004634bb58d3a7e801b0c3d9c3c3a84047f1bd0c16c",
+      "bench_code_sha": "4585dd0b892df45b91f2c91dea049bb587906bb7",
+      "listing": "baseten/nemotron-3-diarized-transcription-batch",
+      "deployment_id": "qe7d722",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "speed",
+          "kind": "perf.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "diarization-batch@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 16571.0,
+              "e2e_latency_p90_ms": 37224.0,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.0461182526529287,
+              "error_rate": 0.0,
+              "audio_hours_per_hour": 58.5,
+              "rtfx_p50": 58.0996828150839
+            },
+            {
+              "concurrency": 8,
+              "scenario": "diarization-batch@c8",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 58749.0,
+              "e2e_latency_p90_ms": 100543.0,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.10361118801463211,
+              "error_rate": 0.0,
+              "audio_hours_per_hour": 131.5,
+              "rtfx_p50": 18.790988959865444
+            }
+          ]
+        },
+        {
+          "bench": "der=ami",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "ami:der",
+              "error_rate": 0.0,
+              "accuracy": 0.7010327308481861,
+              "der": 0.2989672691518139
+            },
+            {
+              "task": "ami:cpwer",
+              "error_rate": 0.0,
+              "accuracy": 0.8674458739812639,
+              "cpwer": 0.13255412601873606,
+              "tcpwer": 0.1697108863162188
+            }
+          ]
+        },
+        {
+          "bench": "der=ami-sdm",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "ami-sdm:der",
+              "error_rate": 0.0,
+              "accuracy": 0.6799689451588377,
+              "der": 0.32003105484116234
+            },
+            {
+              "task": "ami-sdm:cpwer",
+              "error_rate": 0.0,
+              "accuracy": 0.7934377546788878,
+              "cpwer": 0.2065622453211122
+            }
+          ]
+        },
+        {
+          "bench": "der=callhome",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "callhome:der",
+              "error_rate": 0.0,
+              "accuracy": 0.4904907736633586,
+              "der": 0.5095092263366414
+            },
+            {
+              "task": "callhome:cpwer",
+              "error_rate": 0.0
+            }
+          ]
+        },
+        {
+          "bench": "der=aishell4",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "aishell4:der",
+              "error_rate": 0.0,
+              "accuracy": 0.08260290856031094,
+              "der": 0.9173970914396891
+            },
+            {
+              "task": "aishell4:cpwer",
+              "error_rate": 0.0,
+              "accuracy": 0.0,
+              "cpwer": 1.0029372108805132,
+              "tcpwer": 1.055064805696722
+            }
+          ]
+        },
+        {
+          "bench": "der=notsofar1",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "notsofar1:der",
+              "error_rate": 0.0,
+              "accuracy": 0.6577238334729782,
+              "der": 0.3422761665270217
+            },
+            {
+              "task": "notsofar1:cpwer",
+              "error_rate": 0.0,
+              "accuracy": 0.7541838405155432,
+              "cpwer": 0.24581615948445673,
+              "tcpwer": 0.2520507336095949
+            }
+          ]
+        },
+        {
+          "bench": "der=voxconverse",
+          "kind": "quality.diarization",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "voxconverse:der",
+              "error_rate": 0.0,
+              "accuracy": 0.6732371247011573,
+              "der": 0.3267628752988428
+            },
+            {
+              "task": "voxconverse:cpwer",
+              "error_rate": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
