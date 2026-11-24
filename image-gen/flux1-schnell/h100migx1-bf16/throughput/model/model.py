@@ -9,6 +9,8 @@ from io import BytesIO
 import numpy as np
 import torch
 from diffusers import FluxPipeline
+from diffusers.utils import logging as diffusers_logging
+from transformers.utils import logging as transformers_logging
 from PIL import Image
 
 from b10_transfer import load_compile_cache, save_compile_cache, OperationStatus
@@ -76,6 +78,12 @@ class Model:
         )
 
     def load(self):
+        # Zero Data Retention: the Flux pipeline logs the truncated part of the
+        # customer prompt at WARNING when it exceeds CLIP's 77-token limit (and
+        # T5's max_sequence_length). Raise the library loggers to ERROR so
+        # prompt text never reaches the replica logs.
+        diffusers_logging.set_verbosity_error()
+        transformers_logging.set_verbosity_error()
         cache_loaded = load_compile_cache()
 
         self.pipe = FluxPipeline.from_pretrained(

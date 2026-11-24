@@ -14,7 +14,7 @@ requirements:
   - git+https://github.com/huggingface/diffusers.git@fc6a91e3834c35e57b398ad1c0d99f6f83557e04
   - transformers>=4.0.0,<5.0.0
   - accelerate
-  - sentencepiece
+  - sentencepiece<0.2.3  # 0.2.3 needs protobuf>=7.36.1 gencode; image resolves protobuf 6.x
   - protobuf
   - b10-transfer
 environment_variables:

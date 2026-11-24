@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import os
+import shutil
 import tempfile
 import uuid
 from pathlib import Path
@@ -149,10 +150,33 @@ class Model:
         model_mode = request.get("model_mode", "text2video")
         # cosmos3 writes vision.{mp4,jpg} and sample_outputs.json directly
         # into output_dir (it does NOT append `name` as a subdir), so each
-        # request gets its own per-sample directory.
-        output_dir = self._inference_root / sample_name
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # request gets its own per-request directory. The directory name is
+        # always a fresh uuid (never the caller-chosen `name`) and the whole
+        # directory, including downloaded inputs, is deleted in `finally` so
+        # no customer media outlives the request (Zero Data Retention).
+        output_dir = self._inference_root / f"req-{uuid.uuid4().hex}"
+        output_dir.mkdir(parents=True, exist_ok=False)
+        try:
+            return self._predict_in_dir(request, sample_name, model_mode, output_dir)
+        finally:
+            # Surface deletion failures (they mean customer media may remain
+            # on disk) without raising, so the inference result or original
+            # exception is preserved. Log no path, name or content.
+            try:
+                shutil.rmtree(output_dir)
+            except OSError as e:
+                logger.error(
+                    "cosmos3: failed to remove per-request temp dir (%s)",
+                    type(e).__name__,
+                )
 
+    def _predict_in_dir(
+        self,
+        request: dict[str, Any],
+        sample_name: str,
+        model_mode: str,
+        output_dir: Path,
+    ) -> dict[str, Any]:
         overrides_kwargs: dict[str, Any] = {
             "name": sample_name,
             "output_dir": output_dir,
@@ -198,6 +222,6 @@ class Model:
         produces_vision = model_mode in _VISION_OUTPUT_MODES
         produces_action = model_mode in _ACTION_OUTPUT_MODES
         if produces_vision and out_path is None and not produces_action:
-            raise RuntimeError(f"Inference produced no output under {output_dir}")
+            raise RuntimeError("Inference produced no output")
 
         return response

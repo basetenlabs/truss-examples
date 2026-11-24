@@ -8,6 +8,8 @@ from io import BytesIO
 import numpy as np
 import torch
 from diffusers import FluxPipeline
+from diffusers.utils import logging as diffusers_logging
+from transformers.utils import logging as transformers_logging
 from PIL import Image
 
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +23,12 @@ class Model:
         self.pipe = None
 
     def load(self):
+        # Zero Data Retention: the Flux pipeline logs the truncated part of the
+        # customer prompt at WARNING when it exceeds CLIP's 77-token limit (and
+        # T5's max_sequence_length). Raise the library loggers to ERROR so
+        # prompt text never reaches the replica logs.
+        diffusers_logging.set_verbosity_error()
+        transformers_logging.set_verbosity_error()
         self.pipe = FluxPipeline.from_pretrained(
             self.model_path, torch_dtype=torch.bfloat16
         ).to("cuda")
