@@ -315,6 +315,187 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-24T21:42:15.137528Z",
+      "run_id": "run-3f552e7806f2",
+      "config_digest": "f84988f11f0f2091e1854934f297e036550f255ab5e9e897267714a3d25bea30",
+      "bench_code_sha": "4585dd0b892df45b91f2c91dea049bb587906bb7",
+      "listing": "baseten/nemotron-3-5-transcribe-30b-a4b-streaming",
+      "deployment_id": "q4og6v5",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": -237.90349066257477,
+              "ttft_p90_ms": 499.07766841351986,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1189.765565097332,
+              "e2e_latency_p90_ms": 1332.0764601230621,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.09477281021367423,
+              "error_rate": 0.0,
+              "audio_rtf_x": 0.93
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 1229.0293723344803,
+              "ttft_p90_ms": 2231.3421797007322,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 1354.2117271572351,
+              "e2e_latency_p90_ms": 1640.4137685894966,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.9678591607661268,
+              "error_rate": 0.015625,
+              "audio_rtf_x": 9.7
+            }
+          ]
+        },
+        {
+          "bench": "data=pipecat,mode=server_vad",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 651.2005589902401,
+              "ttft_p90_ms": 1906.894164159894,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 694.6009006351233,
+              "e2e_latency_p90_ms": 857.0929914712906,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.0758734068132887,
+              "error_rate": 0.015625,
+              "audio_rtf_x": 0.76
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 745.8697929978371,
+              "ttft_p90_ms": 1969.461040571332,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 807.5985703617334,
+              "e2e_latency_p90_ms": 1114.8579977452755,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.86562022527745,
+              "error_rate": 0.0,
+              "audio_rtf_x": 18.4
+            }
+          ]
+        },
+        {
+          "bench": "data=pipecat,mode=server_vad,chart",
+          "kind": "perf.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt-stream@c1",
+              "ttft_p50_ms": 617.0044783502817,
+              "ttft_p90_ms": 1900.0340439379215,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 744.3170342594385,
+              "e2e_latency_p90_ms": 843.7181878834963,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.0720888320306275,
+              "error_rate": 0.0,
+              "audio_rtf_x": 0.71
+            },
+            {
+              "concurrency": 4,
+              "scenario": "stt-stream@c4",
+              "ttft_p50_ms": 603.930689394474,
+              "ttft_p90_ms": 1933.6555376648903,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 755.4577793926001,
+              "e2e_latency_p90_ms": 920.898150652647,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.28297760544278316,
+              "error_rate": 0.0,
+              "audio_rtf_x": 2.79
+            },
+            {
+              "concurrency": 8,
+              "scenario": "stt-stream@c8",
+              "ttft_p50_ms": 658.110311254859,
+              "ttft_p90_ms": 1897.0143888145685,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 796.737652271986,
+              "e2e_latency_p90_ms": 934.3555271625519,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 0.5368843602569525,
+              "error_rate": 0.0,
+              "audio_rtf_x": 5.3
+            },
+            {
+              "concurrency": 16,
+              "scenario": "stt-stream@c16",
+              "ttft_p50_ms": 678.7172947078943,
+              "ttft_p90_ms": 1980.72924092412,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 827.4970073252916,
+              "e2e_latency_p90_ms": 1027.6531428098679,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.010888747786509,
+              "error_rate": 0.0,
+              "audio_rtf_x": 9.97
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt-stream@c32",
+              "ttft_p50_ms": 766.8564431369305,
+              "ttft_p90_ms": 1990.8559415489435,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 889.3613275140524,
+              "e2e_latency_p90_ms": 1102.6446521282196,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 1.7277042273861132,
+              "error_rate": 0.0,
+              "audio_rtf_x": 17.04
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_streaming",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "mu-bench-full:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.7684044744457318
+            },
+            {
+              "task": "pipecat:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.9868593955321945
+            }
+          ]
+        }
+      ]
     }
   ]
 }
