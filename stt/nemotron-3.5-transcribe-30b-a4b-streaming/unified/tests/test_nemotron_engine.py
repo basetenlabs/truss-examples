@@ -17,6 +17,7 @@ import subprocess
 import sys
 import time
 import wave
+from pathlib import Path
 
 import httpx
 import pytest
@@ -241,14 +242,19 @@ def _scripted(*answers):
 
 
 @pytest.mark.asyncio
-async def test_a_wrong_script_decode_is_retried_with_the_stricter_instruction():
+async def test_a_wrong_script_decode_is_retried_with_the_stricter_instruction(caplog):
     seen, handler = _scripted("L I 点儿 C O M", "L I dot C O M")
-    async with _client(handler) as client:
-        assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == ("L I dot C O M", "en")
+    with caplog.at_level("DEBUG"):
+        async with _client(handler) as client:
+            assert await _SidecarEngine(client).transcribe(ONE_SECOND, "en") == ("L I dot C O M", "en")
     assert seen == [
         prompt_for("en"),
         prompt_for("en") + " " + RETRY_INSTRUCTION.format(language="English"),
     ]
+    # Zero data retention: the retry is logged by length, never by text or language.
+    logged = " ".join(r.getMessage() for r in caplog.records)
+    assert "retried: chars 12 -> 13" in logged
+    assert "点" not in logged and "dot" not in logged and "English" not in logged
 
 
 @pytest.mark.asyncio
@@ -379,3 +385,13 @@ def test_profiled_turn_logs_a_summary(tmp_path, monkeypatch, caplog):
             time.sleep(0.3)
     assert "diag[test] warmup 8s +0s: cpu" in caplog.text
     assert "triton=+1f/" in caplog.text
+
+
+def test_the_sidecar_never_logs_requests():
+    """Prompts carry customer context and keyterms. vLLM 0.32 logs requests only with
+    --enable-log-requests (off by default); the script states the off switch explicitly."""
+    script = (Path(__file__).resolve().parents[1] / "packages" / "sidecar" / "start_vllm.sh").read_text()
+    args = script.split("VLLM_ARGS=(", 1)[1].split("\n)", 1)[0].split()
+    assert "--no-enable-log-requests" in args
+    assert "--enable-log-requests" not in args
+    assert "--enable-log-outputs" not in args

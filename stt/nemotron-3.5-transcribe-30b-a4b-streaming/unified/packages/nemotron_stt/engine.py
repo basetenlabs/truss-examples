@@ -98,7 +98,15 @@ REQUEST_TIMEOUT_S = float(os.environ.get("NEMOTRON_REQUEST_TIMEOUT_S", "120"))
 #: The first decodes after the sidecar reports healthy JIT-compile Triton kernels, long enough
 #: that a session's finals used to time out. Warmup runs them before the backend is published,
 #: so readiness covers them. Turn lengths up to the server's 29 s cut, sequentially, then
-#: ``predict_concurrency`` of them at once for the batched shapes. 0 skips warmup.
+#: WARMUP_CONCURRENCY of them at once for the batched shapes. 0 skips warmup.
+#: 32 at once, not predict_concurrency (128): in vLLM 0.32 nothing compiles per batch size past
+#: that. Concurrency changes how many requests share a step, not the step's shape range: tokens
+#: per step stay capped by --max-num-batched-tokens (4096), the one torch.compile range
+#: [1, 4096] is compiled at startup (compile_all_ranges), and CUDA graphs are captured at
+#: startup for every size up to 512 tokens (min(192 seqs x 9 tokens x 2, 512)); larger steps
+#: run uncaptured, never captured lazily. FA2's PTX JIT is per kernel variant, not per batch
+#: size; a wider batch only moves its split-KV heuristic toward the unsplit kernel (inference
+#: from the heuristic, not measured on a fresh replica).
 WARMUP = os.environ.get("NEMOTRON_WARMUP", "1") != "0"
 WARMUP_AUDIO_S = (1.0, 4.0, 8.0, 16.0, 29.0)
 WARMUP_CONCURRENCY = 32
@@ -252,7 +260,8 @@ class _SidecarEngine:
             # A second miss is not the language the session asked for, so it is no words.
             name = LANGUAGE_NAMES[language]
             retried = await self._decode(pcm, prompt + " " + RETRY_INSTRUCTION.format(language=name))
-            logger.info("decode not in %s, retried: %r -> %r", name, text[:80], retried[:80])
+            # No language or text in the log (zero data retention): only that it happened.
+            logger.info("decode not in the requested script, retried: chars %d -> %d", len(text), len(retried))
             text = "" if in_wrong_script(retried, language) else retried
         return text, None if language == "auto" else language
 

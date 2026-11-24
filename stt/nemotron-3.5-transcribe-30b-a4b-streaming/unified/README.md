@@ -22,7 +22,7 @@ torch stack (NVIDIA validates Python 3.13), while baseten-stt runs on the server
 
 | Piece | What |
 |---|---|
-| Server | `baseten/stt-server:0.3.0` (baseten-stt v0.3.0), Python 3.12 |
+| Server | `baseten/stt-server:0.4.1` (baseten-stt v0.4.1), Python 3.12. Results below predate it unless marked 0.4.1 |
 | Backend | `packages/nemotron_stt`: the template's stream unchanged except for the name, and an engine that calls a sidecar |
 | Engine | The batch preset's `vllm serve` (`stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch`, NVIDIA's model-card flags: MTP-8, FP32 SSM state, utilization 0.94, 65,536-token window, no async scheduling; thinking off), launched by `build()` from `/opt/nemo-speech/venv` on `127.0.0.1:8000` |
 | Decode | One `/v1/chat/completions` request per final or partial: the turn's PCM as WAV, prompt "Transcribe this audio." unless the session sets a language or context (below) |
@@ -165,9 +165,41 @@ On the EA checkpoint (MTP-4 + async, 0.2 s server VAD) the same set measured 2.2
 
 ## Capacity
 
+### stt-server 0.4.1 (#1493)
+
+On stt-server 0.4.1 with `BASETEN_STT_VAD_MODE=batched` and `BASETEN_STT_PIPELINE=direct` (the
+preset defaults since #1493), one replica holds about **128 server_vad streams** at a client
+TTFS p90 of ~1.5 s, so `predict_concurrency` is 128 and `BASETEN_STT_MAX_SESSIONS` 130 (they
+were 32 and 48; the sweeps below raised them further to find the knee). Client TTFS p90 (pipecat
+short turns, b10-bench, 180 s sustained per level, every request successful unless marked *):
+
+| Streams | pool + pipecat (server defaults) | batched + pipecat | pool + direct | batched + direct |
+|---:|---:|---:|---:|---:|
+| 64 | 1.20 s | 1.22 s | 1.22 s | 1.21 s |
+| 96 | 1.31 s | 1.31 s | 1.34 s | 1.30 s* |
+| 128 | 2.65 s | 1.49 s | 1.93 s* | 1.45 s |
+| 160 | | 3.90 s* | 3.85 s | |
+| 192 | | 4.77 s* | 4.53 s | |
+
+All four arms ran on ali-ue1-prod-1. A matched pair on aws-uw2-prod-2 (the final head):
+
+| Streams | pool + pipecat | batched + direct (shipped) |
+|---:|---:|---:|
+| 96 | 1.39 s | 1.37 s |
+| 128 | 4.68 s | 1.56 s |
+| 160 | 9.54 s | 4.06 s |
+| 192 | 10.94 s (97 RTFx) | 5.03 s (127 RTFx) |
+
+\* One turn of the cell failed on a decode that ran to `max_tokens` (about 1 turn in 2,000 in
+every arm; this preset has no answer guard), so the cell is excluded from ranking. WER was
+unchanged across arms (pipecat 1.30-1.40%, mu-bench-full 22.4-22.9% naive, 250 samples). Records:
+`model-scout/experiments/stt/nemotron-3.5-transcribe-30b-a4b-streaming/study-stt041-rtx.md`.
+
+### Earlier (v1.0.1)
+
 On v1.0.1, one replica sustains about **32 real-time streams** with partials every 0.5 s. Past that, latency
 grows by tens of seconds while completed streams level off at ~2.3-3.1/s, so `predict_concurrency`
-stays at 32 and traffic beyond it should scale out.
+was 32 until stt-server 0.4.1 (above).
 
 High-concurrency sweeps (b10-bench, 128-256 pipecat clips per level, caps lifted to 256
 connections / 288 sessions so the server, not admission, sets the limit). Final latency p50:

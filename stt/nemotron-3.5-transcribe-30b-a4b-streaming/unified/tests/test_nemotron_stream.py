@@ -13,9 +13,13 @@ what ``_Engine`` being a one-member Protocol is for.
 from __future__ import annotations
 
 import asyncio
+import logging
+import traceback
 
 import pytest
 from nemotron_stt.backend import NemotronBackend, NemotronStream
+
+from baseten_stt.backend.base import TurnDecodeError
 
 from baseten_stt.protocol.capabilities import (
     PCM16_16K_MONO,
@@ -297,3 +301,74 @@ async def test_capabilities_declare_the_cards_languages_and_a_context_slot() -> 
 
 async def _swallow(segments: object) -> None:
     return None
+
+
+SECRET = "words the caller said"
+
+
+class _FailingEngine:
+    """Fails every decode with an error whose text quotes the session, as an engine's can."""
+
+    async def transcribe(
+        self, pcm: bytes, *args: object, **kwargs: object
+    ) -> tuple[str, str | None]:
+        raise ValueError(SECRET)
+
+
+class _RefusingEngine:
+    async def transcribe(
+        self, pcm: bytes, *args: object, **kwargs: object
+    ) -> tuple[str, str | None]:
+        raise TurnDecodeError("static reason")
+
+
+def _all_text(caplog: pytest.LogCaptureFixture) -> str:
+    """The log text with every traceback rendered, as a handler would write it."""
+    formatter = logging.Formatter()
+    return "\n".join(formatter.format(r) for r in caplog.records)
+
+
+async def test_a_failed_final_carries_the_error_type_only(caplog: pytest.LogCaptureFixture) -> None:
+    """Zero data retention: stt-server logs a failed final's message and traceback, so the
+    exception leaving the backend must not carry the engine error's text, or chain to it."""
+    stream = NemotronStream(_FailingEngine(), config(), None)
+    with caplog.at_level("DEBUG"):
+        await stream.append(b"\x01" * 3200)
+        with pytest.raises(RuntimeError) as raised:
+            await stream.flush()
+        await stream.close()
+    err = raised.value
+    assert str(err) == "ValueError"
+    assert err.__cause__ is None and err.__suppress_context__
+    rendered = "".join(traceback.format_exception(err))
+    assert SECRET not in rendered
+    assert SECRET not in _all_text(caplog)
+
+
+async def test_a_turn_decode_error_reaches_the_server_unchanged() -> None:
+    stream = NemotronStream(_RefusingEngine(), config(), None)
+    await stream.append(b"\x01" * 3200)
+    with pytest.raises(TurnDecodeError, match="static reason"):
+        await stream.flush()
+    await stream.close()
+
+
+async def test_a_failed_partial_logs_the_error_type_only(caplog: pytest.LogCaptureFixture) -> None:
+    """Zero data retention: an engine error's text or traceback can quote the transcript. The
+    traceback itself (file and line) is kept."""
+    engine = _FailingEngine()
+    stream = NemotronStream(engine, config(partials=True, interval=0.01), _swallow)
+
+    async def logged() -> None:
+        while "partial decode failed" not in caplog.text:
+            await asyncio.sleep(0.01)
+
+    with caplog.at_level("DEBUG"):
+        await stream.append(b"\x01" * 3200)
+        await asyncio.wait_for(logged(), timeout=WAIT_S)
+        await stream.close()
+    failed = [r for r in caplog.records if "partial decode failed" in r.getMessage()]
+    assert failed and all(r.exc_info is not None for r in failed)
+    text = _all_text(caplog)
+    assert "RuntimeError: ValueError" in text
+    assert SECRET not in text

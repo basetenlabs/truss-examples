@@ -22,22 +22,21 @@ weights:
     mount_location: "/app/checkpoint/model"
 
 base_image:
-  # stt-server 0.3.0 (basetenlabs/baseten-stt v0.3.0, from 81a7c9b), as the other unified
-  # presets. 0.3.0 times Silero's resets by audio analyzed, so `server_vad` turn ends no
-  # longer move with load (#45), and adds opt-in batched voice detection (#44, left off here).
-  # Built by baseten-stt's build-server-images.yml, with signed provenance:
+  # stt-server 0.4.1 (basetenlabs/baseten-stt v0.4.1, from c2c2c57), with signed provenance:
   #
-  #   gh attestation verify oci://baseten/stt-server:0.3.0 --repo basetenlabs/baseten-stt
+  #   gh attestation verify oci://baseten/stt-server:0.4.1 --repo basetenlabs/baseten-stt
   #
-  # Over the dev-8eaf894 this preset was first measured on: the wait for a slot at a full
-  # replica (#26), the 29 s turn cut (#27), decode-language negotiation (#29, unused here) and
-  # the end-of-speech and partial metrics (#30, #37).
+  # 0.4.1 is 0.4.0 plus the zero-data-retention log fix (#73): no session content in server logs
+  # at any level. Over 0.3.0, 0.4.0 brought opt-in BASETEN_STT_PIPELINE=direct (#51) and
+  # BASETEN_STT_PROCS (#59), a bounded per-session audio backlog (#46), server_vad keeping the
+  # stopping chunk's speech in its turn (#63), per-turn log lines at DEBUG (#50), and a
+  # CUDA-context health probe (#66). Batched voice detection (#44) and Silero resets timed by
+  # audio analyzed (#45) carry over from 0.3.0. Earlier results in the README were measured on
+  # 0.3.0 and, before that, dev-8eaf894.
   #
   # The slim variant: python:3.12-slim with baseten-stt installed. The `-vllm` variant's vLLM
   # is too old for this model, so the engine stack is built below instead.
-  #
-  # Published as sha256:b689f860bd76ef4d6754f7bb646d23731abf48f80c019f73b29cf6a033574d82.
-  image: baseten/stt-server:0.3.0
+  image: baseten/stt-server:0.4.1@sha256:c1b2990f06b65756dacebeeaf5adaf0d16db48526431b30321e8e08dc421e458
 
 system_packages:
   # Triton compiles a CUDA helper at runtime with the system C compiler, and FlashInfer
@@ -112,10 +111,15 @@ runtime:
   transport:
     kind: websocket
     ping_timeout_seconds: 86400
-  # Sessions routed to one replica. A high-concurrency sweep (README, Capacity) holds ~1.0-1.6 s
-  # final p50 at 32 streams and 7-11 s at 64, with throughput flat past that, so 32 is the
-  # per-replica ceiling: scale out rather than queue more sessions on one replica.
-  predict_concurrency: 32
+  # Sessions routed to one replica, and the autoscaling target. On stt-server 0.4.1 with batched
+  # VAD and the direct runner (below), one RTX PRO 6000 holds 128 server_vad streams at a client
+  # TTFS p90 of ~1.5 s and degrades past it (README, Capacity; #1493), so 128 is the per-replica
+  # ceiling: scale out rather than queue more sessions on one replica. It was 32 on stt-server
+  # 0.3.0 and earlier, where latency grew by seconds past 32-64 streams. 128 is the knee, not a
+  # comfortable operating point: 1.42-1.56 s at 128 against 4.06 s at 160, and a cold replica
+  # takes 400-590 s to become ready, so keep autoscaling targets under ~96 to leave headroom
+  # while a new replica starts.
+  predict_concurrency: 128
   health_checks:
     # Neither probe answers until build() returns. A cold start (no BDN startup cache yet)
     # measured 328 / 315 s of engine init with the prebuilt FlashInfer kernels (712 s and
@@ -135,6 +139,17 @@ environment_variables:
   # Partials re-decode only the trailing window; the final decodes the whole turn.
   STREAM_PARTIAL_WINDOW_S: "8.0"
   NEMOTRON_SIDECAR_PORT: "8000"
+  # stt-server scheduling (0.4.x). On this RTX PRO 6000 at 128 server_vad streams, client TTFS p90
+  # was 2.65 s with the server defaults (pool VAD, pipecat runner), 1.49 s with batched VAD alone,
+  # 1.93 s with the direct runner alone and 1.45 s with both, at matched WER (#1493, all on
+  # ali-ue1-prod-1, caps raised for the sweep). Through 96 streams all four are within 0.05 s.
+  # "pool" and "pipecat", the server defaults, restore the old scheduling.
+  BASETEN_STT_VAD_MODE: "batched"
+  BASETEN_STT_PIPELINE: "direct"
+  # stt-server's per-replica session ceiling: two above predict_concurrency, so connection churn
+  # does not refuse a session the platform has already routed. The backend's
+  # max_sessions_per_replica (48) is only the fallback when this is unset.
+  BASETEN_STT_MAX_SESSIONS: "130"
   # The rest as the batch preset's environment_variables.
   # Checkpoint directory start_vllm.sh serves.
   BASETEN_MODEL_PATH: "/app/checkpoint/model"

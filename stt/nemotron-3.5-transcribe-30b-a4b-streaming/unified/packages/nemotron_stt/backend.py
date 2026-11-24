@@ -14,7 +14,7 @@ import contextlib
 import logging
 from typing import Protocol
 
-from baseten_stt.backend.base import BackendStream, OnPartial, STTBackend
+from baseten_stt.backend.base import BackendStream, OnPartial, STTBackend, TurnDecodeError
 from baseten_stt.protocol.capabilities import (
     PCM16_16K_MONO,
     Capabilities,
@@ -207,13 +207,21 @@ class NemotronStream:
             task.cancel()
 
     async def _decode(self, audio: bytes, *, offset: float, until: float) -> tuple[Segment, ...]:
-        text, language = await self._engine.transcribe(audio, self._language, self._context)
+        # Zero data retention, for partials and finals alike, since both decode through here: an
+        # engine error's text can quote the prompt (context, keyterms) or the transcript, and
+        # stt-server logs a failed final with its message and traceback. So anything but our own
+        # TurnDecodeError (static text, sent to the client) or a cancellation leaves as its type
+        # name only, with no chained cause.
+        try:
+            text, language = await self._engine.transcribe(audio, self._language, self._context)
+        except (TurnDecodeError, asyncio.CancelledError):
+            raise
+        except Exception as e:
+            raise RuntimeError(type(e).__name__) from None
         if not text.strip():
             # Silence, or a decode that produced only whitespace: an empty span says nothing
             # and still has to be rendered.
             return ()
-        if language:
-            logger.debug("decoded %.2fs as %s", until - offset, language)
         # One segment: the model returns an utterance, not a segmentation.
         return (Segment(text=text.strip(), start=offset, end=until),)
 
@@ -266,8 +274,10 @@ class NemotronStream:
                     task.cancel()
                     raise
                 continue
-            except Exception:
-                logger.exception("partial decode failed; the turn is unaffected")
+            except Exception as e:
+                # ``_decode`` has already reduced any engine error to its type name, so the
+                # traceback (file and line, no session content) is safe to keep.
+                logger.warning("partial decode failed; the turn is unaffected", exc_info=e)
                 continue
             finally:
                 if self._partial_decode is task:
@@ -314,8 +324,8 @@ class NemotronBackend:
             # the other three restate the server's defaults.
             vad=VadConfig(silence_s=0.5, speech_start_s=0.2, threshold=0.7, min_volume=0.0),
             #
-            # The replica's admission ceiling. Above predict_concurrency (32), so connection
-            # churn does not refuse a session the platform has already routed.
+            # Fallback admission ceiling when BASETEN_STT_MAX_SESSIONS is unset; config.yaml
+            # sets the real ceiling, above its predict_concurrency.
             max_sessions_per_replica=48,
             # Both kinds, as the card documents both: free text joins the instruction, terms
             # take its "Context terms:" form. See engine.prompt_for.

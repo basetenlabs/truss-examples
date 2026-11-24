@@ -158,7 +158,9 @@ apply_diag_profile
 cd "${BASETEN_MODEL_PATH}"
 
 # The batch preset's card flags for vLLM 0.32.0: ReplaySSM with the FlashInfer Mamba backend
-# and prefix caching off. Deviation from the card: thinking off by default (the backend also
+# and prefix caching off. --no-enable-log-requests restates vLLM 0.32's default (off) so a
+# default flip cannot start logging prompts, which carry customer context and keyterms.
+# Deviation from the card: thinking off by default (the backend also
 # sends it off). NeMo Speech main registers the current architecture name, so no
 # --hf-overrides.
 VLLM_ARGS=(
@@ -178,6 +180,7 @@ VLLM_ARGS=(
     --mm-processor-cache-gb 0
     --no-async-scheduling
     --disable-uvicorn-access-log
+    --no-enable-log-requests
     --limit-mm-per-prompt '{"audio":{"count":1,"length":120000000}}'
     --speculative-config "${SPEC_CONFIG}"
     --default-chat-template-kwargs '{"enable_thinking":false}'
