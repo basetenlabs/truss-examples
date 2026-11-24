@@ -246,6 +246,75 @@
           ]
         }
       ]
+    },
+    {
+      "event": "published_run",
+      "measured_at": "2026-11-24T22:37:00.614765Z",
+      "run_id": "run-e5f0fc15a39a",
+      "config_digest": "93121db0d8468719cb31838c61a1d6cfa17d9791434b90cb2962045338c977bc",
+      "bench_code_sha": "4585dd0b892df45b91f2c91dea049bb587906bb7",
+      "listing": "baseten/orukeet",
+      "deployment_id": "w57y7lp",
+      "hardware": {
+        "instance_type": "RTX-PRO-6000 - 1 RTX Pro 6000 GPU, 96GB VRAM",
+        "gpu_type": "RTX-PRO-6000",
+        "gpu_count": 1,
+        "replicas": 1
+      },
+      "cells": [
+        {
+          "bench": "data=pipecat",
+          "kind": "perf.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "concurrency": 1,
+              "scenario": "stt@c1",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 252.2689439356327,
+              "e2e_latency_p90_ms": 321.65155187249184,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 3.8721255958734617,
+              "error_rate": 0.0,
+              "audio_rtf_x": 40.4
+            },
+            {
+              "concurrency": 32,
+              "scenario": "stt@c32",
+              "ttft_p50_ms": 0.0,
+              "ttft_p90_ms": 0.0,
+              "tpot_p50_ms": 0.0,
+              "tpot_p90_ms": 0.0,
+              "e2e_latency_p50_ms": 462.5393748283386,
+              "e2e_latency_p90_ms": 780.2473939955235,
+              "output_throughput_tps": 0.0,
+              "requests_per_second": 50.81131051762815,
+              "error_rate": 0.0,
+              "audio_rtf_x": 530.47
+            }
+          ]
+        },
+        {
+          "bench": "quality",
+          "kind": "quality.stt_transcription",
+          "status": "succeeded",
+          "points": [
+            {
+              "task": "mu-bench-full:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.7932094101052845
+            },
+            {
+              "task": "pipecat:naive",
+              "error_rate": 0.0,
+              "accuracy": 0.9756898817345598
+            }
+          ]
+        }
+      ]
     }
   ]
 }
