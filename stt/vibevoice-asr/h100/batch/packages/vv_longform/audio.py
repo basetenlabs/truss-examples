@@ -140,9 +140,22 @@ class DecodeInfo:
 
 def _write_tmp(data: bytes) -> str:
     fd, path = tempfile.mkstemp(prefix="vv_in_")
-    with os.fdopen(fd, "wb") as f:
-        f.write(data)
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+    except BaseException:
+        # Customer audio must not outlive the request (ZDR): drop a partial file.
+        with contextlib.suppress(OSError):
+            os.unlink(path)
+        raise
     return path
+
+
+def _unlink_written(fut: asyncio.Future) -> None:
+    """Done-callback for a ``_write_tmp`` whose caller was cancelled: remove the file it wrote."""
+    if not fut.cancelled() and fut.exception() is None:
+        with contextlib.suppress(OSError):
+            os.unlink(fut.result())
 
 
 def probe_duration_s(path: str) -> float | None:
@@ -219,7 +232,13 @@ async def decode_long(data: bytes, pool: Executor, *, sample_rate: int = SAMPLE_
         raise AudioError("empty audio")
     loop = asyncio.get_running_loop()
     info = DecodeInfo()
-    path = await loop.run_in_executor(pool, _write_tmp, data)
+    write = loop.run_in_executor(pool, _write_tmp, data)
+    try:
+        path = await asyncio.shield(write)
+    except asyncio.CancelledError:
+        # The write still finishes on the pool; delete its file then instead of leaking it.
+        write.add_done_callback(_unlink_written)
+        raise
     try:
         starts = [0]
         if parallel:

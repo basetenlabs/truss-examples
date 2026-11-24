@@ -528,6 +528,37 @@ def test_retry_once_on_stale_pooled_upstream_connection_chunked(tmp_path):
     run(_stale_servers(fn, drop_reused=True))
 
 
+def test_remote_audio_fetch_errors_never_carry_the_signed_url():
+    """Zero data retention: a redirect loop or a malformed URL raises aiohttp errors that are not
+    connection errors and whose text holds the URL. ``_fetch`` turns them into a URL-free
+    ``FetchError`` with no cause attached, so no traceback or log line can print the URL."""
+    secret = "X-Amz-Signature=deadbeef"
+
+    async def loop(request):
+        raise web.HTTPFound(str(request.rel_url))
+
+    async def go():
+        app = web.Application()
+        app.router.add_get("/a.m4a", loop)
+        srv = TestServer(app)
+        await srv.start_server()
+        proxy = Proxy(replace(Settings(), upstream="http://127.0.0.1:9", **OFF))
+        import aiohttp
+
+        proxy.fetch_session = aiohttp.ClientSession()
+        try:
+            for url in (str(srv.make_url(f"/a.m4a?{secret}")), f"http://[::1/a.m4a?{secret}"):
+                with pytest.raises(audio.FetchError) as info:
+                    await proxy._fetch(url)
+                assert secret not in str(info.value)
+                assert info.value.__cause__ is None and info.value.__suppress_context__
+        finally:
+            await proxy.fetch_session.close()
+            await srv.close()
+
+    run(go())
+
+
 @needs_ffmpeg
 def test_remote_audio_fetch_drop_is_retried_then_502(tmp_path):
     wav = tmp_path / "a.wav"

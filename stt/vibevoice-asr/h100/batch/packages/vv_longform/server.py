@@ -371,18 +371,20 @@ class Proxy:
 
     async def _fetch(self, url: str) -> bytes:
         """GET a remote audio URL; one retry on a dropped connection (GET is idempotent).
-        Connection failures raise ``audio.FetchError`` (HTTP 502), not "engine not reachable"."""
+        Every aiohttp failure (connection, redirects, bad URL, payload) and a timeout raise
+        ``audio.FetchError`` (HTTP 502), not "engine not reachable". The error names only the
+        exception type and drops the cause: aiohttp's errors carry the signed URL (ZDR)."""
         assert self.fetch_session is not None
         for attempt in (0, 1):
             try:
                 async with self.fetch_session.get(url) as r:
                     if r.status != 200:
-                        raise audio.AudioError(f"audio fetch HTTP {r.status} for {url[:120]}")
+                        raise audio.AudioError(f"audio fetch HTTP {r.status}")  # no URL: signed query (ZDR)
                     return await r.read()
-            except (aiohttp.ClientConnectionError, asyncio.TimeoutError) as exc:
+            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
                 if attempt == 0 and _is_stale(exc):
                     continue
-                raise audio.FetchError(f"audio fetch failed for {url[:120]}: {exc!r}") from exc
+                raise audio.FetchError(f"audio fetch failed: {type(exc).__name__}") from None
         raise AssertionError("unreachable")
 
     async def _decode(self, data: bytes, need_pcm: bool, t: Timing | None):
@@ -655,7 +657,7 @@ class Proxy:
                     except (json.JSONDecodeError, AttributeError, IndexError):
                         pass
                 else:
-                    t.error = out.decode(errors="replace")
+                    t.error = f"upstream HTTP {up.status}"  # the body may echo request content (ZDR)
                 return web.Response(status=up.status, body=out,
                                     content_type=up.content_type or "application/json")  # fmt: skip
         except audio.FetchError as exc:
@@ -665,7 +667,7 @@ class Proxy:
             t.status, t.error = 400, str(exc)
             return _json_error(400, str(exc))
         except UpstreamError as exc:
-            t.status, t.error = exc.status, exc.body.decode(errors="replace")
+            t.status, t.error = exc.status, f"upstream HTTP {exc.status}"  # body may echo content (ZDR)
             return web.Response(status=exc.status, body=exc.body, content_type="application/json")
         except aiohttp.ClientConnectionError as exc:
             t.status, t.error = 503, str(exc)
@@ -726,7 +728,7 @@ class Proxy:
             t.status, t.error = 400, str(exc)
             return _json_error(400, str(exc))
         except UpstreamError as exc:
-            t.status, t.error = exc.status, exc.body.decode(errors="replace")
+            t.status, t.error = exc.status, f"upstream HTTP {exc.status}"  # body may echo content (ZDR)
             return web.Response(status=exc.status, body=exc.body, content_type="application/json")
         except aiohttp.ClientConnectionError as exc:
             t.status, t.error = 503, str(exc)

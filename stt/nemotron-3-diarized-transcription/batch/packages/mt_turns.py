@@ -527,8 +527,8 @@ class SessionTurns:
         for k in bad[:3]:
             a, b = ours.get(k, []), theirs.get(k, [])
             i = next((j for j in range(min(len(a), len(b))) if a[j] != b[j]), min(len(a), len(b)))
-            logger.warning("TURNS mismatch %s %s at word %d: ours=%s nemo=%s (len %d/%d)", sid, k, i,
-                           a[max(0, i - 5): i + 5], b[max(0, i - 5): i + 5], len(a), len(b))
+            # Word index and counts only: the words are customer transcript (ZDR).
+            logger.warning("TURNS mismatch %s %s at word %d (len %d/%d)", sid, k, i, len(a), len(b))
         logger.info("TURNS verify %s: speakers=%d identical=%d words=%d segments=%d stats=%s", sid, len(theirs),
                     len(theirs) - len(bad), sum(len(v) for v in ours.values()), len(self.tb.closed), self.stats)
         return not bad

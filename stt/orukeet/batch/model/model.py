@@ -32,6 +32,7 @@ import logging
 import math
 import os
 import queue
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -41,6 +42,51 @@ import traceback
 from prometheus_client import Gauge, Histogram
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _audio_fetch_error(exc: Exception) -> ValueError:
+    """An audio_url fetch failure without the URL. httpx puts the full URL, signed query
+    included, in its error text, and that text reaches the logs via LOGGER.exception (ZDR)."""
+    import httpx
+
+    if isinstance(exc, httpx.HTTPStatusError):
+        return ValueError(f"audio fetch failed: HTTP {exc.response.status_code}")
+    return ValueError(f"audio fetch failed: {type(exc).__name__}")
+
+
+# Request audio that ffmpeg reads from disk lives in a per-process directory. A process that
+# dies mid-request (os._exit on a fatal CUDA error, an OOM kill) skips every `with` cleanup,
+# so load() also removes directories left by processes that are gone: no customer audio
+# outlives its request (ZDR).
+AUDIO_TMP_PREFIX = "orukeet-audio-"
+
+
+def _audio_tmp_dir() -> str:
+    path = os.path.join(tempfile.gettempdir(), f"{AUDIO_TMP_PREFIX}{os.getpid()}")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _remove_stale_audio_tmp_dirs() -> None:
+    root = tempfile.gettempdir()
+    for name in os.listdir(root):
+        pid = name[len(AUDIO_TMP_PREFIX):]
+        if not name.startswith(AUDIO_TMP_PREFIX) or not pid.isdigit():
+            continue
+        if int(pid) != os.getpid() and _pid_alive(int(pid)):
+            continue
+        shutil.rmtree(os.path.join(root, name), ignore_errors=True)
+
 
 MODEL_DIR = os.environ.get("MODEL_DIR", "/models/orukeet")
 NEMO_CHECKPOINT = os.environ.get(
@@ -338,6 +384,7 @@ class Model:
         self._unhealthy_reason = None
 
     def load(self):
+        _remove_stale_audio_tmp_dirs()
         import httpx
         import nemo
         import torch
@@ -401,6 +448,9 @@ class Model:
                 "checkpoint copy is not loaded"
             )
         self._http = httpx.Client(timeout=60, follow_redirects=False)
+        # ZDR: httpx logs every request URL (signed query included) at INFO.
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
 
         LOGGER.info(
             f"Parakeet runtime config: direct_forward={DIRECT_FORWARD}, "
@@ -1240,7 +1290,7 @@ class Model:
         # waveform, ~0.7 GB per hour of audio). np.fromfile reads it once. -t
         # stops decoding one second past the duration cap, so an arbitrarily long
         # input can never produce more than MAX_AUDIO_SECONDS + 1 s of samples.
-        with tempfile.TemporaryDirectory(prefix="parakeet-decode-") as work_dir:
+        with tempfile.TemporaryDirectory(prefix="parakeet-decode-", dir=_audio_tmp_dir()) as work_dir:
             input_path = os.path.join(work_dir, "input.audio")
             output_path = os.path.join(work_dir, "output.f32le")
             with open(input_path, "wb") as input_file:
@@ -1301,17 +1351,22 @@ class Model:
                 raise _client_error(413, too_large)
             return decoded
         if "audio_url" in request:
+            import httpx  # loaded in load(); imported here for the except clause
+
             # Stream with a byte cap instead of resp.content, so an oversized
             # file is refused before it is buffered in full.
-            with self._http.stream("GET", request["audio_url"]) as resp:
-                resp.raise_for_status()
-                declared = resp.headers.get("content-length")
-                if declared and declared.isdigit() and int(declared) > MAX_AUDIO_INPUT_BYTES:
-                    raise _client_error(413, too_large)
-                body = bytearray()
-                for piece in resp.iter_bytes():
-                    body.extend(piece)
-                    if len(body) > MAX_AUDIO_INPUT_BYTES:
+            try:
+                with self._http.stream("GET", request["audio_url"]) as resp:
+                    resp.raise_for_status()
+                    declared = resp.headers.get("content-length")
+                    if declared and declared.isdigit() and int(declared) > MAX_AUDIO_INPUT_BYTES:
                         raise _client_error(413, too_large)
+                    body = bytearray()
+                    for piece in resp.iter_bytes():
+                        body.extend(piece)
+                        if len(body) > MAX_AUDIO_INPUT_BYTES:
+                            raise _client_error(413, too_large)
+            except httpx.HTTPError as exc:
+                raise _audio_fetch_error(exc) from None
             return body
         raise ValueError("provide audio_url or audio_b64")

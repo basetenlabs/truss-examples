@@ -176,9 +176,10 @@ class IncrementalDetok:
             if self.stats["mismatch"] <= 5:
                 i = next((k for k in range(min(len(text), len(hyp.text))) if text[k] != hyp.text[k]),
                          min(len(text), len(hyp.text)))
-                logger.warning("INCDETOK mismatch #%d at char %d: inc=%r full=%r (n_done=%d, len=%d)",
-                               self.stats["mismatch"], i, text[max(0, i - 40): i + 40],
-                               hyp.text[max(0, i - 40): i + 40], st[0] if st else -1, len(hyp.y_sequence))
+                # Char index and lengths only: the text is customer transcript (ZDR).
+                logger.warning("INCDETOK mismatch #%d at char %d (chars %d/%d, n_done=%d, len=%d)",
+                               self.stats["mismatch"], i, len(text), len(hyp.text),
+                               st[0] if st else -1, len(hyp.y_sequence))
             hyp._mt_inc = None               # resync from the full text next step
         else:
             hyp.text = text                  # identical; keep the incremental object state
