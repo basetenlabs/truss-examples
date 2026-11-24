@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "hardware": {
+    "name": "h100",
+    "count": 2
+  },
+  "quantization": {
+    "name": "bf16",
+    "status": "sourced",
+    "evidence": "hf-safetensors-dtypes",
+    "checkpoint": {
+      "repository": "baselabs/groundhog-1",
+      "revision": "f4602c43599114a7af2c158472b59a4ff2d13663"
+    }
+  },
+  "engine": {
+    "kind": "bei",
+    "backend": "nvidia",
+    "version": "baseten/bei:v3.0.1-81da98c1a120-nvidia@sha256:4983683b158cd8067858b8ec0aac3b68461e2d4cc3bb712455df0badfd7df4c4"
+  },
+  "limits": []
+}
