@@ -1,14 +1,16 @@
-model_name: "model:nemotron-3.5-transcribe-30b-a4b preset:batch"
+model_name: "model:nemotron-3.5-transcribe-30b-a4b preset:rtx-pro-6000-batch-nvfp4"
 
 model_metadata:
   description: >-
-    NVIDIA Nemotron-3.5-Transcribe-30B-A4B (BF16): a Speech-Augmented
-    Language Model (hybrid Mamba-2/Transformer MoE decoder, ASR and Sortformer
-    speaker encoders, CTC timestamp head). Offline/batch transcription on one
-    RTX PRO 6000 with vLLM 0.32.0 and NeMo Speech's nemo_speechlm plugin,
-    using NVIDIA's model-card serving flags: MTP speculative decoding
-    (8 tokens), FP32 Mamba SSM cache, 65,536-token window (audio up to about
-    1 hour per request).
+    NVIDIA Nemotron-3.5-Transcribe-30B-A4B (NVFP4) for offline/batch
+    transcription on one RTX PRO 6000: a Speech-Augmented Language Model
+    (hybrid Mamba-2/Transformer MoE decoder, ASR and Sortformer speaker
+    encoders, CTC timestamp head), served with vLLM 0.32.0 and NeMo Speech's
+    nemo_speechlm plugin. NVIDIA's NVFP4 checkpoint with an fp8 KV cache, MTP
+    speculative decoding (8 tokens), audio-encoder CUDA graphs plus compile,
+    a runaway-output guard, FP32 Mamba SSM cache and a 65,536-token window.
+    Audio over 40 minutes is split server-side into 10-minute chunks, so one
+    request takes up to 3 hours (1.5 GB) of audio.
   repo_id: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
   example_model_input:
     model: nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B
@@ -34,12 +36,14 @@ model_metadata:
     - nemotron
     - mtp
     - rtx-pro-6000
+    - nvfp4
 
 # A Baseten Training deployment replaces this mount with its merged checkpoint
 # and repoints BASETEN_MODEL_PATH.
 weights:
-  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B@a188fff16c4f129a046788c2ad69e6198079a102"
-    mount_location: "/app/checkpoint/model"
+  # ModelOpt NVFP4 mixed-precision export (~22 GB, ungated, Blackwell only).
+  - source: "hf://nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B-NVFP4@66c6adc4020179567074d0399cda2a4eeb2bb347"
+    mount_location: "/app/checkpoint/nvfp4"
 
 base_image:
   # vllm/vllm-openai:v0.32.0; supplies CUDA 13.0 and nvcc for JIT. Serving runs
@@ -75,18 +79,6 @@ build_commands:
   - env -u UV_OVERRIDE UV_LINK_MODE=hardlink UV_COMPILE_BYTECODE=0 uv pip install --python /opt/nemo-speech/venv/bin/python --no-deps --no-cache 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=9630eeb32396adb89ce8ffa8465fedd14549eb2e2ad3aff182d9e69be4a12075' 'https://github.com/flashinfer-ai/flashinfer/releases/download/v0.7.0.post1/flashinfer_jit_cache_sm120f-0.7.0.post1+cu130-cp39-abi3-manylinux_2_28_x86_64.whl#sha256=1c8b5a3614fdc9ad4f0e26502c5438657e28d667d165b05ff0383ca8d208568f'
   # Fail the build, not the first start, if FlashInfer would still JIT the MoE kernel.
   - FLASHINFER_CUDA_ARCH_LIST=12.0f /opt/nemo-speech/venv/bin/python -c "from flashinfer.jit.fused_moe import gen_cutlass_fused_moe_sm120_module as g; from flashinfer.jit.sampling import gen_sampling_module as s; assert g().is_aot and s().is_aot"
-  # Startup study (RTX arm): no FlashInfer module is prebuilt into the image. Image-built sm120f
-  # checkpointing_ssu/trtllm_utils saved ~55 s of cold start but raised batch c1 server p50 in all
-  # three cold starts that used them (445/496/569 vs 302-373 ms; exec-43/44/50). FlashInfer JIT-builds
-  # them on the first cold start (cached by the BDN startup cache), as on main.
-  # Byte-compile the engine venv at build (startup study); errors are left to import time.
-  # The engine venv is Python 3.12 here: uv sync follows NeMo a837f4e's .python-version and
-  # replaces the 3.13 venv made above ("Removed virtual environment", q9opjyj build). Take
-  # site-packages from the venv's own interpreter (the python3.13 path compiled nothing).
-  - /opt/nemo-speech/venv/bin/python -m compileall -q -j 0 "$(/opt/nemo-speech/venv/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')" /opt/nemo-speech/src > /tmp/compileall-venv.log 2>&1 || echo "compileall venv - some files left uncompiled, $(grep -c Error /tmp/compileall-venv.log) errors"
-  # Fail the build unless the byte-compile actually wrote .pyc next to the engine's heaviest
-  # imports (timestamp-checked, no SOURCE_DATE_EPOCH, so the runtime loads them as is).
-  - /opt/nemo-speech/venv/bin/python -c "import importlib.util as u, pathlib, sys; import sysconfig; sp = pathlib.Path(sysconfig.get_paths()['purelib']); srcs = [sp / 'vllm/__init__.py', sp / 'torch/__init__.py', sp / 'flashinfer/__init__.py', sp / 'transformers/__init__.py', pathlib.Path('/opt/nemo-speech/src/nemo/__init__.py')]; missing = [str(s) for s in srcs if not pathlib.Path(u.cache_from_source(str(s))).exists()]; n = sum(1 for _ in sp.rglob('*.' + sys.implementation.cache_tag + '.pyc')); print('engine venv pyc files:', sp, n); assert not missing and n > 1000, ('compileall wrote no pyc for', missing, n)"
 
 docker_server:
   # start.sh ignores the argument; it exposes the served model name to b10-bench.
@@ -111,8 +103,10 @@ runtime:
     stop_traffic_threshold_seconds: 120
 
 environment_variables:
-  # Checkpoint directory start.sh serves; Training overrides it.
-  BASETEN_MODEL_PATH: "/app/checkpoint/model"
+  # Checkpoint directory start.sh serves; Training overrides it. Default: the NVFP4 export.
+  # A Training checkpoint (BF16) loads with these defaults; set NEMOTRON_KV_CACHE_DTYPE "auto"
+  # to give it a BF16 KV cache.
+  BASETEN_MODEL_PATH: "/app/checkpoint/nvfp4"
   VLLM_PLUGINS: "nemo_speechlm"
   # fork fails CUDA driver initialization.
   VLLM_WORKER_MULTIPROC_METHOD: "spawn"
@@ -126,23 +120,65 @@ environment_variables:
   VLLM_MAX_AUDIO_CLIP_FILESIZE_MB: "180"
   # Model card: word timestamps (CTC middleware) need the V1 model runner.
   VLLM_USE_V2_MODEL_RUNNER: "0"
-  # Startup levers (Model Scout startup study; defaults reproduce main except autotune reuse, on). See the start script.
-  # NEMOTRON_FLASHINFER_AUTOTUNE: "0" passes --no-enable-flashinfer-autotune.
-  # NEMOTRON_WEIGHT_PREFETCH: "early" reads the checkpoint into the page cache in parallel during
-  #   imports (fails the start if it cannot fit or a read fails); "vllm" passes
-  #   --safetensors-load-strategy prefetch; "off" is main's mmap load.
-  NEMOTRON_FLASHINFER_AUTOTUNE: "1"
-  NEMOTRON_WEIGHT_PREFETCH: "off"
-  # NEMOTRON_AUTOTUNE_REUSE: "1" (default) skips FlashInfer tuning on a warm start for the ops in
-  #   this deployment's own saved autotune file, only when it is the file vLLM loads for this
-  #   exact config (same vLLM config hash, FlashInfer version and GPU name); serving reads the
-  #   tuned tactics from it. Cold starts and mismatches tune as before. "0" opts out.
-  # NEMOTRON_DIAG_RESTART_ONCE: "1" (diagnostic) starts vLLM twice in the container: boot 1 on a
-  #   private port, stopped once healthy, then boot 2 on the served port with boot 1's local
-  #   caches, so NEMOTRON_AUTOTUNE_REUSE is measured on a warm start. Ready only after boot 2.
-  NEMOTRON_AUTOTUNE_REUSE: "1"
-  NEMOTRON_DIAG_RESTART_ONCE: "0"
-  # Scheduler limits passed to vLLM; overridable per /batch-bench variant. Keep
-  # NEMOTRON_MAX_NUM_SEQS equal to runtime.predict_concurrency.
-  NEMOTRON_MAX_NUM_BATCHED_TOKENS: "16384"
+  # Scheduler limits passed to vLLM. Keep NEMOTRON_MAX_NUM_SEQS equal to
+  # runtime.predict_concurrency. 65536 batched tokens OOMs at GPU memory 0.88.
+  NEMOTRON_MAX_NUM_BATCHED_TOKENS: "32768"
   NEMOTRON_MAX_NUM_SEQS: "384"
+  # Knobs read by start.sh (start.sh's fallbacks match these values):
+  # NEMOTRON_KV_CACHE_DTYPE: --kv-cache-dtype; the NVFP4 card needs "fp8".
+  # NEMOTRON_GPU_MEMORY_UTILIZATION: --gpu-memory-utilization; NVFP4 MTP8 OOMs in the rejection
+  #   sampler at 256 concurrent short clips with 0.94.
+  NEMOTRON_KV_CACHE_DTYPE: "fp8"
+  NEMOTRON_GPU_MEMORY_UTILIZATION: "0.88"
+  # Server-side long-audio chunking (data/chunk_proxy.py, README "Long audio"), ported from
+  # the H100 batch preset (#1195, 87626ae). On by default: 600 s chunks for audio over 2400 s.
+  # "0" turns it off: vLLM serves :8000 directly (unless the guard is on). Set
+  # NEMOTRON_CHUNK_MAX_SECONDS (longest chunk, >= 30) and NEMOTRON_CHUNK_TRIGGER_SECONDS
+  # (only longer audio is chunked); e.g. "600"/"600" for 10-minute chunks. Needs
+  # MAX <= TRIGGER <= VLLM_MAX_AUDIO_DECODE_DURATION_S; the proxy's --check refuses otherwise.
+  NEMOTRON_CHUNK_MAX_SECONDS: "600"
+  NEMOTRON_CHUNK_TRIGGER_SECONDS: "2400"
+  # Each chunk after the first starts this long before the previous cut (stitch overlap).
+  NEMOTRON_CHUNK_OVERLAP_SECONDS: "5"
+  # How far before a chunk's limit the cut may move to land in a pause.
+  NEMOTRON_CHUNK_SEARCH_SECONDS: "30"
+  # Front-door limits per request when chunking is on: decoded duration and file size.
+  NEMOTRON_MAX_AUDIO_SECONDS: "10800"
+  NEMOTRON_MAX_AUDIO_MB: "1536"
+  # Worker processes that decode long files into chunks (CPU; 2 queued 1-hr files at c32).
+  NEMOTRON_CHUNK_DECODE_WORKERS: "8"
+  # Runaway guard (data/runaway.py, README "Runaway guard"), ported from #1195 (054fc0e).
+  # On by default; "0" turns it off. "1" runs the proxy in front of vLLM even with chunking off: each engine request's max_tokens is
+  # capped at ceil(audio_s x TOKENS_PER_S) + MARGIN_TOKENS (never above the client's); a unit
+  # (file or chunk) that hits that cap, runs over 8 words/s (or 2.5x the request's median)
+  # or loops is retried once as two halves when at least SPLIT_MIN_SECONDS (unchunked) or
+  # CHUNK_SPLIT_MIN_SECONDS (a chunk) long; still anomalous gets NVIDIA's model-card loop
+  # cleanup and finish_reason "length". Thinking requests are not guarded.
+  NEMOTRON_RUNAWAY_GUARD: "1"
+  NEMOTRON_RUNAWAY_TOKENS_PER_S: "8"
+  NEMOTRON_RUNAWAY_MARGIN_TOKENS: "256"
+  NEMOTRON_RUNAWAY_SPLIT_MIN_SECONDS: "600"
+  NEMOTRON_RUNAWAY_CHUNK_SPLIT_MIN_SECONDS: "60"
+  # vLLM frontend processes (--api-server-count). "1" passes no flag (argv unchanged). N > 1
+  # spreads HTTP, audio decode and the NeMo processor / CTC middleware over N processes on
+  # one engine core; each process imports NeMo, so host RAM grows per process.
+  NEMOTRON_API_SERVER_COUNT: "4"
+  # Audio-encoder CUDA graphs (NeMo Speech's opt-in EncoderGraphRunner, passed as
+  # --hf-overrides encoder_cuda_graphs): 1 replays the ParallelExpertEncoder forward, long-audio
+  # windows and Sortformer steps from CUDA graphs captured at the first encoder call.
+  # NEMOTRON_ENCODER_COMPILE=1 (needs graphs) also torch.compiles each encoder block
+  # (encoder_compile; bf16-rounding-level numerics change) and forces FlexAttention's main Triton
+  # kernel in the encoder (data/encoder_flex.py). Both 0: no --hf-overrides flag.
+  NEMOTRON_ENCODER_CUDA_GRAPHS: "1"
+  NEMOTRON_ENCODER_COMPILE: "1"
+  # Opt-in (off by default): the chunk proxy retries the audio-URL fetch and each engine POST
+  # once on a dropped connection, answers a failed fetch with 502 instead of 400, and drops idle
+  # pooled connections after 4 s (vLLM closes them after 5 s). It removes the ServerDisconnected
+  # HTTP 400s on audio-URL fetches. Needs the proxy (chunking or the guard on).
+  NEMOTRON_PROXY_RETRY: "0"
+  # The proxy logs at INFO (startup config only); set NEMOTRON_LOG_LEVEL "DEBUG" for its
+  # per-request diagnostics (sizes, counts and timings, never request or transcript content).
+  # FlashInfer's FP8 scaled-mm kernel is disabled for the ModelOpt exports (FP8/NVFP4), and
+  # encoder compile adds ~75 s to engine init, past vLLM's 600 s default on a cold start.
+  VLLM_DISABLED_KERNELS: "FlashInferFP8ScaledMMLinearKernel"
+  VLLM_ENGINE_READY_TIMEOUT_S: "1800"
