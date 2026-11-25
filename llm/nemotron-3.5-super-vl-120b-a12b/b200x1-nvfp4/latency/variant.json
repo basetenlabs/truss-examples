@@ -20,7 +20,7 @@
   "engine": {
     "kind": "bis",
     "backend": null,
-    "version": "0.0.1-20261001221953-8f302211"
+    "version": null
   },
   "limits": [
     {

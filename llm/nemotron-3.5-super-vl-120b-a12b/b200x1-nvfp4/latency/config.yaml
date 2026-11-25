@@ -65,10 +65,6 @@ bis_llm:
           value: '1'
         - name: SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN
           value: '1'
-        - name: SGLANG_CACHE_DIR
-          value: /root/.cache
-        - name: XDG_CACHE_HOME
-          value: /root/.cache
         - name: CUDA_CACHE_MAXSIZE
           value: '1073741824'
         - name: ADMIN_HOST
@@ -227,7 +223,6 @@ bis_llm:
       top_p: 0.95
       max_tokens: 16384
       temperature: 1
-  version: 0.0.1-20261001221953-8f302211
 resources:
   instance_type: B200
 environment_variables: {}

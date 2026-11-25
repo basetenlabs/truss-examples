@@ -12,15 +12,22 @@ tree as a separate recipe.
 
 ## What differs from the production config
 
-Every `bis_llm` field is kept verbatim: worker image and BIS chart version,
-engine flags, page size, attention backend, context length, memory fraction,
-max running requests, hierarchical cache, Mamba cache settings, speculative
-decoding, parsers, `chat_processor`, reasoning policy, sampling defaults,
-vision limits, routing, autoscaling and environment variables. Only fields
-that pointed at a private artifact or an internal name change:
+Most `bis_llm` fields are kept verbatim: worker image, engine flags, page
+size, attention backend, context length, memory fraction, max running
+requests, hierarchical cache, Mamba cache settings, speculative decoding,
+parsers, `chat_processor`, reasoning policy, sampling defaults, vision limits,
+routing, autoscaling and the remaining environment variables. Two changes are
+not artifact renames, so this preset does not reproduce the production setup
+exactly: it runs on the platform-default BIS chart instead of production's
+pinned one, and it drops the cache-directory overrides. Run alone,
+D(1024,1024) decode on the 2026-11-22 default chart matches the pinned chart
+(813.8 vs 837.3 output tok/s at concurrency 4). The first two rows below are
+those changes; the rest only replace private artifacts or internal names:
 
 | Field | Production | This preset | Why |
 | --- | --- | --- | --- |
+| `bis_llm.version` | `0.0.1-20261001221953-8f302211` | not set (platform default) | The platform now rejects chart pins older than its minimum build time (baseten#44233) |
+| `SGLANG_CACHE_DIR`, `XDG_CACHE_HOME` | `/root/.cache` | removed | Lets the worker use the platform's startup cache location |
 | `weights[].source` | Private Baseten early-access mirror | `hf://nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4@da5b2650…` | NVIDIA's public, ungated repo, revision-pinned |
 | `weights[].auth_secret_name` | `hf_access_token` | removed | The public repo needs no HF token |
 | `mount_location`, `model_path`, `model_path_for_tokenizer` | `-ea-` paths | `/models/nemotron-3.5-super-vl-nvfp4` | Drop the early-access mirror's name |
@@ -35,7 +42,7 @@ that pointed at a private artifact or an internal name change:
 | Artifact | Pin |
 | --- | --- |
 | Worker image | `baseten/dynamo-cache-aware-routing:akorte-nem35-video-master-1018--sglang-a6a8c560…@sha256:015e73d9…` (same as production) |
-| BIS chart | `0.0.1-20261001221953-8f302211` (same as production) |
+| BIS chart | Platform default (not pinned) |
 | Checkpoint | `nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4@da5b2650a835292c678994a1fa3fb653250fb508` |
 
 Like other BIS presets in this registry, the worker image is a Baseten-built
