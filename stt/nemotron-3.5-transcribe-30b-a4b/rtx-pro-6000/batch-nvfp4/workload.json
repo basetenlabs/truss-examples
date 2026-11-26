@@ -1,49 +1,9 @@
 {
   "schema_version": 1,
-  "status": "experiment",
-  "perf_gate_applicable": false,
+  "status": "standard_profile",
+  "perf_gate_applicable": true,
   "profile": "full-batch-length-chart",
   "definition": [
-    {
-      "name": "gate=podcast-1hr",
-      "kind": "perf.stt_transcription",
-      "config": {
-        "datasets": [
-          "podcast-1hr"
-        ],
-        "num_samples": 32,
-        "concurrency_levels": [
-          1
-        ],
-        "batch_protocol": "openai_chat_audio",
-        "max_tokens_cap": 16000,
-        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
-        "request_timeout_s": 600.0,
-        "measurement_duration_s": 300.0,
-        "warmup_duration_s": 60.0
-      },
-      "serial": true
-    },
-    {
-      "name": "gate=podcast-30min",
-      "kind": "perf.stt_transcription",
-      "config": {
-        "datasets": [
-          "podcast-30min"
-        ],
-        "num_samples": 32,
-        "concurrency_levels": [
-          1
-        ],
-        "batch_protocol": "openai_chat_audio",
-        "max_tokens_cap": 16000,
-        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
-        "request_timeout_s": 600.0,
-        "measurement_duration_s": 240.0,
-        "warmup_duration_s": 60.0
-      },
-      "serial": true
-    },
     {
       "name": "data=pipecat",
       "kind": "perf.stt_transcription",
@@ -54,8 +14,6 @@
         "num_samples": 64,
         "concurrency_levels": [
           1,
-          16,
-          64,
           96
         ],
         "batch_protocol": "openai_chat_audio",
@@ -63,8 +21,7 @@
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
         "measurement_duration_s": 120.0,
         "warmup_duration_s": 30.0
-      },
-      "serial": true
+      }
     },
     {
       "name": "data=podcast-5min",
@@ -76,8 +33,8 @@
         "num_samples": 64,
         "concurrency_levels": [
           1,
-          16,
-          64
+          4,
+          16
         ],
         "batch_protocol": "openai_chat_audio",
         "max_tokens_cap": 16000,
@@ -97,6 +54,8 @@
         ],
         "num_samples": 32,
         "concurrency_levels": [
+          1,
+          4,
           16
         ],
         "batch_protocol": "openai_chat_audio",
@@ -109,6 +68,81 @@
       "serial": true
     },
     {
+      "name": "data=podcast-10s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-10s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-30s",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-30s"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
+      "name": "data=podcast-1min",
+      "kind": "perf.stt_transcription",
+      "config": {
+        "datasets": [
+          "podcast-1min"
+        ],
+        "num_samples": 64,
+        "concurrency_levels": [
+          1,
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "batch_protocol": "openai_chat_audio",
+        "max_tokens_cap": 16000,
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "request_timeout_s": 120.0,
+        "measurement_duration_s": 120.0,
+        "warmup_duration_s": 30.0
+      },
+      "serial": true
+    },
+    {
       "name": "data=podcast-1hr",
       "kind": "perf.stt_transcription",
       "config": {
@@ -117,7 +151,10 @@
         ],
         "num_samples": 32,
         "concurrency_levels": [
-          4
+          1,
+          4,
+          8,
+          16
         ],
         "batch_protocol": "openai_chat_audio",
         "max_tokens_cap": 16000,
@@ -147,13 +184,146 @@
         "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B"
       },
       "serial": true
+    },
+    {
+      "name": "quality-open-asr-leaderboard-ami-cleaned",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "ami-cleaned"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-earnings22-cleaned-aa-chunked",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "earnings22-cleaned-aa-chunked"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-gigaspeech-cleaned-1in4",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "gigaspeech-cleaned-1in4"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-spgispeech-1in8",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "spgispeech-1in8"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-urgent2024",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "urgent2024"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-monsoon-en-in",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "monsoon-en-in"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
+    },
+    {
+      "name": "quality-open-asr-leaderboard-voxpopuli-cleaned-aa",
+      "kind": "quality.stt_transcription",
+      "serial": true,
+      "config": {
+        "batch_protocol": "openai_chat_audio",
+        "served_model": "nvidia/NVIDIA-Nemotron-3.5-Transcribe-30B-A4B",
+        "max_tokens_cap": 16000,
+        "prompts": "sierra",
+        "datasets": [
+          "voxpopuli-cleaned-aa"
+        ],
+        "num_samples": 10000,
+        "scoring_methods": [
+          "open_asr"
+        ],
+        "concurrency": 8
+      }
     }
   ],
   "initial_relative_tolerance": 0.1,
   "noise_band_measured": false,
   "source": {
-    "path": "stt/nemotron-3.5-transcribe-30b-a4b/rtx-pro-6000/batch/workload.json",
-    "reason": "Model Scout speculative-decoding study (RTX PRO 6000): vendored unchanged from the precision study's batch-precision workload; this study measures through inline /batch-bench benches."
+    "path": ".github/actions/run-b10-bench/modalities/stt/profiles/full-batch-length-chart.json",
+    "reason": "No exact imported run; use the established full profile and obtain a baseline."
   },
   "baseline_status": "missing",
   "bench": {
@@ -163,7 +333,9 @@
       "full": "full-batch-length-chart"
     },
     "capacity_concurrency": 96,
-    "max_tokens_cap": 16000
-  },
-  "reason": "Model Scout experiment preset (deploy_only, never published): measured only through /batch-bench on its draft PR, not the registry PR benchmark gate."
+    "max_tokens_cap": 16000,
+    "quality_suites": [
+      "open-asr-leaderboard"
+    ]
+  }
 }
